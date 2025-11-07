@@ -1,0 +1,128 @@
+## ===========================
+## Visual Studio 2022 + C#/C++
+## ===========================
+
+# Our Output Dir
+!Release/*.exe
+
+# Build results
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+*.obj
+*.exe
+*.pdb
+*.idb
+*.ilk
+*.meta
+*.pch
+*.ipdb
+*.iobj
+*.tmp
+*.log
+*.tlog
+*.vspscc
+*.vssscc
+*.cachefile
+*.ncb
+*.sdf
+*.opensdf
+*.dbmdl
+*.dbproj.schemaview
+*.VC.db
+*.VC.VC.opendb
+
+# Visual Studio folders
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.VisualState.xml
+*.vsp
+*.vsps
+*.coverage
+*.coveragexml
+
+# NuGet packages
+*.nupkg
+*.snupkg
+# (you can include this line if you restore packages automatically)
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+!**/[Pp]ackages/repositories.config
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+CMakeScripts/
+Testing/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Build directories
+x64/
+x86/
+ARM/
+ARM64/
+Debug/
+[Bb]uild/
+
+# Backup and temporary files
+*.bak
+*.tmp
+*.temp
+*.old
+*.orig
+
+# Crash and profiling logs
+*.pidb
+*.svclog
+*.psess
+*.vspx
+*.sap
+*.rpt
+*.dmp
+
+# Others
+*.opendb
+*.tlog
+*.vsix
+*.userprefs
+*.VC.db
+*.VC.opendb
+
+# .NET / C#
+project.lock.json
+project.fragment.lock.json
+artifacts/
+*.nuget.props
+*.nuget.targets
+
+# Auto-generated files
+GeneratedFiles/
+ServiceFabricBackup/
+AppPackages/
+BundleArtifacts/
+
+# Publish outputs
+publish/
+*.publishsettings
