@@ -2,9 +2,6 @@
 ## Visual Studio 2022 + C#/C++
 ## ===========================
 
-# Our Output Dir
-!Release/*.exe
-
 # Build results
 [Bb]in/
 [Oo]bj/
@@ -126,3 +123,6 @@ BundleArtifacts/
 # Publish outputs
 publish/
 *.publishsettings
+
+# Our Output Dir
+!Release/*.exe
