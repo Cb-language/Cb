@@ -17,7 +17,7 @@ const std::vector<std::wstring> Tokenizer::capture_blocks = {
     LR"((?<BinaryOp>==|!=|>=|<=|<|>|\+|-|//|/|\*|%|\b(divis|chord)\b))",
     LR"((?<AssignmentOp>=))",
     LR"((?<UnaryOp>!))",
-    LR"((?<Punctuation>∮|☉|\[|\]|║\:|\:║|║|\\|\(|\)))",
+    LR"((?<Punctuation>,|∮|☉|\[|\]|║\:|\:║|║|\\|\(|\)))",
     LR"((?<Identifier>\b[a-zA-Z_]\w*\b))",
     LR"((?<Newline>\n))"
 };
