@@ -3,8 +3,13 @@
 boost::wregex Tokenizer::token_regex;
 
 const std::vector<std::wstring> Tokenizer::capture_blocks = {
-    LR"((?<CommentSingle>\?\s?[^\n]*))", // Single-line comment
-    LR"((?<CommentMulti>\?\*[\s\S]*?\*\?))" // Multi-Line comment
+    LR"((?<CommentSingle>\?\s?[^\n]*))",
+    LR"((?<CommentMulti>\?\*[\s\S]*?\*\?))",
+    LR"((?<ConstBool>\b(cres|demen)\b))",
+    LR"((?<ConstFloat>\d*\.\d+))",
+    LR"((?<ConstInt>\d+))",
+    LR"((?<ConstChar>'(\\.|[^\\'\n])'))",
+    LR"((?<ConstStr>"(\\.|[^"\n])*"))"
 };
 
 bool Tokenizer::inited = false;
