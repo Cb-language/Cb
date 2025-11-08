@@ -1,43 +1,72 @@
 ﻿#include <iostream>
-#include <locale>
+#include <map>
+#include <windows.h>
+#include <io.h>
+#include <fcntl.h>
 #include "Tokenizer.h"
 
-void test()
+// Helper function to print a token using WriteConsoleW
+void printToken(const Token& tok, const std::map<Token::TokenType, std::wstring>& tokenTypeNames)
 {
-    std::wstring code = LR"(
-? This is a single-line comment
-?* This is a 
-multi-line comment *?
-cres demen 3.14 42 'a' "hello\nworld"
-flat degree playBar hear D Fmin
-♯ ♭ ♮
-x += 5
-y == 10
-z // 2
-[𝄞] ║ \ identifier_name
-)";
+    std::wstring output =
+        L"Line: " + std::to_wstring(tok.line) +
+        L", Column: " + std::to_wstring(tok.column) +
+        L", Value: \"" + tok.value + L"\"" +
+        L", Type: " + tokenTypeNames.at(tok.type) + L"\n";
 
-    std::vector<Token> tokens = Tokenizer::tokenize(code);
-
-    for (const auto& tok : tokens)
-    {
-        std::wcout << L"Type: " << tok.type
-            << L", Value: \"" << tok.value << L"\""
-            << L", Line: " << tok.line
-            << L", Column: " << tok.column
-            << std::endl;
-    }
+    WriteConsoleW(GetStdHandle(STD_OUTPUT_HANDLE), output.c_str(), output.size(), nullptr, nullptr);
 }
 
 int main()
 {
-    // Set locale for wide character output
-    std::locale::global(std::locale("en_US.UTF-8"));
-    std::wcout.imbue(std::locale());
+    // Enable UTF-8 output (mostly for other parts that may use cout)
+    SetConsoleOutputCP(CP_UTF8);
+    //_setmode(_fileno(stdout), _O_U8TEXT);
 
+    // Initialize tokenizer
     Tokenizer::init();
 
-    test();
+    std::cout << "Note: some chars used in out lang are double wchar, so we cant print them" << std::endl << std::endl;
+
+    // Map TokenType enum to readable string
+    std::map<Token::TokenType, std::wstring> tokenTypeNames = {
+        {Token::IDENTIFIAR, L"IDENTIFIAR"},
+        {Token::TYPE, L"TYPE"},
+        {Token::KEYWORD, L"KEYWORD"},
+        {Token::PUNCTUATION, L"PUNCTUATION"},
+        {Token::OP_UNARY, L"OP_UNARY"},
+        {Token::OP_BINARY, L"OP_BINARY"},
+        {Token::OP_ASSIGNMENT, L"OP_ASSIGNMENT"},
+        {Token::CONST_INT, L"CONST_INT"},
+        {Token::CONST_FLOAT, L"CONST_FLOAT"},
+        {Token::CONST_CHAR, L"CONST_CHAR"},
+        {Token::CONST_BOOL, L"CONST_BOOL"},
+        {Token::CONST_STR, L"CONST_STR"},
+        {Token::COMMENT_SINGLE, L"COMMENT_SINGLE"},
+        {Token::COMMENT_MULTI, L"COMMENT_MULTI"}
+    };
+
+    // Example code to tokenize
+    const std::wstring code = LR"(
+? This is a single-line comment
+?* This is a 
+multi-line comment *?
+cres demen .14 42 'a' "hello
+world"
+flat degree playBar hear D Fmin
+♯ ♭ ♮ 𝄌 𝄞
+x += 5
+y == 10
+z // 2
+[] ║ \ identifier_name 𝄞 + 𝄌
+)";
+
+    // Tokenize
+    std::vector<Token> tokens = Tokenizer::tokenize(code);
+
+    // Print tokens
+    for (const auto& tok : tokens)
+        printToken(tok, tokenTypeNames);
 
     return 0;
 }
