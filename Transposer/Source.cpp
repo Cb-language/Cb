@@ -54,12 +54,12 @@ multi-line comment *?
 cres demen .14 42 'a' "hello
 world"
 flat degree playBar hear D Fmin
-♯ ♭ ♮ 𝄌 𝄞
+♯ ♭ ♮ ☉ ∮
 x += 5
 y == 10
 z // 2
-[] ║ \ identifier_name 𝄞
-=! != <= > < //= ()
+[] ║ \ identifier_name ∮
+=! != <= > < //= ()║::║:║║:║
 )";
 
     // Tokenize
