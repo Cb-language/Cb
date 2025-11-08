@@ -10,6 +10,7 @@ const std::vector<std::wstring> Tokenizer::capture_blocks = {
     LR"((?<ConstInt>\d+))",
     LR"((?<ConstChar>'(\\.|[^\\'\n])'))",
     LR"((?<ConstStr>"(\\.|[^"\n])*"))",
+    LR"((?<Type>\b(((flat|sharp)[\s\r\n]*)?(degree|freq|note))|(mute|bar|scale))\b))",
 
     LR"((?<Newline>\n))"
 };
@@ -30,7 +31,7 @@ void Tokenizer::init()
     {
         if (!first)
         {
-            regex += LR"( | )";
+            regex += LR"(|)";
         }
         regex += block;
         first = false;
