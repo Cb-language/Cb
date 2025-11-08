@@ -54,7 +54,8 @@ std::vector<Token> Tokenizer::tokenize(const std::wstring& code)
     {
         const boost::wsmatch& match = *it;
 
-        if (match[L"CommentSingle"].matched) { tokens.push_back(Token(COMMENT_SINGLE, match.str(), current_line, current_col)); }
+        if (match[L"Newline"].matched) { current_line++; current_col = 0; }
+        else if (match[L"CommentSingle"].matched) { tokens.push_back(Token(COMMENT_SINGLE, match.str(), current_line, current_col)); }
         else if (match[L"CommentMulti"].matched) { tokens.push_back(Token(COMMENT_MULTI, match.str(), current_line, current_col)); }
 
         current_col++;
