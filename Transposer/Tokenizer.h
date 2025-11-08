@@ -8,4 +8,9 @@
 
 class Tokenizer
 {
+private:
+	static boost::wregex token_regex;
+
+public:
+	static std::vector<Token> tokenize(const std::wstring& code);
 };
