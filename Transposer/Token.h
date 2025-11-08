@@ -30,7 +30,7 @@ struct Token
 	const std::wstring value;
 
 	const size_t line;
-	const size_t collum;
+	const size_t column;
 
-	Token(const TokenType type, const std::wstring value, const size_t line, const size_t collum);
+	Token(const TokenType type, const std::wstring value, const size_t line, const size_t column);
 };
