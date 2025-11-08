@@ -12,7 +12,7 @@ const std::vector<std::wstring> Tokenizer::capture_blocks = {
     LR"((?<ConstStr>"(\\.|[^"\n])*"))",
     LR"((?<Type>\b(((flat|sharp)[\s\r\n]*)?(degree|freq|note))|(mute|bar|scale|fermata))\b))",
     LR"((?<Keyword>\b(pause|break|play(Bar)?|hear|D|E|A|C|B|G|Fmin|Fmaj|©)\b))",
-    LR"((?<UnaryOp>)♯|♭|♮)",
+    LR"((?<UnaryOp>♯|♭|♮))",
     LR"((?<AssignmentOp>\+=|-=|//=|/=|\*=|%=))",
     LR"((?<BinaryOp>==|!=|>=|<=|<|>|\+|-|//|/|\*|%|\b(divis|chord)\b))",
     LR"((?<EqSign>=))",
