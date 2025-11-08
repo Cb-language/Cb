@@ -57,6 +57,11 @@ std::vector<Token> Tokenizer::tokenize(const std::wstring& code)
         if (match[L"Newline"].matched) { current_line++; current_col = 0; }
         else if (match[L"CommentSingle"].matched) { tokens.push_back(Token(COMMENT_SINGLE, match.str(), current_line, current_col)); }
         else if (match[L"CommentMulti"].matched) { tokens.push_back(Token(COMMENT_MULTI, match.str(), current_line, current_col)); }
+        else if (match[L"ConstBool"].matched) { tokens.push_back(Token(CONST_BOOL, match.str(), current_line, current_col)); }
+        else if (match[L"ConstFloat"].matched) { tokens.push_back(Token(CONST_FLOAT, match.str(), current_line, current_col)); }
+        else if (match[L"ConstInt"].matched) { tokens.push_back(Token(CONST_INT, match.str(), current_line, current_col)); }
+        else if (match[L"ConstChar"].matched) { tokens.push_back(Token(CONST_CHAR, match.str(), current_line, current_col)); }
+        else if (match[L"ConstStr"].matched) { tokens.push_back(Token(CONST_STR, match.str(), current_line, current_col)); }
 
         current_col++;
     }
