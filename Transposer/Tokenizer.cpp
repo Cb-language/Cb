@@ -15,9 +15,9 @@ const std::vector<std::wstring> Tokenizer::capture_blocks = {
     LR"((?<UnaryOp>♯|♭|♮))",
     LR"((?<AssignmentOp>\+=|-=|//=|/=|\*=|%=))",
     LR"((?<BinaryOp>==|!=|>=|<=|<|>|\+|-|//|/|\*|%|\b(divis|chord)\b))",
-    LR"((?<EqSign>=))",
-    LR"((?<NotSign>!))",
-    LR"((?<Punctuation>[𝄞𝄌\[\]║\\]))",
+    LR"((?<AssignmentOp>=))",
+    LR"((?<UnaryOp>!))",
+    LR"((?<Punctuation>(\xD834\xDD1E)|(\xD834\xDD2C)|\[|\]|║|\\|\(|\)))",
     LR"((?<Identifier>\b[a-zA-Z_]\w*\b))",
     LR"((?<Newline>\n))"
 };
@@ -126,8 +126,8 @@ std::vector<Token> Tokenizer::tokenize(const std::wstring& code)
             }
         }
         else if (match[L"Keyword"].matched) { tokens.push_back(Token(Token::KEYWORD, match.str(), current_line, current_col)); }
-        else if (match[L"UnaryOp"].matched || match[L"NotSign"].matched) { tokens.push_back(Token(Token::OP_UNARY, match.str(), current_line, current_col)); }
-        else if (match[L"AssignmentOp"].matched || match[L"EqSign"].matched) { tokens.push_back(Token(Token::OP_ASSIGNMENT, match.str(), current_line, current_col)); }
+        else if (match[L"UnaryOp"].matched) { tokens.push_back(Token(Token::OP_UNARY, match.str(), current_line, current_col)); }
+        else if (match[L"AssignmentOp"].matched) { tokens.push_back(Token(Token::OP_ASSIGNMENT, match.str(), current_line, current_col)); }
         else if (match[L"BinaryOp"].matched) { tokens.push_back(Token(Token::OP_BINARY, match.str(), current_line, current_col)); }
         else if (match[L"Punctuation"].matched) { tokens.push_back(Token(Token::PUNCTUATION, match.str(), current_line, current_col)); }
         else if (match[L"Identifier"].matched) { tokens.push_back(Token(Token::IDENTIFIAR, match.str(), current_line, current_col)); }
