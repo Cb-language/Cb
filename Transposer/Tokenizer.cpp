@@ -1,4 +1,4 @@
-#include "Tokenizer.h"
+﻿#include "Tokenizer.h"
 
 boost::wregex Tokenizer::token_regex;
 
@@ -12,6 +12,11 @@ const std::vector<std::wstring> Tokenizer::capture_blocks = {
     LR"((?<ConstStr>"(\\.|[^"\n])*"))",
     LR"((?<Type>\b(((flat|sharp)[\s\r\n]*)?(degree|freq|note))|(mute|bar|scale|fermata))\b))",
     LR"((?<Keyword>\b(pause|break|play(Bar)?|hear|D|E|A|C|B|G|Fmin|Fmaj)\b))",
+    LR"((?<UnaryOp>)♯|♭|♮)",
+    LR"((?<AssignmentOp>\+=|-=|//=|/=|\*=|%=))",
+    LR"((?<BinaryOp>==|!=|>=|<=|<|>|\+|-|//|/|\*|%|\b(divis|chord)\b))",
+    LR"((?<EqSign>=))",
+    LR"((?<NotSign>!))",
 
     LR"((?<Newline>\n))"
 };
@@ -119,6 +124,10 @@ std::vector<Token> Tokenizer::tokenize(const std::wstring& code)
                 current_line += newlines;
             }
         }
+        else if (match[L"Keyword"].matched) { tokens.push_back(Token(KEYWORD, match.str(), current_line, current_col)); }
+        else if (match[L"UnaryOp"].matched || match[L"NotSign"].matched) { tokens.push_back(Token(OP_UNARY, match.str(), current_line, current_col)); }
+        else if (match[L"AssignmentOp"].matched || match[L"EqSign"].matched) { tokens.push_back(Token(OP_ASSIGNMENT, match.str(), current_line, current_col)); }
+        else if (match[L"BinaryOp"].matched) { tokens.push_back(Token(OP_BINARY, match.str(), current_line, current_col)); }
 
         current_col++;
     }
