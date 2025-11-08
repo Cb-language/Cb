@@ -9,7 +9,9 @@ const std::vector<std::wstring> Tokenizer::capture_blocks = {
     LR"((?<ConstFloat>\d*\.\d+))",
     LR"((?<ConstInt>\d+))",
     LR"((?<ConstChar>'(\\.|[^\\'\n])'))",
-    LR"((?<ConstStr>"(\\.|[^"\n])*"))"
+    LR"((?<ConstStr>"(\\.|[^"\n])*"))",
+
+    LR"((?<Newline>\n))"
 };
 
 bool Tokenizer::inited = false;
