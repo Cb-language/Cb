@@ -63,6 +63,49 @@ std::vector<Token> Tokenizer::tokenize(const std::wstring& code)
         else if (match[L"ConstInt"].matched) { tokens.push_back(Token(CONST_INT, match.str(), current_line, current_col)); }
         else if (match[L"ConstChar"].matched) { tokens.push_back(Token(CONST_CHAR, match.str(), current_line, current_col)); }
         else if (match[L"ConstStr"].matched) { tokens.push_back(Token(CONST_STR, match.str(), current_line, current_col)); }
+        else if (match[L"Type"].matched) 
+        {
+            std::wstring typeText = match.str();
+
+            // Remove all extra whitespace/newlines between words
+            std::wstring cleanedType;
+            bool lastWasSpace = false;
+            for (wchar_t ch : typeText) 
+            {
+                if (iswspace(ch)) 
+                {
+                    if (!lastWasSpace) 
+                    {
+                        cleanedType += L' '; // replace any whitespace sequence with single space
+                        lastWasSpace = true;
+                    }
+                }
+                else 
+                {
+                    cleanedType += ch;
+                    lastWasSpace = false;
+                }
+            }
+
+            // trim leading/trailing space
+            if (!cleanedType.empty() && cleanedType.front() == L' ')
+            {
+                cleanedType.erase(0, 1);
+            }
+            if (!cleanedType.empty() && cleanedType.back() == L' ')
+            {
+                cleanedType.pop_back();
+            }
+
+            tokens.push_back(Token(TYPE, match.str(), current_line, current_col));
+            size_t newlines = std::count(typeText.begin(), typeText.end(), L'\n');
+
+            if (newlines > 0)
+            {
+                current_col = 0;
+                current_line += newlines;
+            }
+        }
 
         current_col++;
     }
