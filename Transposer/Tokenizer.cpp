@@ -40,5 +40,18 @@ std::vector<Token> Tokenizer::tokenize(const std::wstring& code)
     size_t current_line = 1;
     size_t current_col = 1;
 
+    boost::wsregex_iterator it(code.begin(), code.end(), token_regex);
+    boost::wsregex_iterator end;
+
+    for (; it != end; ++it)
+    {
+        const boost::wsmatch& match = *it;
+
+        if (match[L"CommentSingle"].matched) { tokens.push_back(Token(COMMENT_SINGLE, match.str(), current_line, current_col)); }
+        else if (match[L"CommentMulti"].matched) { tokens.push_back(Token(COMMENT_MULTI, match.str(), current_line, current_col)); }
+
+        current_col++;
+    }
+
     return tokens;
 }
