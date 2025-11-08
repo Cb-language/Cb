@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Token.h" />
+    <ClInclude Include="Tokenizer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp" />
