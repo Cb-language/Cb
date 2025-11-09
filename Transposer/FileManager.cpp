@@ -35,7 +35,7 @@ std::string FileManager::readFile()
 {
 	std::string content;
 
-	if(inputFile.is_open() == false)
+	if (inputFile.is_open() == false)
 	{
 		return content;
 	}
@@ -49,7 +49,7 @@ std::string FileManager::readFile()
 
 bool FileManager::writeFile(const std::string& data)
 {
-	if(outputFile.is_open() == false)
+	if (outputFile.is_open() == false)
 	{
 		return false;
 	}
