@@ -1,4 +1,5 @@
 #include "FileManager.h"
+#include <sstream>
 
 FileManager::FileManager(const std::string& inPath, std::string& outPath)
 {
@@ -18,7 +19,7 @@ FileManager::FileManager(const std::string& inPath, std::string& outPath)
 	// If no output file path provided, create one by replacing .cb with .cpp
 	if (outPath.empty())
 	{
-		outPath = inPath.substr(0, length - 4) + ".cpp";
+		outPath = inPath.substr(0, length - 3) + ".cpp";
 	}
 
 	// Open output file in write mode
@@ -33,18 +34,15 @@ FileManager::FileManager(const std::string& inPath, std::string& outPath)
 
 std::string FileManager::readFile()
 {
-	std::string content;
+	std::ostringstream ss;
 
 	if (inputFile.is_open() == false)
 	{
-		return content;
+		return "";
 	}
-	std::string line;
-	while (std::getline(inputFile, line))
-	{
-		content += line + "\n";
-	}
-	return content;
+
+	ss << inputFile.rdbuf();
+	return ss.str();
 }
 
 bool FileManager::writeFile(const std::string& data)

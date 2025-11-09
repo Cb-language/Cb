@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
     //_setmode(_fileno(stdout), _O_U8TEXT);
 
     // Check for correct number of arguments
-    if (argc < 2)
+    if (argc < 3 || argc > 4)
     {
         std::cout << "Usage: <main_path> <mode> [save_path]" << std::endl;
         return 1;
@@ -42,13 +42,14 @@ int main(int argc, char* argv[])
     // Create FileManager instance and perform file operations
     std::string inPath = std::string(argv[1]);
     std::string outPath;
-    if (argc == 3)
+    if (argc == 4)
     {
-        std::string outPath = std::string(argv[3]);
+        outPath = std::string(argv[3]);
     }
     FileManager fileManager(inPath, outPath);
 
     std::string content = fileManager.readFile();
+    fileManager.writeFile(content);
 
     // Determine mode of operation
     int mode = argv[2] == "T" ? TRANSLATE : (argv[2] == "R" ? RUN : (argv[2] == "C" ? COMPILE : -1));
