@@ -58,10 +58,13 @@ int main(int argc, char* argv[])
     switch (mode)
     {
     case TRANSLATE:
+            std::cout <<  "Translating Mode" << std::endl;
         break;
     case RUN:
+            std::cout << "Running Mode" << std::endl;
         break;
-    case COMPILE:
+        case COMPILE:
+            std::cout << "Compiling Mode" << std::endl;
         break;
     default:
         std::cout << "Invalid mode. Use T for Translate, C for Compile, R for Run." << std::endl;
