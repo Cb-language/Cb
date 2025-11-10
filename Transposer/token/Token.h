@@ -6,10 +6,9 @@ typedef unsigned char byte;
 
 struct Token
 {
-
 	enum TokenType : byte
 	{
-		IDENTIFIAR = 1,
+		IDENTIFIER = 1,
 		TYPE,
 		KEYWORD,
 		PUNCTUATION,

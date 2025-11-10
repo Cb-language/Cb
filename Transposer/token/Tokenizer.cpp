@@ -130,7 +130,7 @@ std::vector<Token> Tokenizer::tokenize(const std::wstring& code)
         else if (match[L"AssignmentOp"].matched) { tokens.push_back(Token(Token::OP_ASSIGNMENT, match.str(), current_line, current_col)); }
         else if (match[L"BinaryOp"].matched) { tokens.push_back(Token(Token::OP_BINARY, match.str(), current_line, current_col)); }
         else if (match[L"Punctuation"].matched) { tokens.push_back(Token(Token::PUNCTUATION, match.str(), current_line, current_col)); }
-        else if (match[L"Identifier"].matched) { tokens.push_back(Token(Token::IDENTIFIAR, match.str(), current_line, current_col)); }
+        else if (match[L"Identifier"].matched) { tokens.push_back(Token(Token::IDENTIFIER, match.str(), current_line, current_col)); }
 
         current_col++;
     }

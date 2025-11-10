@@ -18,11 +18,11 @@ add_executable(Transposer
         Transposer/FileManager.cpp
         Transposer/FileManager.h
         Transposer/Source.cpp
-        Transposer/Token.cpp
-        Transposer/Token.h
-        Transposer/Tokenizer.cpp
-        Transposer/Tokenizer.h
-        Transposer/Statement.h)
+        Transposer/token/Token.cpp
+        Transposer/token/Token.h
+        Transposer/token/Tokenizer.cpp
+        Transposer/token/Tokenizer.h
+        Transposer/AST/Statement/Statement.h)
 
 include(FetchContent)
 
