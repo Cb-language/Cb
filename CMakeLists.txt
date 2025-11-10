@@ -21,7 +21,8 @@ add_executable(Transposer
         Transposer/Token.cpp
         Transposer/Token.h
         Transposer/Tokenizer.cpp
-        Transposer/Tokenizer.h)
+        Transposer/Tokenizer.h
+        Transposer/Statement.h)
 
 include(FetchContent)
 
