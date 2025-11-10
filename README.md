@@ -1,38 +1,21 @@
 # KiryatGat-1401-C♭
 
-## 🪟 Windows
-### 📦 Installing vcpkg
+#### 🪟 Windows
 
-1. Open **PowerShell** or **Command Prompt** as Administrator.
-2. Navigate to your **C:** drive:
+Install `vcpkg` directly under your C drive:
 
-   ```bash
-   cd C:\
-   ```
+```powershell
+cd C:\
 
-3. Clone the official **vcpkg** repository:
+# Clone the repository
+git clone https://github.com/microsoft/vcpkg.git
 
-   ```bash
-   git clone https://github.com/microsoft/vcpkg.git
-   ```
-
-4. Run the bootstrap script to build vcpkg:
-
-   ```bash
-   cd vcpkg
-   .\bootstrap-vcpkg.bat
-   ```
-
----
-
-### 📚 Installing Dependencies
-
-Once vcpkg is built, install the required package(s):
-
-```bash
-.\vcpkg install boost-regex:x64-windows
+# Run the bootstrap script
+cd vcpkg; .\bootstrap-vcpkg.bat
 ```
 
-This will automatically download, build, and integrate the **Boost.Regex** library for 64-bit Windows.
+When done, install the following dependencies:
 
----
+```powershell
+.\vcpkg install boost-regex:x64-windows
+```
