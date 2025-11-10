@@ -74,7 +74,7 @@ std::vector<Token> Tokenizer::tokenize(const std::wstring& code)
             std::wstring txt = match.str();
             tokens.push_back(Token(Token::CONST_STR, txt, current_line, current_col));
 
-            size_t newlines = std::count(txt.begin(), txt.end(), L'\n');
+            size_t newlines = std::ranges::count(txt, L'\n');
 
             if (newlines > 0)
             {
@@ -117,7 +117,7 @@ std::vector<Token> Tokenizer::tokenize(const std::wstring& code)
             }
 
             tokens.push_back(Token(Token::TYPE, match.str(), current_line, current_col));
-            size_t newlines = std::count(typeText.begin(), typeText.end(), L'\n');
+            size_t newlines = std::ranges::count(typeText, L'\n');
 
             if (newlines > 0)
             {

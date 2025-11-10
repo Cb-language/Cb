@@ -7,7 +7,7 @@ typedef unsigned char byte;
 struct Token
 {
 
-	static enum TokenType : byte
+	enum TokenType : byte
 	{
 		IDENTIFIAR = 1,
 		TYPE,
@@ -33,5 +33,5 @@ struct Token
 	const size_t line;
 	const size_t column;
 
-	Token(const TokenType type, const std::wstring value, const size_t line, const size_t column);
+	Token(const TokenType type, const std::wstring &value, const size_t line, const size_t column);
 };

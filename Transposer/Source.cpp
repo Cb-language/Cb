@@ -1,8 +1,6 @@
 ﻿#include <iostream>
 #include <map>
 #include <windows.h>
-#include <io.h>
-#include <fcntl.h>
 #include "Tokenizer.h"
 #include "FileManager.h"
 
@@ -17,7 +15,7 @@ enum Mode
 // Helper function to print a token using WriteConsoleW
 void printToken(const Token& tok, const std::map<Token::TokenType, std::wstring>& tokenTypeNames)
 {
-    std::wstring output =
+    const std::wstring output =
         L"Line: " + std::to_wstring(tok.line) +
         L", Column: " + std::to_wstring(tok.column) +
         L", Value: \"" + tok.value + L"\"" +
@@ -52,7 +50,11 @@ int main(int argc, char* argv[])
     fileManager.writeFile(content);
 
     // Determine mode of operation
-    int mode = argv[2] == "T" ? TRANSLATE : (argv[2] == "R" ? RUN : (argv[2] == "C" ? COMPILE : -1));
+    std::string arg = argv[2];
+    int mode = arg == "T" ? TRANSLATE :
+               arg == "R" ? RUN :
+               arg == "C" ? COMPILE : -1;
+
     switch (mode)
     {
     case TRANSLATE:
