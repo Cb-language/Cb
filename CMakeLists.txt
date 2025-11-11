@@ -22,7 +22,39 @@ add_executable(Transposer
         Transposer/token/Token.h
         Transposer/token/Tokenizer.cpp
         Transposer/token/Tokenizer.h
-        Transposer/AST/Statement/Statement.h)
+        Transposer/AST/Statement/Statement.h
+        Transposer/errorHandling/ErrorHandler.cpp
+        Transposer/errorHandling/ErrorHandler.h
+        Transposer/errorHandling/lexicalErrors/UnidentifiedToken.cpp
+        Transposer/errorHandling/lexicalErrors/UnidentifiedToken.h
+        Transposer/errorHandling/Error.cpp
+        Transposer/errorHandling/Error.h
+        Transposer/errorHandling/lexicalErrors/InvalidNumberLiteral.cpp
+        Transposer/errorHandling/lexicalErrors/InvalidNumberLiteral.h
+        Transposer/errorHandling/lexicalErrors/UnterminatedString.cpp
+        Transposer/errorHandling/lexicalErrors/UnterminatedString.h
+        Transposer/errorHandling/lexicalErrors/InvalidEscapeSequence.cpp
+        Transposer/errorHandling/lexicalErrors/InvalidEscapeSequence.h
+        Transposer/errorHandling/lexicalErrors/UnexpectedEOF.cpp
+        Transposer/errorHandling/lexicalErrors/UnexpectedEOF.h
+        Transposer/errorHandling/lexicalErrors/InvalidCharacterEncoding.cpp
+        Transposer/errorHandling/lexicalErrors/InvalidCharacterEncoding.h
+        Transposer/errorHandling/syntaxErrors/MissingSemicolon.cpp
+        Transposer/errorHandling/syntaxErrors/MissingSemicolon.h
+        Transposer/errorHandling/syntaxErrors/MissingParenthesis.cpp
+        Transposer/errorHandling/syntaxErrors/MissingParenthesis.h
+        Transposer/errorHandling/syntaxErrors/MissingBrace.cpp
+        Transposer/errorHandling/syntaxErrors/MissingBrace.h
+        Transposer/errorHandling/syntaxErrors/UnexpectedToken.cpp
+        Transposer/errorHandling/syntaxErrors/UnexpectedToken.h
+        Transposer/errorHandling/syntaxErrors/MisplacedKeyword.cpp
+        Transposer/errorHandling/syntaxErrors/MisplacedKeyword.h
+        Transposer/errorHandling/syntaxErrors/InvalidExpression.cpp
+        Transposer/errorHandling/syntaxErrors/InvalidExpression.h
+        Transposer/errorHandling/syntaxErrors/InvalidStatement.cpp
+        Transposer/errorHandling/syntaxErrors/InvalidStatement.h
+        Transposer/errorHandling/syntaxErrors/MissingIdentifier.cpp
+        Transposer/errorHandling/syntaxErrors/MissingIdentifier.h)
 
 include(FetchContent)
 

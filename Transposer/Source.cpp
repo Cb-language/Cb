@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
 
     // Map TokenType enum to readable string
     std::map<Token::TokenType, std::wstring> tokenTypeNames = {
-        {Token::IDENTIFIER, L"IDENTIFIAR"},
+        {Token::IDENTIFIER, L"IDENTIFIER"},
         {Token::TYPE, L"TYPE"},
         {Token::KEYWORD, L"KEYWORD"},
         {Token::PUNCTUATION, L"PUNCTUATION"},
