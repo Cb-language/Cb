@@ -4,16 +4,19 @@
 
 Error::Error(const int line, const int column, std::string errorMessage, std::string token) : line(line), column(column), errorMessage(std::move(errorMessage)), token(std::move(token))
 {
-    print();
+    fullMessage = (this->errorMessage +
+                   " at line: " + std::to_string(line) +
+                   " at column: " + std::to_string(column) +
+                   " near token: " + this->token);
+
 }
 
 void Error::print() const
 {
-    std::cout << errorMessage;
-    if (!token.empty())
-        std::cout << " near token '" << token << "'";
-    std::cout << " at line: " << line
-              << " at column: " << column
-              << std::endl;
+    std::cout << fullMessage << std::endl;
 }
 
+const char* Error::what() const noexcept
+{
+    return fullMessage.c_str();
+}
