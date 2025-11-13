@@ -4,6 +4,6 @@
 class UnidentifiedToken : public Error
 {
 public:
-    UnidentifiedToken(int line, int column, const std::string &token = "");
+    UnidentifiedToken(const Token &token);
 };
 

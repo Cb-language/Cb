@@ -1,18 +1,19 @@
 #pragma once
 
 #include "ErrorHandler.h"
-#include <utility>
+#include "token/Token.h"
+#include <iostream>
+#include <locale>
+#include <codecvt>
 
 class Error : public std::exception
 {
 protected:
-    int line = 0;
-    int column = 0;
+    Token token;
     std::string errorMessage;
-    std::string token;
     std::string fullMessage;
 public:
-    Error(int line, int column, std::string errorMessage, std::string token = "");
+    Error(const Token &token, std::string errorMessage);
     virtual ~Error() = default;
     void print() const;
     const char* what() const noexcept override;

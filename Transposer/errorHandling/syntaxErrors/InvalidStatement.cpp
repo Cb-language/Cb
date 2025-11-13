@@ -1,5 +1,5 @@
 #include "InvalidStatement.h"
 
-InvalidStatement::InvalidStatement(const int line, const int column, const std::string &token) : Error(line, column, "invalid statement", token)
+InvalidStatement::InvalidStatement(const Token &token) : Error(token, "invalid statement")
 {
 }

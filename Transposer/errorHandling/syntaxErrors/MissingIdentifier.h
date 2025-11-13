@@ -4,5 +4,5 @@
 class MissingIdentifier : public Error
 {
 public:
-    MissingIdentifier(int line, int column, const std::string &token = "");
+    MissingIdentifier(const Token &token);
 };

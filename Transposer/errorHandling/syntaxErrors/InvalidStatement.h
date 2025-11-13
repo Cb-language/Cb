@@ -4,5 +4,5 @@
 class InvalidStatement : public Error
 {
 public:
-    InvalidStatement(int line, int column, const std::string &token = "");
+    InvalidStatement(const Token &token);
 };

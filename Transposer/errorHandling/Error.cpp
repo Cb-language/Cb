@@ -1,13 +1,14 @@
 #include "Error.h"
-#include <iostream>
-#include <utility>
 
-Error::Error(const int line, const int column, std::string errorMessage, std::string token) : line(line), column(column), errorMessage(std::move(errorMessage)), token(std::move(token))
+Error::Error(const Token &token, std::string errorMessage) : token(token), errorMessage(std::move(errorMessage))
 {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+    std::string token_name = conv.to_bytes(token.value);
+
     fullMessage = (this->errorMessage +
-                   " at line: " + std::to_string(line) +
-                   " at column: " + std::to_string(column) +
-                   " near token: " + this->token);
+                   " at line: " + std::to_string(token.line) +
+                   " at column: " + std::to_string(token.column) +
+                   " near token: " + token_name + "\n");
 
 }
 

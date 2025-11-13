@@ -4,5 +4,5 @@
 class InvalidNumberLiteral : public Error
 {
 public:
-    InvalidNumberLiteral(int line, int column, const std::string &token = "");
+    InvalidNumberLiteral(const Token &token);
 };

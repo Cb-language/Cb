@@ -1,5 +1,5 @@
 #include "MissingParenthesis.h"
 
-MissingParenthesis::MissingParenthesis(const int line, const int column, const std::string &token) : Error(line, column, "missing parenthesis", token)
+MissingParenthesis::MissingParenthesis(const Token &token) : Error(token, "missing parenthesis")
 {
 }

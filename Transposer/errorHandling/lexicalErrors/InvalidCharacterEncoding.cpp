@@ -1,5 +1,5 @@
 #include "InvalidCharacterEncoding.h"
 
-InvalidCharacterEncoding::InvalidCharacterEncoding(const int line, const int column, const std::string& token) : Error(line, column, "invalid character encoding", token)
+InvalidCharacterEncoding::InvalidCharacterEncoding(const Token &token) : Error(token, "invalid character encoding")
 {
 }

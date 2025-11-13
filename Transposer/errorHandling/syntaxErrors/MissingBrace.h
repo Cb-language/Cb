@@ -4,5 +4,5 @@
 class MissingBrace : public Error
 {
 public:
-    MissingBrace(int line, int column, const std::string &token = "");
+    MissingBrace(const Token &token);
 };

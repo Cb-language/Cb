@@ -4,5 +4,5 @@
 class UnterminatedString : public Error
 {
 public:
-    UnterminatedString(int line, int column, const std::string &token = "");
+    UnterminatedString(const Token &token);
 };

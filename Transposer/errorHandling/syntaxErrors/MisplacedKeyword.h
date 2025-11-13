@@ -4,5 +4,5 @@
 class MisplacedKeyword : public Error
 {
 public:
-    MisplacedKeyword(int line, int column, const std::string &token = "");
+    MisplacedKeyword(const Token &token);
 };

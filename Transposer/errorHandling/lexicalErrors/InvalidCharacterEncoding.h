@@ -4,5 +4,5 @@
 class InvalidCharacterEncoding : public Error
 {
 public:
-    InvalidCharacterEncoding(int line, int column, const std::string& token = "");
+    InvalidCharacterEncoding(const Token &token);
 };
