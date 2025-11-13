@@ -54,7 +54,9 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/InvalidStatement.cpp
         Transposer/errorHandling/syntaxErrors/InvalidStatement.h
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.cpp
-        Transposer/errorHandling/syntaxErrors/MissingIdentifier.h)
+        Transposer/errorHandling/syntaxErrors/MissingIdentifier.h
+        Transposer/parser/parser.cpp
+        Transposer/parser/parser.h)
 
 include(FetchContent)
 
