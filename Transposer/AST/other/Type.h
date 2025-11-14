@@ -12,6 +12,8 @@ private:
     static const std::unordered_map<std::wstring, std::string> typeMap;
     static const std::unordered_map<std::wstring, std::unordered_set<std::wstring>> castMap;
 
+    std::wstring normalizedType() const;
+
 public:
     explicit Type(std::wstring  type);
     bool operator==(const Type& other) const;
