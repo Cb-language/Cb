@@ -22,7 +22,7 @@ add_executable(Transposer
         Transposer/token/Token.h
         Transposer/token/Tokenizer.cpp
         Transposer/token/Tokenizer.h
-        Transposer/AST/Statement/Statement.h
+        Transposer/AST/abstract/Statement.h
         Transposer/errorHandling/ErrorHandler.cpp
         Transposer/errorHandling/ErrorHandler.h
         Transposer/errorHandling/lexicalErrors/UnidentifiedToken.cpp
@@ -56,7 +56,9 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.cpp
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.h
         Transposer/parser/parser.cpp
-        Transposer/parser/parser.h)
+        Transposer/parser/parser.h
+        Transposer/AST/other/Type.cpp
+        Transposer/AST/other/Type.h)
 
 include(FetchContent)
 
