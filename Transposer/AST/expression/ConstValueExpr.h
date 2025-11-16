@@ -11,4 +11,5 @@ public:
     ConstValueExpr(const int line, const int column, const Type &type, const std::string &value);
     Type getType() const override;
     bool isLegal() const override;
+    friend std::ostream& operator<<(std::ostream& os, const MyClass& obj);
 };
