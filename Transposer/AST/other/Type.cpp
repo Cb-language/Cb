@@ -41,7 +41,7 @@ bool Type::operator==(const Type& other) const
 
     const auto it = castMap.find(tOther);
     if (it == castMap.end()) return t == tOther; // for future (class)
-    return it->second.contains(tOther);
+    return it->second.contains(t);
 }
 
 bool Type::operator!=(const Type& other) const
