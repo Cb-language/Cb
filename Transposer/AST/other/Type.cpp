@@ -49,6 +49,11 @@ bool Type::operator!=(const Type& other) const
     return !(*this == other);
 }
 
+std::wstring Type::getType() const
+{
+    return type;
+}
+
 std::ostream& operator<<(std::ostream& os, const Type& t)
 {
     os << Type::typeMap.at(t.type);

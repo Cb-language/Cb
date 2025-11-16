@@ -14,3 +14,7 @@ bool ConstValueExpr::isLegal() const {
     // literal is always legal
     return true;
 }
+
+std::string ConstValueExpr::print() const {
+
+}

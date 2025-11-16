@@ -2,7 +2,7 @@
 
 #include "AST/abstract/Expression.h"
 
-class ConstValueExpr : public Expression
+class ConstValueExpr : public Expr
 {
 private:
     Type type;
@@ -11,5 +11,5 @@ public:
     ConstValueExpr(const int line, const int column, const Type &type, const std::string &value);
     Type getType() const override;
     bool isLegal() const override;
-    friend std::ostream& operator<<(std::ostream& os, const MyClass& obj);
+    std::string print() const override;
 };
