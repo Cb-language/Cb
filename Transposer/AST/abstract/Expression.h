@@ -3,14 +3,14 @@
 #include "Statement.h"
 #include "AST/other/Type.h"
 
-class Expression : public Stmt
+class Expr : public Stmt
 {
 private:
     int line;
     int column;
 public:
-    Expression(const int line, const int column) : line(line), column(column) {}
-    ~Expression() override = default;
+    Expr(const int line, const int column) : line(line), column(column) {}
+    ~Expr() override = default;
     virtual Type getType() const = 0;
     bool isLegal() const override = 0;
     std::string print() const override = 0;
