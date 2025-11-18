@@ -17,19 +17,7 @@ bool ConstValueExpr::isLegal() const {
 }
 
 std::string ConstValueExpr::translateToCpp() const {
-    if (isLegal())
-    {
-        // casting wstring to string
-        std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
-        std::string cppValue = conv.to_bytes(value);
-
-        return cppValue;
-
-    }
-    else
-    {
-        return "/* illegal_const */ 0";
-    }
+    return type.translateTypeToCpp();
 }
 
 Type ConstValueExpr::getType() const {
