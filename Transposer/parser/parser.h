@@ -22,8 +22,8 @@ private:
     bool match(const Token::TokenType type) const;
     bool match(const Token::TokenType type, const std::wstring& value) const;
 
-    void expect(const Token::TokenType type) const;
-    void expect(const Token::TokenType type, const std::wstring& value) const;
+    void expect(const Token::TokenType type);
+    void expect(const Token::TokenType type, const std::wstring& value);
 
 
 public:

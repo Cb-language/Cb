@@ -1,5 +1,8 @@
 #include "parser.h"
 
+#include "errorHandling/lexicalErrors/UnexpectedEOF.h"
+#include "errorHandling/syntaxErrors/UnexpectedToken.h"
+
 parser::parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), symTable(SymbolTable())
 {
 }
@@ -11,28 +14,35 @@ Token parser::current() const
 
 Token parser::advance()
 {
-    if (!isAtEnd()) return tokens[++pos];
-    // TODO: add err after completing the err
-    return Token(Token::IDENTIFIER, L"ERR", 0, 0); // meanwhile this is a temp result
+    if (isAtEnd())
+    {
+        throw UnexpectedEOF(tokens.back());
+    }
+    return tokens[++pos];
 }
 
 Token parser::peek() const
 {
-    if (!isAtEnd()) return tokens[pos+1];
-    // TODO: add err after completing the errs
-    return Token(Token::IDENTIFIER, L"ERR", 0, 0); // meanwhile this is a temp result
+    if (isAtEnd())
+    {
+        throw UnexpectedEOF(tokens.back());
+    }
+
+    return tokens[pos + 1];
 }
 
 Token parser::prev() const
 {
-    if (pos > 0) return tokens[pos-1];
-    // TODO: add err after completing the errs
-    return Token(Token::IDENTIFIER, L"ERR", 0, 0); // meanwhile this is a temp result
+    if (pos <= 0)
+    {
+        throw UnexpectedEOF(tokens.front());
+    }
+    return tokens[pos - 1];
 }
 
 bool parser::isAtEnd() const
 {
-    return pos >= len;
+    return pos + 1 >= len;
 }
 
 bool parser::match(const Token::TokenType type) const
@@ -47,12 +57,20 @@ bool parser::match(const Token::TokenType type, const std::wstring& value) const
     return t.type == type && t.value == value;
 }
 
-void parser::expect(const Token::TokenType type) const
+void parser::expect(const Token::TokenType type)
 {
-    if (!match(type)) throw std::runtime_error("unexpected token"); // will be replaced by a real err after completing the errs
+    if (!match(type))
+    {
+        throw UnexpectedToken(current());
+    }
+    advance();
 }
 
-void parser::expect(const Token::TokenType type, const std::wstring& value) const
+void parser::expect(const Token::TokenType type, const std::wstring& value)
 {
-    if (!match(type, value)) throw std::runtime_error("unexpected token"); // will be replaced by a real err after completing the errs
+    if (!match(type, value))
+    {
+        throw UnexpectedToken(current());
+    }
+    advance();
 }
