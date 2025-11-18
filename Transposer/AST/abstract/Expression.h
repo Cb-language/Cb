@@ -13,5 +13,5 @@ public:
     ~Expr() override = default;
     virtual Type getType() const = 0;
     bool isLegal() const override = 0;
-    std::string print() const override = 0;
+    std::string translateToCpp() const override = 0;
 };

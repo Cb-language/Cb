@@ -18,5 +18,7 @@ public:
     explicit Type(std::wstring  type);
     bool operator==(const Type& other) const;
     bool operator!=(const Type& other) const;
-    friend std::ostream& operator<<(std::ostream& os, const Type& t);
+    std::wstring getType() const;
+
+    std::string translateTypeToCpp() const;
 };
