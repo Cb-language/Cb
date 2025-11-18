@@ -21,27 +21,43 @@ const std::unordered_map<std::wstring, std::unordered_set<std::wstring>> Type::c
     {L"fermata", {}}                          // Void -> nothing
 };
 
-std::wstring Type::normalizedType() const
+Type::Type(const std::wstring& type) : type(getNormalType(type)), extra(getNormalExtra(type))
+{
+}
+
+std::wstring Type::getNormalType(const std::wstring& type)
 {
     if (type.rfind(L"flat ", 0) == 0)
+    {
         return type.substr(5);
+    }
     if (type.rfind(L"sharp ", 0) == 0)
+    {
         return type.substr(6);
+    }
+
     return type;
 }
 
-Type::Type(std::wstring  type) : type(std::move(type))
+std::string Type::getNormalExtra(const std::wstring& type)
 {
+    if (type.rfind(L"flat ", 0) == 0)
+    {
+        return "signed";
+    }
+    if (type.rfind(L"sharp ", 0) == 0)
+    {
+        return "unsigned";
+    }
+
+    return "";
 }
 
 bool Type::operator==(const Type& other) const
 {
-    const std::wstring t = normalizedType();
-    const std::wstring tOther = other.normalizedType();
-
-    const auto it = castMap.find(tOther);
-    if (it == castMap.end()) return t == tOther; // for future (class)
-    return it->second.contains(t);
+    const auto it = castMap.find(other.type);
+    if (it == castMap.end()) return this->type == other.type; // for future (class)
+    return it->second.contains(this->type);
 }
 
 bool Type::operator!=(const Type& other) const
@@ -56,5 +72,14 @@ std::wstring Type::getType() const
 
 std::string Type::translateTypeToCpp() const
 {
-    return Type::typeMap.at(type);
+    std::string ret = "";
+
+    if (!extra.empty())
+    {
+        ret = extra + " ";
+    }
+
+    ret += Type::typeMap.at(type);
+
+    return ret;
 }

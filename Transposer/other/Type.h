@@ -9,13 +9,15 @@ class Type
 {
 private:
     const std::wstring type;
+    const std::string extra; // i.e unsigned/signed
     static const std::unordered_map<std::wstring, std::string> typeMap;
     static const std::unordered_map<std::wstring, std::unordered_set<std::wstring>> castMap;
 
-    std::wstring normalizedType() const;
+    static std::wstring getNormalType(const std::wstring& type);
+    static std::string getNormalExtra(const std::wstring& type);
 
 public:
-    explicit Type(std::wstring  type);
+    explicit Type(const std::wstring& type);
     bool operator==(const Type& other) const;
     bool operator!=(const Type& other) const;
     std::wstring getType() const;
