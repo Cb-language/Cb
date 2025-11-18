@@ -12,13 +12,13 @@ const std::unordered_map<std::wstring, std::string> Type::typeMap = {
 };
 
 const std::unordered_map<std::wstring, std::unordered_set<std::wstring>> Type::castMap = {
-    {L"bar",     {L"bar"}},                               // std::string -> only string
-    {L"note",    {L"note", L"flat", L"freq"}},      // char -> int, double
-    {L"mute",    {L"mute", L"flat", L"freq"}},      // bool -> int, double
-    {L"degree",  {L"degree", L"flat", L"freq"}},    // int -> char, double
-    {L"freq",    {L"degree", L"flat", L"freq"}},    // double -> int, char
-//  {L"scale",   {L"scale"}},                                             // Array - TODO: add this in sprint 3
-    {L"fermata", {}}                                         // void -> nothing
+    {L"bar",     {L"bar"}},                   // String -> only String
+    {L"note",    {L"note", L"degree", L"freq"}}, // Char -> Int, Double
+    {L"mute",    {L"mute", L"degree", L"freq"}}, // Bool -> Int, Double
+    {L"degree",  {L"degree", L"note", L"freq"}}, // Int -> Char, Double
+    {L"freq",    {L"freq", L"degree", L"note"}}, // Double -> Int, Char
+    //{L"scale",   {L"scale"}},               // Array - TODO: add this in sprint 3
+    {L"fermata", {}}                          // Void -> nothing
 };
 
 std::wstring Type::normalizedType() const
