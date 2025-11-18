@@ -17,3 +17,8 @@ std::wstring Var::getName() const
 {
     return name;
 }
+
+bool Var::operator==(const Var& other) const
+{
+    return this->name == other.name && this->type == other.type;
+}

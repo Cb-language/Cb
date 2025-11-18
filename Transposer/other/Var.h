@@ -12,4 +12,6 @@ public:
     Var(const Type& type, const std::wstring& name);
     Type getType() const;
     std::wstring getName() const;
+
+    bool operator==(const Var& other) const;
 };
