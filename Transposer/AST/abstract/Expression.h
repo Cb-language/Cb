@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Statement.h"
-#include "AST/other/Type.h"
+#include "other/Type.h"
 
 class Expr : public Stmt
 {
