@@ -5,7 +5,7 @@
 #include "ConstValueExpr.h"
 
 
-ConstValueExpr::ConstValueExpr(const int line, const int column, const Type &type, const std::string &value) : Expr(line, column), type(type), value(value) {
+ConstValueExpr::ConstValueExpr(const int line, const int column, const Type &type, const std::wstring &value) : Expr(line, column), type(type), value(value) {
 }
 
 bool ConstValueExpr::isLegal() const {
