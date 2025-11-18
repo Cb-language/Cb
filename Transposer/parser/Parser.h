@@ -1,10 +1,11 @@
 #pragma once
 #include <vector>
 
+#include "../AST/Statements.h"
 #include "other/SymbolTable.h"
 #include "token/Token.h"
 
-class parser
+class Parser
 {
 private:
     const std::vector<Token> tokens;
@@ -13,10 +14,10 @@ private:
 
     SymbolTable symTable;
 
-    Token current() const;
-    Token advance();
-    Token peek() const;
-    Token prev() const;
+    const Token& current() const;
+    const Token& advance();
+    const Token& peek() const;
+    const Token& prev() const;
     bool isAtEnd() const;
 
     bool match(const Token::TokenType type) const;
@@ -26,7 +27,10 @@ private:
     void expect(const Token::TokenType type, const std::wstring& value);
 
 
+    std::unique_ptr<ConstValueExpr> parseConstValue();
+
 public:
-    explicit parser(const std::vector<Token>& tokens);
+    explicit Parser(const std::vector<Token>& tokens);
+    std::vector<std::unique_ptr<Stmt>> parse();
 };
 
