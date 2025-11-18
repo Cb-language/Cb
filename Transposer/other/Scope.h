@@ -15,6 +15,7 @@ private:
 
 public:
     Scope(Scope* parent = nullptr);
+    ~Scope();
 
     // std::nullopt when not found
     std::optional<Var> getVar(const Var& v) const;

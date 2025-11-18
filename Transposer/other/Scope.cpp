@@ -7,6 +7,20 @@ Scope::Scope(Scope* parent) : parent(parent)
 {
 }
 
+Scope::~Scope()
+{
+    parent = nullptr;
+    vars.clear();
+
+    for (auto& kid : children)
+    {
+        kid.reset();
+        kid = nullptr;
+    }
+
+    children.clear();
+}
+
 std::optional<Var> Scope::getVar(const Var& v) const
 {
     for (const auto& var : vars)
