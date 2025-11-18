@@ -57,11 +57,22 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.h
         Transposer/parser/parser.cpp
         Transposer/parser/parser.h
-        Transposer/AST/other/Type.cpp
-        Transposer/AST/other/Type.h
+        Transposer/other/Type.cpp
+        Transposer/other/Type.h
         Transposer/AST/abstract/Expression.h
         Transposer/AST/statements/expression/ConstValueExpr.cpp
         Transposer/AST/statements/expression/ConstValueExpr.h
+        Transposer/other/SymbolTable.cpp
+        Transposer/other/SymbolTable.h
+        Transposer/other/Scope.cpp
+        Transposer/other/Scope.h
+        Transposer/other/Var.cpp
+        Transposer/other/Var.h
+        Transposer/errorHandling/lexicalErrors/IdentifierTaken.cpp
+        Transposer/errorHandling/lexicalErrors/IdentifierTaken.h
+        Transposer/other/Utils.cpp
+        Transposer/other/Utils.h
+        Transposer/AST/Statements.h
 )
 
 include(FetchContent)
