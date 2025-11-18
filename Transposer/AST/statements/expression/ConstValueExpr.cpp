@@ -1,11 +1,8 @@
-//
-// Created by USER on 11/15/2025.
-//
-
 #include "ConstValueExpr.h"
 
 
-ConstValueExpr::ConstValueExpr(const int line, const int column, const Type &type, const std::wstring &value) : Expr(line, column), type(type), value(value) {
+ConstValueExpr::ConstValueExpr(const Type& type, const std::wstring& value) : type(type), value(value)
+{
 }
 
 bool ConstValueExpr::isLegal() const {
