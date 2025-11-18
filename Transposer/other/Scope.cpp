@@ -7,22 +7,22 @@ Scope::Scope(Scope* parent) : parent(parent)
 {
 }
 
-bool Scope::doesVarExist(const Var& v) const
+std::optional<Var> Scope::getVar(const Var& v) const
 {
     for (const auto& var : vars)
     {
         if (v == var)
         {
-            return true;
+            return var;
         }
     }
 
     if (parent != nullptr)
     {
-        return parent->doesVarExist(v);
+        return parent->getVar(v);
     }
 
-    return false;
+    return std::nullopt;
 }
 
 Scope* Scope::makeNewScope()

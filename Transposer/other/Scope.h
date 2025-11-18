@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "Var.h"
@@ -14,7 +15,9 @@ private:
 
 public:
     Scope(Scope* parent = nullptr);
-    bool doesVarExist(const Var& v) const;
+
+    // std::nullopt when not found
+    std::optional<Var> getVar(const Var& v) const;
 
     Scope* makeNewScope();
     Scope* getParent() const;

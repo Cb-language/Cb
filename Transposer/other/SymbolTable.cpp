@@ -13,9 +13,9 @@ SymbolTable::~SymbolTable()
     curr = nullptr;
 }
 
-bool SymbolTable::doesVarExist(const Var& v) const
+std::optional<Var> SymbolTable::getVar(const Var& v) const
 {
-    return curr->doesVarExist(v);
+    return curr->getVar(v);
 }
 
 void SymbolTable::addVar(const Type& type, const Token& token) const
