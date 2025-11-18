@@ -70,6 +70,8 @@ add_executable(Transposer
         Transposer/other/Var.h
         Transposer/errorHandling/lexicalErrors/IdentifierTaken.cpp
         Transposer/errorHandling/lexicalErrors/IdentifierTaken.h
+        Transposer/other/Utils.cpp
+        Transposer/other/Utils.h
 )
 
 include(FetchContent)

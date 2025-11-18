@@ -17,7 +17,7 @@ bool ConstValueExpr::isLegal() const {
 }
 
 std::string ConstValueExpr::translateToCpp() const {
-    return type.translateTypeToCpp();
+    return Utils::wstrToStr(value);
 }
 
 Type ConstValueExpr::getType() const {
