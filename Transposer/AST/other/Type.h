@@ -20,5 +20,5 @@ public:
     bool operator!=(const Type& other) const;
     std::wstring getType() const;
 
-    friend std::ostream& operator<<(std::ostream& os, const Type& t);
+    std::string translateTypeToCpp() const;
 };

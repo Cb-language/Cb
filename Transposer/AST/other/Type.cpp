@@ -54,8 +54,7 @@ std::wstring Type::getType() const
     return type;
 }
 
-std::ostream& operator<<(std::ostream& os, const Type& t)
+std::string Type::translateTypeToCpp() const
 {
-    os << Type::typeMap.at(t.type);
-    return os;
+    return Type::typeMap.at(type);
 }
