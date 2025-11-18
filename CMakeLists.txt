@@ -60,8 +60,8 @@ add_executable(Transposer
         Transposer/AST/other/Type.cpp
         Transposer/AST/other/Type.h
         Transposer/AST/abstract/Expression.h
-        Transposer/AST/expression/ConstValueExpr.cpp
-        Transposer/AST/expression/ConstValueExpr.h
+        Transposer/AST/statements/expression/ConstValueExpr.cpp
+        Transposer/AST/statements/expression/ConstValueExpr.h
 )
 
 include(FetchContent)
