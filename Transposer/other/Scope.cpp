@@ -7,7 +7,7 @@ Scope::Scope(Scope* parent) : parent(parent)
 {
 }
 
-bool Scope::doesExist(const Var v) const
+bool Scope::doesVarExist(const Var& v) const
 {
     for (const auto& var : vars)
     {
@@ -19,7 +19,7 @@ bool Scope::doesExist(const Var v) const
 
     if (parent != nullptr)
     {
-        return parent->doesExist(v);
+        return parent->doesVarExist(v);
     }
 
     return false;
@@ -38,7 +38,7 @@ Scope* Scope::getParent() const
     return parent;
 }
 
-void Scope::addVar(const Type type, const Token& token)
+void Scope::addVar(const Type& type, const Token& token)
 {
     if (token.type != Token::IDENTIFIER)
     {

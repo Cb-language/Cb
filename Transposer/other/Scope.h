@@ -14,9 +14,9 @@ private:
 
 public:
     Scope(Scope* parent = nullptr);
-    bool doesExist(const Var v) const;
+    bool doesVarExist(const Var& v) const;
 
     Scope* makeNewScope();
     Scope* getParent() const;
-    void addVar(const Type type, const Token& token);
+    void addVar(const Type& type, const Token& token);
 };

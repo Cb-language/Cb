@@ -1,5 +1,9 @@
 #include "parser.h"
 
+parser::parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), symTable(SymbolTable())
+{
+}
+
 Token parser::current() const
 {
     return tokens[pos];
@@ -51,8 +55,4 @@ void parser::expect(const Token::TokenType type) const
 void parser::expect(const Token::TokenType type, const std::wstring& value) const
 {
     if (!match(type, value)) throw std::runtime_error("unexpected token"); // will be replaced by a real err after completing the errs
-}
-
-parser::parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0)
-{
 }
