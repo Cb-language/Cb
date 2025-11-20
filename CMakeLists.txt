@@ -79,6 +79,8 @@ add_executable(Transposer
         Transposer/AST/statements/AssignmentStmt.h
         Transposer/errorHandling/lexicalErrors/InvalidIdentifier.cpp
         Transposer/errorHandling/lexicalErrors/InvalidIdentifier.h
+        Transposer/AST/statements/expression/VarCallExpr.cpp
+        Transposer/AST/statements/expression/VarCallExpr.h
 )
 
 include(FetchContent)
