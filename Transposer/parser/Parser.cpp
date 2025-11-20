@@ -21,7 +21,7 @@ std::vector<std::unique_ptr<Stmt>> Parser::parse()
         {
             stmts.push_back(parseVarDecStmt());
         }
-        else if (match(Token::IDENTIFIER))
+        else if (match(Token::IDENTIFIER) && peek().type == Token::OP_ASSIGNMENT)
         {
             stmts.push_back(parseAssignmentStmt());
         }
@@ -121,20 +121,14 @@ std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
 
 std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
 {
-    expect(Token::IDENTIFIER);
-    const std::optional<Var> var = symTable.getVar(prev().value);
-
-    if (!var.has_value())
-    {
-        throw InvalidIdentifier(prev());
-    }
+    std::unique_ptr<VarCallExpr> var = parseVarCallExpr();
 
     expect(Token::OP_ASSIGNMENT);
     const std::wstring op = prev().value;
 
     expect(Token::PUNCTUATION, L"║");
 
-    return std::make_unique<AssignmentStmt>(var.value(), op, parseExpr());
+    return std::make_unique<AssignmentStmt>(std::move(var), op, parseExpr());
 }
 
 std::unique_ptr<Expr> Parser::parseExpr()
@@ -183,7 +177,7 @@ std::unique_ptr<VarCallExpr> Parser::parseVarCallExpr()
     expect(Token::IDENTIFIER);
     const std::optional<Var> var = symTable.getVar(prev().value);
 
-    if (var.has_value())
+    if (!var.has_value())
     {
         throw InvalidIdentifier(prev());
     }

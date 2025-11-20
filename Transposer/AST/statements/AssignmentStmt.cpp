@@ -1,8 +1,8 @@
 #include "AssignmentStmt.h"
 
 
-AssignmentStmt::AssignmentStmt(const Var& var, const std::wstring& assignmentOp,
-                               std::unique_ptr<Expr> expr) : var(var), assignmentOp(assignmentOp), expr(std::move(expr))
+AssignmentStmt::AssignmentStmt(std::unique_ptr<VarCallExpr> varExpr, const std::wstring& assignmentOp,
+                               std::unique_ptr<Expr> expr) : varExpr(std::move(varExpr)), assignmentOp(assignmentOp), expr(std::move(expr))
 {
 }
 
@@ -10,14 +10,14 @@ bool AssignmentStmt::isLegal() const
 {
     if (assignmentOp == L"-=" || assignmentOp == L"*=" || assignmentOp == L"/=" || assignmentOp == L"//=" || assignmentOp == L"%=")
     {
-        return var.getType() == L"degree"; // is numberable
+        return varExpr->getType() == L"degree" && expr->getType() == L"degree"; // is numberable
     }
 
-    return var.getType() == expr->getType();
+    return varExpr->getType() == expr->getType();
 }
 
 std::string AssignmentStmt::translateToCpp() const
 {
-    return var.getType().translateTypeToCpp() + " " + Utils::wstrToStr(var.getName()) + " "
+    return varExpr->getType().translateTypeToCpp() + " " + Utils::wstrToStr(varExpr->getName()) + " "
      + Utils::wstrToStr(assignmentOp) + " " + expr->translateToCpp() + ";";
 }

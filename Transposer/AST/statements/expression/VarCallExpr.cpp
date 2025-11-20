@@ -18,3 +18,8 @@ Type VarCallExpr::getType() const
 {
     return var.getType();
 }
+
+std::wstring VarCallExpr::getName() const
+{
+    return var.getName();
+}

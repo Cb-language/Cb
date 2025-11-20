@@ -12,4 +12,5 @@ public:
     bool isLegal() const override;
     std::string translateToCpp() const override;
     Type getType() const override;
+    std::wstring getName() const;
 };
