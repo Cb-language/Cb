@@ -73,6 +73,8 @@ add_executable(Transposer
         Transposer/other/Utils.cpp
         Transposer/other/Utils.h
         Transposer/AST/Statements.h
+        Transposer/AST/statements/AssignmentStmt.cpp
+        Transposer/AST/statements/AssignmentStmt.h
 )
 
 include(FetchContent)
