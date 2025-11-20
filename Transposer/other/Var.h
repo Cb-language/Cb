@@ -14,4 +14,6 @@ public:
     std::wstring getName() const;
 
     bool operator==(const Var& other) const;
+
+    bool operator==(const std::wstring& other) const;
 };
