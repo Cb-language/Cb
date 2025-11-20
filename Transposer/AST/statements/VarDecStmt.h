@@ -18,7 +18,4 @@ public:
 
     bool isLegal() const override;
     std::string translateToCpp() const override;
-
-    Type Gettype() const;
-
 };
