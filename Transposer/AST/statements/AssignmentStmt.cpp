@@ -19,5 +19,5 @@ bool AssignmentStmt::isLegal() const
 std::string AssignmentStmt::translateToCpp() const
 {
     return var.getType().translateTypeToCpp() + " " + Utils::wstrToStr(var.getName()) + " "
-     + Utils::wstrToStr(assignmentOp) + " " + expr->translateToCpp();
+     + Utils::wstrToStr(assignmentOp) + " " + expr->translateToCpp() + ";";
 }
