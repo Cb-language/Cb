@@ -28,6 +28,8 @@ private:
 
 
     std::unique_ptr<ConstValueExpr> parseConstValue();
+    std::unique_ptr<VarDecStmt> parseVarDecStmt();
+
 
 public:
     explicit Parser(const std::vector<Token>& tokens);

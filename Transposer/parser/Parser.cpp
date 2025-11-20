@@ -127,3 +127,25 @@ std::unique_ptr<ConstValueExpr> Parser::parseConstValue()
     advance();
     return std::make_unique<ConstValueExpr>(Type(type), t.value);
 }
+
+std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
+{
+    expect(Token::TYPE);
+    const Type varType(prev().value);
+    expect(Token::IDENTIFIER);
+    const std::wstring varName = prev().value;
+
+    const Var var(varType, varName);
+
+    symTable.addVar(varType, prev());
+
+    if (match(Token::PUNCTUATION, L"║"))
+    {
+        return std::make_unique<VarDecStmt>(false, nullptr, var);
+    }
+
+    expect(Token::OP_ASSIGNMENT, L"=");
+
+    // will return a parse expression in the value of the variable
+    return nullptr;
+}
