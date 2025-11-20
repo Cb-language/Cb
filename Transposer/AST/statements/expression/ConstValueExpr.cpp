@@ -1,7 +1,3 @@
-//
-// Created by USER on 11/15/2025.
-//
-
 #include "ConstValueExpr.h"
 
 
