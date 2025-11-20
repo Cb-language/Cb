@@ -7,7 +7,7 @@
 class FileManager
 {
 public:
-	FileManager(const std::string& inPath, std::string& outPath);
+	FileManager(const std::string& inPath, const std::string& outPath);
 	std::wstring readFile();
 	bool writeFile(const std::string& data);
 private:

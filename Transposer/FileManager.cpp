@@ -1,7 +1,7 @@
 #include "FileManager.h"
 #include <sstream>
 
-FileManager::FileManager(const std::string& inPath, std::string& outPath)
+FileManager::FileManager(const std::string& inPath, const std::string& outPath)
 {
 	int length = inPath.length();
 
@@ -18,14 +18,15 @@ FileManager::FileManager(const std::string& inPath, std::string& outPath)
 		inputFile.imbue(std::locale("en_US.utf8"));
 	}
 
+	std::string outputPath = outPath;
 	// If no output file path provided, create one by replacing .cb with .cpp
 	if (outPath.empty())
 	{
-		outPath = inPath.substr(0, length - 3) + ".cpp";
+		outputPath = inPath.substr(0, length - 3) + ".cpp";
 	}
 
 	// Open output file in write mode
-	outputFile.open(outPath);
+	outputFile.open(outputPath);
 	if (!outputFile.is_open())
 	{
 		std::cout << "Failed to open output file: " << outPath << std::endl;
