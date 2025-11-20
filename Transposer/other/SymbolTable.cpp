@@ -13,9 +13,9 @@ SymbolTable::~SymbolTable()
     curr = nullptr;
 }
 
-std::optional<Var> SymbolTable::getVar(const Var& v) const
+std::optional<Var> SymbolTable::getVar(const std::wstring &name) const
 {
-    return curr->getVar(v);
+    return curr->getVar(name);
 }
 
 void SymbolTable::addVar(const Type& type, const Token& token) const

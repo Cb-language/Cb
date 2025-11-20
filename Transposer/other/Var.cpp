@@ -22,3 +22,8 @@ bool Var::operator==(const Var& other) const
 {
     return this->name == other.name && this->type == other.type;
 }
+
+bool Var::operator==(const std::wstring& other) const
+{
+    return this->type == other;
+}

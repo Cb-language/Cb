@@ -15,7 +15,7 @@ const std::unordered_map<std::wstring, std::unordered_set<std::wstring>> Type::c
     {L"bar",     {L"bar"}},                   // String -> only String
     {L"note",    {L"note", L"degree", L"freq"}}, // Char -> Int, Double
     {L"mute",    {L"mute", L"degree", L"freq"}}, // Bool -> Int, Double
-    {L"degree",  {L"degree", L"note", L"freq"}}, // Int -> Char, Double
+    {L"degree",  {L"degree", L"note", L"freq", L"bar"}}, // Int -> Char, Double, Str
     {L"freq",    {L"freq", L"degree", L"note"}}, // Double -> Int, Char
     //{L"scale",   {L"scale"}},               // Array - TODO: add this in sprint 3
     {L"fermata", {}}                          // Void -> nothing
@@ -61,6 +61,18 @@ bool Type::operator==(const Type& other) const
 }
 
 bool Type::operator!=(const Type& other) const
+{
+    return !(*this == other);
+}
+
+bool Type::operator==(const std::wstring& other) const
+{
+    const auto it = castMap.find(other);
+    if (it == castMap.end()) return this->type == other; // for future (class)
+    return it->second.contains(this->type);
+}
+
+bool Type::operator!=(const std::wstring& other) const
 {
     return !(*this == other);
 }

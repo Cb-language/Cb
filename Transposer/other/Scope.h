@@ -18,7 +18,7 @@ public:
     ~Scope();
 
     // std::nullopt when not found
-    std::optional<Var> getVar(const Var& v) const;
+    std::optional<Var> getVar(const std::wstring& name) const;
 
     Scope* makeNewScope();
     Scope* getParent() const;
