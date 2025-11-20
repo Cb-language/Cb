@@ -177,11 +177,11 @@ std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
         ).value;
 
     const Var var(varType, varName);
-
-    symTable.addVar(varType, prev());
+    const Token identifierToken = prev();
 
     if (match(Token::PUNCTUATION, L"║"))
     {
+        symTable.addVar(varType, identifierToken);
         advance();
         return std::make_unique<VarDecStmt>(false, nullptr, var);
     }
@@ -190,6 +190,7 @@ std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
 
     std::unique_ptr<Expr> expr = parseExpr();
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+    symTable.addVar(varType, identifierToken); // to avoid degree x = x + 1║ ...
     return std::make_unique<VarDecStmt>(true, std::move(expr), var);
 }
 
