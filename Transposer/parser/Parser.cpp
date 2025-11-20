@@ -14,23 +14,44 @@ Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.si
 {
 }
 
-std::vector<std::unique_ptr<Stmt>> Parser::parse()
+void Parser::parse()
 {
-    std::vector<std::unique_ptr<Stmt>> stmts;
-
     while (!isAtEnd())
     {
         if (match(Token::TYPE))
         {
             stmts.push_back(parseVarDecStmt());
         }
-        else if (match(Token::IDENTIFIER) && peek().type == Token::OP_ASSIGNMENT)
+        else if (match(Token::IDENTIFIER) && (peek().type == Token::OP_ASSIGNMENT || (peek().type == Token::PUNCTUATION && peek().value == L"║"))) // if an assignment (have identifier [= expr] ║ )
         {
             stmts.push_back(parseAssignmentStmt());
         }
     }
+}
 
-    return stmts;
+bool Parser::checkLegal() const
+{
+    for (const auto& stmt : stmts)
+    {
+        if (!stmt->isLegal())
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+std::string Parser::translateToCpp() const
+{
+    std::string result;
+
+    for (const auto& stmt : stmts)
+    {
+        result += stmt->translateToCpp();
+    }
+
+    return result;
 }
 
 const Token& Parser::current() const
@@ -68,7 +89,7 @@ const Token& Parser::prev() const
 
 bool Parser::isAtEnd() const
 {
-    return pos + 1 >= len;
+    return pos + 1 > len;
 }
 
 bool Parser::match(const Token::TokenType type) const
@@ -157,6 +178,7 @@ std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
 
     if (match(Token::PUNCTUATION, L"║"))
     {
+        advance();
         return std::make_unique<VarDecStmt>(false, nullptr, var);
     }
 

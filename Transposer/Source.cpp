@@ -3,6 +3,7 @@
 #include <windows.h>
 #include "token/Tokenizer.h"
 #include "FileManager.h"
+#include "parser/Parser.h"
 
 enum Mode
 {
@@ -33,10 +34,6 @@ int main(int argc, char* argv[])
     {
         outPath = std::string(argv[3]);
     }
-    FileManager fileManager(inPath, outPath);
-
-    std::wstring content = fileManager.readFile();
-    fileManager.writeFile(content);
 
     // Determine mode of operation
     std::string arg = argv[2];
@@ -58,6 +55,27 @@ int main(int argc, char* argv[])
     default:
         std::cout << "Invalid mode. Use T for Translate, C for Compile, R for Run." << std::endl;
     }
+
+    FileManager fileManager(inPath, outPath);
+
+    const std::wstring wstr = fileManager.readFile();
+    Parser parser(Tokenizer::tokenize(wstr));
+
+    try
+    {
+        parser.parse();
+    }
+    catch (const Error& err)
+    {
+        std::cerr << err.what() << std::endl;
+    }
+
+    if (!parser.checkLegal())
+    {
+        std::cerr << "Code Illegal :(" << std::endl;
+    }
+
+    fileManager.writeFile(parser.translateToCpp());
 
 
     return 0;

@@ -67,9 +67,9 @@ bool Type::operator!=(const Type& other) const
 
 bool Type::operator==(const std::wstring& other) const
 {
-    const auto it = castMap.find(other);
-    if (it == castMap.end()) return this->type == other; // for future (class)
-    return it->second.contains(this->type);
+    const auto it = castMap.find(this->type);  // <-- look up *this->type*, not other
+    if (it == castMap.end()) return this->type == other;
+    return it->second.contains(other);
 }
 
 bool Type::operator!=(const std::wstring& other) const

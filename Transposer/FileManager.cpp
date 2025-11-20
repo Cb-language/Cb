@@ -1,4 +1,6 @@
 #include "FileManager.h"
+
+#include <codecvt>
 #include <sstream>
 
 FileManager::FileManager(const std::string& inPath, const std::string& outPath)
@@ -8,14 +10,13 @@ FileManager::FileManager(const std::string& inPath, const std::string& outPath)
 	// Check for .cb extension in source file
 	if (inPath.ends_with(".cb"))
 	{
-		inputFile.open(inPath);
+		inputFile.open(inPath, std::ios::binary);
 		if (!inputFile.is_open())
 		{
 			std::cout << "Failed to open input file: " << inPath << std::endl;
 			return;
 		}
-
-		inputFile.imbue(std::locale("en_US.utf8"));
+		inputFile.imbue(std::locale(inputFile.getloc(), new std::codecvt_utf8<wchar_t>));
 	}
 
 	std::string outputPath = outPath;
@@ -33,7 +34,6 @@ FileManager::FileManager(const std::string& inPath, const std::string& outPath)
 		return;
 	}
 }
-
 
 std::wstring FileManager::readFile()
 {
@@ -56,7 +56,10 @@ bool FileManager::writeFile(const std::string& data)
 	{
 		return false;
 	}
+
 	outputFile << data;
 	outputFile.close();
+
+	std::cout << "Wrote to file succssesfully" << std::endl;
 	return true;
 }

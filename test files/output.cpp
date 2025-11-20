@@ -1,1 +1,1 @@
-some lines of code in CB
+std::string b;

@@ -12,6 +12,7 @@ private:
     const std::vector<Token> tokens;
     const size_t len;
     size_t pos;
+    std::vector<std::unique_ptr<Stmt>> stmts;
 
     SymbolTable symTable;
 
@@ -50,6 +51,8 @@ private:
 
 public:
     explicit Parser(const std::vector<Token>& tokens);
-    std::vector<std::unique_ptr<Stmt>> parse();
+    void parse();
+    bool checkLegal() const;
+    std::string translateToCpp() const;
 };
 
