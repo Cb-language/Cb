@@ -26,6 +26,10 @@ void Parser::parse()
         {
             stmts.push_back(parseAssignmentStmt());
         }
+        else
+        {
+            throw UnexpectedToken(current());
+        }
     }
 }
 
@@ -184,7 +188,9 @@ std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
 
     expect(Token::OP_ASSIGNMENT, L"=");
 
-    return std::make_unique<VarDecStmt>(true, parseExpr(), var);
+    std::unique_ptr<Expr> expr = parseExpr();
+    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+    return std::make_unique<VarDecStmt>(true, std::move(expr), var);
 }
 
 std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()

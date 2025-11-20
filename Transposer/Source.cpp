@@ -68,6 +68,7 @@ int main(int argc, char* argv[])
     catch (const Error& err)
     {
         std::cerr << err.what() << std::endl;
+        return -1;
     }
 
     if (!parser.checkLegal())
