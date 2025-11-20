@@ -6,3 +6,4 @@
 #include "abstract/Expression.h"
 #include "statements/expression/ConstValueExpr.h"
 #include "statements/VarDecStmt.h"
+#include "statements/AssignmentStmt.h"

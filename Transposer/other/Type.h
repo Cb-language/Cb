@@ -20,6 +20,8 @@ public:
     explicit Type(const std::wstring& type);
     bool operator==(const Type& other) const;
     bool operator!=(const Type& other) const;
+    bool operator==(const std::wstring &other) const;
+    bool operator!=(const std::wstring &other) const;
     std::wstring getType() const;
 
     std::string translateTypeToCpp() const;

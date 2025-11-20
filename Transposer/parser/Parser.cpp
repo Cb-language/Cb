@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 
+#include "errorHandling/lexicalErrors/InvalidIdentifier.h"
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 
@@ -147,5 +148,26 @@ std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
     expect(Token::OP_ASSIGNMENT, L"=");
 
     // will return a parse expression in the value of the variable
+    return nullptr;
+}
+
+std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
+{
+    expect(Token::IDENTIFIER);
+    const std::optional<Var> var = symTable.getVar(prev().value);
+
+    if (!var.has_value())
+    {
+        throw InvalidIdentifier(prev());
+    }
+
+    expect(Token::OP_ASSIGNMENT);
+    const std::wstring op = prev().value;
+
+    /*
+     *
+     * will get the expression here
+     */
+
     return nullptr;
 }

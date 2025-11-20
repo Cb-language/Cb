@@ -21,11 +21,11 @@ Scope::~Scope()
     children.clear();
 }
 
-std::optional<Var> Scope::getVar(const Var& v) const
+std::optional<Var> Scope::getVar(const std::wstring& name) const
 {
     for (const auto& var : vars)
     {
-        if (v == var)
+        if (name == var.getName())
         {
             return var;
         }
@@ -33,7 +33,7 @@ std::optional<Var> Scope::getVar(const Var& v) const
 
     if (parent != nullptr)
     {
-        return parent->getVar(v);
+        return parent->getVar(name);
     }
 
     return std::nullopt;

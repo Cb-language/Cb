@@ -12,7 +12,7 @@ public:
     ~SymbolTable();
 
     // std::nullopt when not found
-    std::optional<Var> getVar(const Var& v) const;
+    std::optional<Var> getVar(const std::wstring& name) const;
     void addVar(const Type& type, const Token& token) const;
 
     void enterScope();
