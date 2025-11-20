@@ -5,6 +5,9 @@
 
 #include "errorHandling/lexicalErrors/InvalidIdentifier.h"
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
+#include "errorHandling/syntaxErrors/InvalidExpression.h"
+#include "errorHandling/syntaxErrors/MissingIdentifier.h"
+#include "errorHandling/syntaxErrors/MissingSemicolon.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), symTable(SymbolTable())
@@ -98,12 +101,55 @@ void Parser::expect(const Token::TokenType type, const std::wstring& value)
     advance();
 }
 
+void Parser::expect(const Token::TokenType type, const Error& err)
+{
+    if (!match(type))
+    {
+        throw err;
+    }
+    advance();
+}
+
+void Parser::expect(const Token::TokenType type, const std::wstring& value, const Error& err)
+{
+    if (!match(type, value))
+    {
+        throw err;
+    }
+    advance();
+}
+
+const Token& Parser::expectAndGet(const Token::TokenType type)
+{
+    expect(type);
+    return prev();
+}
+
+const Token& Parser::expectAndGet(const Token::TokenType type, const std::wstring& value)
+{
+    expect(type, value);
+    return prev();
+}
+
+const Token& Parser::expectAndGet(const Token::TokenType type, const Error& err)
+{
+    expect(type, err);
+    return prev();
+}
+
+const Token& Parser::expectAndGet(const Token::TokenType type, const std::wstring& value, const Error& err)
+{
+    expect(type, value, err);
+    return prev();
+}
+
 std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
 {
-    expect(Token::TYPE);
-    const Type varType(prev().value);
-    expect(Token::IDENTIFIER);
-    const std::wstring varName = prev().value;
+    const Type varType(expectAndGet(Token::TYPE).value);
+
+    const std::wstring varName = expectAndGet(
+        Token::IDENTIFIER, MissingIdentifier(current())
+        ).value;
 
     const Var var(varType, varName);
 
@@ -123,10 +169,9 @@ std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
 {
     std::unique_ptr<VarCallExpr> var = parseVarCallExpr();
 
-    expect(Token::OP_ASSIGNMENT);
-    const std::wstring op = prev().value;
+    const std::wstring op = expectAndGet(Token::OP_ASSIGNMENT).value;
 
-    expect(Token::PUNCTUATION, L"║");
+    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
     return std::make_unique<AssignmentStmt>(std::move(var), op, parseExpr());
 }
@@ -136,6 +181,11 @@ std::unique_ptr<Expr> Parser::parseExpr()
     if (match(Token::CONST_BOOL) || match(Token::CONST_STR) || match(Token::CONST_INT) || match(Token::CONST_FLOAT) || match(Token::CONST_CHAR) )
     {
         return parseConstValue();
+    }
+
+    if (match(Token::IDENTIFIER))
+    {
+        return parseVarCallExpr();
     }
 
     throw UnexpectedToken(current());
@@ -165,7 +215,7 @@ std::unique_ptr<ConstValueExpr> Parser::parseConstValue()
         type = L"degree";
         break;
     default:
-        throw UnexpectedToken(t);
+        throw InvalidExpression(t);
     }
 
     advance();
@@ -174,8 +224,9 @@ std::unique_ptr<ConstValueExpr> Parser::parseConstValue()
 
 std::unique_ptr<VarCallExpr> Parser::parseVarCallExpr()
 {
-    expect(Token::IDENTIFIER);
-    const std::optional<Var> var = symTable.getVar(prev().value);
+    const std::optional<Var> var = symTable.getVar(
+        expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())
+            ).value);
 
     if (!var.has_value())
     {

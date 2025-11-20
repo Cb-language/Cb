@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "../AST/Statements.h"
+#include "errorHandling/Error.h"
 #include "other/SymbolTable.h"
 #include "token/Token.h"
 
@@ -25,6 +26,15 @@ private:
 
     void expect(const Token::TokenType type);
     void expect(const Token::TokenType type, const std::wstring& value);
+
+    void expect(const Token::TokenType type, const Error& err);
+    void expect(const Token::TokenType type, const std::wstring& value, const Error& err);
+
+    const Token& expectAndGet(const Token::TokenType type);
+    const Token& expectAndGet(const Token::TokenType type, const std::wstring& value);
+
+    const Token& expectAndGet(const Token::TokenType type, const Error& err);
+    const Token& expectAndGet(const Token::TokenType type, const std::wstring& value, const Error& err);
 
 
     // General Statements
