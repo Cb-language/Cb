@@ -3,6 +3,7 @@
 #include <windows.h>
 #include "token/Tokenizer.h"
 #include "FileManager.h"
+#include "parser/Parser.h"
 
 enum Mode
 {
@@ -33,10 +34,6 @@ int main(int argc, char* argv[])
     {
         outPath = std::string(argv[3]);
     }
-    FileManager fileManager(inPath, outPath);
-
-    std::string content = fileManager.readFile();
-    fileManager.writeFile(content);
 
     // Determine mode of operation
     std::string arg = argv[2];
@@ -59,23 +56,27 @@ int main(int argc, char* argv[])
         std::cout << "Invalid mode. Use T for Translate, C for Compile, R for Run." << std::endl;
     }
 
-    // Example code to tokenize
-    const std::wstring code = LR"(? This is a single-line comment
-?* This is a 
-multi-line comment *?
-cres demen .14 42 'a' "hello
-world"
-flat degree playBar hear D Fmin
-♯ ♭ ♮ ☉ ∮ ,
-x += 5
-y == 10
-z // 2
-[] ║ \ identifier_name ∮
-=! != <= > < //= ()║::║:║║:║
-)";
+    FileManager fileManager(inPath, outPath);
 
-    // Tokenize
-    std::vector<Token> tokens = Tokenizer::tokenize(code);
+    const std::wstring wstr = fileManager.readFile();
+    Parser parser(Tokenizer::tokenize(wstr));
+
+    try
+    {
+        parser.parse();
+    }
+    catch (const Error& err)
+    {
+        std::cerr << err.what() << std::endl;
+        return -1;
+    }
+
+    if (!parser.checkLegal())
+    {
+        std::cerr << "Code Illegal :(" << std::endl;
+    }
+
+    fileManager.writeFile(parser.translateToCpp());
 
 
     return 0;

@@ -1,5 +1,11 @@
 #include "IdentifierTaken.h"
 
-IdentifierTaken::IdentifierTaken(const Token& token) : Error(token, "identifier taken")
+#include "other/Utils.h"
+
+IdentifierTaken::IdentifierTaken(const Token& token) : Error(token, "identifier already taken")
 {
+    fullMessage = (this->errorMessage +
+                   " at line: " + std::to_string(token.line) +
+                   " at column: " + std::to_string(token.column) +
+                   " identifier: " + Utils::wstrToStr(token.value) + "\n");
 }

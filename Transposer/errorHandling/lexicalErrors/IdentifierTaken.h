@@ -1,6 +1,6 @@
 #pragma once
 #include "../Error.h"
-class IdentifierTaken : Error
+class IdentifierTaken : public Error
 {
 public:
     IdentifierTaken(const Token &token);

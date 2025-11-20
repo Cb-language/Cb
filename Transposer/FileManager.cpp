@@ -1,29 +1,33 @@
 #include "FileManager.h"
+
+#include <codecvt>
 #include <sstream>
 
-FileManager::FileManager(const std::string& inPath, std::string& outPath)
+FileManager::FileManager(const std::string& inPath, const std::string& outPath)
 {
 	int length = inPath.length();
 
-	// Check for .cb extension in sorce file
-	if (inPath[length - 3] == '.' && inPath[length - 2] == 'c' && inPath[length - 1] == 'b')
+	// Check for .cb extension in source file
+	if (inPath.ends_with(".cb"))
 	{
-		inputFile.open(inPath);
+		inputFile.open(inPath, std::ios::binary);
 		if (!inputFile.is_open())
 		{
 			std::cout << "Failed to open input file: " << inPath << std::endl;
 			return;
 		}
+		inputFile.imbue(std::locale(inputFile.getloc(), new std::codecvt_utf8<wchar_t>));
 	}
 
+	std::string outputPath = outPath;
 	// If no output file path provided, create one by replacing .cb with .cpp
 	if (outPath.empty())
 	{
-		outPath = inPath.substr(0, length - 3) + ".cpp";
+		outputPath = inPath.substr(0, length - 3) + ".cpp";
 	}
 
 	// Open output file in write mode
-	outputFile.open(outPath);
+	outputFile.open(outputPath);
 	if (!outputFile.is_open())
 	{
 		std::cout << "Failed to open output file: " << outPath << std::endl;
@@ -31,18 +35,19 @@ FileManager::FileManager(const std::string& inPath, std::string& outPath)
 	}
 }
 
-
-std::string FileManager::readFile()
+std::wstring FileManager::readFile()
 {
-	std::ostringstream ss;
-
 	if (inputFile.is_open() == false)
 	{
-		return "";
+		return L"";
 	}
 
-	ss << inputFile.rdbuf();
-	return ss.str();
+	// Reset stream
+	inputFile.clear();
+	inputFile.seekg(0);
+
+	return std::wstring((std::istreambuf_iterator<wchar_t>(inputFile)),
+							 std::istreambuf_iterator<wchar_t>());
 }
 
 bool FileManager::writeFile(const std::string& data)
@@ -51,7 +56,10 @@ bool FileManager::writeFile(const std::string& data)
 	{
 		return false;
 	}
+
 	outputFile << data;
 	outputFile.close();
+
+	std::cout << "Wrote to file succssesfully" << std::endl;
 	return true;
 }

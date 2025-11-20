@@ -5,29 +5,57 @@
 
 #include "errorHandling/lexicalErrors/InvalidIdentifier.h"
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
+#include "errorHandling/syntaxErrors/InvalidExpression.h"
+#include "errorHandling/syntaxErrors/MissingIdentifier.h"
+#include "errorHandling/syntaxErrors/MissingSemicolon.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), symTable(SymbolTable())
 {
 }
 
-std::vector<std::unique_ptr<Stmt>> Parser::parse()
+void Parser::parse()
 {
-    std::vector<std::unique_ptr<Stmt>> stmts;
-
     while (!isAtEnd())
     {
-        if (match(Token::CONST_BOOL) || match(Token::CONST_STR) || match(Token::CONST_INT) || match(Token::CONST_FLOAT) || match(Token::CONST_CHAR) )
+        if (match(Token::TYPE))
         {
-            stmts.push_back(parseConstValue());
+            stmts.push_back(parseVarDecStmt());
+        }
+        else if (match(Token::IDENTIFIER) && (peek().type == Token::OP_ASSIGNMENT || (peek().type == Token::PUNCTUATION && peek().value == L"║"))) // if an assignment (have identifier [= expr] ║ )
+        {
+            stmts.push_back(parseAssignmentStmt());
         }
         else
         {
             throw UnexpectedToken(current());
         }
     }
+}
 
-    return stmts;
+bool Parser::checkLegal() const
+{
+    for (const auto& stmt : stmts)
+    {
+        if (!stmt->isLegal())
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+std::string Parser::translateToCpp() const
+{
+    std::string result;
+
+    for (const auto& stmt : stmts)
+    {
+        result += stmt->translateToCpp();
+    }
+
+    return result;
 }
 
 const Token& Parser::current() const
@@ -65,7 +93,7 @@ const Token& Parser::prev() const
 
 bool Parser::isAtEnd() const
 {
-    return pos + 1 >= len;
+    return pos + 1 > len;
 }
 
 bool Parser::match(const Token::TokenType type) const
@@ -98,6 +126,100 @@ void Parser::expect(const Token::TokenType type, const std::wstring& value)
     advance();
 }
 
+void Parser::expect(const Token::TokenType type, const Error& err)
+{
+    if (!match(type))
+    {
+        throw err;
+    }
+    advance();
+}
+
+void Parser::expect(const Token::TokenType type, const std::wstring& value, const Error& err)
+{
+    if (!match(type, value))
+    {
+        throw err;
+    }
+    advance();
+}
+
+const Token& Parser::expectAndGet(const Token::TokenType type)
+{
+    expect(type);
+    return prev();
+}
+
+const Token& Parser::expectAndGet(const Token::TokenType type, const std::wstring& value)
+{
+    expect(type, value);
+    return prev();
+}
+
+const Token& Parser::expectAndGet(const Token::TokenType type, const Error& err)
+{
+    expect(type, err);
+    return prev();
+}
+
+const Token& Parser::expectAndGet(const Token::TokenType type, const std::wstring& value, const Error& err)
+{
+    expect(type, value, err);
+    return prev();
+}
+
+std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
+{
+    const Type varType(expectAndGet(Token::TYPE).value);
+
+    const std::wstring varName = expectAndGet(
+        Token::IDENTIFIER, MissingIdentifier(current())
+        ).value;
+
+    const Var var(varType, varName);
+    const Token identifierToken = prev();
+
+    if (match(Token::PUNCTUATION, L"║"))
+    {
+        symTable.addVar(varType, identifierToken);
+        advance();
+        return std::make_unique<VarDecStmt>(false, nullptr, var);
+    }
+
+    expect(Token::OP_ASSIGNMENT, L"=");
+
+    std::unique_ptr<Expr> expr = parseExpr();
+    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+    symTable.addVar(varType, identifierToken); // to avoid degree x = x + 1║ ...
+    return std::make_unique<VarDecStmt>(true, std::move(expr), var);
+}
+
+std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
+{
+    std::unique_ptr<VarCallExpr> var = parseVarCallExpr();
+
+    const std::wstring op = expectAndGet(Token::OP_ASSIGNMENT).value;
+
+    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+
+    return std::make_unique<AssignmentStmt>(std::move(var), op, parseExpr());
+}
+
+std::unique_ptr<Expr> Parser::parseExpr()
+{
+    if (match(Token::CONST_BOOL) || match(Token::CONST_STR) || match(Token::CONST_INT) || match(Token::CONST_FLOAT) || match(Token::CONST_CHAR) )
+    {
+        return parseConstValue();
+    }
+
+    if (match(Token::IDENTIFIER))
+    {
+        return parseVarCallExpr();
+    }
+
+    throw UnexpectedToken(current());
+}
+
 std::unique_ptr<ConstValueExpr> Parser::parseConstValue()
 {
     const Token t = current();
@@ -122,52 +244,23 @@ std::unique_ptr<ConstValueExpr> Parser::parseConstValue()
         type = L"degree";
         break;
     default:
-        throw UnexpectedToken(t);
+        throw InvalidExpression(t);
     }
 
     advance();
     return std::make_unique<ConstValueExpr>(Type(type), t.value);
 }
 
-std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
+std::unique_ptr<VarCallExpr> Parser::parseVarCallExpr()
 {
-    expect(Token::TYPE);
-    const Type varType(prev().value);
-    expect(Token::IDENTIFIER);
-    const std::wstring varName = prev().value;
-
-    const Var var(varType, varName);
-
-    symTable.addVar(varType, prev());
-
-    if (match(Token::PUNCTUATION, L"║"))
-    {
-        return std::make_unique<VarDecStmt>(false, nullptr, var);
-    }
-
-    expect(Token::OP_ASSIGNMENT, L"=");
-
-    // will return a parse expression in the value of the variable
-    return nullptr;
-}
-
-std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
-{
-    expect(Token::IDENTIFIER);
-    const std::optional<Var> var = symTable.getVar(prev().value);
+    const std::optional<Var> var = symTable.getVar(
+        expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())
+            ).value);
 
     if (!var.has_value())
     {
         throw InvalidIdentifier(prev());
     }
 
-    expect(Token::OP_ASSIGNMENT);
-    const std::wstring op = prev().value;
-
-    /*
-     *
-     * will get the expression here
-     */
-
-    return nullptr;
+    return std::make_unique<VarCallExpr>(var.value());
 }
