@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
     }
     FileManager fileManager(inPath, outPath);
 
-    std::string content = fileManager.readFile();
+    std::wstring content = fileManager.readFile();
     fileManager.writeFile(content);
 
     // Determine mode of operation
@@ -58,24 +58,6 @@ int main(int argc, char* argv[])
     default:
         std::cout << "Invalid mode. Use T for Translate, C for Compile, R for Run." << std::endl;
     }
-
-    // Example code to tokenize
-    const std::wstring code = LR"(? This is a single-line comment
-?* This is a 
-multi-line comment *?
-cres demen .14 42 'a' "hello
-world"
-flat degree playBar hear D Fmin
-♯ ♭ ♮ ☉ ∮ ,
-x += 5
-y == 10
-z // 2
-[] ║ \ identifier_name ∮
-=! != <= > < //= ()║::║:║║:║
-)";
-
-    // Tokenize
-    std::vector<Token> tokens = Tokenizer::tokenize(code);
 
 
     return 0;

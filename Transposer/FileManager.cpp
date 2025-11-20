@@ -5,8 +5,8 @@ FileManager::FileManager(const std::string& inPath, std::string& outPath)
 {
 	int length = inPath.length();
 
-	// Check for .cb extension in sorce file
-	if (inPath[length - 3] == '.' && inPath[length - 2] == 'c' && inPath[length - 1] == 'b')
+	// Check for .cb extension in source file
+	if (inPath.ends_with(".cb"))
 	{
 		inputFile.open(inPath);
 		if (!inputFile.is_open())
@@ -14,6 +14,8 @@ FileManager::FileManager(const std::string& inPath, std::string& outPath)
 			std::cout << "Failed to open input file: " << inPath << std::endl;
 			return;
 		}
+
+		inputFile.imbue(std::locale("en_US.utf8"));
 	}
 
 	// If no output file path provided, create one by replacing .cb with .cpp
@@ -32,17 +34,19 @@ FileManager::FileManager(const std::string& inPath, std::string& outPath)
 }
 
 
-std::string FileManager::readFile()
+std::wstring FileManager::readFile()
 {
-	std::ostringstream ss;
-
 	if (inputFile.is_open() == false)
 	{
-		return "";
+		return L"";
 	}
 
-	ss << inputFile.rdbuf();
-	return ss.str();
+	// Reset stream
+	inputFile.clear();
+	inputFile.seekg(0);
+
+	return std::wstring((std::istreambuf_iterator<wchar_t>(inputFile)),
+							 std::istreambuf_iterator<wchar_t>());
 }
 
 bool FileManager::writeFile(const std::string& data)
