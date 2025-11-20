@@ -98,6 +98,45 @@ void Parser::expect(const Token::TokenType type, const std::wstring& value)
     advance();
 }
 
+std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
+{
+    expect(Token::TYPE);
+    const Type varType(prev().value);
+    expect(Token::IDENTIFIER);
+    const std::wstring varName = prev().value;
+
+    const Var var(varType, varName);
+
+    symTable.addVar(varType, prev());
+
+    if (match(Token::PUNCTUATION, L"║"))
+    {
+        return std::make_unique<VarDecStmt>(false, nullptr, var);
+    }
+
+    expect(Token::OP_ASSIGNMENT, L"=");
+
+    return std::make_unique<VarDecStmt>(true, parseExpr(), var);
+}
+
+std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
+{
+    expect(Token::IDENTIFIER);
+    const std::optional<Var> var = symTable.getVar(prev().value);
+
+    if (!var.has_value())
+    {
+        throw InvalidIdentifier(prev());
+    }
+
+    expect(Token::OP_ASSIGNMENT);
+    const std::wstring op = prev().value;
+
+    expect(Token::PUNCTUATION, L"║");
+
+    return std::make_unique<AssignmentStmt>(var.value(), op, parseExpr());
+}
+
 std::unique_ptr<Expr> Parser::parseExpr()
 {
     if (match(Token::CONST_BOOL) || match(Token::CONST_STR) || match(Token::CONST_INT) || match(Token::CONST_FLOAT) || match(Token::CONST_CHAR) )
@@ -139,39 +178,15 @@ std::unique_ptr<ConstValueExpr> Parser::parseConstValue()
     return std::make_unique<ConstValueExpr>(Type(type), t.value);
 }
 
-std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
-{
-    expect(Token::TYPE);
-    const Type varType(prev().value);
-    expect(Token::IDENTIFIER);
-    const std::wstring varName = prev().value;
-
-    const Var var(varType, varName);
-
-    symTable.addVar(varType, prev());
-
-    if (match(Token::PUNCTUATION, L"║"))
-    {
-        return std::make_unique<VarDecStmt>(false, nullptr, var);
-    }
-
-    expect(Token::OP_ASSIGNMENT, L"=");
-
-    return std::make_unique<VarDecStmt>(true, parseExpr(), var);
-}
-
-std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
+std::unique_ptr<VarCallExpr> Parser::parseVarCallExpr()
 {
     expect(Token::IDENTIFIER);
     const std::optional<Var> var = symTable.getVar(prev().value);
 
-    if (!var.has_value())
+    if (var.has_value())
     {
         throw InvalidIdentifier(prev());
     }
 
-    expect(Token::OP_ASSIGNMENT);
-    const std::wstring op = prev().value;
-
-    return std::make_unique<AssignmentStmt>(var.value(), op, parseExpr());
+    return std::make_unique<VarCallExpr>(var.value());
 }

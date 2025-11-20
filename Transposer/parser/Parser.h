@@ -27,11 +27,16 @@ private:
     void expect(const Token::TokenType type, const std::wstring& value);
 
 
-    std::unique_ptr<Expr> parseExpr();
-    std::unique_ptr<ConstValueExpr> parseConstValue();
+    // General Statements
 
     std::unique_ptr<VarDecStmt> parseVarDecStmt();
     std::unique_ptr<AssignmentStmt> parseAssignmentStmt();
+
+    // Expressions
+
+    std::unique_ptr<Expr> parseExpr();
+    std::unique_ptr<ConstValueExpr> parseConstValue();
+    std::unique_ptr<VarCallExpr> parseVarCallExpr();
 
 public:
     explicit Parser(const std::vector<Token>& tokens);

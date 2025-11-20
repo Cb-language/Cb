@@ -7,3 +7,4 @@
 #include "statements/expression/ConstValueExpr.h"
 #include "statements/VarDecStmt.h"
 #include "statements/AssignmentStmt.h"
+#include "statements/expression/VarCallExpr.h"
