@@ -27,10 +27,10 @@ private:
     void expect(const Token::TokenType type, const std::wstring& value);
 
 
+    std::unique_ptr<Expr> parseExpr();
     std::unique_ptr<ConstValueExpr> parseConstValue();
+
     std::unique_ptr<VarDecStmt> parseVarDecStmt();
-
-
     std::unique_ptr<AssignmentStmt> parseAssignmentStmt();
 
 public:

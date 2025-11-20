@@ -17,13 +17,13 @@ std::vector<std::unique_ptr<Stmt>> Parser::parse()
 
     while (!isAtEnd())
     {
-        if (match(Token::CONST_BOOL) || match(Token::CONST_STR) || match(Token::CONST_INT) || match(Token::CONST_FLOAT) || match(Token::CONST_CHAR) )
+        if (match(Token::TYPE))
         {
-            stmts.push_back(parseConstValue());
+            stmts.push_back(parseVarDecStmt());
         }
-        else
+        else if (match(Token::IDENTIFIER))
         {
-            throw UnexpectedToken(current());
+            stmts.push_back(parseAssignmentStmt());
         }
     }
 
@@ -98,6 +98,16 @@ void Parser::expect(const Token::TokenType type, const std::wstring& value)
     advance();
 }
 
+std::unique_ptr<Expr> Parser::parseExpr()
+{
+    if (match(Token::CONST_BOOL) || match(Token::CONST_STR) || match(Token::CONST_INT) || match(Token::CONST_FLOAT) || match(Token::CONST_CHAR) )
+    {
+        return parseConstValue();
+    }
+
+    throw UnexpectedToken(current());
+}
+
 std::unique_ptr<ConstValueExpr> Parser::parseConstValue()
 {
     const Token t = current();
@@ -147,8 +157,7 @@ std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
 
     expect(Token::OP_ASSIGNMENT, L"=");
 
-    // will return a parse expression in the value of the variable
-    return nullptr;
+    return std::make_unique<VarDecStmt>(true, parseExpr(), var);
 }
 
 std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
@@ -164,10 +173,5 @@ std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
     expect(Token::OP_ASSIGNMENT);
     const std::wstring op = prev().value;
 
-    /*
-     *
-     * will get the expression here
-     */
-
-    return nullptr;
+    return std::make_unique<AssignmentStmt>(var.value(), op, parseExpr());
 }
