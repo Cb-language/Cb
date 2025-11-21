@@ -266,29 +266,47 @@ std::unique_ptr<HearStmt> Parser::parseHearStmt()
 
 std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
 {
-    std::vector<std::unique_ptr<VarCallExpr>> vars;
+    std::vector<std::unique_ptr<ConstValueExpr>> args;
+
     expect(Token::KEYWORD, L"play");
-    expect(
-        Token::PUNCTUATION, L"(", MissingBrace(current())
-        );
+    expect(Token::PUNCTUATION, L"(", MissingBrace(current()));
 
     while (true)
     {
-        vars.push_back(parseVarCallExpr());
-
         if (match(Token::PUNCTUATION, L")"))
         {
             advance();
             break;
         }
 
-        expect(Token::PUNCTUATION, L",", InvalidExpression(current()));
-    }
+        if (current().type == Token::CONST_STR)
+        {
+            args.push_back((parseConstValueExpr()));
+        }
+        else if (current().type == Token::CONST_CHAR)
+        {
+            args.push_back(parseConstValueExpr());
+        }
+        else if (current().type == Token::IDENTIFIER)
+        {
+            auto var = parseVarCallExpr();
+            args.push_back(std::make_unique<ConstValueExpr>(var->getType(), var->getName()));
+        }
+        else
+        {
+            InvalidExpression(current());
+        }
 
+        if (match(Token::PUNCTUATION, L","))
+        {
+            advance();
+        }
+    }
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-    return std::make_unique<PlayStmt>(std::move(vars));
+    return std::make_unique<PlayStmt>(args);
 }
+
 
 std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens)
 {

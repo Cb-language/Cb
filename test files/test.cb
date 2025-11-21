@@ -8,4 +8,6 @@ hear(c,f)║
 i♯║
 i♭║
 i♮║
-play(i)║
+play("const")║
+play(i, f, c "const")║
+play('c')║

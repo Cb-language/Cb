@@ -38,3 +38,8 @@ Type ConstValueExpr::getType() const
 {
     return type;
 }
+
+std::wstring ConstValueExpr::getValue() const
+{
+    return value;
+}
