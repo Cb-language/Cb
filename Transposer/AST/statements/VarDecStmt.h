@@ -14,7 +14,7 @@ private:
     const Var var;
 
 public:
-    VarDecStmt(bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var &var);
+    VarDecStmt(Scope* scope, FuncDeclStmt* funcDecl, bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var &var);
 
     bool isLegal() const override;
     std::string translateToCpp() const override;

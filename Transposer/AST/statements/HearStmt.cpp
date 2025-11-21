@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-HearStmt::HearStmt(const std::vector<std::unique_ptr<VarCallExpr>>& vars)
+HearStmt::HearStmt(Scope* scope, FuncDeclStmt* funcDecl, const std::vector<std::unique_ptr<VarCallExpr>>& vars) : Stmt(scope, funcDecl)
 {
     for (const auto& expr : vars)
     {

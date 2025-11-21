@@ -8,7 +8,7 @@ private:
     Type type;
     std::wstring value;
 public:
-    ConstValueExpr(const Type &type, const std::wstring &value);
+    ConstValueExpr(Scope* scope, FuncDeclStmt* funcDecl, const Type &type, const std::wstring &value);
     bool isLegal() const override;
     std::string translateToCpp() const override;
     Type getType() const override;

@@ -1,8 +1,8 @@
 #include "AssignmentStmt.h"
 
 
-AssignmentStmt::AssignmentStmt(std::unique_ptr<VarCallExpr> varExpr, const std::wstring& assignmentOp,
-                               std::unique_ptr<Expr> expr) : varExpr(std::move(varExpr)), assignmentOp(assignmentOp), expr(std::move(expr))
+AssignmentStmt::AssignmentStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<VarCallExpr> varExpr, const std::wstring& assignmentOp,
+                               std::unique_ptr<Expr> expr) : Stmt(scope, funcDecl), varExpr(std::move(varExpr)), assignmentOp(assignmentOp), expr(std::move(expr))
 {
 }
 

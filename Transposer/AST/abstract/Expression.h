@@ -7,9 +7,9 @@ class Expr : public Stmt
 {
 protected:
     bool hasParens;
-    explicit Expr(const bool hasParens) : hasParens(hasParens) {}
+    explicit Expr(Scope* scope, FuncDeclStmt* funcDecl, const bool hasParens) : Stmt(scope, funcDecl), hasParens(hasParens) {}
 public:
-    Expr() : Expr(false) {}
+    Expr(Scope* scope, FuncDeclStmt* funcDecl);
     ~Expr() override = default;
     virtual Type getType() const = 0;
     bool isLegal() const override = 0;
@@ -17,6 +17,10 @@ public:
 
     void setHasParens(const bool hasParens);
 };
+
+inline Expr::Expr(Scope* scope, FuncDeclStmt* funcDecl) : Expr(scope, funcDecl, false)
+{
+}
 
 inline void Expr::setHasParens(const bool hasParens)
 {this->hasParens = hasParens;}
