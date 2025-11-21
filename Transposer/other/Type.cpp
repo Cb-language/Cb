@@ -77,6 +77,21 @@ bool Type::operator!=(const std::wstring& other) const
     return !(*this == other);
 }
 
+bool Type::isNumberable() const
+{
+    return *this == L"degree";
+}
+
+bool Type::isStringable() const
+{
+    return *this == L"bar";
+}
+
+bool Type::isPrimitive() const
+{
+    return isNumberable() || isStringable();
+}
+
 std::wstring Type::getType() const
 {
     return type;

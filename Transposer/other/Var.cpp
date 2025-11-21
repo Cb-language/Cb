@@ -26,15 +26,15 @@ bool Var::operator==(const std::wstring& other) const
 
 bool Var::isNumberable() const
 {
-    return *this == L"degree";
+    return type.isNumberable();
 }
 
 bool Var::isStringable() const
 {
-    return *this == L"bar";
+    return type.isStringable();
 }
 
 bool Var::isPrimitive() const
 {
-    return isNumberable() || isStringable();
+    return type.isPrimitive();
 }
