@@ -293,5 +293,7 @@ std::unique_ptr<UnaryOperatorExpr> Parser::parseUnaryOperatorExpr()
         throw UnexpectedToken(current());
     }
 
+    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+
     return std::make_unique<UnaryOperatorExpr>(var.value(), op);
 }
