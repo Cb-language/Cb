@@ -4,6 +4,10 @@ VarCallExpr::VarCallExpr(const Var& var) : var(var)
 {
 }
 
+VarCallExpr::VarCallExpr(const VarCallExpr& other) : var(other.var)
+{
+}
+
 bool VarCallExpr::isLegal() const
 {
     return true;

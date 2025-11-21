@@ -17,4 +17,6 @@ public:
 
     void enterScope();
     void exitScope();
+
+    int getLevel() const;
 };

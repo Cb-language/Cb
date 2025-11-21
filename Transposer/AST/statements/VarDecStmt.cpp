@@ -16,17 +16,17 @@ bool VarDecStmt::isLegal() const
 
 std::string VarDecStmt::translateToCpp() const
 {
-    std::string ret = var.getType().translateTypeToCpp() + " " + Utils::wstrToStr(var.getName());
+    std::string ret = Utils::printTabs() + var.getType().translateTypeToCpp() + " " + Utils::wstrToStr(var.getName());
 
     if (hasStartingValue)
     {
         ret += " = " + startingValue->translateToCpp();
     }
-    else if (var.getType() == L"degree") // any numerable
+    else if (var.isNumberable())
     {
         ret += " = 0";
     }
 
-    ret += ";\n";
+    ret += ";";
     return ret;
 }

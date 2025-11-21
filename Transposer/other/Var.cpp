@@ -1,7 +1,3 @@
-//
-// Created by Cyber_User on 18/11/2025.
-//
-
 #include "Var.h"
 
 Var::Var(const Type& type, const std::wstring& name) : type(type), name(name)
@@ -26,4 +22,19 @@ bool Var::operator==(const Var& other) const
 bool Var::operator==(const std::wstring& other) const
 {
     return this->type == other;
+}
+
+bool Var::isNumberable() const
+{
+    return type.isNumberable();
+}
+
+bool Var::isStringable() const
+{
+    return type.isStringable();
+}
+
+bool Var::isPrimitive() const
+{
+    return type.isPrimitive();
 }
