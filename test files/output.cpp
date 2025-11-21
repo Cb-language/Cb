@@ -14,5 +14,6 @@ int main()
 	i++;
 	i--;
 	i = 0;
+	std::cout  << i;
 	return 0;
 }
