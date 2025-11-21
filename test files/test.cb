@@ -3,11 +3,11 @@ bar s = "Hello" + " world!"║
 bar str = s║
 str += s║
 freq f = i - .5║
-note c║
-hear(c,f)║
+note c = 67║
 i♯║
 i♭║
 i♮║
-play("const")║
-play(i, f, c, "const")║
-play('c')║
+playBar("const")║
+playBar(i, f, c, "const")║
+playBar('c')║
+hear(c,f)║

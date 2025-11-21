@@ -76,7 +76,7 @@ std::string Parser::translateToCpp() const
     std::ostringstream oss;
     oss << "#include <iostream>" << std::endl;
     oss << "#include <string>" << std::endl;
-    oss << std::endl << "int main()" << std::endl << "{" << std::endl;
+    oss << std::endl << "int main()" << std::endl << "{";
 
     for (const auto& stmt : stmts)
     {
