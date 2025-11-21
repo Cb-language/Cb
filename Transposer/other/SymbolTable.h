@@ -1,11 +1,14 @@
 #pragma once
 #include "Scope.h"
 
+class FuncDeclStmt; // TODO: remove this when making it
+
 class SymbolTable
 {
 private:
     std::unique_ptr<Scope> head;
     Scope* curr;
+    FuncDeclStmt* funcDecl;
 
 public:
     SymbolTable();
@@ -19,4 +22,9 @@ public:
     void exitScope();
 
     int getLevel() const;
+
+    void setFuncDecl(FuncDeclStmt* funcDecl);
+
+    Scope* getCurrScope() const;
+    FuncDeclStmt* getFuncDecl() const;
 };
