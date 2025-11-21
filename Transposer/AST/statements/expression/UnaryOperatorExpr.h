@@ -11,10 +11,10 @@ enum class UnaryOp {
 class UnaryOperatorExpr : public Expr
 {
 private:
-    const Var var;
+    const std::unique_ptr<VarCallExpr> var;
     const UnaryOp op;
 public:
-    UnaryOperatorExpr(const Var& var, const UnaryOp op);
+    UnaryOperatorExpr(std::unique_ptr<VarCallExpr>, const UnaryOp op);
     bool isLegal() const override;
     std::string translateToCpp() const override;
     Type getType() const override;

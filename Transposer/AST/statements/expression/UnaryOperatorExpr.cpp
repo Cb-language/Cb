@@ -1,12 +1,12 @@
 #include "UnaryOperatorExpr.h"
 
-UnaryOperatorExpr::UnaryOperatorExpr(const Var& var, const UnaryOp op)  : var(var), op(op)
+UnaryOperatorExpr::UnaryOperatorExpr(std::unique_ptr<VarCallExpr> var, const UnaryOp op)  : var(std::move(var)), op(op)
 {
 }
 
 bool UnaryOperatorExpr::isLegal() const
 {
-    if (var.getType() == L"degree")
+    if (var->getType() == L"degree")
     {
         return true;
     }
@@ -15,7 +15,7 @@ bool UnaryOperatorExpr::isLegal() const
 
 std::string UnaryOperatorExpr::translateToCpp() const
 {
-    std::string ret = Utils::wstrToStr(var.getName());
+    std::string ret = Utils::wstrToStr(var->getName());
     switch (op)
     {
         case UnaryOp::Zero:
@@ -37,5 +37,5 @@ std::string UnaryOperatorExpr::translateToCpp() const
 
 Type UnaryOperatorExpr::getType() const
 {
-    return var.getType();
+    return var->getType();
 }

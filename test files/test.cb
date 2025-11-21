@@ -5,3 +5,6 @@ str += s║
 freq f = i - .5║
 note c║
 hear(c,f)║
+i♯║
+i♭║
+i♮║
