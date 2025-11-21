@@ -14,7 +14,7 @@ private:
     const Var var;
     const UnaryOp op;
 public:
-    UnaryOperatorExpr(const Var var, const UnaryOp op);
+    UnaryOperatorExpr(const Var& var, const UnaryOp op);
     bool isLegal() const override;
     std::string translateToCpp() const override;
     Type getType() const override;
