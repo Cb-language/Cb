@@ -38,6 +38,10 @@ void Parser::parse()
         {
             stmts.push_back(parseHearStmt());
         }
+        else  if (match(Token::IDENTIFIER) && peek().type == Token::OP_UNARY)
+        {
+            stmts.push_back(parseUnaryOpExpr());
+        }
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
         {
             advance();
@@ -71,7 +75,7 @@ std::string Parser::translateToCpp() const
 
     for (const auto& stmt : stmts)
     {
-        oss << stmt->translateToCpp();
+        oss << std:: endl <<stmt->translateToCpp();
     }
 
     oss << std::endl << "\t" << "return 0;" << std::endl << "}" << std::endl;
@@ -256,8 +260,13 @@ std::unique_ptr<HearStmt> Parser::parseHearStmt()
     return std::make_unique<HearStmt>(std::move(vars));
 }
 
-std::unique_ptr<Expr> Parser::parseExpr(bool hasParens)
+std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens)
 {
+    if (match(Token::IDENTIFIER) && peek().type == Token::OP_UNARY)
+    {
+        return parseUnaryOpExpr();
+    }
+
     auto left = parsePrimary();
 
     auto expr = parseBinaryOpRight(0, std::move(left));
@@ -369,17 +378,13 @@ std::unique_ptr<VarCallExpr> Parser::parseVarCallExpr()
     return std::make_unique<VarCallExpr>(var.value());
 }
 
-std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOperatorExpr()
+std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOpExpr()
 {
-    std::optional<Var> var = symTable.getVar(expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())).value);
-
-    if (!var.has_value())
-    {
-        throw InvalidIdentifier(prev());
-    }
-
-    std::wstring value = expectAndGet(Token::OP_UNARY).value;
+    auto expr = parseVarCallExpr();
     UnaryOp op;
+
+    const std::wstring value = expectAndGet(Token::OP_UNARY).value;
+
     if (value == L"♮")
     {
         op = UnaryOp::Zero;
@@ -399,5 +404,5 @@ std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOperatorExpr()
 
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-    return std::make_unique<UnaryOpExpr>(var.value(), op);
+    return std::make_unique<UnaryOpExpr>(std::move(expr), op);
 }

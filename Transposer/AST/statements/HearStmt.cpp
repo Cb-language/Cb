@@ -33,7 +33,7 @@ std::string HearStmt::translateToCpp() const
         oss << " >> " << Utils::wstrToStr(var->getName());
     }
 
-    oss << ";" << std::endl;
+    oss << ";";
 
     return oss.str();
 }

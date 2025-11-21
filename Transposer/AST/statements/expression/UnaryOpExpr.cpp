@@ -15,7 +15,7 @@ bool UnaryOpExpr::isLegal() const
 
 std::string UnaryOpExpr::translateToCpp() const
 {
-    std::string ret = Utils::wstrToStr(var->getName());
+    std::string ret = Utils::printTabs() + Utils::wstrToStr(var->getName());
     switch (op)
     {
         case UnaryOp::Zero:

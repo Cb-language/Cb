@@ -27,6 +27,6 @@ std::string VarDecStmt::translateToCpp() const
         ret += " = 0";
     }
 
-    ret += ";\n";
+    ret += ";";
     return ret;
 }
