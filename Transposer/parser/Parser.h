@@ -46,10 +46,10 @@ private:
 
     // Expressions
 
-    std::unique_ptr<Expr> parseExpr();
+    std::unique_ptr<Expr> parseExpr(const bool hasParens = false);
     std::unique_ptr<Expr> parsePrimary();
     std::unique_ptr<Expr> parseBinaryOpRight(int exprPrec,  std::unique_ptr<Expr> left);
-    std::unique_ptr<ConstValueExpr> parseConstValue();
+    std::unique_ptr<ConstValueExpr> parseConstValueExpr();
     std::unique_ptr<VarCallExpr> parseVarCallExpr();
 
 public:

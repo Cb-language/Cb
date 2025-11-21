@@ -2,7 +2,8 @@
 
 #include <sstream>
 
-BinaryOpExpr::BinaryOpExpr(const std::wstring& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right) : op(op), left(std::move(left)), right(std::move(right))
+BinaryOpExpr::BinaryOpExpr(const std::wstring& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, const bool hasParens)
+: Expr(hasParens), op(op), left(std::move(left)), right(std::move(right))
 {
 }
 
@@ -93,20 +94,39 @@ std::string BinaryOpExpr::translateToCpp() const
 {
     const std::string leftStr = left->translateToCpp();
     const std::string rightStr = right->translateToCpp();
+    const std::string opStr = Utils::wstrToStr(op);
     std::ostringstream oss;
 
     if (op == L"//")
     {
-        oss << "(double)(" << leftStr << ")"
-        << " / (double)(" << rightStr << ")";
+        std::string leftStrClean = leftStr;
+        std::string rightStrClean = rightStr;
+        
+        if (leftStr.starts_with("(") && leftStr.ends_with(")"))
+        {
+            leftStrClean = leftStrClean.substr(1, leftStrClean.size() - 2);
+        }
+        
+        if (rightStr.starts_with("(") && rightStr.ends_with(")"))
+        {
+            rightStrClean = rightStrClean.substr(1, rightStrClean.size() - 2);
+        }
+        
+        oss << "static_cast<double>(" << leftStrClean << ")"
+        << " / static_cast<double>(" << rightStrClean << ")";
     }
     else if (left->getType().isStringable() && right->getType().isStringable())
     {
-        oss << "std::string(" << leftStr << ") " << Utils::wstrToStr(op) << " std::string(" << rightStr << ")";
+        oss << "std::string(" << leftStr << ") " << opStr << " std::string(" << rightStr << ")";
     }
     else
     {
-        oss << "(" << leftStr << ") " << Utils::wstrToStr(op) << " (" << rightStr << ")";
+        oss << leftStr << " " << opStr << " " << rightStr;
+    }
+
+    if (hasParens)
+    {
+        return "(" + oss.str() + ")";
     }
 
     return oss.str();
