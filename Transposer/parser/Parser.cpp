@@ -7,6 +7,7 @@
 #include "errorHandling/lexicalErrors/InvalidIdentifier.h"
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
+#include "errorHandling/syntaxErrors/MisplacedKeyword.h"
 #include "errorHandling/syntaxErrors/MissingBrace.h"
 #include "errorHandling/syntaxErrors/MissingIdentifier.h"
 #include "errorHandling/syntaxErrors/MissingSemicolon.h"
@@ -38,7 +39,7 @@ void Parser::parse()
         {
             stmts.push_back(parseHearStmt());
         }
-        else if (match(Token::KEYWORD, L"play"))
+        else if (match(Token::KEYWORD, L"play") || match(Token::KEYWORD, L"playBar"))
         {
             stmts.push_back(parsePlayStmt());
         }
@@ -267,7 +268,12 @@ std::unique_ptr<HearStmt> Parser::parseHearStmt()
 std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
 {
     std::vector<std::unique_ptr<VarCallExpr>> vars;
-    expect(Token::KEYWORD, L"play");
+    if (!match(Token::KEYWORD, L"play") && !match(Token::KEYWORD, L"playBar"))
+    {
+        throw UnexpectedToken(current());
+    }
+    const bool newline = current().value == L"playBar";
+    advance();
     expect(
         Token::PUNCTUATION, L"(", MissingBrace(current())
         );
@@ -287,7 +293,7 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
 
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-    return std::make_unique<PlayStmt>(std::move(vars));
+    return std::make_unique<PlayStmt>(std::move(vars), newline);
 }
 
 std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens)
