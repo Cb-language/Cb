@@ -17,6 +17,8 @@ FileManager::FileManager(const std::string& inPath, const std::string& outPath)
 			return;
 		}
 		inputFile.imbue(std::locale(inputFile.getloc(), new std::codecvt_utf8<wchar_t>));
+
+		this->inputPath = inPath;
 	}
 
 	std::string outputPath = outPath;
@@ -33,6 +35,8 @@ FileManager::FileManager(const std::string& inPath, const std::string& outPath)
 		std::cout << "Failed to open output file: " << outPath << std::endl;
 		return;
 	}
+
+	this->outputPath = outPath;
 }
 
 std::wstring FileManager::readFile()
@@ -62,4 +66,14 @@ bool FileManager::writeFile(const std::string& data)
 
 	std::cout << "Wrote to file succssesfully" << std::endl;
 	return true;
+}
+
+std::string FileManager::getInputPath() const
+{
+	return inputPath;
+}
+
+std::string FileManager::getOutputPath() const
+{
+	return outputPath;
 }

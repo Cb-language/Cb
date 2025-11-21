@@ -135,3 +135,6 @@ CMakeUserPresets.json
 *-prefix/
 
 # End of https://www.toptal.com/developers/gitignore/api/clion,cmake
+
+/test file/*
+!/test file/*.cb

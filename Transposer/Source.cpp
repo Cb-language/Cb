@@ -1,5 +1,6 @@
 ﻿#include <iostream>
 #include <map>
+#include <sstream>
 #include <windows.h>
 #include "token/Tokenizer.h"
 #include "FileManager.h"
@@ -49,11 +50,16 @@ int main(int argc, char* argv[])
     case RUN:
             std::cout << "Running Mode" << std::endl;
         break;
-        case COMPILE:
-            std::cout << "Compiling Mode" << std::endl;
-        break;
+    case COMPILE:
+        std::cout << "Compiling Mode" << std::endl;
+    break;
     default:
         std::cout << "Invalid mode. Use T for Translate, C for Compile, R for Run." << std::endl;
+    }
+
+    if (mode != TRANSLATE && std::system("g++ --version >nul 2>&1") != 0)
+    {
+        std::cerr << "g++ not installed" << std::endl;
     }
 
     FileManager fileManager(inPath, outPath);
@@ -78,6 +84,32 @@ int main(int argc, char* argv[])
 
     fileManager.writeFile(parser.translateToCpp());
 
+
+    std::string exePath = fileManager.getOutputPath();
+
+    if (mode == COMPILE || mode == RUN)
+    {
+        std::ostringstream cmd;
+        size_t pos = exePath.rfind(".cpp");
+        if (pos != std::string::npos)
+        {
+            exePath.replace(pos, 4, ".exe");
+        }
+        else
+        {
+            std::cerr << "Error with output path :(" << std::endl;
+            return 2;
+        }
+        cmd << "g++ \"" << fileManager.getOutputPath() << "\" -o \"" << exePath << "\"" << std::endl;
+
+        std::system(cmd.str().c_str());
+    }
+
+    if (mode == RUN)
+    {
+        exePath = "\"" + exePath + "\"";
+        std::system(exePath.c_str());
+    }
 
     return 0;
 }

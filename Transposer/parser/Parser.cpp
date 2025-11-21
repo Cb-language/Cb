@@ -7,6 +7,7 @@
 #include "errorHandling/lexicalErrors/InvalidIdentifier.h"
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
+#include "errorHandling/syntaxErrors/MisplacedKeyword.h"
 #include "errorHandling/syntaxErrors/MissingBrace.h"
 #include "errorHandling/syntaxErrors/MissingIdentifier.h"
 #include "errorHandling/syntaxErrors/MissingSemicolon.h"
@@ -37,6 +38,10 @@ void Parser::parse()
         else if (match(Token::KEYWORD, L"hear"))
         {
             stmts.push_back(parseHearStmt());
+        }
+        else if (match(Token::KEYWORD, L"play") || match(Token::KEYWORD, L"playBar"))
+        {
+            stmts.push_back(parsePlayStmt());
         }
         else  if (match(Token::IDENTIFIER) && peek().type == Token::OP_UNARY)
         {
@@ -71,7 +76,7 @@ std::string Parser::translateToCpp() const
     std::ostringstream oss;
     oss << "#include <iostream>" << std::endl;
     oss << "#include <string>" << std::endl;
-    oss << std::endl << "int main()" << std::endl << "{" << std::endl;
+    oss << std::endl << "int main()" << std::endl << "{";
 
     for (const auto& stmt : stmts)
     {
@@ -259,6 +264,63 @@ std::unique_ptr<HearStmt> Parser::parseHearStmt()
 
     return std::make_unique<HearStmt>(std::move(vars));
 }
+
+std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
+{
+    bool newline = false;
+    std::vector<std::unique_ptr<Expr>> args;
+
+    if (match(Token::KEYWORD, L"play"))
+    {
+        advance();
+    }
+    else if (match(Token::KEYWORD, L"playBar"))
+    {
+        newline = true;
+        advance();
+    }
+    else
+    {
+        throw UnexpectedToken(current());
+    }
+
+    expect(Token::PUNCTUATION, L"(", MissingBrace(current()));
+
+    while (true)
+    {
+
+        std::unique_ptr<Expr> expr;
+
+        if (current().type == Token::CONST_STR || current().type == Token::CONST_CHAR)
+        {
+            expr = parseConstValueExpr();
+        }
+        else if (current().type == Token::IDENTIFIER)
+        {
+            expr = parseVarCallExpr();
+        }
+        else
+        {
+            InvalidExpression(current());
+        }
+
+        args.push_back(std::move(expr));
+
+        if (match(Token::PUNCTUATION, L")"))
+        {
+            advance();
+            break;
+        }
+
+        expect(Token::PUNCTUATION, L",", InvalidExpression(current()));
+    }
+
+    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+
+    return std::make_unique<PlayStmt>(args, newline);
+}
+
+
 
 std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens)
 {
