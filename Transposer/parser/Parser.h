@@ -48,6 +48,7 @@ private:
     std::unique_ptr<Expr> parseExpr();
     std::unique_ptr<ConstValueExpr> parseConstValue();
     std::unique_ptr<VarCallExpr> parseVarCallExpr();
+    std::unique_ptr<UnaryOperatorExpr> parseUnaryOperatorExpr();
 
 public:
     explicit Parser(const std::vector<Token>& tokens);
