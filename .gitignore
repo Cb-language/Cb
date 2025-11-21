@@ -135,3 +135,9 @@ CMakeUserPresets.json
 *-prefix/
 
 # End of https://www.toptal.com/developers/gitignore/api/clion,cmake
+
+# Ignore all .exe and .cpp files in "test files" folder
+/test files/*.exe
+/test files/*.cpp
+/test files/**/*.exe
+/test files/**/*.cpp

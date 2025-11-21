@@ -8,6 +8,6 @@ i♯║
 i♭║
 i♮║
 playBar("const")║
-playBar(i, f, c, "const")║
+playBar(i, ' ', f, '\n',c, "const")║
 playBar('c')║
 hear(c,f)║
