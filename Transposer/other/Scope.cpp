@@ -70,3 +70,18 @@ void Scope::addVar(const Type& type, const Token& token)
 
     vars.push_back(v);
 }
+
+int Scope::getLevel() const
+{
+    int level = 0;
+
+    const Scope* current = parent;
+
+    while (current != nullptr)
+    {
+        ++level;
+        current = current->parent;
+    }
+
+    return level;
+}

@@ -22,6 +22,12 @@ public:
     bool operator!=(const Type& other) const;
     bool operator==(const std::wstring &other) const;
     bool operator!=(const std::wstring &other) const;
+
+    bool isNumberable() const;
+    bool isStringable() const;
+
+    bool isPrimitive() const;
+
     std::wstring getType() const;
 
     std::string translateTypeToCpp() const;

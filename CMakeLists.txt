@@ -81,6 +81,10 @@ add_executable(Transposer
         Transposer/errorHandling/lexicalErrors/InvalidIdentifier.h
         Transposer/AST/statements/expression/VarCallExpr.cpp
         Transposer/AST/statements/expression/VarCallExpr.h
+        Transposer/AST/statements/expression/BinaryOpExpr.cpp
+        Transposer/AST/statements/expression/BinaryOpExpr.h
+        Transposer/AST/statements/HearStmt.cpp
+        Transposer/AST/statements/HearStmt.h
         Transposer/AST/statements/expression/UnaryOperatorExpr.cpp
         Transposer/AST/statements/expression/UnaryOperatorExpr.h
 )

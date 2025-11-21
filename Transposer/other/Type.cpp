@@ -15,7 +15,7 @@ const std::unordered_map<std::wstring, std::unordered_set<std::wstring>> Type::c
     {L"bar",     {L"bar"}},                   // String -> only String
     {L"note",    {L"note", L"degree", L"freq"}}, // Char -> Int, Double
     {L"mute",    {L"mute", L"degree", L"freq"}}, // Bool -> Int, Double
-    {L"degree",  {L"degree", L"note", L"freq", L"bar"}}, // Int -> Char, Double, Str
+    {L"degree",  {L"degree", L"note", L"freq"}}, // Int -> Char, Double
     {L"freq",    {L"freq", L"degree", L"note"}}, // Double -> Int, Char
     //{L"scale",   {L"scale"}},               // Array - TODO: add this in sprint 3
     {L"fermata", {}}                          // Void -> nothing
@@ -75,6 +75,21 @@ bool Type::operator==(const std::wstring& other) const
 bool Type::operator!=(const std::wstring& other) const
 {
     return !(*this == other);
+}
+
+bool Type::isNumberable() const
+{
+    return *this == L"degree";
+}
+
+bool Type::isStringable() const
+{
+    return *this == L"bar";
+}
+
+bool Type::isPrimitive() const
+{
+    return isNumberable() || isStringable();
 }
 
 std::wstring Type::getType() const

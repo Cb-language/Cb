@@ -1,17 +1,25 @@
 #include "Parser.h"
 
 #include <memory>
+#include <sstream>
 #include <vector>
 
 #include "errorHandling/lexicalErrors/InvalidIdentifier.h"
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
+#include "errorHandling/syntaxErrors/MissingBrace.h"
 #include "errorHandling/syntaxErrors/MissingIdentifier.h"
 #include "errorHandling/syntaxErrors/MissingSemicolon.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), symTable(SymbolTable())
 {
+    Utils::init(&symTable);
+}
+
+Parser::~Parser()
+{
+    Utils::reset();
 }
 
 void Parser::parse()
@@ -25,6 +33,14 @@ void Parser::parse()
         else if (match(Token::IDENTIFIER) && (peek().type == Token::OP_ASSIGNMENT || (peek().type == Token::PUNCTUATION && peek().value == L"║"))) // if an assignment (have identifier [= expr] ║ )
         {
             stmts.push_back(parseAssignmentStmt());
+        }
+        else if (match(Token::KEYWORD, L"hear"))
+        {
+            stmts.push_back(parseHearStmt());
+        }
+        else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
+        {
+            advance();
         }
         else
         {
@@ -48,14 +64,19 @@ bool Parser::checkLegal() const
 
 std::string Parser::translateToCpp() const
 {
-    std::string result;
+    std::ostringstream oss;
+    oss << "#include <iostream>" << std::endl;
+    oss << "#include <string>" << std::endl;
+    oss << std::endl << "int main()" << std::endl << "{" << std::endl;
 
     for (const auto& stmt : stmts)
     {
-        result += stmt->translateToCpp();
+        oss << stmt->translateToCpp();
     }
 
-    return result;
+    oss << std::endl << "\t" << "return 0;" << std::endl << "}" << std::endl;
+
+    return oss.str();
 }
 
 const Token& Parser::current() const
@@ -188,7 +209,7 @@ std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
 
     expect(Token::OP_ASSIGNMENT, L"=");
 
-    std::unique_ptr<Expr> expr = parseExpr();
+    auto expr = parseExpr();
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
     symTable.addVar(varType, identifierToken); // to avoid degree x = x + 1║ ...
     return std::make_unique<VarDecStmt>(true, std::move(expr), var);
@@ -196,20 +217,64 @@ std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
 
 std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
 {
-    std::unique_ptr<VarCallExpr> var = parseVarCallExpr();
+    auto var = parseVarCallExpr();
 
     const std::wstring op = expectAndGet(Token::OP_ASSIGNMENT).value;
 
+
+    auto expr = parseExpr();
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-    return std::make_unique<AssignmentStmt>(std::move(var), op, parseExpr());
+    return std::make_unique<AssignmentStmt>(std::move(var), op, std::move(expr));
 }
 
-std::unique_ptr<Expr> Parser::parseExpr()
+std::unique_ptr<HearStmt> Parser::parseHearStmt()
 {
-    if (match(Token::CONST_BOOL) || match(Token::CONST_STR) || match(Token::CONST_INT) || match(Token::CONST_FLOAT) || match(Token::CONST_CHAR) )
+    std::vector<std::unique_ptr<VarCallExpr>> vars;
+    expect(Token::KEYWORD, L"hear");
+    expect(
+        Token::PUNCTUATION, L"(", MissingBrace(current())
+        );
+
+    while (true)
     {
-        return parseConstValue();
+        vars.push_back(parseVarCallExpr());
+
+        if (match(Token::PUNCTUATION, L")"))
+        {
+            advance();
+            break;
+        }
+
+        expect(
+            Token::PUNCTUATION, L",", InvalidExpression(current())
+            );
+    }
+
+    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+
+    return std::make_unique<HearStmt>(std::move(vars));
+}
+
+std::unique_ptr<Expr> Parser::parseExpr(bool hasParens)
+{
+    auto left = parsePrimary();
+
+    auto expr = parseBinaryOpRight(0, std::move(left));
+
+    if (hasParens)
+        expr->setHasParens(true); // only wrap the top-level expr
+
+    return expr;
+}
+
+std::unique_ptr<Expr> Parser::parsePrimary()
+{
+    if (match(Token::CONST_BOOL) || match(Token::CONST_STR) ||
+        match(Token::CONST_INT)  || match(Token::CONST_FLOAT) ||
+        match(Token::CONST_CHAR))
+    {
+        return parseConstValueExpr();
     }
 
     if (match(Token::IDENTIFIER))
@@ -217,10 +282,49 @@ std::unique_ptr<Expr> Parser::parseExpr()
         return parseVarCallExpr();
     }
 
+    if (match(Token::PUNCTUATION, L"("))
+    {
+        advance();
+        auto expr = parseExpr(true);
+        expect(Token::PUNCTUATION, L")");
+        return expr;
+    }
+
     throw UnexpectedToken(current());
 }
 
-std::unique_ptr<ConstValueExpr> Parser::parseConstValue()
+std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<Expr> left)
+{
+    while (true)
+    {
+        if (!match(Token::OP_BINARY))
+            return left;
+
+        std::wstring op = current().value;
+        int prec = BinaryOpExpr::getPrecedence(op);
+
+        if (prec < exprPrec)
+            return left;
+
+        advance();
+
+        auto right = parsePrimary();
+
+        // Lookahead for next operator to handle higher precedence
+        if (match(Token::OP_BINARY))
+        {
+            int nextPrec = BinaryOpExpr::getPrecedence(current().value);
+            if (nextPrec > prec)
+            {
+                right = parseBinaryOpRight(prec + 1, std::move(right));
+            }
+        }
+
+        left = std::make_unique<BinaryOpExpr>(op, std::move(left), std::move(right));
+    }
+}
+
+std::unique_ptr<ConstValueExpr> Parser::parseConstValueExpr()
 {
     const Token t = current();
     const Token::TokenType tokenType = t.type;
