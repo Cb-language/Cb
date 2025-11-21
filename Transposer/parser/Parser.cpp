@@ -38,6 +38,10 @@ void Parser::parse()
         {
             stmts.push_back(parseHearStmt());
         }
+        else if (match(Token::KEYWORD, L"play"))
+        {
+            stmts.push_back(parsePlayStmt());
+        }
         else  if (match(Token::IDENTIFIER) && peek().type == Token::OP_UNARY)
         {
             stmts.push_back(parseUnaryOpExpr());
