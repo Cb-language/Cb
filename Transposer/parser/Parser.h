@@ -51,6 +51,7 @@ private:
     std::unique_ptr<Expr> parseBinaryOpRight(int exprPrec,  std::unique_ptr<Expr> left);
     std::unique_ptr<ConstValueExpr> parseConstValueExpr();
     std::unique_ptr<VarCallExpr> parseVarCallExpr();
+    std::unique_ptr<UnaryOperatorExpr> parseUnaryOperatorExpr();
 
 public:
     explicit Parser(const std::vector<Token>& tokens);

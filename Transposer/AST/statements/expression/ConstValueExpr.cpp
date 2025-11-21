@@ -9,7 +9,8 @@ ConstValueExpr::ConstValueExpr(const Type &type, const std::wstring &value) : ty
 
 bool ConstValueExpr::isLegal() const
 {
-    if (value.empty()) {
+    if (value.empty())
+    {
         return false;
     }
     // literal is always legal
