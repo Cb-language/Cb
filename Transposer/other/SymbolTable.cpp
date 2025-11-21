@@ -32,3 +32,8 @@ void SymbolTable::exitScope()
 {
     curr = curr->getParent();
 }
+
+int SymbolTable::getLevel() const
+{
+    return curr->getLevel();
+}

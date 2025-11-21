@@ -18,4 +18,6 @@ public:
     Type getType() const override;
     bool isLegal() const override;
     std::string translateToCpp() const override;
+
+    static int getPrecedence(const std::wstring &op) ;
 };

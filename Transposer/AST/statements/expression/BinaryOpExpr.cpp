@@ -1,5 +1,7 @@
 #include "BinaryOpExpr.h"
 
+#include <sstream>
+
 BinaryOpExpr::BinaryOpExpr(const std::wstring& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right) : op(op), left(std::move(left)), right(std::move(right))
 {
 }
@@ -89,5 +91,45 @@ bool BinaryOpExpr::isLegal() const
 
 std::string BinaryOpExpr::translateToCpp() const
 {
-    return left->translateToCpp() + " " + Utils::wstrToStr(op) + " " + right->translateToCpp();
+    const std::string leftStr = left->translateToCpp();
+    const std::string rightStr = right->translateToCpp();
+    std::ostringstream oss;
+
+    if (op == L"//")
+    {
+        oss << "(double)(" << leftStr << ")"
+        << " / (double)(" << rightStr << ")";
+    }
+    else if (left->getType().isStringable() && right->getType().isStringable())
+    {
+        oss << "std::string(" << leftStr << ") " << Utils::wstrToStr(op) << " std::string(" << rightStr << ")";
+    }
+    else
+    {
+        oss << "(" << leftStr << ") " << Utils::wstrToStr(op) << " (" << rightStr << ")";
+    }
+
+    return oss.str();
+}
+
+int BinaryOpExpr::getPrecedence(const std::wstring& op)
+{
+    // Multiplicative
+    if (op == L"*" || op == L"/" || op == L"%" || op == L"//")
+        return 3;
+
+    // Additive
+    if (op == L"+" || op == L"-")
+        return 2;
+
+    // Relational
+    if (op == L"<"  || op == L">" ||
+        op == L"<=" || op == L">=")
+        return 1;
+
+    // Equality
+    if (op == L"==" || op == L"!=")
+        return 1;
+
+    return 0;
 }
