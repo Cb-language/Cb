@@ -3,7 +3,8 @@
 #include <algorithm>
 
 
-ConstValueExpr::ConstValueExpr(const Type &type, const std::wstring &value) : type(type), value(value)
+ConstValueExpr::ConstValueExpr(Scope* scope, FuncDeclStmt* funcDecl, const Type &type, const std::wstring &value)
+    : Expr(scope, funcDecl), type(type), value(value)
 {
 }
 

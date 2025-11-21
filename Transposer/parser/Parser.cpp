@@ -213,7 +213,7 @@ std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
     {
         symTable.addVar(varType, identifierToken);
         advance();
-        return std::make_unique<VarDecStmt>(false, nullptr, var);
+        return std::make_unique<VarDecStmt>(symTable.getCurrScope(), symTable.getFuncDecl(), false, nullptr, var);
     }
 
     expect(Token::OP_ASSIGNMENT, L"=");
@@ -221,7 +221,7 @@ std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
     auto expr = parseExpr();
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
     symTable.addVar(varType, identifierToken); // to avoid degree x = x + 1║ ...
-    return std::make_unique<VarDecStmt>(true, std::move(expr), var);
+    return std::make_unique<VarDecStmt>(symTable.getCurrScope(), symTable.getFuncDecl(), true, std::move(expr), var);
 }
 
 std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
@@ -234,7 +234,7 @@ std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
     auto expr = parseExpr();
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-    return std::make_unique<AssignmentStmt>(std::move(var), op, std::move(expr));
+    return std::make_unique<AssignmentStmt>(symTable.getCurrScope(), symTable.getFuncDecl(), std::move(var), op, std::move(expr));
 }
 
 std::unique_ptr<HearStmt> Parser::parseHearStmt()
@@ -262,7 +262,7 @@ std::unique_ptr<HearStmt> Parser::parseHearStmt()
 
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-    return std::make_unique<HearStmt>(std::move(vars));
+    return std::make_unique<HearStmt>(symTable.getCurrScope(), symTable.getFuncDecl(), std::move(vars));
 }
 
 std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
@@ -317,7 +317,7 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
 
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-    return std::make_unique<PlayStmt>(args, newline);
+    return std::make_unique<PlayStmt>(symTable.getCurrScope(), symTable.getFuncDecl(), args, newline);
 }
 
 
@@ -391,7 +391,7 @@ std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<E
             }
         }
 
-        left = std::make_unique<BinaryOpExpr>(op, std::move(left), std::move(right));
+        left = std::make_unique<BinaryOpExpr>(symTable.getCurrScope(), symTable.getFuncDecl(), op, std::move(left), std::move(right));
     }
 }
 
@@ -423,7 +423,7 @@ std::unique_ptr<ConstValueExpr> Parser::parseConstValueExpr()
     }
 
     advance();
-    return std::make_unique<ConstValueExpr>(Type(type), t.value);
+    return std::make_unique<ConstValueExpr>(symTable.getCurrScope(), symTable.getFuncDecl(), Type(type), t.value);
 }
 
 std::unique_ptr<VarCallExpr> Parser::parseVarCallExpr()
@@ -437,7 +437,7 @@ std::unique_ptr<VarCallExpr> Parser::parseVarCallExpr()
         throw InvalidIdentifier(prev());
     }
 
-    return std::make_unique<VarCallExpr>(var.value());
+    return std::make_unique<VarCallExpr>(symTable.getCurrScope(), symTable.getFuncDecl(), var.value());
 }
 
 std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOpExpr()
@@ -466,5 +466,5 @@ std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOpExpr()
 
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-    return std::make_unique<UnaryOpExpr>(std::move(expr), op);
+    return std::make_unique<UnaryOpExpr>(symTable.getCurrScope(), symTable.getFuncDecl(), std::move(expr), op);
 }

@@ -1,6 +1,6 @@
 #include "PlayStmt.h"
 
-PlayStmt::PlayStmt(std::vector<std::unique_ptr<Expr>> &vars, bool printLine) : printLine(printLine)
+PlayStmt::PlayStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Expr>> &vars, bool printLine) : Stmt(scope, funcDecl), printLine(printLine)
 {
     for (auto& expr : vars)
     {

@@ -1,6 +1,7 @@
 #include "UnaryOpExpr.h"
 
-UnaryOpExpr::UnaryOpExpr(std::unique_ptr<VarCallExpr> var, const UnaryOp op)  : var(std::move(var)), op(op)
+UnaryOpExpr::UnaryOpExpr(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<VarCallExpr> var, const UnaryOp op)
+: Expr(scope, funcDecl), var(std::move(var)), op(op)
 {
 }
 

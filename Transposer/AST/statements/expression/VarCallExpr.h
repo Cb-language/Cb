@@ -8,7 +8,7 @@ private:
     const Var var;
 
 public:
-    explicit VarCallExpr(const Var& var);
+    VarCallExpr(Scope* scope, FuncDeclStmt* funcDecl, const Var& var);
     VarCallExpr(const VarCallExpr& other);
     bool isLegal() const override;
     std::string translateToCpp() const override;
