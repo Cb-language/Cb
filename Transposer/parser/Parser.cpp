@@ -369,7 +369,7 @@ std::unique_ptr<VarCallExpr> Parser::parseVarCallExpr()
     return std::make_unique<VarCallExpr>(var.value());
 }
 
-std::unique_ptr<UnaryOperatorExpr> Parser::parseUnaryOperatorExpr()
+std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOperatorExpr()
 {
     std::optional<Var> var = symTable.getVar(expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())).value);
 
@@ -399,5 +399,5 @@ std::unique_ptr<UnaryOperatorExpr> Parser::parseUnaryOperatorExpr()
 
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-    return std::make_unique<UnaryOperatorExpr>(var.value(), op);
+    return std::make_unique<UnaryOpExpr>(var.value(), op);
 }
