@@ -81,6 +81,8 @@ add_executable(Transposer
         Transposer/errorHandling/lexicalErrors/InvalidIdentifier.h
         Transposer/AST/statements/expression/VarCallExpr.cpp
         Transposer/AST/statements/expression/VarCallExpr.h
+        Transposer/AST/statements/expression/UnaryOperatorExpr.cpp
+        Transposer/AST/statements/expression/UnaryOperatorExpr.h
 )
 
 include(FetchContent)
