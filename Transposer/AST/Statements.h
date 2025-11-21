@@ -8,3 +8,4 @@
 #include "statements/VarDecStmt.h"
 #include "statements/AssignmentStmt.h"
 #include "statements/expression/VarCallExpr.h"
+#include "statements/expression/BinaryOpExpr.h"
