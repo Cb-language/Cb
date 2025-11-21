@@ -9,5 +9,5 @@ i♯║
 i♭║
 i♮║
 play("const")║
-play(i, f, c "const")║
+play(i, f, c, "const")║
 play('c')║

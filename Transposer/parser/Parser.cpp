@@ -39,7 +39,7 @@ void Parser::parse()
         {
             stmts.push_back(parseHearStmt());
         }
-        else if (match(Token::KEYWORD, L"play"))
+        else if (match(Token::KEYWORD, L"play") || match(Token::KEYWORD, L"playBar"))
         {
             stmts.push_back(parsePlayStmt());
         }
@@ -288,11 +288,6 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
 
     while (true)
     {
-        if (match(Token::PUNCTUATION, L")"))
-        {
-            advance();
-            break;
-        }
 
         std::unique_ptr<Expr> expr;
 
@@ -309,36 +304,15 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
             InvalidExpression(current());
         }
 
-        while (match(Token::OP_BINARY, L"+"))
-        {
-            advance();
-
-            std::unique_ptr<Expr> right;
-
-            if (current().type == Token::CONST_STR ||
-                current().type == Token::CONST_CHAR)
-            {
-                right = parseConstValueExpr();
-            }
-            else if (current().type == Token::IDENTIFIER)
-            {
-                right = parseVarCallExpr();
-            }
-            else
-            {
-                InvalidExpression(current());
-            }
-
-            expr = std::make_unique<BinaryOpExpr>(L"+", std::move(expr), std::move(right));
-        }
-
         args.push_back(std::move(expr));
 
-        if (match(Token::PUNCTUATION, L","))
+        if (match(Token::PUNCTUATION, L")"))
         {
             advance();
-            continue;
+            break;
         }
+
+        expect(Token::PUNCTUATION, L",", InvalidExpression(current()));
     }
 
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
