@@ -13,7 +13,7 @@ private:
     const std::unique_ptr<Expr> right;
 
 public:
-    BinaryOpExpr(const std::wstring& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right);
+    BinaryOpExpr(const std::wstring& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, const bool hasParens = false);
 
     Type getType() const override;
     bool isLegal() const override;

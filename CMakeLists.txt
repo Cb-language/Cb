@@ -83,6 +83,8 @@ add_executable(Transposer
         Transposer/AST/statements/expression/VarCallExpr.h
         Transposer/AST/statements/expression/BinaryOpExpr.cpp
         Transposer/AST/statements/expression/BinaryOpExpr.h
+        Transposer/AST/statements/HearStmt.cpp
+        Transposer/AST/statements/HearStmt.h
 )
 
 include(FetchContent)

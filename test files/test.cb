@@ -1,4 +1,7 @@
-degree i = (33 / 2 + 1)%2║
+degree i = (33 // (2*5) + 1) * 3║
 bar s = "Hello" + " world!"║
 bar str = s║
 str += s║
+freq f = i - .5║
+note c║
+hear(c,f)║

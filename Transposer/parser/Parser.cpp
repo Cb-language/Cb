@@ -7,6 +7,7 @@
 #include "errorHandling/lexicalErrors/InvalidIdentifier.h"
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
+#include "errorHandling/syntaxErrors/MissingBrace.h"
 #include "errorHandling/syntaxErrors/MissingIdentifier.h"
 #include "errorHandling/syntaxErrors/MissingSemicolon.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
@@ -32,6 +33,14 @@ void Parser::parse()
         else if (match(Token::IDENTIFIER) && (peek().type == Token::OP_ASSIGNMENT || (peek().type == Token::PUNCTUATION && peek().value == L"║"))) // if an assignment (have identifier [= expr] ║ )
         {
             stmts.push_back(parseAssignmentStmt());
+        }
+        else if (match(Token::KEYWORD, L"hear"))
+        {
+            stmts.push_back(parseHearStmt());
+        }
+        else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
+        {
+            advance();
         }
         else
         {
@@ -65,7 +74,7 @@ std::string Parser::translateToCpp() const
         oss << stmt->translateToCpp();
     }
 
-    oss << std::endl << "\treturn 0;" << std::endl << "}" << std::endl;
+    oss << std::endl << "\t" << "return 0;" << std::endl << "}" << std::endl;
 
     return oss.str();
 }
@@ -219,10 +228,44 @@ std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
     return std::make_unique<AssignmentStmt>(std::move(var), op, std::move(expr));
 }
 
-std::unique_ptr<Expr> Parser::parseExpr()
+std::unique_ptr<HearStmt> Parser::parseHearStmt()
 {
-        auto left = parsePrimary();
-        return parseBinaryOpRight(0, std::move(left));
+    std::vector<std::unique_ptr<VarCallExpr>> vars;
+    expect(Token::KEYWORD, L"hear");
+    expect(
+        Token::PUNCTUATION, L"(", MissingBrace(current())
+        );
+
+    while (true)
+    {
+        vars.push_back(parseVarCallExpr());
+
+        if (match(Token::PUNCTUATION, L")"))
+        {
+            advance();
+            break;
+        }
+
+        expect(
+            Token::PUNCTUATION, L",", InvalidExpression(current())
+            );
+    }
+
+    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+
+    return std::make_unique<HearStmt>(std::move(vars));
+}
+
+std::unique_ptr<Expr> Parser::parseExpr(bool hasParens)
+{
+    auto left = parsePrimary();
+
+    auto expr = parseBinaryOpRight(0, std::move(left));
+
+    if (hasParens)
+        expr->setHasParens(true); // only wrap the top-level expr
+
+    return expr;
 }
 
 std::unique_ptr<Expr> Parser::parsePrimary()
@@ -231,7 +274,7 @@ std::unique_ptr<Expr> Parser::parsePrimary()
         match(Token::CONST_INT)  || match(Token::CONST_FLOAT) ||
         match(Token::CONST_CHAR))
     {
-        return parseConstValue();
+        return parseConstValueExpr();
     }
 
     if (match(Token::IDENTIFIER))
@@ -242,7 +285,7 @@ std::unique_ptr<Expr> Parser::parsePrimary()
     if (match(Token::PUNCTUATION, L"("))
     {
         advance();
-        auto expr = parseExpr();
+        auto expr = parseExpr(true);
         expect(Token::PUNCTUATION, L")");
         return expr;
     }
@@ -250,7 +293,7 @@ std::unique_ptr<Expr> Parser::parsePrimary()
     throw UnexpectedToken(current());
 }
 
-std::unique_ptr<Expr> Parser::parseBinaryOpRight(const int exprPrec,  std::unique_ptr<Expr> left)
+std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<Expr> left)
 {
     while (true)
     {
@@ -263,10 +306,11 @@ std::unique_ptr<Expr> Parser::parseBinaryOpRight(const int exprPrec,  std::uniqu
         if (prec < exprPrec)
             return left;
 
-        advance(); // consume op
+        advance();
 
         auto right = parsePrimary();
 
+        // Lookahead for next operator to handle higher precedence
         if (match(Token::OP_BINARY))
         {
             int nextPrec = BinaryOpExpr::getPrecedence(current().value);
@@ -280,7 +324,7 @@ std::unique_ptr<Expr> Parser::parseBinaryOpRight(const int exprPrec,  std::uniqu
     }
 }
 
-std::unique_ptr<ConstValueExpr> Parser::parseConstValue()
+std::unique_ptr<ConstValueExpr> Parser::parseConstValueExpr()
 {
     const Token t = current();
     const Token::TokenType tokenType = t.type;
