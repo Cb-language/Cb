@@ -1,5 +1,7 @@
 #include "ConstValueExpr.h"
 
+#include <algorithm>
+
 
 ConstValueExpr::ConstValueExpr(const Type &type, const std::wstring &value) : type(type), value(value)
 {
@@ -23,8 +25,9 @@ std::string ConstValueExpr::translateToCpp() const
 
     if (type == L"bar")
     {
-        const std::string content = Utils::wstrToStr(value);
-        return "R\"(" + content.substr(1, content.size() - 2) + ")\""; // removes the \" at the start and the end
+        std::string content = Utils::wstrToStr(value);
+        std::ranges::replace(content, '\n', ' ');
+        return content;
     }
 
     return Utils::wstrToStr(value);

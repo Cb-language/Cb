@@ -16,4 +16,9 @@ public:
     bool operator==(const Var& other) const;
 
     bool operator==(const std::wstring& other) const;
+
+    bool isNumberable() const;
+    bool isStringable() const;
+
+    bool isPrimitive() const;
 };

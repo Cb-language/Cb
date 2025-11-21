@@ -22,7 +22,7 @@ std::string VarDecStmt::translateToCpp() const
     {
         ret += " = " + startingValue->translateToCpp();
     }
-    else if (var.getType() == L"degree") // any numerable
+    else if (var.isNumberable())
     {
         ret += " = 0";
     }
