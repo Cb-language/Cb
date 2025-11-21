@@ -7,6 +7,7 @@
 #include "errorHandling/lexicalErrors/InvalidIdentifier.h"
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
+#include "errorHandling/syntaxErrors/MisplacedKeyword.h"
 #include "errorHandling/syntaxErrors/MissingBrace.h"
 #include "errorHandling/syntaxErrors/MissingIdentifier.h"
 #include "errorHandling/syntaxErrors/MissingSemicolon.h"
@@ -270,9 +271,20 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
 
     expect(Token::KEYWORD, L"play");
     expect(Token::PUNCTUATION, L"(", MissingBrace(current()));
+    std::vector<std::unique_ptr<VarCallExpr>> vars;
+    if (!match(Token::KEYWORD, L"play") && !match(Token::KEYWORD, L"playBar"))
+    {
+        throw UnexpectedToken(current());
+    }
+    const bool newline = current().value == L"playBar";
+    advance();
+    expect(
+        Token::PUNCTUATION, L"(", MissingBrace(current())
+        );
 
     while (true)
     {
+
         if (match(Token::PUNCTUATION, L")"))
         {
             advance();
