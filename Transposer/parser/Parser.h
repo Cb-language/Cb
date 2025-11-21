@@ -42,6 +42,7 @@ private:
 
     std::unique_ptr<VarDecStmt> parseVarDecStmt();
     std::unique_ptr<AssignmentStmt> parseAssignmentStmt();
+    std::unique_ptr<HearStmt> parseHearStmt();
 
     // Expressions
 

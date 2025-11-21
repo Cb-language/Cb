@@ -8,6 +8,8 @@ int main()
 	std::string str = s;
 	str += s;
 	double f = (i) - (0.5);
+	char c = 0;
+	std::cin >> c >> f;
 
 	return 0;
 }

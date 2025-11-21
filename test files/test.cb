@@ -3,3 +3,5 @@ bar s = "Hello" + " world!"║
 bar str = s║
 str += s║
 freq f = i - .5║
+note c║
+hear(c,f)║

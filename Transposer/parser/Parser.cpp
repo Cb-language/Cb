@@ -7,6 +7,7 @@
 #include "errorHandling/lexicalErrors/InvalidIdentifier.h"
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
+#include "errorHandling/syntaxErrors/MissingBrace.h"
 #include "errorHandling/syntaxErrors/MissingIdentifier.h"
 #include "errorHandling/syntaxErrors/MissingSemicolon.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
@@ -32,6 +33,10 @@ void Parser::parse()
         else if (match(Token::IDENTIFIER) && (peek().type == Token::OP_ASSIGNMENT || (peek().type == Token::PUNCTUATION && peek().value == L"║"))) // if an assignment (have identifier [= expr] ║ )
         {
             stmts.push_back(parseAssignmentStmt());
+        }
+        else if (match(Token::KEYWORD, L"hear"))
+        {
+            stmts.push_back(parseHearStmt());
         }
         else
         {
@@ -65,7 +70,7 @@ std::string Parser::translateToCpp() const
         oss << stmt->translateToCpp();
     }
 
-    oss << std::endl << "\treturn 0;" << std::endl << "}" << std::endl;
+    oss << std::endl << "\t" << "return 0;" << std::endl << "}" << std::endl;
 
     return oss.str();
 }
@@ -217,6 +222,34 @@ std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
     return std::make_unique<AssignmentStmt>(std::move(var), op, std::move(expr));
+}
+
+std::unique_ptr<HearStmt> Parser::parseHearStmt()
+{
+    std::vector<std::unique_ptr<VarCallExpr>> vars;
+    expect(Token::KEYWORD, L"hear");
+    expect(
+        Token::PUNCTUATION, L"(", MissingBrace(current())
+        );
+
+    while (true)
+    {
+        vars.push_back(parseVarCallExpr());
+
+        if (match(Token::PUNCTUATION, L")"))
+        {
+            advance();
+            break;
+        }
+
+        expect(
+            Token::PUNCTUATION, L",", InvalidExpression(current())
+            );
+    }
+
+    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+
+    return std::make_unique<HearStmt>(std::move(vars));
 }
 
 std::unique_ptr<Expr> Parser::parseExpr()

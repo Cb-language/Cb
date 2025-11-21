@@ -8,7 +8,8 @@ private:
     const Var var;
 
 public:
-    VarCallExpr(const Var& var);
+    explicit VarCallExpr(const Var& var);
+    VarCallExpr(const VarCallExpr& other);
     bool isLegal() const override;
     std::string translateToCpp() const override;
     Type getType() const override;
