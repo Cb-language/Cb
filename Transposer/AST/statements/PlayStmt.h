@@ -6,10 +6,10 @@
 class PlayStmt : public Stmt
 {
 private:
-    std::vector<std::unique_ptr<ConstValueExpr>> vars;
-
+    std::vector<std::unique_ptr<Expr>> vars;
+    bool printLine = false;
 public:
-    PlayStmt(const std::vector<std::unique_ptr<ConstValueExpr>>& vars);
+    PlayStmt(std::vector<std::unique_ptr<Expr>>& vars, bool printLine = false);
     bool isLegal() const override;
     std::string translateToCpp() const override;
 };

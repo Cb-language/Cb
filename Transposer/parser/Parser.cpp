@@ -267,57 +267,85 @@ std::unique_ptr<HearStmt> Parser::parseHearStmt()
 
 std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
 {
-    std::vector<std::unique_ptr<ConstValueExpr>> args;
+    bool newline = false;
+    std::vector<std::unique_ptr<Expr>> args;
 
-    expect(Token::KEYWORD, L"play");
-    expect(Token::PUNCTUATION, L"(", MissingBrace(current()));
-    std::vector<std::unique_ptr<VarCallExpr>> vars;
-    if (!match(Token::KEYWORD, L"play") && !match(Token::KEYWORD, L"playBar"))
+    if (match(Token::KEYWORD, L"play"))
+    {
+        advance();
+    }
+    else if (match(Token::KEYWORD, L"playBar"))
+    {
+        newline = true;
+        advance();
+    }
+    else
     {
         throw UnexpectedToken(current());
     }
-    const bool newline = current().value == L"playBar";
-    advance();
-    expect(
-        Token::PUNCTUATION, L"(", MissingBrace(current())
-        );
+
+    expect(Token::PUNCTUATION, L"(", MissingBrace(current()));
 
     while (true)
     {
-
         if (match(Token::PUNCTUATION, L")"))
         {
             advance();
             break;
         }
 
-        if (current().type == Token::CONST_STR)
+        std::unique_ptr<Expr> expr;
+
+        if (current().type == Token::CONST_STR || current().type == Token::CONST_CHAR)
         {
-            args.push_back((parseConstValueExpr()));
-        }
-        else if (current().type == Token::CONST_CHAR)
-        {
-            args.push_back(parseConstValueExpr());
+            expr = parseConstValueExpr();
         }
         else if (current().type == Token::IDENTIFIER)
         {
-            auto var = parseVarCallExpr();
-            args.push_back(std::make_unique<ConstValueExpr>(var->getType(), var->getName()));
+            expr = parseVarCallExpr();
         }
         else
         {
             InvalidExpression(current());
         }
 
+        while (match(Token::OP_BINARY, L"+"))
+        {
+            advance();
+
+            std::unique_ptr<Expr> right;
+
+            if (current().type == Token::CONST_STR ||
+                current().type == Token::CONST_CHAR)
+            {
+                right = parseConstValueExpr();
+            }
+            else if (current().type == Token::IDENTIFIER)
+            {
+                right = parseVarCallExpr();
+            }
+            else
+            {
+                InvalidExpression(current());
+            }
+
+            expr = std::make_unique<BinaryOpExpr>(L"+", std::move(expr), std::move(right));
+        }
+
+        args.push_back(std::move(expr));
+
         if (match(Token::PUNCTUATION, L","))
         {
             advance();
+            continue;
         }
     }
+
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-    return std::make_unique<PlayStmt>(args);
+    return std::make_unique<PlayStmt>(args, newline);
 }
+
 
 
 std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens)

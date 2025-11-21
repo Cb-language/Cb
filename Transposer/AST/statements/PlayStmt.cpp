@@ -1,10 +1,10 @@
 #include "PlayStmt.h"
 
-PlayStmt::PlayStmt(const std::vector<std::unique_ptr<ConstValueExpr>> &vars)
+PlayStmt::PlayStmt(std::vector<std::unique_ptr<Expr>> &vars, bool printLine) : printLine(printLine)
 {
-    for (const auto& expr : vars)
+    for (auto& expr : vars)
     {
-        this->vars.push_back(std::make_unique<ConstValueExpr>(*expr));
+        this->vars.emplace_back(std::move(expr));
     }
 }
 
@@ -25,7 +25,11 @@ std::string PlayStmt::translateToCpp() const
     std::string ret = Utils::printTabs() + "std::cout ";
     for (const auto& var : vars)
     {
-        ret += " << " + Utils::wstrToStr(var->getValue());
+        ret += " << " + (var->translateToCpp());
+    }
+    if (printLine)
+    {
+        ret += " << std::endl";
     }
     ret += ";";
     return ret;
