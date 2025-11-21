@@ -2,3 +2,4 @@ degree i = (33 / 2 + 1)%2║
 bar s = "Hello" + " world!"║
 bar str = s║
 str += s║
+freq f = i - .5║
