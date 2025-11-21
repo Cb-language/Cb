@@ -260,6 +260,32 @@ std::unique_ptr<HearStmt> Parser::parseHearStmt()
     return std::make_unique<HearStmt>(std::move(vars));
 }
 
+std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
+{
+    std::vector<std::unique_ptr<VarCallExpr>> vars;
+    expect(Token::KEYWORD, L"play");
+    expect(
+        Token::PUNCTUATION, L"(", MissingBrace(current())
+        );
+
+    while (true)
+    {
+        vars.push_back(parseVarCallExpr());
+
+        if (match(Token::PUNCTUATION, L")"))
+        {
+            advance();
+            break;
+        }
+
+        expect(Token::PUNCTUATION, L",", InvalidExpression(current()));
+    }
+
+    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+
+    return std::make_unique<PlayStmt>(std::move(vars));
+}
+
 std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens)
 {
     if (match(Token::IDENTIFIER) && peek().type == Token::OP_UNARY)
