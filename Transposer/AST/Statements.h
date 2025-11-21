@@ -11,3 +11,4 @@
 #include "statements/expression/BinaryOpExpr.h"
 #include "statements/HearStmt.h"
 #include "statements/expression/UnaryOpExpr.h"
+#include "statements/PlayStmt.h"

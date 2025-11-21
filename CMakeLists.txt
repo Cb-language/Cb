@@ -87,6 +87,8 @@ add_executable(Transposer
         Transposer/AST/statements/HearStmt.h
         Transposer/AST/statements/expression/UnaryOpExpr.cpp
         Transposer/AST/statements/expression/UnaryOpExpr.h
+        Transposer/AST/statements/PlayStmt.cpp
+        Transposer/AST/statements/PlayStmt.h
 )
 
 include(FetchContent)
