@@ -3,66 +3,54 @@
 SymbolTable::SymbolTable()
 {
     head = std::make_unique<Scope>();
-    curr = head.get();
-    funcDeclStack.push(nullptr); // global in null
+    currScope = head.get();
+    currFunc = nullptr; // global is null
 }
 
 SymbolTable::~SymbolTable()
 {
     head.reset();
     head = nullptr;
-    curr = nullptr;
-
-    while (funcDeclStack.size() > 0)
-    {
-        funcDeclStack.pop();
-    }
+    currScope = nullptr;
+    currScope = nullptr;
 }
 
 std::optional<Var> SymbolTable::getVar(const std::wstring &name) const
 {
-    return curr->getVar(name);
+    return currScope->getVar(name);
 }
 
 void SymbolTable::addVar(const Type& type, const Token& token) const
 {
-    curr->addVar(type, token);
+    currScope->addVar(type, token);
 }
 
 void SymbolTable::enterScope()
 {
-    curr = curr->makeNewScope();
+    currScope = currScope->makeNewScope();
 }
 
 void SymbolTable::exitScope()
 {
-    curr = curr->getParent();
+    currScope = currScope->getParent();
 }
 
 int SymbolTable::getLevel() const
 {
-    return curr->getLevel();
+    return currScope->getLevel();
 }
 
-void SymbolTable::addFunc(FuncDeclStmt* funcDecl)
+void SymbolTable::changeFunc(FuncDeclStmt* funcDecl)
 {
-    funcDeclStack.push(funcDecl);
-}
-
-void SymbolTable::removeFunc()
-{
-    if (funcDeclStack.size() > 1)
-    {
-        funcDeclStack.pop();
-    }
+    currFunc = funcDecl;
 }
 
 Scope* SymbolTable::getCurrScope() const
 {
-    return curr;
+    return currScope;
 }
 
-FuncDeclStmt* SymbolTable::getFuncDecl() const
+FuncDeclStmt* SymbolTable::getCurrFunc() const
 {
-    return funcDeclStack.top();
+    return currFunc;
 }

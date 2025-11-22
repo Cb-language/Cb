@@ -9,8 +9,8 @@ class SymbolTable
 {
 private:
     std::unique_ptr<Scope> head;
-    Scope* curr;
-    std::stack<FuncDeclStmt*> funcDeclStack;
+    Scope* currScope;
+    FuncDeclStmt* currFunc;
 
 public:
     SymbolTable();
@@ -25,9 +25,8 @@ public:
 
     int getLevel() const;
 
-    void addFunc(FuncDeclStmt* funcDecl);
-    void removeFunc();
+    void changeFunc(FuncDeclStmt* funcDecl);
 
     Scope* getCurrScope() const;
-    FuncDeclStmt* getFuncDecl() const;
+    FuncDeclStmt* getCurrFunc() const;
 };
