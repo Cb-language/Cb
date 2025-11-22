@@ -3,15 +3,20 @@
 UnaryOpExpr::UnaryOpExpr(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<VarCallExpr> var, const UnaryOp op)
 : Expr(scope, funcDecl), var(std::move(var)), op(op)
 {
+    if (op == UnaryOp::Zero)
+    {
+        hasParens = true;
+    }
 }
 
 bool UnaryOpExpr::isLegal() const
 {
-    if (var->getType() == L"degree")
+    if (op == UnaryOp::Not)
     {
-        return true;
+        return var->getType() == L"mute";
     }
-    return false;
+
+    return var->getType().isPrimitive();
 }
 
 std::string UnaryOpExpr::translateToCpp() const
@@ -19,19 +24,29 @@ std::string UnaryOpExpr::translateToCpp() const
     std::string ret = Utils::printTabs() + Utils::wstrToStr(var->getName());
     switch (op)
     {
-        case UnaryOp::Zero:
+    case UnaryOp::Zero:
+        if (var->getType().getType() == L"bar")
+        {
+            ret += "\"\"";
+        }
+        else
+        {
             ret += " = 0";
-            break;
+        }
+        break;
 
-        case UnaryOp::PlusPlus:
-            ret += "++";
-            break;
+    case UnaryOp::PlusPlus:
+        ret += "++";
+        break;
 
-        case UnaryOp::MinusMinus:
-            ret += "--";
-            break;
+    case UnaryOp::MinusMinus:
+        ret += "--";
+        break;
+
+    case UnaryOp::Not:
+        ret += "!";
+        break;
     }
-    ret += ";";
 
     return ret;
 }

@@ -5,7 +5,8 @@
 enum class UnaryOp {
     Zero = 0,
     PlusPlus,
-    MinusMinus
+    MinusMinus,
+    Not
 };
 
 class UnaryOpExpr : public Expr
