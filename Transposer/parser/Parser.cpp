@@ -45,7 +45,7 @@ void Parser::parse()
         }
         else  if (match(Token::IDENTIFIER) && peek().type == Token::OP_UNARY)
         {
-            stmts.push_back(parseUnaryOpExpr());
+            stmts.push_back(parseUnaryOpExpr(true));
         }
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
         {
@@ -288,10 +288,9 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
 
     while (true)
     {
-
         std::unique_ptr<Expr> expr;
 
-        if (current().type == Token::CONST_STR || current().type == Token::CONST_CHAR)
+        if (current().isConst())
         {
             expr = parseConstValueExpr();
         }
@@ -301,7 +300,7 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
         }
         else
         {
-            InvalidExpression(current());
+            InvalidExpression(prev());
         }
 
         args.push_back(std::move(expr));
@@ -312,7 +311,7 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
             break;
         }
 
-        expect(Token::PUNCTUATION, L",", InvalidExpression(current()));
+        expect(Token::PUNCTUATION, L",", InvalidExpression(prev()));
     }
 
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
@@ -341,9 +340,7 @@ std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens)
 
 std::unique_ptr<Expr> Parser::parsePrimary()
 {
-    if (match(Token::CONST_BOOL) || match(Token::CONST_STR) ||
-        match(Token::CONST_INT)  || match(Token::CONST_FLOAT) ||
-        match(Token::CONST_CHAR))
+    if (current().isConst())
     {
         return parseConstValueExpr();
     }
@@ -440,7 +437,7 @@ std::unique_ptr<VarCallExpr> Parser::parseVarCallExpr()
     return std::make_unique<VarCallExpr>(symTable.getCurrScope(), symTable.getFuncDecl(), var.value());
 }
 
-std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOpExpr()
+std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOpExpr(const bool isStmt)
 {
     auto expr = parseVarCallExpr();
     UnaryOp op;
@@ -459,6 +456,10 @@ std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOpExpr()
     {
         op = UnaryOp::MinusMinus;
     }
+    else if (value == L"!")
+    {
+        op = UnaryOp::Not;
+    }
     else
     {
         throw UnexpectedToken(current());
@@ -466,5 +467,5 @@ std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOpExpr()
 
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-    return std::make_unique<UnaryOpExpr>(symTable.getCurrScope(), symTable.getFuncDecl(), std::move(expr), op);
+    return std::make_unique<UnaryOpExpr>(symTable.getCurrScope(), symTable.getFuncDecl(), std::move(expr), op, isStmt);
 }

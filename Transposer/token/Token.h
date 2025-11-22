@@ -33,4 +33,6 @@ struct Token
 	const size_t column;
 
 	Token(TokenType type, const std::wstring &value, size_t line, size_t column);
+
+	bool isConst() const;
 };

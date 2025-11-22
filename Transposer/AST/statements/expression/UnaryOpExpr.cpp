@@ -1,9 +1,9 @@
 #include "UnaryOpExpr.h"
 
-UnaryOpExpr::UnaryOpExpr(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<VarCallExpr> var, const UnaryOp op)
-: Expr(scope, funcDecl), var(std::move(var)), op(op)
+UnaryOpExpr::UnaryOpExpr(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<VarCallExpr> var, const UnaryOp op, const bool isStmt)
+: Expr(scope, funcDecl), var(std::move(var)), op(op), isStmt(isStmt)
 {
-    if (op == UnaryOp::Zero)
+    if (!isStmt && op == UnaryOp::Zero)
     {
         hasParens = true;
     }
@@ -27,7 +27,7 @@ std::string UnaryOpExpr::translateToCpp() const
     case UnaryOp::Zero:
         if (var->getType().getType() == L"bar")
         {
-            ret += "\"\"";
+            ret += " = \"\"";
         }
         else
         {
@@ -46,6 +46,11 @@ std::string UnaryOpExpr::translateToCpp() const
     case UnaryOp::Not:
         ret += "!";
         break;
+    }
+
+    if (isStmt)
+    {
+        ret += ";";
     }
 
     return ret;

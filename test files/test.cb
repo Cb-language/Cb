@@ -1,13 +1,8 @@
-degree i = (33 // (2*5) + 1) * 3║
-bar s = "Hello" + " world!"║
-bar str = s║
-str += s║
-freq f = i - .5║
-note c = 67║
-i♯║
-i♭║
-i♮║
-playBar("const")║
-playBar(i, ' ', f, '\n',c, "const")║
-playBar('c')║
-hear(c,f)║
+bar b = "TEST"║
+freq f = 33 // 2║
+playBar("b: ", b)║
+b♮║
+playBar("b: ", b)║
+playBar("f: ", f)║
+f♯║
+playBar("f: ", f)║
