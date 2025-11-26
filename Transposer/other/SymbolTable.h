@@ -2,6 +2,7 @@
 #include <stack>
 
 #include "Scope.h"
+#include "symbols/Func.h"
 
 class FuncDeclStmt; // TODO: remove this when making it
 
@@ -11,8 +12,7 @@ private:
     std::unique_ptr<Scope> head;
     Scope* currScope;
     FuncDeclStmt* currFunc;
-
-
+    std::vector<Func> funcs;
 
 public:
     SymbolTable();
@@ -21,6 +21,9 @@ public:
     // std::nullopt when not found
     std::optional<Var> getVar(const std::wstring& name) const;
     void addVar(const Type& type, const Token& token) const;
+
+    bool doesFuncExist(const Func& f) const;
+    void addFunc(const Func& f);
 
     void enterScope();
     void exitScope();

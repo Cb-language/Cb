@@ -19,4 +19,6 @@ public:
     const Type& getType() const;
 
     std::string translateToCpp() const;
+
+    bool operator==(const Func& other) const;
 };
