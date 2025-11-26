@@ -2,7 +2,7 @@
 
 #include "other/Utils.h"
 
-Func::Func(const Type& rType, const std::wstring& funcName, const std::vector<Var>& args) : type(rType), funcName(funcName), args(args)
+Func::Func(const Type& rType, const std::wstring& funcName, const std::vector<Var>& args) : rType(rType), funcName(funcName), args(args)
 {
 }
 

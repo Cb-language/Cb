@@ -12,6 +12,7 @@ const std::vector<std::wstring> Tokenizer::capture_blocks = {
     LR"((?<ConstStr>"(\\.|[\s\S])*?"))",
     LR"((?<Type>\b((flat|sharp)[\s\r\n]*(degree|freq|note))\b)|(?<Type>\b(degree|freq|note)\b)|(?<Type>\b(mute|bar|scale|fermata)\b))",
     LR"((?<Keyword>\b(pause|break|play(Bar)?|hear|D|E|A|C|B|G|Fmin|Fmaj|©)\b))",
+    LR"((?<Punctuation>->))",
     LR"((?<UnaryOp>♯|♭|♮))",
     LR"((?<AssignmentOp>\+=|-=|//=|/=|\*=|%=))",
     LR"((?<BinaryOp>==|!=|>=|<=|<|>|\+|-|//|/|\*|%|\b(divis|chord)\b))",
@@ -23,6 +24,21 @@ const std::vector<std::wstring> Tokenizer::capture_blocks = {
 };
 
 bool Tokenizer::inited = false;
+
+std::vector<Token> Tokenizer::clean(std::vector<Token>& tokens)
+{
+    std::vector<Token> cleaned;
+
+    for (auto& token : tokens)
+    {
+        if (token.type != Token::COMMENT_SINGLE && token.type != Token::COMMENT_MULTI)
+        {
+            cleaned.push_back(token);
+        }
+    }
+
+    return cleaned;
+}
 
 void Tokenizer::init()
 {
@@ -135,5 +151,5 @@ std::vector<Token> Tokenizer::tokenize(const std::wstring& code)
         current_col++;
     }
 
-    return tokens;
+    return clean(tokens);
 }
