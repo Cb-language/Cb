@@ -80,6 +80,7 @@ int main(int argc, char* argv[])
     if (!parser.checkLegal())
     {
         std::cerr << "Code Illegal :(" << std::endl;
+        return -2;
     }
 
     fileManager.writeFile(parser.translateToCpp());

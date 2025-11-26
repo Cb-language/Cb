@@ -6,10 +6,10 @@
 class PlayStmt : public Stmt
 {
 private:
-    std::vector<std::unique_ptr<Expr>> vars;
+    std::vector<std::unique_ptr<Expr>> exprs;
     bool printLine = false;
 public:
-    PlayStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Expr>>& vars, bool printLine = false);
+    PlayStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Expr>>& exprs, bool printLine = false);
     bool isLegal() const override;
     std::string translateToCpp() const override;
 };

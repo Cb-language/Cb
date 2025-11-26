@@ -1,18 +1,18 @@
 #include "PlayStmt.h"
 
-PlayStmt::PlayStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Expr>> &vars, bool printLine) : Stmt(scope, funcDecl), printLine(printLine)
+PlayStmt::PlayStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Expr>> &exprs, const bool printLine) : Stmt(scope, funcDecl), printLine(printLine)
 {
-    for (auto& expr : vars)
+    for (auto& expr : exprs)
     {
-        this->vars.emplace_back(std::move(expr));
+        this->exprs.emplace_back(std::move(expr));
     }
 }
 
 bool PlayStmt::isLegal() const
 {
-    for (const auto& var : vars)
+    for (const auto& var : exprs)
     {
-        if (!(var->getType().isPrimitive()))
+        if (!(var->getType().isPrimitive()) || !var->isLegal())
         {
             return false;
         }
@@ -23,7 +23,7 @@ bool PlayStmt::isLegal() const
 std::string PlayStmt::translateToCpp() const
 {
     std::string ret = Utils::printTabs() + "std::cout";
-    for (const auto& var : vars)
+    for (const auto& var : exprs)
     {
         ret += " << " + (var->translateToCpp());
     }

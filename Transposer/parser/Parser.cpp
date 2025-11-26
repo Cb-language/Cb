@@ -288,22 +288,7 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
 
     while (true)
     {
-        std::unique_ptr<Expr> expr;
-
-        if (current().isConst())
-        {
-            expr = parseConstValueExpr();
-        }
-        else if (current().type == Token::IDENTIFIER)
-        {
-            expr = parseVarCallExpr();
-        }
-        else
-        {
-            InvalidExpression(prev());
-        }
-
-        args.push_back(std::move(expr));
+        args.push_back(parseExpr());
 
         if (match(Token::PUNCTUATION, L")"))
         {
