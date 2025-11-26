@@ -4,7 +4,7 @@
 #include "AST/abstract/Expression.h"
 #include "AST/abstract/Statement.h"
 #include "expression/VarCallExpr.h"
-#include "other/Var.h"
+#include "../../symbols/Var.h"
 
 class AssignmentStmt : public Stmt
 {

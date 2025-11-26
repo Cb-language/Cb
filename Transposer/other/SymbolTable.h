@@ -12,6 +12,8 @@ private:
     Scope* currScope;
     FuncDeclStmt* currFunc;
 
+
+
 public:
     SymbolTable();
     ~SymbolTable();

@@ -3,7 +3,7 @@
 #include <optional>
 
 #include "AST/abstract/Expression.h"
-#include "other/Var.h"
+#include "../../../symbols/Var.h"
 
 class BinaryOpExpr : public Expr
 {

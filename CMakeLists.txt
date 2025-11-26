@@ -57,8 +57,8 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.h
         Transposer/parser/parser.cpp
         Transposer/parser/parser.h
-        Transposer/other/Type.cpp
-        Transposer/other/Type.h
+        Transposer/Symbols/Type.cpp
+        Transposer/Symbols/Type.h
         Transposer/AST/abstract/Expression.h
         Transposer/AST/statements/expression/ConstValueExpr.cpp
         Transposer/AST/statements/expression/ConstValueExpr.h
@@ -67,7 +67,7 @@ add_executable(Transposer
         Transposer/other/Scope.cpp
         Transposer/other/Scope.h
         Transposer/other/Var.cpp
-        Transposer/other/Var.h
+        Transposer/Symbols/Var.h
         Transposer/errorHandling/lexicalErrors/IdentifierTaken.cpp
         Transposer/errorHandling/lexicalErrors/IdentifierTaken.h
         Transposer/other/Utils.cpp
