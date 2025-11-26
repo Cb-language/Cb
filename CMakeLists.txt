@@ -66,8 +66,8 @@ add_executable(Transposer
         Transposer/other/SymbolTable.h
         Transposer/other/Scope.cpp
         Transposer/other/Scope.h
-        Transposer/other/Var.cpp
-        Transposer/Symbols/Var.h
+        Transposer/symbols/Var.cpp
+        Transposer/symbols/Var.h
         Transposer/errorHandling/lexicalErrors/IdentifierTaken.cpp
         Transposer/errorHandling/lexicalErrors/IdentifierTaken.h
         Transposer/other/Utils.cpp
@@ -89,6 +89,8 @@ add_executable(Transposer
         Transposer/AST/statements/expression/UnaryOpExpr.h
         Transposer/AST/statements/PlayStmt.cpp
         Transposer/AST/statements/PlayStmt.h
+        Transposer/symbols/Func.cpp
+        Transposer/symbols/Func.h
 )
 
 include(FetchContent)
