@@ -3,6 +3,8 @@
 #include <codecvt>
 #include <sstream>
 
+#include "other/Utils.h"
+
 FileManager::FileManager(const std::string& inPath, const std::string& outPath)
 {
 	int length = inPath.length();
@@ -64,7 +66,7 @@ bool FileManager::writeFile(const std::string& data)
 	outputFile << data;
 	outputFile.close();
 
-	std::cout << "Wrote to file succssesfully" << std::endl;
+	Utils::logMsg("Wrote to file successfully");
 	return true;
 }
 

@@ -13,5 +13,7 @@ public:
     static std::string wstrToStr(const std::wstring& wstr);
     static std::string printTabs();
 
+    static void logMsg(const std::string& msg);
+
     static void reset();
 };

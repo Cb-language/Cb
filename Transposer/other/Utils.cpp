@@ -29,6 +29,14 @@ std::string Utils::printTabs()
     return res;
 }
 
+void Utils::logMsg(const std::string& msg)
+{
+    std::cout << "\033[36m"   // cyan
+        << msg
+        << "\033[0m\n" // reset
+        << std::endl;
+}
+
 void Utils::reset()
 {
     symTable = nullptr;
