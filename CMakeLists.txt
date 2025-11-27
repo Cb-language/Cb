@@ -93,6 +93,9 @@ add_executable(Transposer
         Transposer/symbols/Func.h
 )
 
+# In order to call the exe from the cmd
+target_link_options(Transposer PRIVATE -static -static-libgcc -static-libstdc++)
+
 include(FetchContent)
 
 
