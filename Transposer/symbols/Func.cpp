@@ -60,3 +60,22 @@ bool Func::operator==(const Func& other) const
 
     return true;
 }
+
+bool Func::isLegalCall(const Func& other) const
+{
+    if (funcName != other.funcName)
+    {
+        return false;
+    }
+
+    for (const auto& arg : other.args)
+    {
+        // arg name doesn't matter for func
+        if (arg.getType() != rType.getType())
+        {
+            return false;
+        }
+    }
+
+    return true;
+}

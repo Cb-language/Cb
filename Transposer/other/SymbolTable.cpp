@@ -39,6 +39,19 @@ bool SymbolTable::doesFuncExist(const Func& f) const
     return false;
 }
 
+bool SymbolTable::isLegalCall(const Func& f) const
+{
+    for (const auto& func : funcs)
+    {
+        if (func.isLegalCall(f))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void SymbolTable::addFunc(const Func& f)
 {
     funcs.push_back(f);

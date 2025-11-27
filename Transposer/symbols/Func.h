@@ -21,4 +21,6 @@ public:
     std::string translateToCpp() const;
 
     bool operator==(const Func& other) const;
+
+    bool isLegalCall(const Func& other) const;
 };
