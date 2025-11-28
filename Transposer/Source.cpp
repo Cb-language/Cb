@@ -6,6 +6,17 @@
 #include "FileManager.h"
 #include "parser/Parser.h"
 
+#ifdef _WIN32
+#include <windows.h>
+void EnableANSI() {
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD mode = 0;
+    GetConsoleMode(hOut, &mode);
+    mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    SetConsoleMode(hOut, mode);
+}
+#endif
+
 enum Mode
 {
     TRANSLATE,
@@ -15,6 +26,9 @@ enum Mode
 
 int main(int argc, char* argv[])
 {
+#ifdef _WIN32
+    EnableANSI();
+#endif
     // Enable UTF-8 output (mostly for other parts that may use cout)
     SetConsoleOutputCP(CP_UTF8);
 
