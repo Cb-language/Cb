@@ -1,0 +1,46 @@
+#include "ConstValueExpr.h"
+
+#include <algorithm>
+
+
+ConstValueExpr::ConstValueExpr(Scope* scope, FuncDeclStmt* funcDecl, const Type &type, const std::wstring &value)
+    : Expr(scope, funcDecl), type(type), value(value)
+{
+}
+
+bool ConstValueExpr::isLegal() const
+{
+    if (value.empty())
+    {
+        return false;
+    }
+    // literal is always legal
+    return true;
+}
+
+std::string ConstValueExpr::translateToCpp() const
+{
+    if (type == L"freq" && value.starts_with(L"."))
+    {
+        return Utils::wstrToStr(L"0" + value);
+    }
+
+    if (type == L"bar")
+    {
+        std::string content = Utils::wstrToStr(value);
+        std::ranges::replace(content, '\n', ' ');
+        return content;
+    }
+
+    return Utils::wstrToStr(value);
+}
+
+Type ConstValueExpr::getType() const
+{
+    return type;
+}
+
+std::wstring ConstValueExpr::getValue() const
+{
+    return value;
+}
