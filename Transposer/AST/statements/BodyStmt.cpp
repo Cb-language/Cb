@@ -35,9 +35,9 @@ std::string BodyStmt::translateToCpp() const
         if (!first)
         {
             out += "\n";
-            first = false;
         }
         out += s->translateToCpp();
+        first = false;
     }
     return out;
 }
