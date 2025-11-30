@@ -7,3 +7,8 @@ playBar("b: ", b)║
 playBar("f: ", f)║
 f♯║
 playBar("f: ", f)║
+
+∮
+    bar b = "insideBodyStmt"║
+    playBar(b)║
+☉

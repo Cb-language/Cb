@@ -51,6 +51,10 @@ void Parser::parse()
         {
             advance();
         }
+        else if (match(Token::PUNCTUATION, L"∮"))
+        {
+            stmts.push_back(parseBodyStmt());
+        }
         else
         {
             throw UnexpectedToken(current());
@@ -304,10 +308,71 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
     return std::make_unique<PlayStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), args, newline);
 }
 
-std::unique_ptr<BodyStmt> Parser::parseBodyStmt()
+std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const bool isGlobal)
 {
+    // Enter new scope only if not global
+    if (!isGlobal)
+    {
+        expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+        symTable.enterScope();
+    }
 
+    std::vector<std::unique_ptr<Stmt>> bodyStmts;
+
+    // Loop until closing brace
+    while (!match(Token::PUNCTUATION, L"☉"))
+    {
+        if (isAtEnd())
+            throw MissingBrace(current());
+
+        if (match(Token::TYPE))
+        {
+            bodyStmts.push_back(parseVarDecStmt());
+        }
+        else if (match(Token::IDENTIFIER) &&
+                 (peek().type == Token::OP_ASSIGNMENT ||
+                  (peek().type == Token::PUNCTUATION && peek().value == L"║")))
+        {
+            bodyStmts.push_back(parseAssignmentStmt());
+        }
+        else if (match(Token::KEYWORD, L"hear"))
+        {
+            bodyStmts.push_back(parseHearStmt());
+        }
+        else if (match(Token::KEYWORD, L"play") ||
+                 match(Token::KEYWORD, L"playBar"))
+        {
+            bodyStmts.push_back(parsePlayStmt());
+        }
+        else if (match(Token::IDENTIFIER) && peek().type == Token::OP_UNARY)
+        {
+            bodyStmts.push_back(parseUnaryOpExpr(true));
+        }
+        else if (match(Token::PUNCTUATION, L"∮"))
+        {
+            // Nested body
+            bodyStmts.push_back(parseBodyStmt(false));
+        }
+        else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
+        {
+            advance();
+        }
+        else
+        {
+            throw UnexpectedToken(current());
+        }
+    }
+
+    // Consume closing brace
+    if (!isGlobal)
+    {
+        expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+        symTable.exitScope();
+    }
+
+    return std::make_unique<BodyStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), bodyStmts);
 }
+
 
 
 std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens)
