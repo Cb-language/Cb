@@ -42,7 +42,6 @@ std::string BodyStmt::translateToCpp() const
         out += getTabs() + s->translateToCpp();
         first = false;
     }
-    out += "\n";
 
     if (!isGlobal)
     {
