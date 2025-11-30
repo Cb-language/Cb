@@ -28,7 +28,8 @@ bool BodyStmt::isLegal() const
 
 std::string BodyStmt::translateToCpp() const
 {
-    std::string out = "{\n";
+
+    std::string out = Utils::printTabs() + "{\n";
     bool first = true;
     for (const auto& s : stmts)
     {
@@ -36,9 +37,9 @@ std::string BodyStmt::translateToCpp() const
         {
             out += "\n";
         }
-        out += s->translateToCpp();
+        out += Utils::printTabs() + s->translateToCpp();
         first = false;
     }
-    out += "}\n";
+    out += "\n" + Utils::printTabs() + "}\n";
     return out;
 }

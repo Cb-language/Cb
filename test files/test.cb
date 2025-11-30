@@ -9,6 +9,5 @@ f♯║
 playBar("f: ", f)║
 
 ∮
-    bar b = "insideBodyStmt"║
-    playBar(b)║
-☉
+    bar bora = "insideBodyStmt"║
+    playBar(bora)║
