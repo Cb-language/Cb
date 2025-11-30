@@ -304,6 +304,10 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
     return std::make_unique<PlayStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), args, newline);
 }
 
+std::unique_ptr<BodyStmt> Parser::parseBodyStmt()
+{
+
+}
 
 
 std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens)
