@@ -45,7 +45,7 @@ std::string BodyStmt::translateToCpp() const
 
     if (!isGlobal)
     {
-        out += tabs + "}\n";
+        out += "\n" + tabs + "}";
     }
 
     return out;
