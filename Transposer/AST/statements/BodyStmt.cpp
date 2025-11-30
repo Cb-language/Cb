@@ -28,7 +28,7 @@ bool BodyStmt::isLegal() const
 
 std::string BodyStmt::translateToCpp() const
 {
-    std::string out = "";
+    std::string out = "{\n";
     bool first = true;
     for (const auto& s : stmts)
     {
@@ -39,5 +39,6 @@ std::string BodyStmt::translateToCpp() const
         out += s->translateToCpp();
         first = false;
     }
+    out += "}\n";
     return out;
 }
