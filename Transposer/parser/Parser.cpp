@@ -25,36 +25,10 @@ Parser::~Parser()
 
 void Parser::parse()
 {
-    while (!isAtEnd())
+    auto block = parseBodyStmt(true);
+    for (auto& stmt : block->getStmts())
     {
-        if (match(Token::TYPE))
-        {
-            stmts.push_back(parseVarDecStmt());
-        }
-        else if (match(Token::IDENTIFIER) && (peek().type == Token::OP_ASSIGNMENT || (peek().type == Token::PUNCTUATION && peek().value == L"║"))) // if an assignment (have identifier [= expr] ║ )
-        {
-            stmts.push_back(parseAssignmentStmt());
-        }
-        else if (match(Token::KEYWORD, L"hear"))
-        {
-            stmts.push_back(parseHearStmt());
-        }
-        else if (match(Token::KEYWORD, L"play") || match(Token::KEYWORD, L"playBar"))
-        {
-            stmts.push_back(parsePlayStmt());
-        }
-        else  if (match(Token::IDENTIFIER) && peek().type == Token::OP_UNARY)
-        {
-            stmts.push_back(parseUnaryOpExpr(true));
-        }
-        else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
-        {
-            advance();
-        }
-        else
-        {
-            throw UnexpectedToken(current());
-        }
+        stmts.push_back(std::move(stmt));
     }
 }
 
@@ -76,14 +50,11 @@ std::string Parser::translateToCpp() const
     std::ostringstream oss;
     oss << "#include <iostream>" << std::endl;
     oss << "#include <string>" << std::endl;
-    oss << std::endl << "int main()" << std::endl << "{";
 
     for (const auto& stmt : stmts)
     {
-        oss << std:: endl <<stmt->translateToCpp();
+        oss << std::endl << stmt->translateToCpp();
     }
-
-    oss << std::endl << "\t" << "return 0;" << std::endl << "}" << std::endl;
 
     return oss.str();
 }
@@ -302,6 +273,73 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
     return std::make_unique<PlayStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), args, newline);
+}
+
+std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const bool isGlobal)
+{
+    // Enter new scope only if not global
+    if (!isGlobal)
+    {
+        expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+        symTable.enterScope();
+    }
+
+    std::vector<std::unique_ptr<Stmt>> bodyStmts;
+
+    // Loop until closing brace
+    while (!isAtEnd() && !match(Token::PUNCTUATION, L"☉")) // if global, until EOF, otherwise, until ☉
+    {
+        if (match(Token::TYPE))
+        {
+            bodyStmts.push_back(parseVarDecStmt());
+        }
+        else if (match(Token::IDENTIFIER) &&
+                 (peek().type == Token::OP_ASSIGNMENT ||
+                  (peek().type == Token::PUNCTUATION && peek().value == L"║")))
+        {
+            bodyStmts.push_back(parseAssignmentStmt());
+        }
+        else if (match(Token::KEYWORD, L"hear"))
+        {
+            bodyStmts.push_back(parseHearStmt());
+        }
+        else if (match(Token::KEYWORD, L"play") ||
+                 match(Token::KEYWORD, L"playBar"))
+        {
+            bodyStmts.push_back(parsePlayStmt());
+        }
+        else if (match(Token::IDENTIFIER) && peek().type == Token::OP_UNARY)
+        {
+            bodyStmts.push_back(parseUnaryOpExpr(true));
+        }
+        else if (match(Token::PUNCTUATION, L"∮"))
+        {
+            // Nested body
+            bodyStmts.push_back(parseBodyStmt(false));
+        }
+        else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
+        {
+            advance();
+        }
+        else
+        {
+            throw UnexpectedToken(current());
+        }
+    }
+
+    // Consume closing brace
+    if (!isGlobal)
+    {
+        if (isAtEnd())
+        {
+            throw MissingBrace(prev());
+        }
+
+        expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+        symTable.exitScope();
+    }
+
+    return std::make_unique<BodyStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), bodyStmts, isGlobal);
 }
 
 

@@ -91,6 +91,8 @@ add_executable(Transposer
         Transposer/AST/statements/PlayStmt.h
         Transposer/symbols/Func.cpp
         Transposer/symbols/Func.h
+        Transposer/AST/statements/BodyStmt.cpp
+        Transposer/AST/statements/BodyStmt.h
 )
 
 # In order to call the exe from the cmd

@@ -16,7 +16,7 @@ bool VarDecStmt::isLegal() const
 
 std::string VarDecStmt::translateToCpp() const
 {
-    std::string ret = Utils::printTabs() + var.getType().translateTypeToCpp() + " " + Utils::wstrToStr(var.getName());
+    std::string ret = getTabs() + var.getType().translateTypeToCpp() + " " + Utils::wstrToStr(var.getName());
 
     if (hasStartingValue)
     {
