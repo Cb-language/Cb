@@ -25,3 +25,19 @@ bool BodyStmt::isLegal() const
     }
     return true;
 }
+
+std::string BodyStmt::translateToCpp() const
+{
+    std::string out = "";
+    bool first = true;
+    for (const auto& s : stmts)
+    {
+        if (!first)
+        {
+            out += "\n";
+            first = false;
+        }
+        out += s->translateToCpp();
+    }
+    return out;
+}
