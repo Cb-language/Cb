@@ -323,7 +323,9 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const bool isGlobal)
     while (!match(Token::PUNCTUATION, L"☉"))
     {
         if (isAtEnd())
+        {
             throw MissingBrace(current());
+        }
 
         if (match(Token::TYPE))
         {
