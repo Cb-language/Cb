@@ -44,6 +44,7 @@ private:
     std::unique_ptr<AssignmentStmt> parseAssignmentStmt();
     std::unique_ptr<HearStmt> parseHearStmt();
     std::unique_ptr<PlayStmt> parsePlayStmt();
+    std::unique_ptr<BodyStmt> parseBodyStmt(const bool isGlobal = false);
 
     // Expressions
 

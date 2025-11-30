@@ -7,3 +7,12 @@ playBar("b: ", b)║
 playBar("f: ", f)║
 f♯║
 playBar("f: ", f)║
+
+∮
+    bar bora = "insideBodyStmt"║
+    playBar(bora)║
+    ∮
+        bora = "\nInAgain"║
+        play(bora)║
+    ☉
+☉

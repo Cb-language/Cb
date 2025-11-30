@@ -57,8 +57,8 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.h
         Transposer/parser/parser.cpp
         Transposer/parser/parser.h
-        Transposer/other/Type.cpp
-        Transposer/other/Type.h
+        Transposer/Symbols/Type.cpp
+        Transposer/Symbols/Type.h
         Transposer/AST/abstract/Expression.h
         Transposer/AST/statements/expression/ConstValueExpr.cpp
         Transposer/AST/statements/expression/ConstValueExpr.h
@@ -66,8 +66,8 @@ add_executable(Transposer
         Transposer/other/SymbolTable.h
         Transposer/other/Scope.cpp
         Transposer/other/Scope.h
-        Transposer/other/Var.cpp
-        Transposer/other/Var.h
+        Transposer/symbols/Var.cpp
+        Transposer/symbols/Var.h
         Transposer/errorHandling/lexicalErrors/IdentifierTaken.cpp
         Transposer/errorHandling/lexicalErrors/IdentifierTaken.h
         Transposer/other/Utils.cpp
@@ -89,7 +89,14 @@ add_executable(Transposer
         Transposer/AST/statements/expression/UnaryOpExpr.h
         Transposer/AST/statements/PlayStmt.cpp
         Transposer/AST/statements/PlayStmt.h
+        Transposer/symbols/Func.cpp
+        Transposer/symbols/Func.h
+        Transposer/AST/statements/BodyStmt.cpp
+        Transposer/AST/statements/BodyStmt.h
 )
+
+# In order to call the exe from the cmd
+target_link_options(Transposer PRIVATE -static -static-libgcc -static-libstdc++)
 
 include(FetchContent)
 

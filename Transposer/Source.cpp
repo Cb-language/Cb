@@ -6,6 +6,17 @@
 #include "FileManager.h"
 #include "parser/Parser.h"
 
+#ifdef _WIN32
+#include <windows.h>
+void EnableANSI() {
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD mode = 0;
+    GetConsoleMode(hOut, &mode);
+    mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    SetConsoleMode(hOut, mode);
+}
+#endif
+
 enum Mode
 {
     TRANSLATE,
@@ -15,6 +26,9 @@ enum Mode
 
 int main(int argc, char* argv[])
 {
+#ifdef _WIN32
+    EnableANSI();
+#endif
     // Enable UTF-8 output (mostly for other parts that may use cout)
     SetConsoleOutputCP(CP_UTF8);
 
@@ -45,13 +59,13 @@ int main(int argc, char* argv[])
     switch (mode)
     {
     case TRANSLATE:
-            std::cout <<  "Translating Mode" << std::endl;
+        Utils::logMsg("Translating Mode");
         break;
     case RUN:
-            std::cout << "Running Mode" << std::endl;
+            Utils::logMsg("Running Mode");
         break;
     case COMPILE:
-        std::cout << "Compiling Mode" << std::endl;
+        Utils::logMsg("Compiling Mode");
     break;
     default:
         std::cout << "Invalid mode. Use T for Translate, C for Compile, R for Run." << std::endl;
@@ -69,6 +83,7 @@ int main(int argc, char* argv[])
 
     try
     {
+        Utils::logMsg("Translating...");
         parser.parse();
     }
     catch (const Error& err)
@@ -103,11 +118,14 @@ int main(int argc, char* argv[])
         }
         cmd << "g++ \"" << fileManager.getOutputPath() << "\" -o \"" << exePath << "\"" << std::endl;
 
+        Utils::logMsg("Compiling...");
+
         std::system(cmd.str().c_str());
     }
 
     if (mode == RUN)
     {
+        Utils::logMsg("Running...");
         exePath = "\"" + exePath + "\"";
         std::system(exePath.c_str());
     }

@@ -4,7 +4,7 @@
 #include <optional>
 
 #include "../Statements.h"
-#include "other/Var.h"
+#include "../../symbols/Var.h"
 
 class VarDecStmt : public Stmt
 {

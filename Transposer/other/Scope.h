@@ -3,7 +3,7 @@
 #include <optional>
 #include <vector>
 
-#include "Var.h"
+#include "../symbols/Var.h"
 #include "token/Token.h"
 
 class Scope
