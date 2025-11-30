@@ -16,19 +16,6 @@ std::string Utils::wstrToStr(const std::wstring& wstr)
     return conv.to_bytes(wstr);
 }
 
-std::string Utils::printTabs()
-{
-    const int level = symTable->getLevel() + 1; // currently everything is in the main
-    std::string res;
-
-    for (auto i = 0; i < level; i++)
-    {
-        res += "\t";
-    }
-
-    return res;
-}
-
 void Utils::logMsg(const std::string& msg)
 {
     std::cout << "\033[36m"   // cyan

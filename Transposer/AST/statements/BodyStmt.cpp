@@ -1,15 +1,11 @@
 #include "BodyStmt.h"
 
-BodyStmt::BodyStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Stmt>>& stmts) :
-    Stmt(scope, funcDecl)
+BodyStmt::BodyStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Stmt>>& stmts, const bool isGlobal) :
+    Stmt(scope, funcDecl), stmts(std::move(stmts)), isGlobal(isGlobal)
 {
-    for (auto& s : stmts)
-    {
-        this->stmts.push_back(std::move(s));
-    }
 }
 
-const std::vector<std::unique_ptr<Stmt>>& BodyStmt::getStmts() const
+std::vector<std::unique_ptr<Stmt>>& BodyStmt::getStmts()
 {
     return stmts;
 }
@@ -28,8 +24,14 @@ bool BodyStmt::isLegal() const
 
 std::string BodyStmt::translateToCpp() const
 {
+    const std::string tabs = getTabs();
+    std::string out;
 
-    std::string out = Utils::printTabs() + "{\n";
+    if (!isGlobal)
+    {
+        out += tabs + "{\n";
+    }
+
     bool first = true;
     for (const auto& s : stmts)
     {
@@ -37,9 +39,15 @@ std::string BodyStmt::translateToCpp() const
         {
             out += "\n";
         }
-        out += Utils::printTabs() + s->translateToCpp();
+        out += getTabs() + s->translateToCpp();
         first = false;
     }
-    out += "\n" + Utils::printTabs() + "}\n";
+    out += "\n";
+
+    if (!isGlobal)
+    {
+        out += tabs + "}\n";
+    }
+
     return out;
 }

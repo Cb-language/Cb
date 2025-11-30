@@ -22,7 +22,7 @@ bool PlayStmt::isLegal() const
 
 std::string PlayStmt::translateToCpp() const
 {
-    std::string ret = Utils::printTabs() + "std::cout";
+    std::string ret = getTabs() + "std::cout";
     for (const auto& var : exprs)
     {
         ret += " << " + (var->translateToCpp());

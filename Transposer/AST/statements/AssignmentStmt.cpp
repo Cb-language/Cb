@@ -21,10 +21,10 @@ std::string AssignmentStmt::translateToCpp() const
     std::string varName = Utils::wstrToStr(varExpr->getName());
     if (assignmentOp == L"//=")
     {
-        return Utils::printTabs() + varName + " = " + "static_cast<double>(" + varName +") / static_cast<double>(" + expr->translateToCpp() + ");";
+        return getTabs() + varName + " = " + "static_cast<double>(" + varName +") / static_cast<double>(" + expr->translateToCpp() + ");";
     }
 
 
-    return Utils::printTabs() + varName + " "
+    return getTabs() + varName + " "
      + Utils::wstrToStr(assignmentOp) + " " + expr->translateToCpp() + ";";
 }

@@ -25,40 +25,18 @@ Parser::~Parser()
 
 void Parser::parse()
 {
-    while (!isAtEnd())
+    try
     {
-        if (match(Token::TYPE))
+        auto block = parseBodyStmt(true);
+        for (auto& stmt : block->getStmts())
         {
-            stmts.push_back(parseVarDecStmt());
+            stmts.push_back(std::move(stmt));
         }
-        else if (match(Token::IDENTIFIER) && (peek().type == Token::OP_ASSIGNMENT || (peek().type == Token::PUNCTUATION && peek().value == L"║"))) // if an assignment (have identifier [= expr] ║ )
-        {
-            stmts.push_back(parseAssignmentStmt());
-        }
-        else if (match(Token::KEYWORD, L"hear"))
-        {
-            stmts.push_back(parseHearStmt());
-        }
-        else if (match(Token::KEYWORD, L"play") || match(Token::KEYWORD, L"playBar"))
-        {
-            stmts.push_back(parsePlayStmt());
-        }
-        else  if (match(Token::IDENTIFIER) && peek().type == Token::OP_UNARY)
-        {
-            stmts.push_back(parseUnaryOpExpr(true));
-        }
-        else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
-        {
-            advance();
-        }
-        else if (match(Token::PUNCTUATION, L"∮"))
-        {
-            stmts.push_back(parseBodyStmt());
-        }
-        else
-        {
-            throw UnexpectedToken(current());
-        }
+    }
+    catch (std::exception& e)
+    {
+        std::cerr << "Pos: " << pos << std::endl;
+        throw e;
     }
 }
 
@@ -80,14 +58,11 @@ std::string Parser::translateToCpp() const
     std::ostringstream oss;
     oss << "#include <iostream>" << std::endl;
     oss << "#include <string>" << std::endl;
-    oss << std::endl << "int main()" << std::endl << "{";
 
     for (const auto& stmt : stmts)
     {
-        oss << std:: endl <<stmt->translateToCpp();
+        oss << std::endl << stmt->translateToCpp();
     }
-
-    oss << std::endl << "\t" << "return 0;" << std::endl << "}" << std::endl;
 
     return oss.str();
 }
@@ -320,10 +295,11 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const bool isGlobal)
     std::vector<std::unique_ptr<Stmt>> bodyStmts;
 
     // Loop until closing brace
-    while (!match(Token::PUNCTUATION, L"☉"))
+    while ( isGlobal ? !isAtEnd() : !match(Token::PUNCTUATION, L"☉")) // if global, until EOF, otherwise, until ☉
     {
         if (isAtEnd())
         {
+
             throw MissingBrace(current());
         }
 
@@ -372,7 +348,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const bool isGlobal)
         symTable.exitScope();
     }
 
-    return std::make_unique<BodyStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), bodyStmts);
+    return std::make_unique<BodyStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), bodyStmts, isGlobal);
 }
 
 

@@ -23,9 +23,7 @@ const Type& Func::getType() const
 
 std::string Func::translateToCpp() const
 {
-    std::string header = Utils::printTabs()
-    + rType.translateTypeToCpp() + " " + Utils::wstrToStr(funcName)
-    + "(";
+    std::string header = rType.translateTypeToCpp() + " " + Utils::wstrToStr(funcName) + "(";
 
     bool first = true;
     for (const auto& arg : args)
