@@ -25,18 +25,10 @@ Parser::~Parser()
 
 void Parser::parse()
 {
-    try
+    auto block = parseBodyStmt(true);
+    for (auto& stmt : block->getStmts())
     {
-        auto block = parseBodyStmt(true);
-        for (auto& stmt : block->getStmts())
-        {
-            stmts.push_back(std::move(stmt));
-        }
-    }
-    catch (std::exception& e)
-    {
-        std::cerr << "Pos: " << pos << std::endl;
-        throw e;
+        stmts.push_back(std::move(stmt));
     }
 }
 
@@ -295,14 +287,8 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const bool isGlobal)
     std::vector<std::unique_ptr<Stmt>> bodyStmts;
 
     // Loop until closing brace
-    while ( isGlobal ? !isAtEnd() : !match(Token::PUNCTUATION, L"☉")) // if global, until EOF, otherwise, until ☉
+    while (!isAtEnd() && !match(Token::PUNCTUATION, L"☉")) // if global, until EOF, otherwise, until ☉
     {
-        if (isAtEnd())
-        {
-
-            throw MissingBrace(current());
-        }
-
         if (match(Token::TYPE))
         {
             bodyStmts.push_back(parseVarDecStmt());
@@ -344,6 +330,11 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const bool isGlobal)
     // Consume closing brace
     if (!isGlobal)
     {
+        if (isAtEnd())
+        {
+            throw MissingBrace(prev());
+        }
+
         expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
         symTable.exitScope();
     }
