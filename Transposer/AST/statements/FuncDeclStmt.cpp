@@ -1,49 +1,33 @@
 #include "FuncDeclStmt.h"
 
-FuncDeclStmt::FuncDeclStmt(Scope *scope, const std::string &funcName, const Type &returnType, std::vector<std::unique_ptr<Var>> &&params) : Stmt(scope, nullptr),
-    funcName(funcName), returnType(returnType)
+FuncDeclStmt::FuncDeclStmt(Scope *scope, const std::wstring &funcName, const Type &returnType, const std::vector<Var> &args) : Stmt(scope),
+    func(Func(returnType, funcName, args))
 {
-    for (auto &param: params)
-    {
-        this->params.emplace_back(std::move(param));
-    }
+    this->setFuncDecl(std::move(funcDecl));
 }
 
-const std::vector<std::unique_ptr<Var>>& FuncDeclStmt::getParams() const
+const std::vector<Var>& FuncDeclStmt::getArgs() const
 {
-    return params;
+    return func.getArgs();
 }
 
-std::string FuncDeclStmt::getName() const
+std::wstring FuncDeclStmt::getName() const
 {
-    return funcName;
+    return func.getFuncName();
 }
 
 Type FuncDeclStmt::getReturnType() const
 {
-    return returnType;
+    return func.getType();
 }
 
 bool FuncDeclStmt::isLegal() const
 {
-    
     return true;
 }
 
 
 std::string FuncDeclStmt::translateToCpp() const
 {
-    std::string out = returnType.translateTypeToCpp() + " " + funcName + "(";
-    bool first = true;
-    for (auto& param : params)
-    {
-        if (!first)
-        {
-            out += ", ";
-        }
-        out += param->getType().translateTypeToCpp(); + " " + Utils::wstrToStr(param->getName());
-        first = false;
-    }
-    out += ");";
-    return out;
+    return func.translateToCpp();
 }

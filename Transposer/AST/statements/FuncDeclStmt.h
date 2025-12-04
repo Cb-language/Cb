@@ -1,18 +1,16 @@
 #pragma once
 
-#include "../Statements.h"
+#include "AST/abstract/Statement.h"
 
 class FuncDeclStmt : public Stmt
 {
 private:
-    std::vector<std::unique_ptr<Var>> params;
-    std::string funcName;
-    Type returnType;
+    Func func;
 public:
-    FuncDeclStmt(Scope* scope, const std::string &funcName, const Type &returnType, std::vector<std::unique_ptr<Var>> &&params);
+    FuncDeclStmt(Scope* scope, const std::wstring &funcName, const Type &returnType, const std::vector<Var> &args);
 
-    const std::vector<std::unique_ptr<Var>>& getParams() const;
-    std::string getName() const;
+    const std::vector<Var>& getArgs() const;
+    std::wstring getName() const;
     Type getReturnType() const;
 
     bool isLegal() const override;

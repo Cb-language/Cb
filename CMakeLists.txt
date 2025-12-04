@@ -72,7 +72,6 @@ add_executable(Transposer
         Transposer/errorHandling/lexicalErrors/IdentifierTaken.h
         Transposer/other/Utils.cpp
         Transposer/other/Utils.h
-        Transposer/AST/Statements.h
         Transposer/AST/statements/VarDecStmt.cpp
         Transposer/AST/statements/VarDecStmt.h
         Transposer/AST/statements/AssignmentStmt.cpp

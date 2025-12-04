@@ -4,6 +4,7 @@
 #include <windows.h>
 #include "token/Tokenizer.h"
 #include "FileManager.h"
+#include "errorHandling/Error.h"
 #include "parser/Parser.h"
 
 #ifdef _WIN32

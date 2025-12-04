@@ -2,7 +2,8 @@
 
 #include <locale>
 #include "other/Utils.h"
-#include "AST/Statements.h"
+
+class FuncDeclStmt;
 
 class Stmt
 {
@@ -10,13 +11,21 @@ protected:
     Scope* scope;
     FuncDeclStmt* funcDecl;
 
+    explicit Stmt(Scope* scope);
     Stmt(Scope* scope, FuncDeclStmt* funcDecl);
     std::string getTabs() const;
 public:
     virtual ~Stmt();
     virtual bool isLegal() const = 0;
     virtual std::string translateToCpp() const = 0;
+
+    void setFuncDecl(const FuncDeclStmt *funcDecl);
 };
+
+inline Stmt::Stmt(Scope* scope) : scope(scope)
+{
+    funcDecl = nullptr;
+}
 
 inline Stmt::Stmt(Scope* scope, FuncDeclStmt* funcDecl) : scope(scope), funcDecl(funcDecl)
 {

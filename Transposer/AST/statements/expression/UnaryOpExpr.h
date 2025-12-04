@@ -1,8 +1,9 @@
 #pragma once
+#include "VarCallExpr.h"
+#include "AST/abstract/Expression.h"
 
-#include "../../Statements.h"
-
-enum class UnaryOp {
+enum class UnaryOp
+{
     Zero = 0,
     PlusPlus,
     MinusMinus,

@@ -4,6 +4,7 @@
 #include <sstream>
 #include <vector>
 
+#include "AST/statements/expression/BinaryOpExpr.h"
 #include "errorHandling/lexicalErrors/InvalidIdentifier.h"
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
@@ -12,6 +13,7 @@
 #include "errorHandling/syntaxErrors/MissingIdentifier.h"
 #include "errorHandling/syntaxErrors/MissingSemicolon.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
+
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), symTable(SymbolTable())
 {

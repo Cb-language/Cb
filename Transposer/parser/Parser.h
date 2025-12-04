@@ -1,10 +1,15 @@
 #pragma once
 #include <vector>
 
-#include "../AST/Statements.h"
-#include "errorHandling/Error.h"
-#include "other/SymbolTable.h"
-#include "token/Token.h"
+#include "AST/abstract/Statement.h"
+#include "AST/statements/AssignmentStmt.h"
+#include "AST/statements/BodyStmt.h"
+#include "AST/statements/HearStmt.h"
+#include "AST/statements/PlayStmt.h"
+#include "AST/statements/VarDecStmt.h"
+#include "AST/statements/expression/UnaryOpExpr.h"
+
+class Error;
 
 class Parser
 {
