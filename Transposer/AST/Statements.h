@@ -13,4 +13,4 @@
 #include "statements/expression/UnaryOpExpr.h"
 #include "statements/PlayStmt.h"
 #include "statements/BodyStmt.h"
-#include "statements/FuncDecStmt.h"
+#include "statements/FuncDeclStmt.h"

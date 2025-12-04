@@ -3,8 +3,7 @@
 
 #include "Scope.h"
 #include "symbols/Func.h"
-
-class FuncDeclStmt; // TODO: remove this when making it
+#include "AST/Statements.h"
 
 class SymbolTable
 {

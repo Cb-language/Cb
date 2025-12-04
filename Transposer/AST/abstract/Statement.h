@@ -2,8 +2,7 @@
 
 #include <locale>
 #include "other/Utils.h"
-
-class FuncDeclStmt; // TODO: remove this when making it
+#include "AST/Statements.h"
 
 class Stmt
 {

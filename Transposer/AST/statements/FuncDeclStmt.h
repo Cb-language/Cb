@@ -2,16 +2,16 @@
 
 #include "../Statements.h"
 
-class FuncDecStmt : public Stmt
+class FuncDeclStmt : public Stmt
 {
 private:
     std::vector<std::unique_ptr<Var>> params;
     std::string funcName;
     Type returnType;
 public:
-    FuncDecStmt(Scope* scope, FuncDeclStmt* funcDecl, const std::string &funcName, const Type &returnType, std::vector<std::unique_ptr<Var>> &&params);
+    FuncDeclStmt(Scope* scope, const std::string &funcName, const Type &returnType, std::vector<std::unique_ptr<Var>> &&params);
 
-    std::vector<std::unique_ptr<Var>> getParams() const;
+    const std::vector<std::unique_ptr<Var>>& getParams() const;
     std::string getName() const;
     Type getReturnType() const;
 

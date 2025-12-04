@@ -93,8 +93,8 @@ add_executable(Transposer
         Transposer/symbols/Func.h
         Transposer/AST/statements/BodyStmt.cpp
         Transposer/AST/statements/BodyStmt.h
-        Transposer/AST/statements/FuncDecStmt.cpp
-        Transposer/AST/statements/FuncDecStmt.h
+        Transposer/AST/statements/FuncDeclStmt.cpp
+        Transposer/AST/statements/FuncDeclStmt.h
 )
 
 # In order to call the exe from the cmd
