@@ -2,7 +2,8 @@
 
 FuncDeclStmt::FuncDeclStmt(Scope* scope, const std::wstring& funcName, const Type& returnType,
 const std::vector<Var>& args, std::vector<std::unique_ptr<Func>>& credited) : Stmt(scope),
-    func(Func(returnType, funcName, args)), body(nullptr)
+    func(Func(returnType, funcName, args)), body(nullptr),
+    hasReturn(Utils::wstrToStr(returnType.getType()) != "fermata")
 {
     for (auto& c : credited)
     {

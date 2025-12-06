@@ -1,14 +1,15 @@
 #pragma once
 #include "AST/abstract/Statement.h"
-
+#include "AST/statements/ReturnStmt.h"
 
 class BodyStmt : public Stmt
 {
 private:
     std::vector<std::unique_ptr<Stmt>> stmts;
     const bool isGlobal;
+    const bool hasReturn;
 public:
-    BodyStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Stmt>>& stmts, const bool isGlobal = false);
+    BodyStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Stmt>>& stmts, const bool isGlobal = false, const bool hasReturn = false);
     std::vector<std::unique_ptr<Stmt>>& getStmts();
 
     bool isLegal() const override;

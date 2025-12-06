@@ -9,6 +9,8 @@ private:
     Func func;
     std::vector<std::unique_ptr<Func>> credited;
     std::unique_ptr<BodyStmt> body;
+    const bool hasReturn;
+
 public:
     FuncDeclStmt(Scope* scope, const std::wstring &funcName, const Type &returnType, const std::vector<Var> &args, std::vector<std::unique_ptr<Func>>& credited);
 
