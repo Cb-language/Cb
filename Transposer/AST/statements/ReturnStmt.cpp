@@ -1,6 +1,7 @@
 #include "ReturnStmt.h"
 
-ReturnStmt::ReturnStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& rExpr) : Stmt(scope, funcDecl), rType(rExpr->getType()), rExpr(std::move(rExpr))
+ReturnStmt::ReturnStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& rExpr)
+: Stmt(scope, funcDecl), rType(rExpr == nullptr ? Type(L"fermata") : rExpr->getType()), rExpr(rExpr == nullptr ? nullptr : std::move(rExpr))
 {
 }
 
@@ -11,5 +12,6 @@ bool ReturnStmt::isLegal() const
 
 std::string ReturnStmt::translateToCpp() const
 {
-    return getTabs() + "return " + rExpr->translateToCpp() + ";";
+    const std::string exprStr = rExpr == nullptr ? "" :  " " + rExpr->translateToCpp();
+    return getTabs() + "return" + exprStr +  ";";
 }

@@ -11,7 +11,7 @@ private:
     Func func;
     std::vector<std::unique_ptr<Func>> credited;
     std::unique_ptr<BodyStmt> body;
-    const bool hasReturn;
+    bool hasReturned;
 
 public:
     FuncDeclStmt(Scope* scope, const std::wstring &funcName, const Type &returnType, const std::vector<Var> &args, std::vector<std::unique_ptr<Func>>& credited);
@@ -23,6 +23,9 @@ public:
 
     // is called after the ctor
     void setBody(std::unique_ptr<BodyStmt> body);
+
+    void setHasReturned(const bool hasReturned);
+    bool getHasReturned() const;
 
     bool isLegal() const override;
     std::string translateToCpp() const override;

@@ -427,12 +427,12 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
     symTable.addFunc(funcDeclStmt->getFunc());
     symTable.changeFunc(funcDeclStmt.get());
 
-    std::unique_ptr<BodyStmt> body = parseBodyStmt();
-    if (!body->hasReturnStmt())
+    funcDeclStmt->setBody(std::move(parseBodyStmt()));
+
+    if (!funcDeclStmt->getHasReturned())
     {
         throw(NoReturnStmt(prev()));
     }
-    funcDeclStmt->setBody(std::move(body));
 
     symTable.changeFunc(currFunc);
     return std::move(funcDeclStmt);
@@ -441,17 +441,25 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
 std::unique_ptr<ReturnStmt> Parser::parseReturnStmt()
 {
     expect(Token::KEYWORD, L"B");
-    expect(Token::PUNCTUATION, L"\\");
 
-    std::unique_ptr<Expr> expr = parseExpr();
-    if (symTable.getCurrFunc()->getReturnType() != expr->getType())
+    FuncDeclStmt* currFunc = symTable.getCurrFunc();
+    std::unique_ptr<Expr> expr = nullptr;
+
+    if (currFunc->getReturnType().getType() != L"fermata")
     {
-        throw(WrongReturnType(current()));
+        expect(Token::PUNCTUATION, L"\\");
+        expr = parseExpr();
+        if (currFunc->getReturnType() != expr->getType())
+        {
+            throw(WrongReturnType(current()));
+        }
     }
 
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-    return std::make_unique<ReturnStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), expr);
+    currFunc->setHasReturned(true);
+
+    return std::make_unique<ReturnStmt>(symTable.getCurrScope(), currFunc, expr);
 }
 
 

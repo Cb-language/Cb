@@ -3,7 +3,7 @@
 FuncDeclStmt::FuncDeclStmt(Scope* scope, const std::wstring& funcName, const Type& returnType,
 const std::vector<Var>& args, std::vector<std::unique_ptr<Func>>& credited) : Stmt(scope),
     func(Func(returnType, funcName, args)), body(nullptr),
-    hasReturn(Utils::wstrToStr(returnType.getType()) != "fermata")
+    hasReturned(false)
 {
     for (auto& c : credited)
     {
@@ -36,9 +36,19 @@ void FuncDeclStmt::setBody(std::unique_ptr<BodyStmt> body)
     this->body = std::move(body);
 }
 
+void FuncDeclStmt::setHasReturned(const bool hasReturned)
+{
+    this->hasReturned = hasReturned;
+}
+
+bool FuncDeclStmt::getHasReturned() const
+{
+    return hasReturned;
+}
+
 bool FuncDeclStmt::isLegal() const
 {
-    return this->funcDecl == nullptr; // if not nullptr, there is a func inside a func
+    return (func.getType().getType() == L"fermata" || hasReturned) && this->funcDecl == nullptr; // if not nullptr, there is a func inside a func
 }
 
 

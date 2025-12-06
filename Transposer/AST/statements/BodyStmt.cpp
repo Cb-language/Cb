@@ -1,8 +1,8 @@
 #include "BodyStmt.h"
 #include "ReturnStmt.h"
 
-BodyStmt::BodyStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Stmt>>& stmts, const bool isGlobal, const bool hasReturn) :
-    Stmt(scope, funcDecl), stmts(std::move(stmts)), isGlobal(isGlobal), hasReturn(hasReturn)
+BodyStmt::BodyStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Stmt>>& stmts, const bool isGlobal) :
+    Stmt(scope, funcDecl), stmts(std::move(stmts)), isGlobal(isGlobal)
 {
 }
 
@@ -11,36 +11,14 @@ std::vector<std::unique_ptr<Stmt>>& BodyStmt::getStmts()
     return stmts;
 }
 
-bool BodyStmt::hasReturnStmt() const
-{
-    bool foundReturn = false;
-    for (const auto& s : stmts)
-    {
-        if (dynamic_cast<ReturnStmt*>(s.get()) != nullptr) // checking if casting to return stmt works good meaning this is a return stmt
-        {
-            foundReturn = true;
-        }
-    }
-    return foundReturn;
-}
-
 bool BodyStmt::isLegal() const
 {
-    bool foundReturn = false;
-    for (const auto& s : stmts)
+    for (const auto& stmt : stmts)
     {
-        if (!s->isLegal())
+        if (!stmt->isLegal())
         {
             return false;
         }
-        if (dynamic_cast<ReturnStmt*>(s.get()) != nullptr) // checking if casting to return stmt works good meaning this is a return stmt
-        {
-            foundReturn = true;
-        }
-    }
-    if (hasReturn && !foundReturn)
-    {
-        return false;
     }
     return true;
 }
