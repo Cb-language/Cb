@@ -4,11 +4,11 @@ FuncDeclStmt::FuncDeclStmt(Scope* scope, const std::wstring& funcName, const Typ
 const std::vector<Var>& args, std::vector<std::unique_ptr<Func>>& credited) : Stmt(scope),
     func(Func(returnType, funcName, args))
 {
-    this->setFuncDecl(std::move(funcDecl));
     for (auto& c : credited)
     {
         this->credited.emplace_back(std::move(c));
     }
+    this->setFuncDecl(this);
 }
 
 const std::vector<Var>& FuncDeclStmt::getArgs() const
