@@ -39,6 +39,18 @@ bool SymbolTable::doesFuncExist(const Func& f) const
     return false;
 }
 
+bool SymbolTable::doesFuncExist(const std::wstring& name) const
+{
+    for (const auto& func : funcs)
+    {
+        if (func.getFuncName() == name)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool SymbolTable::isLegalCall(const Func& f) const
 {
     for (const auto& func : funcs)
@@ -85,4 +97,20 @@ Scope* SymbolTable::getCurrScope() const
 FuncDeclStmt* SymbolTable::getCurrFunc() const
 {
     return currFunc;
+}
+
+std::unique_ptr<Func> SymbolTable::getFunc(const std::wstring& name) const
+{
+    if (!doesFuncExist(name))
+    {
+        return nullptr;
+    }
+    for (const auto& func : funcs)
+    {
+        if (func.getFuncName() == name)
+        {
+            return std::make_unique<Func>(func);
+        }
+    }
+    return nullptr;
 }

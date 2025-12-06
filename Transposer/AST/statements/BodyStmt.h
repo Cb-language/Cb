@@ -1,6 +1,6 @@
 #pragma once
+#include "AST/abstract/Statement.h"
 
-#include "../Statements.h"
 
 class BodyStmt : public Stmt
 {

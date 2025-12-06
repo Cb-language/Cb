@@ -72,7 +72,6 @@ add_executable(Transposer
         Transposer/errorHandling/lexicalErrors/IdentifierTaken.h
         Transposer/other/Utils.cpp
         Transposer/other/Utils.h
-        Transposer/AST/Statements.h
         Transposer/AST/statements/VarDecStmt.cpp
         Transposer/AST/statements/VarDecStmt.h
         Transposer/AST/statements/AssignmentStmt.cpp
@@ -93,6 +92,8 @@ add_executable(Transposer
         Transposer/symbols/Func.h
         Transposer/AST/statements/BodyStmt.cpp
         Transposer/AST/statements/BodyStmt.h
+        Transposer/AST/statements/FuncDeclStmt.cpp
+        Transposer/AST/statements/FuncDeclStmt.h
 )
 
 # In order to call the exe from the cmd

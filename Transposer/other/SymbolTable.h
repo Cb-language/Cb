@@ -4,7 +4,7 @@
 #include "Scope.h"
 #include "symbols/Func.h"
 
-class FuncDeclStmt; // TODO: remove this when making it
+class FuncDeclStmt;
 
 class SymbolTable
 {
@@ -23,6 +23,7 @@ public:
     void addVar(const Type& type, const Token& token) const;
 
     bool doesFuncExist(const Func& f) const;
+    bool doesFuncExist(const std::wstring& name) const;
     bool isLegalCall(const Func& f) const;
     void addFunc(const Func& f);
 
@@ -35,4 +36,5 @@ public:
 
     Scope* getCurrScope() const;
     FuncDeclStmt* getCurrFunc() const;
+    std::unique_ptr<Func> getFunc(const std::wstring& name) const;
 };

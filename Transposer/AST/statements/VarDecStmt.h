@@ -3,8 +3,10 @@
 #include <memory>
 #include <optional>
 
-#include "../Statements.h"
+
 #include "../../symbols/Var.h"
+#include "AST/abstract/Expression.h"
+#include "AST/abstract/Statement.h"
 
 class VarDecStmt : public Stmt
 {
