@@ -430,8 +430,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
     std::unique_ptr<BodyStmt> body = parseBodyStmt();
     if (!body->hasReturnStmt())
     {
-        throw(NoReturnStmt(current()));
-        return nullptr;
+        throw(NoReturnStmt(prev()));
     }
     funcDeclStmt->setBody(std::move(body));
 
