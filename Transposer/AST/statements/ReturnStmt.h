@@ -8,10 +8,10 @@ class ReturnStmt : public Stmt
 {
 private:
     const Type rType;
-    const Expr* rExpr;
+    std::unique_ptr<Expr> rExpr;
 
 public:
-    ReturnStmt(Scope* scope, FuncDeclStmt* funcDecl, const Type& rType, const Expr* rExpr);
+    ReturnStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& rExpr);
 
     bool isLegal() const override;
     std::string translateToCpp() const override;

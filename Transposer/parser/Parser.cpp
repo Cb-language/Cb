@@ -319,6 +319,10 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const bool isGlobal)
         {
             bodyStmts.push_back(parseFuncDeclStmt());
         }
+        else if (match(Token::KEYWORD, L"B"))
+        {
+            bodyStmts.push_back(parseReturnStmt());
+        }
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
         {
             advance();
@@ -422,6 +426,18 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
     funcDeclStmt->setBody(parseBodyStmt());
     symTable.changeFunc(currFunc);
     return std::move(funcDeclStmt);
+}
+
+std::unique_ptr<ReturnStmt> Parser::parseReturnStmt()
+{
+    expect(Token::KEYWORD, L"B");
+    expect(Token::PUNCTUATION, L"\\");
+
+    std::unique_ptr<Expr> expr = parseExpr();
+
+    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+
+    return std::make_unique<ReturnStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), expr);
 }
 
 

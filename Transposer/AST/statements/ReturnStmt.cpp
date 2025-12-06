@@ -1,6 +1,6 @@
 #include "ReturnStmt.h"
 
-ReturnStmt::ReturnStmt(Scope* scope, FuncDeclStmt* funcDecl, const Type& rType, const Expr* rExpr) : Stmt(scope, funcDecl), rType(rType), rExpr(rExpr)
+ReturnStmt::ReturnStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& rExpr) : Stmt(scope, funcDecl), rType(rExpr->getType()), rExpr(std::move(rExpr))
 {
 }
 

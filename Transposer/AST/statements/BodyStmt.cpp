@@ -1,4 +1,5 @@
 #include "BodyStmt.h"
+#include "ReturnStmt.h"
 
 BodyStmt::BodyStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Stmt>>& stmts, const bool isGlobal, const bool hasReturn) :
     Stmt(scope, funcDecl), stmts(std::move(stmts)), isGlobal(isGlobal), hasReturn(hasReturn)

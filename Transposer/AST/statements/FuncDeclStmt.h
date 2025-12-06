@@ -3,6 +3,8 @@
 #include "BodyStmt.h"
 #include "AST/abstract/Statement.h"
 
+class BodyStmt;
+
 class FuncDeclStmt : public Stmt
 {
 private:
