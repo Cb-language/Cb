@@ -96,6 +96,8 @@ add_executable(Transposer
         Transposer/AST/statements/FuncDeclStmt.h
         Transposer/AST/statements/ReturnStmt.cpp
         Transposer/AST/statements/ReturnStmt.h
+        Transposer/errorHandling/syntaxErrors/WrongReturnType.cpp
+        Transposer/errorHandling/syntaxErrors/WrongReturnType.h
 )
 
 # In order to call the exe from the cmd

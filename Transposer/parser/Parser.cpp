@@ -14,6 +14,7 @@
 #include "errorHandling/syntaxErrors/MissingIdentifier.h"
 #include "errorHandling/syntaxErrors/MissingSemicolon.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
+#include "errorHandling/syntaxErrors/WrongReturnType.h"
 
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), symTable(SymbolTable())
@@ -434,6 +435,10 @@ std::unique_ptr<ReturnStmt> Parser::parseReturnStmt()
     expect(Token::PUNCTUATION, L"\\");
 
     std::unique_ptr<Expr> expr = parseExpr();
+    if (symTable.getCurrFunc()->getReturnType() != expr->getType())
+    {
+        throw(WrongReturnType(current()));
+    }
 
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
