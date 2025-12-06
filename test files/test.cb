@@ -13,3 +13,9 @@ song f() -> fermata
     f♯║
     playBar("f: ", f)║
 ☉
+
+song ©(f) g()
+∮☉
+
+song ©(f, g) k() -> bar
+∮☉

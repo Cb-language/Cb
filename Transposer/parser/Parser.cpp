@@ -318,14 +318,6 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const bool isGlobal)
         else if (match(Token::KEYWORD, L"song"))
         {
             bodyStmts.push_back(parseFuncDeclStmt());
-            if (match(Token::PUNCTUATION, L"∮"))
-            {
-                bodyStmts.push_back(parseBodyStmt());
-            }
-            else
-            {
-                throw MissingBrace(current());
-            }
         }
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
         {
@@ -356,22 +348,27 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
 {
     std::vector<Var> args;
     std::vector<std::unique_ptr<Func>> credited;
+    FuncDeclStmt* currFunc = symTable.getCurrFunc();;
 
     expect(Token::KEYWORD, L"song");
 
-    if (match(Token::KEYWORD, L"©")) // all functions giving copyrights to
+    if (match(Token::PUNCTUATION, L"©")) // all functions giving copyrights to
     {
-        expect(Token::PUNCTUATION, L"(");
-        while (!(match(Token::PUNCTUATION, L")")))
+        advance();
+        expect(Token::PUNCTUATION, L"(", MissingBrace(current()));
+        while (!match(Token::PUNCTUATION, L")"))
         {
-            std::wstring curr = current().value;
-            if (!symTable.doesFuncExist(curr)) // if the function giving credit to doesn't exist
+            std::wstring creditedFuncName = expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())).value;
+            if (!symTable.doesFuncExist(creditedFuncName)) // if the function giving credit to doesn't exist
             {
                 throw(InvalidIdentifier(current()));
             }
-            credited.push_back(symTable.getFunc(curr));
-            advance();
-            expect(Token::PUNCTUATION, L",", UnexpectedToken(current()));
+            credited.push_back(symTable.getFunc(creditedFuncName));
+
+            if (!match(Token::PUNCTUATION, L")"))
+            {
+                expect(Token::PUNCTUATION, L",", UnexpectedToken(current()));
+            }
         }
         advance(); // matched the closing brace now moving forward
     }
@@ -392,14 +389,39 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
 
         const Var curr(type, currName);
         args.push_back(curr);
+
+
+
+        if (!match(Token::PUNCTUATION, L")"))
+        {
+            expect(Token::PUNCTUATION, L",", UnexpectedToken(current()));
+        }
     }
     advance(); // matched the closing brace now moving forward
 
-    expect(Token::PUNCTUATION, L"->", UnexpectedToken(current()));
+    if (!match(Token::PUNCTUATION, L"->"))
+    {
+        auto funcDeclStmt = std::make_unique<FuncDeclStmt>(symTable.getCurrScope(), funcName, Type(L"fermata"), args, credited);
+        symTable.addFunc(funcDeclStmt->getFunc());
+        symTable.changeFunc(funcDeclStmt.get());
+        funcDeclStmt->setBody(parseBodyStmt());
+        symTable.changeFunc(currFunc);
+        return std::move(funcDeclStmt);
+    }
+    advance(); // matched the arrow now moving forward
 
-    const Type rType(expectAndGet(Token::TYPE, UnexpectedToken(current())).value);
+    const Type rType(
+        expectAndGet(
+            Token::TYPE, UnexpectedToken(current())
+            ).value
+        );
 
-    return std::make_unique<FuncDeclStmt>(symTable.getCurrScope(), funcName, rType, args, credited);
+    auto funcDeclStmt = std::make_unique<FuncDeclStmt>(symTable.getCurrScope(), funcName, rType, args, credited);
+    symTable.addFunc(funcDeclStmt->getFunc());
+    symTable.changeFunc(funcDeclStmt.get());
+    funcDeclStmt->setBody(parseBodyStmt());
+    symTable.changeFunc(currFunc);
+    return std::move(funcDeclStmt);
 }
 
 
