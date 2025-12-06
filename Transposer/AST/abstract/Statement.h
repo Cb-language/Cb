@@ -19,7 +19,8 @@ public:
     virtual bool isLegal() const = 0;
     virtual std::string translateToCpp() const = 0;
 
-    void setFuncDecl(const FuncDeclStmt *funcDecl);
+    void setFuncDecl(FuncDeclStmt *funcDecl);
+
 };
 
 inline Stmt::Stmt(Scope* scope) : scope(scope)
@@ -48,4 +49,9 @@ inline Stmt::~Stmt()
 {
     scope = nullptr;
     funcDecl = nullptr;
+}
+
+inline void Stmt::setFuncDecl(FuncDeclStmt* funcDecl)
+{
+    this->funcDecl = funcDecl;
 }
