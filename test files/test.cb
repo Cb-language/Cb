@@ -1,24 +1,4 @@
-song f() -> fermata
-∮
-    bar bora = "insideBodyStmt"║
-    playBar(bora)║
-
-    bar b = "TEST"║
-    freq f = 33 // 2║
-    f //= (5-2)%2║
-    playBar("b: ", b)║
-    b♮║
-    playBar("b: ", b)║
-    playBar("f: ", f)║
-    f♯║
-    playBar("f: ", f)║
-☉
-
-song ©(f) g()
-∮☉
-
-song ©(f, g) k() -> bar
+song k() -> bar
 ∮
     bar bor = "some";║
-    B\21║
 ☉

@@ -13,6 +13,7 @@
 #include "errorHandling/syntaxErrors/MissingBrace.h"
 #include "errorHandling/syntaxErrors/MissingIdentifier.h"
 #include "errorHandling/syntaxErrors/MissingSemicolon.h"
+#include "errorHandling/syntaxErrors/NoReturnStmt.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 #include "errorHandling/syntaxErrors/WrongReturnType.h"
 
@@ -422,9 +423,18 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
         );
 
     auto funcDeclStmt = std::make_unique<FuncDeclStmt>(symTable.getCurrScope(), funcName, rType, args, credited);
+
     symTable.addFunc(funcDeclStmt->getFunc());
     symTable.changeFunc(funcDeclStmt.get());
-    funcDeclStmt->setBody(parseBodyStmt());
+
+    std::unique_ptr<BodyStmt> body = parseBodyStmt();
+    if (!body->hasReturnStmt())
+    {
+        throw(NoReturnStmt(current()));
+        return nullptr;
+    }
+    funcDeclStmt->setBody(std::move(body));
+
     symTable.changeFunc(currFunc);
     return std::move(funcDeclStmt);
 }

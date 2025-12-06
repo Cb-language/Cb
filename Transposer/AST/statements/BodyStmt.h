@@ -10,6 +10,7 @@ private:
 public:
     BodyStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Stmt>>& stmts, const bool isGlobal = false, const bool hasReturn = false);
     std::vector<std::unique_ptr<Stmt>>& getStmts();
+    bool hasReturnStmt() const;
 
     bool isLegal() const override;
     std::string translateToCpp() const override;
