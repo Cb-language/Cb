@@ -36,4 +36,5 @@ public:
 
     Scope* getCurrScope() const;
     FuncDeclStmt* getCurrFunc() const;
+    std::unique_ptr<Func> getFunc(const std::wstring& name) const;
 };

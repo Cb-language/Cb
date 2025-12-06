@@ -98,3 +98,19 @@ FuncDeclStmt* SymbolTable::getCurrFunc() const
 {
     return currFunc;
 }
+
+std::unique_ptr<Func> SymbolTable::getFunc(const std::wstring& name) const
+{
+    if (!doesFuncExist(name))
+    {
+        return nullptr;
+    }
+    for (const auto& func : funcs)
+    {
+        if (func.getFuncName() == name)
+        {
+            return std::make_unique<Func>(func);
+        }
+    }
+    return nullptr;
+}
