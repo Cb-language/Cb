@@ -1,9 +1,14 @@
 #include "FuncDeclStmt.h"
 
-FuncDeclStmt::FuncDeclStmt(Scope *scope, const std::wstring &funcName, const Type &returnType, const std::vector<Var> &args) : Stmt(scope),
+FuncDeclStmt::FuncDeclStmt(Scope* scope, const std::wstring& funcName, const Type& returnType,
+const std::vector<Var>& args, std::vector<std::unique_ptr<Func>>& credited) : Stmt(scope),
     func(Func(returnType, funcName, args))
 {
     this->setFuncDecl(std::move(funcDecl));
+    for (auto& c : credited)
+    {
+        this->credited.emplace_back(std::move(c));
+    }
 }
 
 const std::vector<Var>& FuncDeclStmt::getArgs() const
