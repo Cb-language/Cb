@@ -23,6 +23,7 @@ public:
     void addVar(const Type& type, const Token& token) const;
 
     bool doesFuncExist(const Func& f) const;
+    bool doesFuncExist(const std::wstring& name) const;
     bool isLegalCall(const Func& f) const;
     void addFunc(const Func& f);
 
