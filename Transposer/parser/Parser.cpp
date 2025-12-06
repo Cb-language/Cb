@@ -318,6 +318,14 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const bool isGlobal)
         else if (match(Token::KEYWORD, L"song"))
         {
             bodyStmts.push_back(parseFuncDeclStmt());
+            if (match(Token::PUNCTUATION, L"∮"))
+            {
+                bodyStmts.push_back(parseBodyStmt());
+            }
+            else
+            {
+                throw MissingBrace(current());
+            }
         }
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
         {

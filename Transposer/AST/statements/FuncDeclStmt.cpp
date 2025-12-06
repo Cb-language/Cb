@@ -28,7 +28,7 @@ Type FuncDeclStmt::getReturnType() const
 
 bool FuncDeclStmt::isLegal() const
 {
-    if (this->funcDecl != nullptr)
+    if (this->funcDecl == nullptr)
     {
         return false; // already in a function
     }

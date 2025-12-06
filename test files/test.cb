@@ -2,10 +2,6 @@ song f() -> fermata
 ∮
     bar bora = "insideBodyStmt"║
     playBar(bora)║
-    ∮
-        bora = "\nInAgain"║
-        play(bora)║
-    ☉
 
     bar b = "TEST"║
     freq f = 33 // 2║
