@@ -100,6 +100,12 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/WrongReturnType.h
         Transposer/errorHandling/syntaxErrors/NoReturnStmt.cpp
         Transposer/errorHandling/syntaxErrors/NoReturnStmt.h
+        Transposer/errorHandling/lexicalErrors/MainOverride.cpp
+        Transposer/errorHandling/lexicalErrors/MainOverride.h
+        Transposer/errorHandling/lexicalErrors/NoMain.cpp
+        Transposer/errorHandling/lexicalErrors/NoMain.h
+        Transposer/errorHandling/lexicalErrors/InvalidMainArgs.cpp
+        Transposer/errorHandling/lexicalErrors/InvalidMainArgs.h
 )
 
 # In order to call the exe from the cmd

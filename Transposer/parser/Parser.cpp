@@ -407,6 +407,13 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
 
     if (!match(Token::PUNCTUATION, L"->"))
     {
+        if (funcName == L"prelude")
+        {
+            if (hasMain)
+            {
+                throw
+            }
+        }
         auto funcDeclStmt = std::make_unique<FuncDeclStmt>(symTable.getCurrScope(), funcName, Type(L"fermata"), args, credited);
         symTable.addFunc(funcDeclStmt->getFunc());
         symTable.changeFunc(funcDeclStmt.get());
@@ -421,6 +428,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
             Token::TYPE, UnexpectedToken(current())
             ).value
         );
+
 
     auto funcDeclStmt = std::make_unique<FuncDeclStmt>(symTable.getCurrScope(), funcName, rType, args, credited);
 
