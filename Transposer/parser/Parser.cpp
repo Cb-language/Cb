@@ -230,13 +230,12 @@ std::unique_ptr<HearStmt> Parser::parseHearStmt()
         Token::PUNCTUATION, L"(", MissingBrace(current())
         );
 
-    while (true)
+    while (!match(Token::PUNCTUATION, L")"))
     {
         vars.push_back(parseVarCallExpr());
 
         if (match(Token::PUNCTUATION, L")"))
         {
-            advance();
             break;
         }
 
@@ -244,6 +243,7 @@ std::unique_ptr<HearStmt> Parser::parseHearStmt()
             Token::PUNCTUATION, L",", InvalidExpression(current())
             );
     }
+    advance(); // consume ')'
 
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
@@ -271,18 +271,18 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
 
     expect(Token::PUNCTUATION, L"(", MissingBrace(current()));
 
-    while (true)
+    while (!match(Token::PUNCTUATION, L")"))
     {
         args.push_back(parseExpr());
 
         if (match(Token::PUNCTUATION, L")"))
         {
-            advance();
             break;
         }
 
         expect(Token::PUNCTUATION, L",", InvalidExpression(prev()));
     }
+    advance(); // consume ')'
 
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
