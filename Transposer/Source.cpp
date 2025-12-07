@@ -1,5 +1,4 @@
 ﻿#include <iostream>
-#include <map>
 #include <sstream>
 #include <windows.h>
 #include "token/Tokenizer.h"
@@ -86,17 +85,17 @@ int main(int argc, char* argv[])
     {
         Utils::logMsg("Translating...");
         parser.parse();
+
+        if (!parser.checkLegal())
+        {
+            std::cerr << "Code Illegal :(" << std::endl;
+            return -2;
+        }
     }
     catch (const Error& err)
     {
         std::cerr << err.what() << std::endl;
         return -1;
-    }
-
-    if (!parser.checkLegal())
-    {
-        std::cerr << "Code Illegal :(" << std::endl;
-        return -2;
     }
 
     fileManager.writeFile(parser.translateToCpp());
