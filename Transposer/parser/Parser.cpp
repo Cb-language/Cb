@@ -18,7 +18,7 @@
 #include "errorHandling/syntaxErrors/WrongReturnType.h"
 
 
-Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), symTable(SymbolTable())
+Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), symTable(SymbolTable()), hasMain(false)
 {
     Utils::init(&symTable);
 }

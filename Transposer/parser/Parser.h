@@ -20,6 +20,8 @@ private:
     size_t pos;
     std::vector<std::unique_ptr<Stmt>> stmts;
 
+    bool hasMain;
+
     SymbolTable symTable;
 
     const Token& current() const;
