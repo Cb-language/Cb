@@ -1,7 +1,7 @@
 #pragma once
 #include "../Error.h"
 
-class NoReturnStmt : Error
+class NoReturnStmt : public Error
 {
 public:
     NoReturnStmt(const Token& token);
