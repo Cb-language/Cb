@@ -8,6 +8,7 @@
 #include "AST/statements/PlayStmt.h"
 #include "AST/statements/VarDecStmt.h"
 #include "AST/statements/expression/UnaryOpExpr.h"
+#include "AST/statements/ReturnStmt.h"
 
 class Error;
 
@@ -51,6 +52,7 @@ private:
     std::unique_ptr<PlayStmt> parsePlayStmt();
     std::unique_ptr<BodyStmt> parseBodyStmt(const bool isGlobal = false);
     std::unique_ptr<FuncDeclStmt> parseFuncDeclStmt();
+    std::unique_ptr<ReturnStmt> parseReturnStmt();
 
     // Expressions
 

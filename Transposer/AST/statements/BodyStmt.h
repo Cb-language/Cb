@@ -1,7 +1,6 @@
 #pragma once
 #include "AST/abstract/Statement.h"
 
-
 class BodyStmt : public Stmt
 {
 private:

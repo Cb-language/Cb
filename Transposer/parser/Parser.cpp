@@ -13,7 +13,9 @@
 #include "errorHandling/syntaxErrors/MissingBrace.h"
 #include "errorHandling/syntaxErrors/MissingIdentifier.h"
 #include "errorHandling/syntaxErrors/MissingSemicolon.h"
+#include "errorHandling/syntaxErrors/NoReturnStmt.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
+#include "errorHandling/syntaxErrors/WrongReturnType.h"
 
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), symTable(SymbolTable())
@@ -319,6 +321,10 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const bool isGlobal)
         {
             bodyStmts.push_back(parseFuncDeclStmt());
         }
+        else if (match(Token::KEYWORD, L"B"))
+        {
+            bodyStmts.push_back(parseReturnStmt());
+        }
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
         {
             advance();
@@ -417,11 +423,43 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
         );
 
     auto funcDeclStmt = std::make_unique<FuncDeclStmt>(symTable.getCurrScope(), funcName, rType, args, credited);
+
     symTable.addFunc(funcDeclStmt->getFunc());
     symTable.changeFunc(funcDeclStmt.get());
-    funcDeclStmt->setBody(parseBodyStmt());
+
+    funcDeclStmt->setBody(std::move(parseBodyStmt()));
+
+    if (!funcDeclStmt->getHasReturned())
+    {
+        throw(NoReturnStmt(prev()));
+    }
+
     symTable.changeFunc(currFunc);
     return std::move(funcDeclStmt);
+}
+
+std::unique_ptr<ReturnStmt> Parser::parseReturnStmt()
+{
+    expect(Token::KEYWORD, L"B");
+
+    FuncDeclStmt* currFunc = symTable.getCurrFunc();
+    std::unique_ptr<Expr> expr = nullptr;
+
+    if (currFunc->getReturnType().getType() != L"fermata")
+    {
+        expect(Token::PUNCTUATION, L"\\");
+        expr = parseExpr();
+        if (currFunc->getReturnType() != expr->getType())
+        {
+            throw(WrongReturnType(current()));
+        }
+    }
+
+    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+
+    currFunc->setHasReturned(true);
+
+    return std::make_unique<ReturnStmt>(symTable.getCurrScope(), currFunc, expr);
 }
 
 

@@ -1,4 +1,5 @@
 #include "BodyStmt.h"
+#include "ReturnStmt.h"
 
 BodyStmt::BodyStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Stmt>>& stmts, const bool isGlobal) :
     Stmt(scope, funcDecl), stmts(std::move(stmts)), isGlobal(isGlobal)
@@ -12,9 +13,9 @@ std::vector<std::unique_ptr<Stmt>>& BodyStmt::getStmts()
 
 bool BodyStmt::isLegal() const
 {
-    for (const auto& s : stmts)
+    for (const auto& stmt : stmts)
     {
-        if (!s->isLegal())
+        if (!stmt->isLegal())
         {
             return false;
         }
