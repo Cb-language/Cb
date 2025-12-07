@@ -1,7 +1,7 @@
 #pragma once
 #include "errorHandling/Error.h"
 
-class InvalidMainArgs : Error
+class InvalidMainArgs : public Error
 {
 public:
     InvalidMainArgs(const Token &token);;

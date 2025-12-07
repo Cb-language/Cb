@@ -1,7 +1,7 @@
 #pragma once
 #include "errorHandling/Error.h"
 
-class MainOverride : Error
+class MainOverride : public Error
 {
 public:
     MainOverride(const Token &token);
