@@ -8,6 +8,10 @@
 #include "AST/statements/expression/BinaryOpExpr.h"
 #include "errorHandling/lexicalErrors/IdentifierTaken.h"
 #include "errorHandling/lexicalErrors/InvalidIdentifier.h"
+#include "errorHandling/lexicalErrors/InvalidMainArgs.h"
+#include "errorHandling/lexicalErrors/InvalidMainReturnType.h"
+#include "errorHandling/lexicalErrors/MainOverride.h"
+#include "errorHandling/lexicalErrors/NoMain.h"
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
 #include "errorHandling/syntaxErrors/MissingBrace.h"
@@ -18,7 +22,7 @@
 #include "errorHandling/syntaxErrors/WrongReturnType.h"
 
 
-Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), symTable(SymbolTable())
+Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), symTable(SymbolTable()), hasMain(false)
 {
     Utils::init(&symTable);
 }
@@ -39,6 +43,11 @@ void Parser::parse()
 
 bool Parser::checkLegal() const
 {
+    if (!hasMain)
+    {
+        throw NoMain(tokens[len-1]);
+    }
+
     for (const auto& stmt : stmts)
     {
         if (!stmt->isLegal())
@@ -221,13 +230,12 @@ std::unique_ptr<HearStmt> Parser::parseHearStmt()
         Token::PUNCTUATION, L"(", MissingBrace(current())
         );
 
-    while (true)
+    while (!match(Token::PUNCTUATION, L")"))
     {
         vars.push_back(parseVarCallExpr());
 
         if (match(Token::PUNCTUATION, L")"))
         {
-            advance();
             break;
         }
 
@@ -235,6 +243,7 @@ std::unique_ptr<HearStmt> Parser::parseHearStmt()
             Token::PUNCTUATION, L",", InvalidExpression(current())
             );
     }
+    advance(); // consume ')'
 
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
@@ -262,18 +271,18 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
 
     expect(Token::PUNCTUATION, L"(", MissingBrace(current()));
 
-    while (true)
+    while (!match(Token::PUNCTUATION, L")"))
     {
         args.push_back(parseExpr());
 
         if (match(Token::PUNCTUATION, L")"))
         {
-            advance();
             break;
         }
 
         expect(Token::PUNCTUATION, L",", InvalidExpression(prev()));
     }
+    advance(); // consume ')'
 
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
@@ -381,6 +390,11 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
 
     const std::wstring funcName = expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())).value;
 
+    if (funcName == L"prelude" && hasMain)
+    {
+        throw MainOverride(current());
+    }
+
     if (symTable.doesFuncExist(funcName))
     {
         throw IdentifierTaken(current());
@@ -407,6 +421,11 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
 
     if (!match(Token::PUNCTUATION, L"->"))
     {
+        if (funcName == L"prelude")
+        {
+            throw(InvalidMainReturnType(current())); // if it gets in here, main is void -> err
+        }
+
         auto funcDeclStmt = std::make_unique<FuncDeclStmt>(symTable.getCurrScope(), funcName, Type(L"fermata"), args, credited);
         symTable.addFunc(funcDeclStmt->getFunc());
         symTable.changeFunc(funcDeclStmt.get());
@@ -421,6 +440,24 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
             Token::TYPE, UnexpectedToken(current())
             ).value
         );
+
+
+
+    if (funcName == L"prelude")
+    {
+        if (!args.empty())
+        {
+            throw(InvalidMainArgs(current()));
+        }
+
+        if (rType.getType() != L"degree")
+        {
+            throw(InvalidMainReturnType(current()));
+        }
+
+        hasMain = true;
+    }
+
 
     auto funcDeclStmt = std::make_unique<FuncDeclStmt>(symTable.getCurrScope(), funcName, rType, args, credited);
 

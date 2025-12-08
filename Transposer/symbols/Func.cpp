@@ -23,7 +23,14 @@ const Type& Func::getType() const
 
 std::string Func::translateToCpp() const
 {
-    std::string header = rType.translateTypeToCpp() + " " + Utils::wstrToStr(funcName) + "(";
+    std::string funcNameStr = Utils::wstrToStr(funcName);
+
+    if (funcNameStr == "prelude")
+    {
+        funcNameStr = "main";
+    }
+
+    std::string header = rType.translateTypeToCpp() + " " +  funcNameStr + "(";
 
     bool first = true;
     for (const auto& arg : args)

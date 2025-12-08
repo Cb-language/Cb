@@ -7,3 +7,12 @@ song f()
 ∮
     B║
 ☉
+
+song prelude() -> degree
+∮
+    playBar("Hello World!")║
+    play()║
+    playBar()║
+    hear()║
+    B\0║
+☉
