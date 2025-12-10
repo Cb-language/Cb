@@ -24,7 +24,7 @@ private:
     size_t pos;
     std::vector<std::unique_ptr<Stmt>> stmts;
     std::queue<FuncCredit> creditsQ;
-    std::queue<FuncCall> callsQ;
+    std::queue<FuncCallExpr*> callsQ;
 
     bool hasMain;
 
@@ -71,6 +71,7 @@ private:
     std::unique_ptr<ConstValueExpr> parseConstValueExpr();
     std::unique_ptr<VarCallExpr> parseVarCallExpr();
     std::unique_ptr<UnaryOpExpr> parseUnaryOpExpr(const bool isStmt = false);
+    std::unique_ptr<FuncCallExpr> parseFuncCallExpr(const bool isStmt = false);
 
 public:
     explicit Parser(const std::vector<Token>& tokens);

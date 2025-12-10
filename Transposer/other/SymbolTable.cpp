@@ -2,6 +2,8 @@
 
 #include <sstream>
 
+#include "AST/statements/expression/FuncCallExpr.h"
+
 SymbolTable::SymbolTable()
 {
     head = std::make_unique<Scope>();
@@ -66,11 +68,11 @@ bool SymbolTable::isLegalCredit(const FuncCredit& credit) const
     return false;
 }
 
-bool SymbolTable::isLegalCall(const FuncCall& call) const
+bool SymbolTable::isLegalCall(FuncCallExpr* expr) const
 {
     for (const auto& func : funcs)
     {
-        if (call.isLegalCall(func))
+        if (expr->isLegalCall(func))
         {
             return true;
         }

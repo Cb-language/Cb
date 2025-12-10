@@ -6,6 +6,7 @@
 
 #include "AST/statements/FuncDeclStmt.h"
 #include "AST/statements/expression/BinaryOpExpr.h"
+#include "AST/statements/expression/FuncCallExpr.h"
 #include "errorHandling/lexicalErrors/IdentifierTaken.h"
 #include "errorHandling/lexicalErrors/InvalidIdentifier.h"
 #include "errorHandling/lexicalErrors/InvalidMainArgs.h"
@@ -356,6 +357,10 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const bool isGlobal)
         {
             bodyStmts.push_back(parseReturnStmt());
         }
+        else if (match(Token::IDENTIFIER) && peek().type == Token::PUNCTUATION && peek().value == L"(")
+        {
+            bodyStmts.push_back(parseFuncCallExpr(true));
+        }
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
         {
             advance();
@@ -527,6 +532,37 @@ std::unique_ptr<FuncCreditStmt> Parser::parseFuncCreditStmt()
     return std::make_unique<FuncCreditStmt>(symTable.getCurrScope(),symTable.getCurrFunc(), credit);
 }
 
+std::unique_ptr<FuncCallExpr> Parser::parseFuncCallExpr(const bool isStmt)
+{
+    const std::wstring name = expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())).value;
+    std::vector<std::unique_ptr<Expr>> args;
+
+    expect(Token::PUNCTUATION, L"(", MissingBrace(current()));
+
+    bool first = true;
+    while (!match(Token::PUNCTUATION, L")"))
+    {
+        if (!first)
+        {
+            expect(Token::PUNCTUATION, L",");
+        }
+        first = false;
+        args.push_back(parseExpr());
+    }
+    advance();
+
+    if (isStmt)
+    {
+        expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+    }
+
+    auto expr = std::make_unique<FuncCallExpr>(symTable.getCurrScope(), symTable.getCurrFunc(), name, std::move(args), isStmt);
+
+    callsQ.push(expr.get());
+
+    return expr;
+}
+
 
 std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens)
 {
@@ -554,6 +590,10 @@ std::unique_ptr<Expr> Parser::parsePrimary()
 
     if (match(Token::IDENTIFIER))
     {
+        if (peek().type == Token::PUNCTUATION && peek().value == L"(")
+        {
+            return parseFuncCallExpr();
+        }
         return parseVarCallExpr();
     }
 

@@ -1,3 +1,10 @@
+song prelude() -> degree
+∮
+    f()║
+    playBar("k:",k())║
+    B\0║
+☉
+
 song k() -> note
 ∮
     B\'s'║
@@ -5,14 +12,6 @@ song k() -> note
 
 song f()
 ∮
-    B║
-☉
-
-song prelude() -> degree
-∮
     playBar("Hello World!")║
-    play()║
-    playBar()║
-    hear()║
-    B\0║
+    B║
 ☉

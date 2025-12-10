@@ -3,10 +3,10 @@
 
 #include "Scope.h"
 #include "symbols/Func.h"
-#include "symbols/FuncCall.h"
 #include "symbols/FuncCredit.h"
 
 class FuncDeclStmt;
+class FuncCallExpr;
 
 class SymbolTable
 {
@@ -27,7 +27,7 @@ public:
     bool doesFuncExist(const Func& f) const;
     bool doesFuncExist(const std::wstring& name) const;
     bool isLegalCredit(const FuncCredit& credit) const;
-    bool isLegalCall(const FuncCall& call) const;
+    bool isLegalCall(FuncCallExpr* expr) const;
     void addFunc(const Func& f);
 
     void enterScope();
