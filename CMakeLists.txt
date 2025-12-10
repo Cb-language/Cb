@@ -114,6 +114,8 @@ add_executable(Transposer
         Transposer/symbols/FuncCredit.h
         Transposer/AST/statements/FuncCreditStmt.cpp
         Transposer/AST/statements/FuncCreditStmt.h
+        Transposer/AST/statements/expression/FuncCallExpr.cpp
+        Transposer/AST/statements/expression/FuncCallExpr.h
 )
 
 # In order to call the exe from the cmd

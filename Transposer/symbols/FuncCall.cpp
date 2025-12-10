@@ -1,6 +1,10 @@
 #include "FuncCall.h"
 
-FuncCall::FuncCall(const std::wstring& name, const std::vector<Var>& args, const Token& token)
+#include <sstream>
+
+#include "other/Utils.h"
+
+FuncCall::FuncCall(const std::wstring& name, const std::vector<std::wstring>& args, const Token& token)
     : name(name), args(args), token(token)
 {
 }
@@ -34,4 +38,29 @@ bool FuncCall::isLegalCall(const Func& other) const
 const Token& FuncCall::getToken() const
 {
     return token;
+}
+
+const Type& FuncCall::getType() const
+{
+    return type;
+}
+
+void FuncCall::setType(const Type& type)
+{
+    this->type = type;
+}
+
+std::string FuncCall::translateToCpp() const
+{
+    std::ostringstream oss;
+
+    oss << Utils::wstrToStr(name) << "(";
+
+    for (const std::wstring& arg : args)
+    {
+        oss << Utils::wstrToStr(arg);
+    }
+    oss << ")";
+
+    return oss.str();
 }
