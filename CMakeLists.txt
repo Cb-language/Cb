@@ -108,6 +108,10 @@ add_executable(Transposer
         Transposer/errorHandling/lexicalErrors/InvalidMainArgs.h
         Transposer/errorHandling/lexicalErrors/InvalidMainReturnType.cpp
         Transposer/errorHandling/lexicalErrors/InvalidMainReturnType.h
+        Transposer/symbols/FuncCall.cpp
+        Transposer/symbols/FuncCall.h
+        Transposer/symbols/FuncCredit.cpp
+        Transposer/symbols/FuncCredit.h
 )
 
 # In order to call the exe from the cmd
