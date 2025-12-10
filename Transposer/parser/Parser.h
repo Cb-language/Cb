@@ -11,7 +11,6 @@
 #include "AST/statements/VarDecStmt.h"
 #include "AST/statements/expression/UnaryOpExpr.h"
 #include "AST/statements/ReturnStmt.h"
-#include "symbols/FuncCall.h"
 #include "symbols/FuncCredit.h"
 
 class Error;
