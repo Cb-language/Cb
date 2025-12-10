@@ -1,14 +1,18 @@
 #pragma once
 #include <vector>
+#include <queue>
 
 #include "AST/abstract/Statement.h"
 #include "AST/statements/AssignmentStmt.h"
 #include "AST/statements/BodyStmt.h"
+#include "AST/statements/FuncCreditStmt.h"
 #include "AST/statements/HearStmt.h"
 #include "AST/statements/PlayStmt.h"
 #include "AST/statements/VarDecStmt.h"
 #include "AST/statements/expression/UnaryOpExpr.h"
 #include "AST/statements/ReturnStmt.h"
+#include "symbols/FuncCall.h"
+#include "symbols/FuncCredit.h"
 
 class Error;
 
@@ -19,6 +23,8 @@ private:
     const size_t len;
     size_t pos;
     std::vector<std::unique_ptr<Stmt>> stmts;
+    std::queue<FuncCredit> creditsQ;
+    std::queue<FuncCall> callsQ;
 
     bool hasMain;
 
@@ -55,6 +61,7 @@ private:
     std::unique_ptr<BodyStmt> parseBodyStmt(const bool isGlobal = false);
     std::unique_ptr<FuncDeclStmt> parseFuncDeclStmt();
     std::unique_ptr<ReturnStmt> parseReturnStmt();
+    std::unique_ptr<FuncCreditStmt> parseFuncCreditStmt();
 
     // Expressions
 
@@ -69,7 +76,7 @@ public:
     explicit Parser(const std::vector<Token>& tokens);
     ~Parser();
     void parse();
-    bool checkLegal() const;
+    bool checkLegal();
     std::string translateToCpp() const;
 };
 

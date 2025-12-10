@@ -1,20 +1,23 @@
 #pragma once
 
 #include "BodyStmt.h"
+#include "FuncCreditStmt.h"
 #include "AST/abstract/Statement.h"
 
+// DO NOT DELETE - CIRCULAR INCLUDES
+class FuncCreditStmt;
 class BodyStmt;
 
 class FuncDeclStmt : public Stmt
 {
 private:
     Func func;
-    std::vector<std::unique_ptr<Func>> credited;
+    std::vector<std::unique_ptr<FuncCreditStmt>> credited;
     std::unique_ptr<BodyStmt> body;
     bool hasReturned;
 
 public:
-    FuncDeclStmt(Scope* scope, const std::wstring &funcName, const Type &returnType, const std::vector<Var> &args, std::vector<std::unique_ptr<Func>>& credited);
+    FuncDeclStmt(Scope* scope, const std::wstring &funcName, const Type &returnType, const std::vector<Var> &args, std::vector<std::unique_ptr<FuncCreditStmt>>& credited);
 
     const std::vector<Var>& getArgs() const;
     std::wstring getName() const;

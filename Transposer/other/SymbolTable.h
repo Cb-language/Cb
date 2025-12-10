@@ -3,6 +3,8 @@
 
 #include "Scope.h"
 #include "symbols/Func.h"
+#include "symbols/FuncCall.h"
+#include "symbols/FuncCredit.h"
 
 class FuncDeclStmt;
 
@@ -24,7 +26,8 @@ public:
 
     bool doesFuncExist(const Func& f) const;
     bool doesFuncExist(const std::wstring& name) const;
-    bool isLegalCall(const Func& f) const;
+    bool isLegalCredit(const FuncCredit& credit) const;
+    bool isLegalCall(const FuncCall& call) const;
     void addFunc(const Func& f);
 
     void enterScope();
@@ -37,4 +40,6 @@ public:
     Scope* getCurrScope() const;
     FuncDeclStmt* getCurrFunc() const;
     std::unique_ptr<Func> getFunc(const std::wstring& name) const;
+
+    std::string getFuncsHeaders() const;
 };

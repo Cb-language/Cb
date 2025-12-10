@@ -1,5 +1,7 @@
 #include "SymbolTable.h"
 
+#include <sstream>
+
 SymbolTable::SymbolTable()
 {
     head = std::make_unique<Scope>();
@@ -51,16 +53,28 @@ bool SymbolTable::doesFuncExist(const std::wstring& name) const
     return false;
 }
 
-bool SymbolTable::isLegalCall(const Func& f) const
+bool SymbolTable::isLegalCredit(const FuncCredit& credit) const
 {
     for (const auto& func : funcs)
     {
-        if (func.isLegalCall(f))
+        if (credit.isLegalCredit(func))
         {
             return true;
         }
     }
 
+    return false;
+}
+
+bool SymbolTable::isLegalCall(const FuncCall& call) const
+{
+    for (const auto& func : funcs)
+    {
+        if (call.isLegalCall(func))
+        {
+            return true;
+        }
+    }
     return false;
 }
 
@@ -113,4 +127,15 @@ std::unique_ptr<Func> SymbolTable::getFunc(const std::wstring& name) const
         }
     }
     return nullptr;
+}
+
+std::string SymbolTable::getFuncsHeaders() const
+{
+    std::ostringstream oss;
+    for (const auto& func : funcs)
+    {
+        oss << func.translateToCpp() << ";" << std::endl;
+    }
+
+    return oss.str();
 }

@@ -41,11 +41,31 @@ void Parser::parse()
     }
 }
 
-bool Parser::checkLegal() const
+bool Parser::checkLegal()
 {
     if (!hasMain)
     {
         throw NoMain(tokens[len-1]);
+    }
+
+    while (!creditsQ.empty())
+    {
+        if (!symTable.isLegalCredit(creditsQ.front()))
+        {
+            return false;
+        }
+
+        creditsQ.pop();
+    }
+
+    while (!callsQ.empty())
+    {
+        if (!symTable.isLegalCall(callsQ.front()))
+        {
+            return false;
+        }
+
+        callsQ.pop();
     }
 
     for (const auto& stmt : stmts)
@@ -64,6 +84,8 @@ std::string Parser::translateToCpp() const
     std::ostringstream oss;
     oss << "#include <iostream>" << std::endl;
     oss << "#include <string>" << std::endl;
+
+    oss << std::endl << symTable.getFuncsHeaders();
 
     for (const auto& stmt : stmts)
     {
@@ -362,8 +384,8 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const bool isGlobal)
 std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
 {
     std::vector<Var> args;
-    std::vector<std::unique_ptr<Func>> credited;
-    FuncDeclStmt* currFunc = symTable.getCurrFunc();;
+    std::vector<std::unique_ptr<FuncCreditStmt>> credited;
+    FuncDeclStmt* currFunc = symTable.getCurrFunc();
 
     expect(Token::KEYWORD, L"song");
 
@@ -373,12 +395,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
         expect(Token::PUNCTUATION, L"(", MissingBrace(current()));
         while (!match(Token::PUNCTUATION, L")"))
         {
-            std::wstring creditedFuncName = expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())).value;
-            if (!symTable.doesFuncExist(creditedFuncName)) // if the function giving credit to doesn't exist
-            {
-                throw(InvalidIdentifier(current()));
-            }
-            credited.push_back(symTable.getFunc(creditedFuncName));
+            credited.push_back(parseFuncCreditStmt());
 
             if (!match(Token::PUNCTUATION, L")"))
             {
@@ -497,6 +514,17 @@ std::unique_ptr<ReturnStmt> Parser::parseReturnStmt()
     currFunc->setHasReturned(true);
 
     return std::make_unique<ReturnStmt>(symTable.getCurrScope(), currFunc, expr);
+}
+
+std::unique_ptr<FuncCreditStmt> Parser::parseFuncCreditStmt()
+{
+    FuncCredit credit(
+            expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())).value,current()
+            );
+
+    creditsQ.push(credit);
+
+    return std::make_unique<FuncCreditStmt>(symTable.getCurrScope(),symTable.getCurrFunc(), credit);
 }
 
 
