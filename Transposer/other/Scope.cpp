@@ -71,6 +71,19 @@ void Scope::addVar(const Type& type, const Token& token)
     vars.push_back(v);
 }
 
+void Scope::addVar(const Var& var, const Token& token)
+{
+    for (const auto& v : vars)
+    {
+        if (var == v)
+        {
+            throw IdentifierTaken(token);
+        }
+    }
+
+    vars.push_back(var);
+}
+
 int Scope::getLevel() const
 {
     int level = 0;

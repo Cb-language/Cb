@@ -30,6 +30,11 @@ void SymbolTable::addVar(const Type& type, const Token& token) const
     currScope->addVar(type, token);
 }
 
+void SymbolTable::addVar(const Var& var, const Token& token) const
+{
+    currScope->addVar(var, token);
+}
+
 bool SymbolTable::doesFuncExist(const Func& f) const
 {
     for (const auto& func : funcs)
@@ -68,16 +73,17 @@ bool SymbolTable::isLegalCredit(const FuncCredit& credit) const
     return false;
 }
 
-bool SymbolTable::isLegalCall(FuncCallExpr* expr) const
+std::optional<Type> SymbolTable::getCallType(FuncCallExpr* expr) const
 {
     for (const auto& func : funcs)
     {
         if (expr->isLegalCall(func))
         {
-            return true;
+            return func.getType();
         }
     }
-    return false;
+
+    return std::nullopt;
 }
 
 void SymbolTable::addFunc(const Func& f)

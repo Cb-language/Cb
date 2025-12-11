@@ -35,7 +35,7 @@ Parser::~Parser()
 
 void Parser::parse()
 {
-    auto block = parseBodyStmt(true);
+    auto block = parseBodyStmt({},true);
     for (auto& stmt : block->getStmts())
     {
         stmts.push_back(std::move(stmt));
@@ -61,10 +61,15 @@ bool Parser::checkLegal()
 
     while (!callsQ.empty())
     {
-        if (!symTable.isLegalCall(callsQ.front()))
+        FuncCallExpr* call = callsQ.front();
+        const std::optional<Type> t = symTable.getCallType(call);
+
+        if (!t.has_value())
         {
             return false;
         }
+
+        call->setType(t.value());
 
         callsQ.pop();
     }
@@ -312,13 +317,21 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
     return std::make_unique<PlayStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), args, newline);
 }
 
-std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const bool isGlobal)
+std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var, const Token>>& args, const bool isGlobal)
 {
     // Enter new scope only if not global
     if (!isGlobal)
     {
         expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
         symTable.enterScope();
+
+        if (!args.empty())
+        {
+            for (const auto& p : args)
+            {
+                symTable.addVar(p.first, p.second);
+            }
+        }
     }
 
     std::vector<std::unique_ptr<Stmt>> bodyStmts;
@@ -388,7 +401,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const bool isGlobal)
 
 std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
 {
-    std::vector<Var> args;
+    std::vector<std::pair<Var, const Token>> args;
     std::vector<std::unique_ptr<FuncCreditStmt>> credited;
     FuncDeclStmt* currFunc = symTable.getCurrFunc();
 
@@ -430,9 +443,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
         std::wstring currName = expectAndGet(Token::IDENTIFIER, MissingBrace(current())).value;
 
         const Var curr(type, currName);
-        args.push_back(curr);
-
-
+        args.push_back({curr, current()});
 
         if (!match(Token::PUNCTUATION, L")"))
         {
@@ -441,6 +452,16 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
     }
     advance(); // matched the closing brace now moving forward
 
+    std::vector<Var> varArgs;
+
+    if (!args.empty())
+    {
+        for (const auto& p : args)
+        {
+            varArgs.emplace_back(p.first);
+        }
+    }
+
     if (!match(Token::PUNCTUATION, L"->"))
     {
         if (funcName == L"prelude")
@@ -448,10 +469,10 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
             throw(InvalidMainReturnType(current())); // if it gets in here, main is void -> err
         }
 
-        auto funcDeclStmt = std::make_unique<FuncDeclStmt>(symTable.getCurrScope(), funcName, Type(L"fermata"), args, credited);
+        auto funcDeclStmt = std::make_unique<FuncDeclStmt>(symTable.getCurrScope(), funcName, Type(L"fermata"), varArgs, credited);
         symTable.addFunc(funcDeclStmt->getFunc());
         symTable.changeFunc(funcDeclStmt.get());
-        funcDeclStmt->setBody(parseBodyStmt());
+        funcDeclStmt->setBody(parseBodyStmt(args));
         symTable.changeFunc(currFunc);
         return std::move(funcDeclStmt);
     }
@@ -462,8 +483,6 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
             Token::TYPE, UnexpectedToken(current())
             ).value
         );
-
-
 
     if (funcName == L"prelude")
     {
@@ -481,12 +500,12 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
     }
 
 
-    auto funcDeclStmt = std::make_unique<FuncDeclStmt>(symTable.getCurrScope(), funcName, rType, args, credited);
+    auto funcDeclStmt = std::make_unique<FuncDeclStmt>(symTable.getCurrScope(), funcName, rType, varArgs, credited);
 
     symTable.addFunc(funcDeclStmt->getFunc());
     symTable.changeFunc(funcDeclStmt.get());
 
-    funcDeclStmt->setBody(std::move(parseBodyStmt()));
+    funcDeclStmt->setBody(std::move(parseBodyStmt(args)));
 
     if (!funcDeclStmt->getHasReturned())
     {
