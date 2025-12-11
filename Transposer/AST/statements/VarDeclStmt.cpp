@@ -1,11 +1,11 @@
-#include "VarDecStmt.h"
+#include "VarDeclStmt.h"
 
-VarDecStmt::VarDecStmt(Scope* scope, FuncDeclStmt* funcDecl, const bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var& var) :
+VarDeclStmt::VarDeclStmt(Scope* scope, FuncDeclStmt* funcDecl, const bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var& var) :
     Stmt(scope, funcDecl), hasStartingValue(hasStartingValue), startingValue(std::move(startingValue)) , var(var)
 {
 }
 
-bool VarDecStmt::isLegal() const
+bool VarDeclStmt::isLegal() const
 {
     if (hasStartingValue)
     {
@@ -14,7 +14,7 @@ bool VarDecStmt::isLegal() const
     return true;
 }
 
-std::string VarDecStmt::translateToCpp() const
+std::string VarDeclStmt::translateToCpp() const
 {
     if (var.getType().getType() == L"bar" && hasStartingValue && startingValue.get()->getType().getType() != L"bar")
     {

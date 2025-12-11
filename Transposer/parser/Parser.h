@@ -8,7 +8,7 @@
 #include "AST/statements/FuncCreditStmt.h"
 #include "AST/statements/HearStmt.h"
 #include "AST/statements/PlayStmt.h"
-#include "AST/statements/VarDecStmt.h"
+#include "AST/statements/VarDeclStmt.h"
 #include "AST/statements/expression/UnaryOpExpr.h"
 #include "AST/statements/ReturnStmt.h"
 #include "symbols/FuncCredit.h"
@@ -53,7 +53,7 @@ private:
 
     // General Statements
 
-    std::unique_ptr<VarDecStmt> parseVarDecStmt();
+    std::unique_ptr<VarDeclStmt> parseVarDecStmt();
     std::unique_ptr<AssignmentStmt> parseAssignmentStmt();
     std::unique_ptr<HearStmt> parseHearStmt();
     std::unique_ptr<PlayStmt> parsePlayStmt();

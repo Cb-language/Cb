@@ -8,7 +8,7 @@
 #include "AST/abstract/Expression.h"
 #include "AST/abstract/Statement.h"
 
-class VarDecStmt : public Stmt
+class VarDeclStmt : public Stmt
 {
 private:
     const bool hasStartingValue;
@@ -16,7 +16,7 @@ private:
     const Var var;
 
 public:
-    VarDecStmt(Scope* scope, FuncDeclStmt* funcDecl, bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var &var);
+    VarDeclStmt(Scope* scope, FuncDeclStmt* funcDecl, bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var &var);
 
     bool isLegal() const override;
     std::string translateToCpp() const override;

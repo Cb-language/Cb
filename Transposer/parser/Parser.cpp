@@ -211,7 +211,7 @@ const Token& Parser::expectAndGet(const Token::TokenType type, const std::wstrin
     return prev();
 }
 
-std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
+std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt()
 {
     const Type varType(expectAndGet(Token::TYPE).value);
 
@@ -226,7 +226,7 @@ std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
     {
         symTable.addVar(varType, identifierToken);
         advance();
-        return std::make_unique<VarDecStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), false, nullptr, var);
+        return std::make_unique<VarDeclStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), false, nullptr, var);
     }
 
     expect(Token::OP_ASSIGNMENT, L"=");
@@ -234,7 +234,7 @@ std::unique_ptr<VarDecStmt> Parser::parseVarDecStmt()
     auto expr = parseExpr();
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
     symTable.addVar(varType, identifierToken); // to avoid degree x = x + 1║ ...
-    return std::make_unique<VarDecStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), true, std::move(expr), var);
+    return std::make_unique<VarDeclStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), true, std::move(expr), var);
 }
 
 std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
