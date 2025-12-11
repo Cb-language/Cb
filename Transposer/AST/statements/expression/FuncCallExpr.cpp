@@ -2,6 +2,8 @@
 
 #include <sstream>
 
+#include "AST/statements/FuncDeclStmt.h"
+
 FuncCallExpr::FuncCallExpr(Scope* scope, FuncDeclStmt* funcDecl, const std::wstring& name,std::vector<std::unique_ptr<Expr>> args, const bool isStmt)
     : Expr(scope, funcDecl), name(name), type(Type(L"fermata")), isStmt(isStmt)
 {
@@ -17,7 +19,29 @@ Type FuncCallExpr::getType() const
 
 bool FuncCallExpr::isLegal() const
 {
-    return true;
+    if (funcDecl == nullptr)
+    {
+        return false;
+    }
+
+    if (funcDecl->getName() == L"prelude")
+    {
+        return true; // main doesnt have to copy right
+    }
+
+    if (funcDecl->getName() == name)
+    {
+        return true; // a func doesn't have to copyright itself
+    }
+
+    for (const auto& credit : funcDecl->getCredited())
+    {
+        if (credit.get()->getName() == name)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 std::string FuncCallExpr::translateToCpp() const

@@ -15,6 +15,7 @@ public:
     FuncCredit(const FuncCredit& funcCredit);
 
     const Token& getToken() const;
+    const std::wstring& getName() const;
 
     bool isLegalCredit(const Func& func) const;
 };

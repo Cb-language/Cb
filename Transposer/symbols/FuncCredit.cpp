@@ -13,6 +13,11 @@ const Token& FuncCredit::getToken() const
     return token;
 }
 
+const std::wstring& FuncCredit::getName() const
+{
+    return name;
+}
+
 bool FuncCredit::isLegalCredit(const Func& func) const
 {
     return func.getFuncName() == name;

@@ -4,6 +4,11 @@ FuncCreditStmt::FuncCreditStmt(Scope* scope, FuncDeclStmt* funcDecl, const FuncC
 {
 }
 
+const std::wstring& FuncCreditStmt::getName() const
+{
+    return funcCredit.getName();
+}
+
 // checked after the parsing via the credit queue
 bool FuncCreditStmt::isLegal() const
 {

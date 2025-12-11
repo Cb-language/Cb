@@ -30,6 +30,8 @@ public:
     void setHasReturned(const bool hasReturned);
     bool getHasReturned() const;
 
+    const std::vector<std::unique_ptr<FuncCreditStmt>>& getCredited() const;
+
     bool isLegal() const override;
     std::string translateToCpp() const override;
 };

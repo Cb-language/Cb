@@ -7,6 +7,10 @@ ReturnStmt::ReturnStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Exp
 
 bool ReturnStmt::isLegal() const
 {
+    if (rExpr == nullptr)
+    {
+        return rType.getType() == L"fermata";
+    }
     return rExpr->getType() == rType;
 }
 
