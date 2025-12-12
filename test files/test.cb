@@ -6,6 +6,7 @@ song prelude() -> degree
 
     bar b1 = "add(3,2) + k() = " + (add(3,2) + k())║
     p(b1)║
+    getAndPrint()║
     B\0║
 ☉
 
@@ -33,4 +34,12 @@ song add(degree x, degree y) -> degree
 song recursion(degree x)
 ∮
     recursion(x-1)║
+☉
+
+song ©(p) getAndPrint()
+∮
+    playBar("Enter a bar")║
+    bar b║
+    hear(b)║
+    p(b)║
 ☉
