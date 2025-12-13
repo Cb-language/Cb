@@ -26,7 +26,14 @@ bool HearStmt::isLegal() const
 std::string HearStmt::translateToCpp() const
 {
     std::ostringstream oss;
-    oss << Utils::printTabs() << "std::cin";
+
+    if (vars.empty())
+    {
+        oss << getTabs() << "system(\"pause\");";
+        return oss.str();
+    }
+
+    oss << getTabs() << "std::cin";
 
     for (const auto& var : vars)
     {

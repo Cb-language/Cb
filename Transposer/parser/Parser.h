@@ -1,10 +1,19 @@
 #pragma once
 #include <vector>
+#include <queue>
 
-#include "../AST/Statements.h"
-#include "errorHandling/Error.h"
-#include "other/SymbolTable.h"
-#include "token/Token.h"
+#include "AST/abstract/Statement.h"
+#include "AST/statements/AssignmentStmt.h"
+#include "AST/statements/BodyStmt.h"
+#include "AST/statements/FuncCreditStmt.h"
+#include "AST/statements/HearStmt.h"
+#include "AST/statements/PlayStmt.h"
+#include "AST/statements/VarDeclStmt.h"
+#include "AST/statements/expression/UnaryOpExpr.h"
+#include "AST/statements/ReturnStmt.h"
+#include "symbols/FuncCredit.h"
+
+class Error;
 
 class Parser
 {
@@ -13,6 +22,10 @@ private:
     const size_t len;
     size_t pos;
     std::vector<std::unique_ptr<Stmt>> stmts;
+    std::queue<FuncCredit> creditsQ;
+    std::queue<FuncCallExpr*> callsQ;
+
+    bool hasMain;
 
     SymbolTable symTable;
 
@@ -40,10 +53,14 @@ private:
 
     // General Statements
 
-    std::unique_ptr<VarDecStmt> parseVarDecStmt();
+    std::unique_ptr<VarDeclStmt> parseVarDecStmt();
     std::unique_ptr<AssignmentStmt> parseAssignmentStmt();
     std::unique_ptr<HearStmt> parseHearStmt();
     std::unique_ptr<PlayStmt> parsePlayStmt();
+    std::unique_ptr<BodyStmt> parseBodyStmt(const std::vector<std::pair<Var, const Token>>& args, const bool isGlobal = false);
+    std::unique_ptr<FuncDeclStmt> parseFuncDeclStmt();
+    std::unique_ptr<ReturnStmt> parseReturnStmt();
+    std::unique_ptr<FuncCreditStmt> parseFuncCreditStmt();
 
     // Expressions
 
@@ -53,12 +70,13 @@ private:
     std::unique_ptr<ConstValueExpr> parseConstValueExpr();
     std::unique_ptr<VarCallExpr> parseVarCallExpr();
     std::unique_ptr<UnaryOpExpr> parseUnaryOpExpr(const bool isStmt = false);
+    std::unique_ptr<FuncCallExpr> parseFuncCallExpr(const bool isStmt = false);
 
 public:
     explicit Parser(const std::vector<Token>& tokens);
     ~Parser();
     void parse();
-    bool checkLegal() const;
+    bool checkLegal();
     std::string translateToCpp() const;
 };
 

@@ -3,7 +3,7 @@
 #include <optional>
 #include <vector>
 
-#include "Var.h"
+#include "../symbols/Var.h"
 #include "token/Token.h"
 
 class Scope
@@ -23,5 +23,6 @@ public:
     Scope* makeNewScope();
     Scope* getParent() const;
     void addVar(const Type& type, const Token& token);
+    void addVar(const Var& var, const Token& token);
     int getLevel() const;
 };

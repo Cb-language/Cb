@@ -2,8 +2,11 @@
 #include <stack>
 
 #include "Scope.h"
+#include "symbols/Func.h"
+#include "symbols/FuncCredit.h"
 
-class FuncDeclStmt; // TODO: remove this when making it
+class FuncDeclStmt;
+class FuncCallExpr;
 
 class SymbolTable
 {
@@ -11,6 +14,7 @@ private:
     std::unique_ptr<Scope> head;
     Scope* currScope;
     FuncDeclStmt* currFunc;
+    std::vector<Func> funcs;
 
 public:
     SymbolTable();
@@ -19,6 +23,13 @@ public:
     // std::nullopt when not found
     std::optional<Var> getVar(const std::wstring& name) const;
     void addVar(const Type& type, const Token& token) const;
+    void addVar(const Var& var, const Token& token) const;
+
+    bool doesFuncExist(const Func& f) const;
+    bool doesFuncExist(const std::wstring& name) const;
+    bool isLegalCredit(const FuncCredit& credit) const;
+    std::optional<Type> getCallType(FuncCallExpr* expr) const;
+    void addFunc(const Func& f);
 
     void enterScope();
     void exitScope();
@@ -29,4 +40,7 @@ public:
 
     Scope* getCurrScope() const;
     FuncDeclStmt* getCurrFunc() const;
+    std::unique_ptr<Func> getFunc(const std::wstring& name) const;
+
+    std::string getFuncsHeaders() const;
 };
