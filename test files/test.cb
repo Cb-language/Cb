@@ -1,18 +1,45 @@
+song prelude() -> degree
+∮
+    f()║
+    playBar("k:",k())║
+    p("p()")║
+
+    bar b1 = "add(3,2) + k() = " + (add(3,2) + k())║
+    p(b1)║
+    getAndPrint()║
+    B\0║
+☉
+
 song k() -> note
 ∮
     B\'s'║
 ☉
 
-song f()
+song ©(p) f()
 ∮
+    p("Hello World!")║
     B║
 ☉
 
-song prelude() -> degree
+song p(bar b)
 ∮
-    playBar("Hello World!")║
-    play()║
-    playBar()║
-    hear()║
-    B\0║
+    playBar(b)║
+☉
+
+song add(degree x, degree y) -> degree
+∮
+    B\x+y║
+☉
+
+song recursion(degree x)
+∮
+    recursion(x-1)║
+☉
+
+song ©(p) getAndPrint()
+∮
+    playBar("Enter a bar")║
+    bar b║
+    hear(b)║
+    p(b)║
 ☉

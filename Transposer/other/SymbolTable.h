@@ -3,8 +3,10 @@
 
 #include "Scope.h"
 #include "symbols/Func.h"
+#include "symbols/FuncCredit.h"
 
 class FuncDeclStmt;
+class FuncCallExpr;
 
 class SymbolTable
 {
@@ -21,10 +23,12 @@ public:
     // std::nullopt when not found
     std::optional<Var> getVar(const std::wstring& name) const;
     void addVar(const Type& type, const Token& token) const;
+    void addVar(const Var& var, const Token& token) const;
 
     bool doesFuncExist(const Func& f) const;
     bool doesFuncExist(const std::wstring& name) const;
-    bool isLegalCall(const Func& f) const;
+    bool isLegalCredit(const FuncCredit& credit) const;
+    std::optional<Type> getCallType(FuncCallExpr* expr) const;
     void addFunc(const Func& f);
 
     void enterScope();
@@ -37,4 +41,6 @@ public:
     Scope* getCurrScope() const;
     FuncDeclStmt* getCurrFunc() const;
     std::unique_ptr<Func> getFunc(const std::wstring& name) const;
+
+    std::string getFuncsHeaders() const;
 };

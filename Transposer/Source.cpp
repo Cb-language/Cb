@@ -126,7 +126,8 @@ int main(int argc, char* argv[])
     if (mode == RUN)
     {
         Utils::logMsg("Running...");
-        exePath = "\"" + exePath + "\"";
+        exePath = R"(start cmd /k ")" + exePath + "\"";
+
         std::system(exePath.c_str());
     }
 

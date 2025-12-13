@@ -72,8 +72,8 @@ add_executable(Transposer
         Transposer/errorHandling/lexicalErrors/IdentifierTaken.h
         Transposer/other/Utils.cpp
         Transposer/other/Utils.h
-        Transposer/AST/statements/VarDecStmt.cpp
-        Transposer/AST/statements/VarDecStmt.h
+        Transposer/AST/statements/VarDeclStmt.cpp
+        Transposer/AST/statements/VarDeclStmt.h
         Transposer/AST/statements/AssignmentStmt.cpp
         Transposer/AST/statements/AssignmentStmt.h
         Transposer/errorHandling/lexicalErrors/InvalidIdentifier.cpp
@@ -108,6 +108,12 @@ add_executable(Transposer
         Transposer/errorHandling/lexicalErrors/InvalidMainArgs.h
         Transposer/errorHandling/lexicalErrors/InvalidMainReturnType.cpp
         Transposer/errorHandling/lexicalErrors/InvalidMainReturnType.h
+        Transposer/symbols/FuncCredit.cpp
+        Transposer/symbols/FuncCredit.h
+        Transposer/AST/statements/FuncCreditStmt.cpp
+        Transposer/AST/statements/FuncCreditStmt.h
+        Transposer/AST/statements/expression/FuncCallExpr.cpp
+        Transposer/AST/statements/expression/FuncCallExpr.h
 )
 
 # In order to call the exe from the cmd

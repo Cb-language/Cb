@@ -1,5 +1,9 @@
 #include "SymbolTable.h"
 
+#include <sstream>
+
+#include "AST/statements/expression/FuncCallExpr.h"
+
 SymbolTable::SymbolTable()
 {
     head = std::make_unique<Scope>();
@@ -24,6 +28,11 @@ std::optional<Var> SymbolTable::getVar(const std::wstring &name) const
 void SymbolTable::addVar(const Type& type, const Token& token) const
 {
     currScope->addVar(type, token);
+}
+
+void SymbolTable::addVar(const Var& var, const Token& token) const
+{
+    currScope->addVar(var, token);
 }
 
 bool SymbolTable::doesFuncExist(const Func& f) const
@@ -51,17 +60,30 @@ bool SymbolTable::doesFuncExist(const std::wstring& name) const
     return false;
 }
 
-bool SymbolTable::isLegalCall(const Func& f) const
+bool SymbolTable::isLegalCredit(const FuncCredit& credit) const
 {
     for (const auto& func : funcs)
     {
-        if (func.isLegalCall(f))
+        if (credit.isLegalCredit(func))
         {
             return true;
         }
     }
 
     return false;
+}
+
+std::optional<Type> SymbolTable::getCallType(FuncCallExpr* expr) const
+{
+    for (const auto& func : funcs)
+    {
+        if (expr->isLegalCall(func))
+        {
+            return func.getType();
+        }
+    }
+
+    return std::nullopt;
 }
 
 void SymbolTable::addFunc(const Func& f)
@@ -113,4 +135,15 @@ std::unique_ptr<Func> SymbolTable::getFunc(const std::wstring& name) const
         }
     }
     return nullptr;
+}
+
+std::string SymbolTable::getFuncsHeaders() const
+{
+    std::ostringstream oss;
+    for (const auto& func : funcs)
+    {
+        oss << func.translateToCpp() << ";" << std::endl;
+    }
+
+    return oss.str();
 }

@@ -1,7 +1,7 @@
 #include "FuncDeclStmt.h"
 
 FuncDeclStmt::FuncDeclStmt(Scope* scope, const std::wstring& funcName, const Type& returnType,
-const std::vector<Var>& args, std::vector<std::unique_ptr<Func>>& credited) : Stmt(scope),
+const std::vector<Var>& args, std::vector<std::unique_ptr<FuncCreditStmt>>& credited) : Stmt(scope),
     func(Func(returnType, funcName, args)), body(nullptr),
     hasReturned(false)
 {
@@ -46,9 +46,14 @@ bool FuncDeclStmt::getHasReturned() const
     return hasReturned;
 }
 
+const std::vector<std::unique_ptr<FuncCreditStmt>>& FuncDeclStmt::getCredited() const
+{
+    return credited;
+}
+
 bool FuncDeclStmt::isLegal() const
 {
-    return (func.getType().getType() == L"fermata" || hasReturned) && this->funcDecl == nullptr; // if not nullptr, there is a func inside a func
+    return (func.getType().getType() == L"fermata" || hasReturned) && this->funcDecl == nullptr && body->isLegal(); // if not nullptr, there is a func inside a func
 }
 
 

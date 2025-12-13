@@ -23,5 +23,6 @@ public:
     Scope* makeNewScope();
     Scope* getParent() const;
     void addVar(const Type& type, const Token& token);
+    void addVar(const Var& var, const Token& token);
     int getLevel() const;
 };

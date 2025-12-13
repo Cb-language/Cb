@@ -10,7 +10,7 @@ bool AssignmentStmt::isLegal() const
 {
     if (assignmentOp == L"-=" || assignmentOp == L"*=" || assignmentOp == L"/=" || assignmentOp == L"//=" || assignmentOp == L"%=")
     {
-        return varExpr->getType() == L"degree" && expr->getType() == L"degree"; // is numberable
+        return varExpr->getType().isNumberable() && expr->getType().isNumberable(); // is numberable
     }
 
     return varExpr->getType() == expr->getType();
@@ -18,7 +18,19 @@ bool AssignmentStmt::isLegal() const
 
 std::string AssignmentStmt::translateToCpp() const
 {
+
     std::string varName = Utils::wstrToStr(varExpr->getName());
+    if (assignmentOp == L"+=" || assignmentOp == L"=")
+    {
+        const bool isVarStr = varExpr->getType().getType() == L"bar";
+        const bool isExprStr = expr->getType().getType() == L"bar" || expr->getType().getType() == L"note";
+
+        if (isVarStr && !isExprStr)
+        {
+            return getTabs() + varName + " " + Utils::wstrToStr(assignmentOp) + " std::to_string(" + expr->translateToCpp() + ");";
+        }
+    }
+
     if (assignmentOp == L"//=")
     {
         return getTabs() + varName + " = " + "static_cast<double>(" + varName +") / static_cast<double>(" + expr->translateToCpp() + ");";

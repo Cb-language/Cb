@@ -33,7 +33,17 @@ Type BinaryOpExpr::getType() const
     }
 
     // Arithmetic operators
-    if (op == L"+"  || op == L"-" ||
+    if (op == L"+")
+    {
+        if (leftType.getType() == L"bar" || rightType.getType() == L"bar")
+            return Type(L"bar");
+        if (leftType == L"freq" || rightType == L"freq")
+            return Type(L"freq");
+        if (leftType == L"note" || rightType == L"note")
+            return Type(L"note");
+    }
+
+    if (op == L"-" ||
         op == L"*"  || op == L"/" ||
         op == L"%")
     {
@@ -51,7 +61,7 @@ Type BinaryOpExpr::getType() const
         return Type(L"degree");
     }
 
-    return Type(L"UNKNOWN");
+    return Type(L"fermata");
 }
 
 bool BinaryOpExpr::isLegal() const
@@ -94,6 +104,8 @@ std::string BinaryOpExpr::translateToCpp() const
 {
     const std::string leftStr = left->translateToCpp();
     const std::string rightStr = right->translateToCpp();
+    const std::wstring leftType = left.get()->getType().getType();
+    const std::wstring rightType = right.get()->getType().getType();
     const std::string opStr = Utils::wstrToStr(op);
     std::ostringstream oss;
 
@@ -115,9 +127,13 @@ std::string BinaryOpExpr::translateToCpp() const
         oss << "static_cast<double>(" << leftStrClean << ")"
         << " / static_cast<double>(" << rightStrClean << ")";
     }
-    else if (left->getType().isStringable() && right->getType().isStringable())
+    else if (opStr == "+" && leftType == L"bar" && rightType != L"bar")
     {
-        oss << "std::string(" << leftStr << ") " << opStr << " std::string(" << rightStr << ")";
+        oss << leftStr << " " << opStr << " std::to_string(" << rightStr << ")";
+    }
+    else if (opStr == "+" && leftType != L"bar" && rightType == L"bar")
+    {
+        oss << "std::to_string(" <<leftStr << ") " << opStr << " " << rightStr;
     }
     else
     {

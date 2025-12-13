@@ -8,8 +8,8 @@
 class Type
 {
 private:
-    const std::wstring type;
-    const std::string extra; // i.e unsigned/signed
+    std::wstring type;
+    std::string extra; // i.e unsigned/signed
     static const std::unordered_map<std::wstring, std::string> typeMap;
     static const std::unordered_map<std::wstring, std::unordered_set<std::wstring>> castMap;
 
