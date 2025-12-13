@@ -7,7 +7,7 @@ song prelude() -> degree
     bar b1 = "add(3,2) + k() = " + (add(3,2) + k())║
     p(b1)║
     getAndPrint()║
-    B\0║
+    B\1║
 ☉
 
 song k() -> note
