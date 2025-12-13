@@ -90,6 +90,7 @@ std::string Parser::translateToCpp() const
     std::ostringstream oss;
     oss << "#include <iostream>" << std::endl;
     oss << "#include <string>" << std::endl;
+    oss << "#include \"includes/Array.h\"" << std::endl;
 
     oss << std::endl << symTable.getFuncsHeaders();
 
