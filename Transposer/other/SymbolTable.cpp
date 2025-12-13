@@ -142,7 +142,11 @@ std::string SymbolTable::getFuncsHeaders() const
     std::ostringstream oss;
     for (const auto& func : funcs)
     {
-        oss << func.translateToCpp() << ";" << std::endl;
+        // convention to note write the main's header
+        if (func.getFuncName() != L"prelude")
+        {
+            oss << func.translateToCpp() << ";" << std::endl;
+        }
     }
 
     return oss.str();
