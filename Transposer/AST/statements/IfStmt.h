@@ -6,13 +6,11 @@
 class IfStmt : public Stmt
 {
 private:
-    const Expr *expr;
+    std::unique_ptr<Expr> expr;
     BodyStmt* body;
 public:
-    IfStmt(Scope* scope, FuncDeclStmt* funcDecl, const Expr* expr, BodyStmt* body);
+    IfStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& expr, BodyStmt* body);
 
     bool isLegal() const override;
     std::string translateToCpp() const override;
-
-    const Expr *getExpression() const;
 };
