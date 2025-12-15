@@ -25,9 +25,9 @@ std::optional<Var> SymbolTable::getVar(const std::wstring &name) const
     return currScope->getVar(name);
 }
 
-void SymbolTable::addVar(const Type& type, const Token& token) const
+void SymbolTable::addVar(std::unique_ptr<IType> type, const Token& token) const
 {
-    currScope->addVar(type, token);
+    currScope->addVar(std::move(type), token);
 }
 
 void SymbolTable::addVar(const Var& var, const Token& token) const
@@ -73,22 +73,22 @@ bool SymbolTable::isLegalCredit(const FuncCredit& credit) const
     return false;
 }
 
-std::optional<Type> SymbolTable::getCallType(FuncCallExpr* expr) const
+std::unique_ptr<IType> SymbolTable::getCallType(FuncCallExpr* expr) const
 {
     for (const auto& func : funcs)
     {
         if (expr->isLegalCall(func))
         {
-            return func.getType();
+            return func.getType()->copy();
         }
     }
 
-    return std::nullopt;
+    return nullptr;
 }
 
 void SymbolTable::addFunc(const Func& f)
 {
-    funcs.push_back(f);
+    funcs.push_back(f.copy());
 }
 
 void SymbolTable::enterScope()
@@ -131,7 +131,7 @@ std::unique_ptr<Func> SymbolTable::getFunc(const std::wstring& name) const
     {
         if (func.getFuncName() == name)
         {
-            return std::make_unique<Func>(func);
+            return std::make_unique<Func>(func.copy());
         }
     }
     return nullptr;

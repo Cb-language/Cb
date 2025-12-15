@@ -20,5 +20,5 @@ public:
     UnaryOpExpr(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<VarCallExpr>, const UnaryOp op, const bool isStmt = false);
     bool isLegal() const override;
     std::string translateToCpp() const override;
-    Type getType() const override;
+    std::unique_ptr<IType> getType() const override;
 };

@@ -14,7 +14,7 @@ bool HearStmt::isLegal() const
 {
     for (const auto& var : vars)
     {
-        if (!(var->getType().isPrimitive()))
+        if (!(var->getType()->isPrimitive()))
         {
             return false;
         }

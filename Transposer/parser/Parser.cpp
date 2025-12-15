@@ -62,14 +62,14 @@ bool Parser::checkLegal()
     while (!callsQ.empty())
     {
         FuncCallExpr* call = callsQ.front();
-        const std::optional<Type> t = symTable.getCallType(call);
+        std::unique_ptr<IType> t = symTable.getCallType(call);
 
-        if (!t.has_value())
+        if (t == nullptr)
         {
             return false;
         }
 
-        call->setType(t.value());
+        call->setType(std::move(t));
 
         callsQ.pop();
     }

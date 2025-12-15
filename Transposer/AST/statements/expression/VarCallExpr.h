@@ -12,6 +12,6 @@ public:
     VarCallExpr(const VarCallExpr& other);
     bool isLegal() const override;
     std::string translateToCpp() const override;
-    Type getType() const override;
+    std::unique_ptr<IType> getType() const override;
     std::wstring getName() const;
 };

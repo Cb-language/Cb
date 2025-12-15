@@ -1,8 +1,8 @@
 #include "FuncDeclStmt.h"
 
-FuncDeclStmt::FuncDeclStmt(Scope* scope, const std::wstring& funcName, const Type& returnType,
+FuncDeclStmt::FuncDeclStmt(Scope* scope, const std::wstring& funcName, std::unique_ptr<IType> returnType,
 const std::vector<Var>& args, std::vector<std::unique_ptr<FuncCreditStmt>>& credited) : Stmt(scope),
-    func(Func(returnType, funcName, args)), body(nullptr),
+    func(Func(std::move(returnType), funcName, args)), body(nullptr),
     hasReturned(false)
 {
     for (auto& c : credited)
@@ -21,7 +21,7 @@ std::wstring FuncDeclStmt::getName() const
     return func.getFuncName();
 }
 
-Type FuncDeclStmt::getReturnType() const
+std::unique_ptr<IType> FuncDeclStmt::getReturnType() const
 {
     return func.getType();
 }
@@ -53,7 +53,7 @@ const std::vector<std::unique_ptr<FuncCreditStmt>>& FuncDeclStmt::getCredited() 
 
 bool FuncDeclStmt::isLegal() const
 {
-    return (func.getType().getType() == L"fermata" || hasReturned) && this->funcDecl == nullptr && body->isLegal(); // if not nullptr, there is a func inside a func
+    return (func.getType()->getType() == L"fermata" || hasReturned) && this->funcDecl == nullptr && body->isLegal(); // if not nullptr, there is a func inside a func
 }
 
 
