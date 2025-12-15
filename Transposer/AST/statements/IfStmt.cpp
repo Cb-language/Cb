@@ -6,7 +6,7 @@ IfStmt::IfStmt(Scope *scope, FuncDeclStmt *funcDecl, const Expr *expr, BodyStmt*
 
 bool IfStmt::isLegal() const
 {
-
+    return body->isLegal() && expr->isLegal();
 }
 
 std::string IfStmt::translateToCpp() const
