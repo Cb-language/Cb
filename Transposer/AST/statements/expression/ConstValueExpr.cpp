@@ -32,6 +32,11 @@ std::string ConstValueExpr::translateToCpp() const
         return content;
     }
 
+    if (*type == L"mute")
+    {
+        return value == L"cres" ? "true" : "false";
+    }
+
     return Utils::wstrToStr(value);
 }
 
