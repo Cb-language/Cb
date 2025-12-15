@@ -8,7 +8,7 @@ song prelude() -> degree
     p(b1)║
     getAndPrint()║
 
-    D | cres |
+    D | 1==1 |
     ∮
         playBar("entered if")║
     ☉
