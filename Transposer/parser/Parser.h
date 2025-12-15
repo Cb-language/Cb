@@ -5,8 +5,6 @@
 #include "AST/abstract/Statement.h"
 #include "AST/statements/AssignmentStmt.h"
 #include "AST/statements/BodyStmt.h"
-#include "AST/statements/ElseIfStmt.h"
-#include "AST/statements/ElseStmt.h"
 #include "AST/statements/FuncCreditStmt.h"
 #include "AST/statements/HearStmt.h"
 #include "AST/statements/IfStmt.h"
@@ -65,8 +63,6 @@ private:
     std::unique_ptr<ReturnStmt> parseReturnStmt();
     std::unique_ptr<FuncCreditStmt> parseFuncCreditStmt();
     std::unique_ptr<IfStmt> parseIfStmt();
-    std::unique_ptr<ElseIfStmt> parseElseIfStmt();
-    std::unique_ptr<ElseStmt> parseElseStmt();
 
     // Expressions
 

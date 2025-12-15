@@ -119,12 +119,8 @@ add_executable(Transposer
         Transposer/symbols/Type/IType.h
         Transposer/AST/statements/IfStmt.cpp
         Transposer/AST/statements/IfStmt.h
-        Transposer/AST/statements/ElseIfStmt.cpp
-        Transposer/AST/statements/ElseIfStmt.h
         Transposer/errorHandling/syntaxErrors/ElseWithoutIf.cpp
         Transposer/errorHandling/syntaxErrors/ElseWithoutIf.h
-        Transposer/AST/statements/ElseStmt.cpp
-        Transposer/AST/statements/ElseStmt.h
 )
 
 # In order to call the exe from the cmd

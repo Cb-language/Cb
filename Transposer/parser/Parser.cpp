@@ -15,7 +15,6 @@
 #include "errorHandling/lexicalErrors/MainOverride.h"
 #include "errorHandling/lexicalErrors/NoMain.h"
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
-#include "errorHandling/syntaxErrors/ElseWithoutIf.h"
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
 #include "errorHandling/syntaxErrors/MissingBrace.h"
 #include "errorHandling/syntaxErrors/MissingIdentifier.h"
@@ -381,21 +380,6 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             bodyStmts.push_back(parseIfStmt());
         }
-        else if (match(Token::KEYWORD, L"E"))
-        {   // checking if there was an if or an else if before this
-            // if (bodyStmts.front().get()) // TODO fix if statement to check if last one is not if or else if
-            // {
-            //     throw ElseWithoutIf(current());
-            // }
-            if (peek().value == L"\\")
-            {
-                bodyStmts.push_back(parseElseIfStmt());
-            }
-            else
-            {
-                bodyStmts.push_back(parseElseStmt());
-            }
-        }
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
         {
             advance();
@@ -576,27 +560,6 @@ std::unique_ptr<IfStmt> Parser::parseIfStmt()
     std::vector<std::pair<Var, const Token>> args; // args is empty
     std::unique_ptr<BodyStmt> b = parseBodyStmt(args, false);
     return std::make_unique<IfStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), e, b);
-}
-
-std::unique_ptr<ElseIfStmt> Parser::parseElseIfStmt()
-{
-    expect(Token::KEYWORD, L"E");
-    expect(Token::PUNCTUATION, L"\\");
-    expect(Token::KEYWORD, L"D");
-    expect(Token::PUNCTUATION, L"|", MissingSemicolon(current()));
-    std::unique_ptr<Expr> e = parseExpr();
-    expect(Token::PUNCTUATION, L"|", MissingSemicolon(current()));
-    std::vector<std::pair<Var, const Token>> args; // args is empty
-    std::unique_ptr<BodyStmt> b = parseBodyStmt(args, false);
-    return std::make_unique<ElseIfStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), e, b);
-}
-
-std::unique_ptr<ElseStmt> Parser::parseElseStmt()
-{
-    expect(Token::KEYWORD, L"E");
-    std::vector<std::pair<Var, const Token>> args; // args is empty
-    std::unique_ptr<BodyStmt> b = parseBodyStmt(args, false);
-    return std::make_unique<ElseStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), b);
 }
 
 std::unique_ptr<FuncCallExpr> Parser::parseFuncCallExpr(const bool isStmt)
