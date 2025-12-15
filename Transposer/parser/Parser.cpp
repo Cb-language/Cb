@@ -387,7 +387,14 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
             {
                 throw ElseIfWithoutIf(current());
             }
-            bodyStmts.push_back(parseElseIfStmt());
+            if (peek().value == L"/")
+            {
+                bodyStmts.push_back(parseElseIfStmt());
+            }
+            else
+            {
+                bodyStmts.push_back(parseElseStmt());
+            }
         }
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
         {
@@ -582,6 +589,14 @@ std::unique_ptr<ElseIfStmt> Parser::parseElseIfStmt()
     std::vector<std::pair<Var, const Token>> args; // args is empty
     std::unique_ptr<BodyStmt> b = parseBodyStmt(args, false);
     return std::make_unique<ElseIfStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), e, b);
+}
+
+std::unique_ptr<ElseStmt> Parser::parseElseStmt()
+{
+    expect(Token::KEYWORD, L"E");
+    std::vector<std::pair<Var, const Token>> args; // args is empty
+    std::unique_ptr<BodyStmt> b = parseBodyStmt(args, false);
+    return std::make_unique<ElseStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), b);
 }
 
 std::unique_ptr<FuncCallExpr> Parser::parseFuncCallExpr(const bool isStmt)
