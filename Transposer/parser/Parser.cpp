@@ -15,7 +15,7 @@
 #include "errorHandling/lexicalErrors/MainOverride.h"
 #include "errorHandling/lexicalErrors/NoMain.h"
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
-#include "errorHandling/syntaxErrors/ElseIfWithoutIf.h"
+#include "errorHandling/syntaxErrors/ElseWithoutIf.h"
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
 #include "errorHandling/syntaxErrors/MissingBrace.h"
 #include "errorHandling/syntaxErrors/MissingIdentifier.h"
@@ -385,7 +385,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {   // checking if there was an if or an else if before this
             if (bodyStmts.front().get()) // TODO fix if statement to check if last one is not if or else if
             {
-                throw ElseIfWithoutIf(current());
+                throw ElseWithoutIf(current());
             }
             if (peek().value == L"/")
             {
