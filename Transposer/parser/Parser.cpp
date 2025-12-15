@@ -383,11 +383,11 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         }
         else if (match(Token::KEYWORD, L"E"))
         {   // checking if there was an if or an else if before this
-            if (bodyStmts.front().get()) // TODO fix if statement to check if last one is not if or else if
-            {
-                throw ElseWithoutIf(current());
-            }
-            if (peek().value == L"/")
+            // if (bodyStmts.front().get()) // TODO fix if statement to check if last one is not if or else if
+            // {
+            //     throw ElseWithoutIf(current());
+            // }
+            if (peek().value == L"\\")
             {
                 bodyStmts.push_back(parseElseIfStmt());
             }
@@ -581,7 +581,7 @@ std::unique_ptr<IfStmt> Parser::parseIfStmt()
 std::unique_ptr<ElseIfStmt> Parser::parseElseIfStmt()
 {
     expect(Token::KEYWORD, L"E");
-    expect(Token::PUNCTUATION, L"/");
+    expect(Token::PUNCTUATION, L"\\");
     expect(Token::KEYWORD, L"D");
     expect(Token::PUNCTUATION, L"|", MissingSemicolon(current()));
     std::unique_ptr<Expr> e = parseExpr();
