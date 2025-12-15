@@ -11,7 +11,7 @@ bool ReturnStmt::isLegal() const
     {
         return rType->getType() == L"fermata";
     }
-    return rExpr->getType() == rType;
+    return *(rExpr->getType()) == *rType;
 }
 
 std::string ReturnStmt::translateToCpp() const

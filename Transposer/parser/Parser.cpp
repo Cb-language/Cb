@@ -11,6 +11,7 @@
 #include "errorHandling/lexicalErrors/InvalidIdentifier.h"
 #include "errorHandling/lexicalErrors/InvalidMainArgs.h"
 #include "errorHandling/lexicalErrors/InvalidMainReturnType.h"
+#include "errorHandling/lexicalErrors/InvalidNumberLiteral.h"
 #include "errorHandling/lexicalErrors/MainOverride.h"
 #include "errorHandling/lexicalErrors/NoMain.h"
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
@@ -214,18 +215,18 @@ const Token& Parser::expectAndGet(const Token::TokenType type, const std::wstrin
 
 std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt()
 {
-    const Type varType(expectAndGet(Token::TYPE).value);
+    const std::unique_ptr<IType> varType = parseIType();
 
     const std::wstring varName = expectAndGet(
         Token::IDENTIFIER, MissingIdentifier(current())
         ).value;
 
-    const Var var(varType, varName);
+    const Var var(varType->copy(), varName);
     const Token identifierToken = prev();
 
     if (match(Token::PUNCTUATION, L"║"))
     {
-        symTable.addVar(varType, identifierToken);
+        symTable.addVar(varType->copy(), identifierToken);
         advance();
         return std::make_unique<VarDeclStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), false, nullptr, var);
     }
@@ -234,7 +235,7 @@ std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt()
 
     auto expr = parseExpr();
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
-    symTable.addVar(varType, identifierToken); // to avoid degree x = x + 1║ ...
+    symTable.addVar(varType->copy(), identifierToken); // to avoid degree x = x + 1║ ...
     return std::make_unique<VarDeclStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), true, std::move(expr), var);
 }
 
@@ -439,12 +440,10 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
     expect(Token::PUNCTUATION, L"(");
     while (!match(Token::PUNCTUATION, L")"))
     {
-        std::wstring currType = expectAndGet(Token::TYPE, MissingBrace(current())).value;
-        const Type type(currType);
+        const std::unique_ptr<IType> type = parseIType();
         std::wstring currName = expectAndGet(Token::IDENTIFIER, MissingBrace(current())).value;
 
-        const Var curr(type, currName);
-        args.push_back({curr, current()});
+        args.push_back({Var(type->copy(), currName), current()});
 
         if (!match(Token::PUNCTUATION, L")"))
         {
@@ -459,7 +458,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
     {
         for (const auto& p : args)
         {
-            varArgs.emplace_back(p.first);
+            varArgs.emplace_back(p.first.copy());
         }
     }
 
@@ -470,7 +469,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
             throw(InvalidMainReturnType(current())); // if it gets in here, main is void -> err
         }
 
-        auto funcDeclStmt = std::make_unique<FuncDeclStmt>(symTable.getCurrScope(), funcName, Type(L"fermata"), varArgs, credited);
+        auto funcDeclStmt = std::make_unique<FuncDeclStmt>(symTable.getCurrScope(), funcName, std::make_unique<Type>(L"fermata"), varArgs, credited);
         symTable.addFunc(funcDeclStmt->getFunc());
         symTable.changeFunc(funcDeclStmt.get());
         funcDeclStmt->setBody(parseBodyStmt(args));
@@ -479,11 +478,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
     }
     advance(); // matched the arrow now moving forward
 
-    const Type rType(
-        expectAndGet(
-            Token::TYPE, UnexpectedToken(current())
-            ).value
-        );
+    const std::unique_ptr<IType> rType = parseIType();
 
     if (funcName == L"prelude")
     {
@@ -492,7 +487,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
             throw(InvalidMainArgs(current()));
         }
 
-        if (rType.getType() != L"degree")
+        if (rType->getType() != L"degree")
         {
             throw(InvalidMainReturnType(current()));
         }
@@ -501,7 +496,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
     }
 
 
-    auto funcDeclStmt = std::make_unique<FuncDeclStmt>(symTable.getCurrScope(), funcName, rType, varArgs, credited);
+    auto funcDeclStmt = std::make_unique<FuncDeclStmt>(symTable.getCurrScope(), funcName, rType->copy(), varArgs, credited);
 
     symTable.addFunc(funcDeclStmt->getFunc());
     symTable.changeFunc(funcDeclStmt.get());
@@ -524,13 +519,13 @@ std::unique_ptr<ReturnStmt> Parser::parseReturnStmt()
     FuncDeclStmt* currFunc = symTable.getCurrFunc();
     std::unique_ptr<Expr> expr = nullptr;
 
-    if (currFunc->getReturnType().getType() != L"fermata")
+    if (currFunc->getReturnType()->getType() != L"fermata")
     {
         expect(Token::PUNCTUATION, L"\\");
         expr = parseExpr();
-        if (currFunc->getReturnType() != expr->getType())
+        if (*(currFunc->getReturnType()) != *(expr->getType()))
         {
-            throw(WrongReturnType(current()));
+            throw WrongReturnType(current());
         }
     }
 
@@ -583,6 +578,18 @@ std::unique_ptr<FuncCallExpr> Parser::parseFuncCallExpr(const bool isStmt)
     return expr;
 }
 
+std::unique_ptr<IType> Parser::parseIType()
+{
+    return parseType(); // until arrays
+}
+
+std::unique_ptr<Type> Parser::parseType()
+{
+    std::wstring value = expectAndGet(Token::TYPE, InvalidNumberLiteral(current())).value;
+
+    return std::make_unique<Type>(value);
+}
+
 
 std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens)
 {
@@ -596,7 +603,9 @@ std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens)
     auto expr = parseBinaryOpRight(0, std::move(left));
 
     if (hasParens)
-        expr->setHasParens(true); // only wrap the top-level expr
+    {
+        expr->setHasParens(true);
+    }
 
     return expr;
 }
@@ -687,7 +696,7 @@ std::unique_ptr<ConstValueExpr> Parser::parseConstValueExpr()
     }
 
     advance();
-    return std::make_unique<ConstValueExpr>(symTable.getCurrScope(), symTable.getCurrFunc(), Type(type), t.value);
+    return std::make_unique<ConstValueExpr>(symTable.getCurrScope(), symTable.getCurrFunc(), std::make_unique<Type>(type), t.value);
 }
 
 std::unique_ptr<VarCallExpr> Parser::parseVarCallExpr()

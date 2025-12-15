@@ -104,8 +104,8 @@ std::string BinaryOpExpr::translateToCpp() const
 {
     const std::string leftStr = left->translateToCpp();
     const std::string rightStr = right->translateToCpp();
-    const std::string leftType = left->getType()->translateTypeToCpp();
-    const std::string rightType = right->getType()->translateTypeToCpp();
+    const std::wstring leftType = left->getType()->getType();
+    const std::wstring rightType = right->getType()->getType();
     const std::string opStr = Utils::wstrToStr(op);
     std::ostringstream oss;
 
@@ -127,11 +127,11 @@ std::string BinaryOpExpr::translateToCpp() const
         oss << "static_cast<double>(" << leftStrClean << ")"
         << " / static_cast<double>(" << rightStrClean << ")";
     }
-    else if (opStr == "+" && leftType == "bar" && rightType != "bar")
+    else if (opStr == "+" && leftType == L"bar" && rightType != L"bar")
     {
         oss << leftStr << " " << opStr << " std::to_string(" << rightStr << ")";
     }
-    else if (opStr == "+" && leftType != "bar" && rightType == "bar")
+    else if (opStr == "+" && leftType != L"bar" && rightType == L"bar")
     {
         oss << "std::to_string(" << leftStr << ") " << opStr << " " << rightStr;
     }

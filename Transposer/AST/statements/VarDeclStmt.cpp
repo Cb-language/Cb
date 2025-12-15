@@ -9,7 +9,7 @@ bool VarDeclStmt::isLegal() const
 {
     if (hasStartingValue)
     {
-        return (var.getType() == startingValue->getType());
+        return *(var.getType()) == *(startingValue->getType());
     }
     return true;
 }
