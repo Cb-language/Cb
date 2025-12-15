@@ -376,6 +376,10 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             bodyStmts.push_back(parseFuncCallExpr(true));
         }
+        else if (match(Token::KEYWORD, L"D"))
+        {
+            bodyStmts.push_back(parseIfStmt());
+        }
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
         {
             advance();
@@ -545,6 +549,10 @@ std::unique_ptr<FuncCreditStmt> Parser::parseFuncCreditStmt()
     creditsQ.push(credit);
 
     return std::make_unique<FuncCreditStmt>(symTable.getCurrScope(),symTable.getCurrFunc(), credit);
+}
+
+std::unique_ptr<IfStmt> Parser::parseIfStmt()
+{
 }
 
 std::unique_ptr<FuncCallExpr> Parser::parseFuncCallExpr(const bool isStmt)

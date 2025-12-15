@@ -7,6 +7,7 @@
 #include "AST/statements/BodyStmt.h"
 #include "AST/statements/FuncCreditStmt.h"
 #include "AST/statements/HearStmt.h"
+#include "AST/statements/IfStmt.h"
 #include "AST/statements/PlayStmt.h"
 #include "AST/statements/VarDeclStmt.h"
 #include "AST/statements/expression/UnaryOpExpr.h"
@@ -61,6 +62,7 @@ private:
     std::unique_ptr<FuncDeclStmt> parseFuncDeclStmt();
     std::unique_ptr<ReturnStmt> parseReturnStmt();
     std::unique_ptr<FuncCreditStmt> parseFuncCreditStmt();
+    std::unique_ptr<IfStmt> parseIfStmt();
 
     // Expressions
 
