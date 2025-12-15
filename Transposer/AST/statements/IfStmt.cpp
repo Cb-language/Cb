@@ -1,6 +1,6 @@
 #include "IfStmt.h"
 
-IfStmt::IfStmt(Scope *scope, FuncDeclStmt *funcDecl, std::unique_ptr<Expr>& expr, BodyStmt *body) : Stmt(scope, funcDecl), expr(std::move(expr)), body(body)
+IfStmt::IfStmt(Scope *scope, FuncDeclStmt *funcDecl, std::unique_ptr<Expr> &expr, std::unique_ptr<BodyStmt> &body) : Stmt(scope, funcDecl), expr(std::move(expr)), body(std::move(body))
 {
 }
 

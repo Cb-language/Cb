@@ -7,9 +7,9 @@ class IfStmt : public Stmt
 {
 private:
     std::unique_ptr<Expr> expr;
-    BodyStmt* body;
+    std::unique_ptr<BodyStmt> body;
 public:
-    IfStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& expr, BodyStmt* body);
+    IfStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& expr, std::unique_ptr<BodyStmt>& body);
 
     bool isLegal() const override;
     std::string translateToCpp() const override;
