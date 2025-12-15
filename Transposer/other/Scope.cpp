@@ -23,11 +23,11 @@ Scope::~Scope()
 
 std::optional<Var> Scope::getVar(const std::wstring& name) const
 {
-    for (const auto& var : vars)
+    for (auto& var : vars)
     {
         if (name == var.getName())
         {
-            return var;
+            return var.copy();
         }
     }
 
@@ -52,14 +52,14 @@ Scope* Scope::getParent() const
     return parent;
 }
 
-void Scope::addVar(const Type& type, const Token& token)
+void Scope::addVar(std::unique_ptr<IType> type, const Token& token)
 {
     if (token.type != Token::IDENTIFIER)
     {
         throw UnexpectedToken(token);
     }
 
-    const Var v = Var(type , token.value);
+    Var v = Var(std::move(type) , token.value);
     for (const auto& var : vars)
     {
         if (v == var)
@@ -68,7 +68,7 @@ void Scope::addVar(const Type& type, const Token& token)
         }
     }
 
-    vars.push_back(v);
+    vars.emplace_back(std::move(v));
 }
 
 void Scope::addVar(const Var& var, const Token& token)
@@ -81,7 +81,7 @@ void Scope::addVar(const Var& var, const Token& token)
         }
     }
 
-    vars.push_back(var);
+    vars.emplace_back(var.copy());
 }
 
 int Scope::getLevel() const

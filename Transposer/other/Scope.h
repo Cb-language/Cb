@@ -14,7 +14,7 @@ private:
     std::vector<std::unique_ptr<Scope>> children;
 
 public:
-    Scope(Scope* parent = nullptr);
+    explicit Scope(Scope* parent = nullptr);
     ~Scope();
 
     // std::nullopt when not found
@@ -22,7 +22,7 @@ public:
 
     Scope* makeNewScope();
     Scope* getParent() const;
-    void addVar(const Type& type, const Token& token);
+    void addVar(std::unique_ptr<IType> type, const Token& token);
     void addVar(const Var& var, const Token& token);
     int getLevel() const;
 };

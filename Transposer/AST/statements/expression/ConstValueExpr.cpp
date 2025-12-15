@@ -3,8 +3,8 @@
 #include <algorithm>
 
 
-ConstValueExpr::ConstValueExpr(Scope* scope, FuncDeclStmt* funcDecl, const Type &type, const std::wstring &value)
-    : Expr(scope, funcDecl), type(type), value(value)
+ConstValueExpr::ConstValueExpr(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<IType> type, const std::wstring &value)
+    : Expr(scope, funcDecl), type(std::move(type)), value(value)
 {
 }
 
@@ -20,12 +20,12 @@ bool ConstValueExpr::isLegal() const
 
 std::string ConstValueExpr::translateToCpp() const
 {
-    if (type == L"freq" && value.starts_with(L"."))
+    if (*type == L"freq" && value.starts_with(L"."))
     {
         return Utils::wstrToStr(L"0" + value);
     }
 
-    if (type == L"bar")
+    if (*type == L"bar")
     {
         std::string content = Utils::wstrToStr(value);
         std::ranges::replace(content, '\n', ' ');
@@ -35,9 +35,9 @@ std::string ConstValueExpr::translateToCpp() const
     return Utils::wstrToStr(value);
 }
 
-Type ConstValueExpr::getType() const
+std::unique_ptr<IType> ConstValueExpr::getType() const
 {
-    return type;
+    return type->copy();
 }
 
 std::wstring ConstValueExpr::getValue() const

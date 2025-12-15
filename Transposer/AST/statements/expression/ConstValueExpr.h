@@ -5,12 +5,12 @@
 class ConstValueExpr : public Expr
 {
 private:
-    Type type;
+    std::unique_ptr<IType> type;
     std::wstring value;
 public:
-    ConstValueExpr(Scope* scope, FuncDeclStmt* funcDecl, const Type &type, const std::wstring &value);
+    ConstValueExpr(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<IType> type, const std::wstring &value);
     bool isLegal() const override;
     std::string translateToCpp() const override;
-    Type getType() const override;
+    std::unique_ptr<IType> getType() const override;
     std::wstring getValue() const;
 };

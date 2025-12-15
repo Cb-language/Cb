@@ -22,13 +22,13 @@ public:
 
     // std::nullopt when not found
     std::optional<Var> getVar(const std::wstring& name) const;
-    void addVar(const Type& type, const Token& token) const;
+    void addVar(std::unique_ptr<IType> type, const Token& token) const;
     void addVar(const Var& var, const Token& token) const;
 
     bool doesFuncExist(const Func& f) const;
     bool doesFuncExist(const std::wstring& name) const;
     bool isLegalCredit(const FuncCredit& credit) const;
-    std::optional<Type> getCallType(FuncCallExpr* expr) const;
+    std::unique_ptr<IType> getCallType(FuncCallExpr* expr) const;
     void addFunc(const Func& f);
 
     void enterScope();

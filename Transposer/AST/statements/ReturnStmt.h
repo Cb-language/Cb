@@ -7,7 +7,7 @@
 class ReturnStmt : public Stmt
 {
 private:
-    const Type rType;
+    std::unique_ptr<IType> rType;
     std::unique_ptr<Expr> rExpr;
 
 public:

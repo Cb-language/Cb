@@ -141,3 +141,9 @@ CMakeUserPresets.json
 /test files/*.cpp
 /test files/**/*.exe
 /test files/**/*.cpp
+
+!/Transposer/*.h
+!/Transposer/*.cpp
+
+!/Transposer/**/*.h
+!/Transposer/**/*.cpp

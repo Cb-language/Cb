@@ -57,8 +57,8 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.h
         Transposer/parser/parser.cpp
         Transposer/parser/parser.h
-        Transposer/Symbols/Type.cpp
-        Transposer/Symbols/Type.h
+        Transposer/symbols/Type/Type.cpp
+        Transposer/symbols/Type/Type.h
         Transposer/AST/abstract/Expression.h
         Transposer/AST/statements/expression/ConstValueExpr.cpp
         Transposer/AST/statements/expression/ConstValueExpr.h
@@ -116,6 +116,7 @@ add_executable(Transposer
         Transposer/AST/statements/expression/FuncCallExpr.h
         Transposer/files/ArrayHelper.cpp
         Transposer/files/ArrayHelper.h
+        Transposer/symbols/Type/IType.h
 )
 
 # In order to call the exe from the cmd

@@ -57,7 +57,7 @@ public:
 		bool first = true;
 		for (size_t i = 0; i < other.size; i++)
 		{
-			os << (first ? "" : ", ") << other[i];
+			os << (first ? "" : ", ") << "[" << other[i] << "]";
 			first = false;
 		}
 

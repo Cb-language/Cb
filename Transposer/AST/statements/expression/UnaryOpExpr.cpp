@@ -13,10 +13,10 @@ bool UnaryOpExpr::isLegal() const
 {
     if (op == UnaryOp::Not)
     {
-        return var->getType() == L"mute";
+        return *(var->getType()) == L"mute";
     }
 
-    return var->getType().isPrimitive();
+    return var->getType()->isPrimitive();
 }
 
 std::string UnaryOpExpr::translateToCpp() const
@@ -25,7 +25,7 @@ std::string UnaryOpExpr::translateToCpp() const
     switch (op)
     {
     case UnaryOp::Zero:
-        if (var->getType().getType() == L"bar")
+        if (var->getType()->getType() == L"bar")
         {
             ret += " = \"\"";
         }
@@ -56,7 +56,7 @@ std::string UnaryOpExpr::translateToCpp() const
     return ret;
 }
 
-Type UnaryOpExpr::getType() const
+std::unique_ptr<IType> UnaryOpExpr::getType() const
 {
     return var->getType();
 }

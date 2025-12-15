@@ -1,16 +1,17 @@
 #pragma once
+#include <memory>
 #include <string>
-#include "Type.h"
+#include "Type/Type.h"
 
 class Var
 {
 private:
-    const Type type;
+    std::unique_ptr<IType> type;
     const std::wstring name;
 
 public:
-    Var(const Type& type, const std::wstring& name);
-    Type getType() const;
+    Var(std::unique_ptr<IType> type, const std::wstring& name);
+   std::unique_ptr<IType> getType() const;
     std::wstring getName() const;
 
     bool operator==(const Var& other) const;
@@ -21,4 +22,6 @@ public:
     bool isStringable() const;
 
     bool isPrimitive() const;
+
+    Var copy() const;
 };

@@ -12,7 +12,7 @@ bool PlayStmt::isLegal() const
 {
     for (const auto& var : exprs)
     {
-        if (!(var->getType().isPrimitive()) || !var->isLegal())
+        if (!(var->getType()->isPrimitive()) || !var->isLegal())
         {
             return false;
         }

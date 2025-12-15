@@ -21,7 +21,15 @@ const std::unordered_map<std::wstring, std::unordered_set<std::wstring>> Type::c
     {L"fermata", {}}                          // Void -> nothing
 };
 
-Type::Type(const std::wstring& type) : type(getNormalType(type)), extra(getNormalExtra(type))
+Type::Type(const std::wstring& type) : IType(getNormalType(type)), extra(getNormalExtra(type))
+{
+}
+
+Type::Type(Type* other) : IType(other), extra(other->extra)
+{
+}
+
+Type::Type(const std::wstring& type, const std::string& extra) : IType(type), extra(extra)
 {
 }
 
@@ -53,21 +61,22 @@ std::string Type::getNormalExtra(const std::wstring& type)
     return "";
 }
 
-bool Type::operator==(const Type& other) const
+bool Type::operator==(const IType& other) const
 {
-    const auto it = castMap.find(other.type);
-    if (it == castMap.end()) return this->type == other.type; // for future (class)
+    const std::wstring type = other.getType();
+    const auto it = castMap.find(type);
+    if (it == castMap.end()) return this->type == type; // for future (class)
     return it->second.contains(this->type);
 }
 
-bool Type::operator!=(const Type& other) const
+bool Type::operator!=(const IType& other) const
 {
     return !(*this == other);
 }
 
 bool Type::operator==(const std::wstring& other) const
 {
-    const auto it = castMap.find(this->type);  // <-- look up *this->type*, not other
+    const auto it = castMap.find(this->type);
     if (it == castMap.end()) return this->type == other;
     return it->second.contains(other);
 }
@@ -109,4 +118,9 @@ std::string Type::translateTypeToCpp() const
     ret += Type::typeMap.at(type);
 
     return ret;
+}
+
+std::unique_ptr<IType> Type::copy() const
+{
+    return std::make_unique<Type>(type, extra);
 }

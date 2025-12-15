@@ -72,6 +72,11 @@ private:
     std::unique_ptr<UnaryOpExpr> parseUnaryOpExpr(const bool isStmt = false);
     std::unique_ptr<FuncCallExpr> parseFuncCallExpr(const bool isStmt = false);
 
+    // Types
+
+    std::unique_ptr<IType> parseIType();
+    std::unique_ptr<Type> parseType();
+
 public:
     explicit Parser(const std::vector<Token>& tokens);
     ~Parser();

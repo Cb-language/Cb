@@ -2,8 +2,12 @@
 
 #include "other/Utils.h"
 
-Func::Func(const Type& rType, const std::wstring& funcName, const std::vector<Var>& args) : rType(rType), funcName(funcName), args(args)
+Func::Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std::vector<Var>& args) : rType(std::move(rType)), funcName(funcName)
 {
+    for (const auto& arg : args)
+    {
+        this->args.emplace_back(arg.copy());
+    }
 }
 
 const std::vector<Var>& Func::getArgs() const
@@ -16,9 +20,9 @@ const std::wstring& Func::getFuncName() const
     return funcName;
 }
 
-const Type& Func::getType() const
+std::unique_ptr<IType> Func::getType() const
 {
-    return rType;
+    return rType->copy();
 }
 
 std::string Func::translateToCpp() const
@@ -30,7 +34,7 @@ std::string Func::translateToCpp() const
         funcNameStr = "main";
     }
 
-    std::string header = rType.translateTypeToCpp() + " " +  funcNameStr + "(";
+    std::string header = rType->translateTypeToCpp() + " " +  funcNameStr + "(";
 
     bool first = true;
     for (const auto& arg : args)
@@ -39,7 +43,7 @@ std::string Func::translateToCpp() const
         {
             header += ", ";
         }
-        header += arg.getType().translateTypeToCpp() + " " + Utils::wstrToStr(arg.getName());
+        header += arg.getType()->translateTypeToCpp() + " " + Utils::wstrToStr(arg.getName());
         first = false;
     }
 
@@ -49,7 +53,7 @@ std::string Func::translateToCpp() const
 
 bool Func::operator==(const Func& other) const
 {
-    if (rType.getType() != other.rType.getType() || funcName != other.funcName)
+    if (rType->getType() != other.rType->getType() || funcName != other.funcName)
     {
         return false;
     }
@@ -57,7 +61,7 @@ bool Func::operator==(const Func& other) const
     for (const auto& arg : other.args)
     {
         // arg name doesn't matter for func
-        if (arg.getType() != rType.getType())
+        if (*(arg.getType()) != rType->getType())
         {
             return false;
         }
@@ -76,11 +80,16 @@ bool Func::isLegalCall(const Func& other) const
     for (const auto& arg : other.args)
     {
         // arg name doesn't matter for func
-        if (arg.getType() != rType.getType())
+        if (*(arg.getType()) != rType->getType())
         {
             return false;
         }
     }
 
     return true;
+}
+
+Func Func::copy() const
+{
+    return Func(rType->copy(), funcName, args);
 }
