@@ -117,6 +117,8 @@ add_executable(Transposer
         Transposer/files/ArrayHelper.cpp
         Transposer/files/ArrayHelper.h
         Transposer/symbols/Type/IType.h
+        Transposer/AST/statements/IfStmt.cpp
+        Transposer/AST/statements/IfStmt.h
 )
 
 # In order to call the exe from the cmd
