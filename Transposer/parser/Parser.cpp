@@ -553,6 +553,13 @@ std::unique_ptr<FuncCreditStmt> Parser::parseFuncCreditStmt()
 
 std::unique_ptr<IfStmt> Parser::parseIfStmt()
 {
+    expect(Token::KEYWORD, L"D");
+    expect(Token::PUNCTUATION, L"|", MissingSemicolon(current()));
+    std::unique_ptr<Expr> e = parseExpr();
+    expect(Token::PUNCTUATION, L"|", MissingSemicolon(current()));
+    std::vector<std::pair<Var, const Token>> args; // args is empty
+    std::unique_ptr<BodyStmt> b = parseBodyStmt(args, false);
+    return std::make_unique<IfStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), e, b);
 }
 
 std::unique_ptr<FuncCallExpr> Parser::parseFuncCallExpr(const bool isStmt)
