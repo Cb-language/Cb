@@ -554,12 +554,23 @@ std::unique_ptr<FuncCreditStmt> Parser::parseFuncCreditStmt()
 std::unique_ptr<IfStmt> Parser::parseIfStmt()
 {
     expect(Token::KEYWORD, L"D");
-    expect(Token::PUNCTUATION, L"|", MissingSemicolon(current()));
-    std::unique_ptr<Expr> e = parseExpr();
-    expect(Token::PUNCTUATION, L"|", MissingSemicolon(current()));
+    expect(Token::PUNCTUATION, L"|", MissingBrace(current()));
+    std::unique_ptr<Expr> expr = parseExpr();
+    expect(Token::PUNCTUATION, L"|", MissingBrace(current()));
     std::vector<std::pair<Var, const Token>> args; // args is empty
-    std::unique_ptr<BodyStmt> b = parseBodyStmt(args, false);
-    return std::make_unique<IfStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), e, b);
+    std::unique_ptr<Stmt> body = parseBodyStmt(args, false);
+
+    if (match(Token::KEYWORD, L"E"))
+    {
+        advance();
+        if (match(Token::PUNCTUATION, L"\\"))
+        {
+            advance();
+            return std::make_unique<IfStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), std::move(expr), std::move(body), parseIfStmt(), true);
+        }
+        return std::make_unique<IfStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), std::move(expr), std::move(body), parseBodyStmt(args, false), false);
+    }
+    return std::make_unique<IfStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), std::move(expr), std::move(body), nullptr, false);
 }
 
 std::unique_ptr<FuncCallExpr> Parser::parseFuncCallExpr(const bool isStmt)
