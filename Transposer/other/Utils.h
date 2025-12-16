@@ -15,4 +15,6 @@ public:
     static void logMsg(const std::string& msg);
 
     static void reset();
+
+    static std::string removeFirstTabs(std::string& str);
 };

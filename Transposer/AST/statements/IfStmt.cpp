@@ -16,15 +16,16 @@ std::string IfStmt::translateToCpp() const
     oss << getTabs() <<  "if (" << expr->translateToCpp() << ")\n" << body->translateToCpp();
     if (elseIfStmt != nullptr)
     {
+        std::string elseStr = elseIfStmt->translateToCpp();
         oss << "\n" << getTabs();
         if (isElseIf)
         {
             oss.clear();
-            oss << "else " << elseIfStmt->translateToCpp();
+            oss << "else " << Utils::removeFirstTabs(elseStr);
         }
         else
         {
-            oss << "else\n" << elseIfStmt->translateToCpp();
+            oss << "else\n" << elseStr;
         }
     }
 
