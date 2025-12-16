@@ -12,14 +12,14 @@ song prelude() -> degree
     ∮
         playBar("entered if")║
     ☉
-    ?*E\D | 1<1 |
+    E\D | 1<1 |
     ∮
         playBar("entered else if")║
     ☉
     E
     ∮
         playBar("Entered else")║
-    ☉*?
+    ☉
     B\1║
 ☉
 
