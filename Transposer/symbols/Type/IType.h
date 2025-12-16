@@ -25,4 +25,8 @@ public:
     virtual std::string translateTypeToCpp() const = 0;
 
     virtual std::unique_ptr<IType> copy() const = 0;
+
+    virtual unsigned int getArrLevel() const {return 0;} // 0 - non array
+
+    virtual std::unique_ptr<IType> getArrType() const {return nullptr;}
 };
