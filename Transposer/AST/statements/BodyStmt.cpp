@@ -40,7 +40,7 @@ std::string BodyStmt::translateToCpp() const
         {
             out += "\n";
         }
-        out += getTabs() + s->translateToCpp();
+        out += s->translateToCpp();
         first = false;
     }
 

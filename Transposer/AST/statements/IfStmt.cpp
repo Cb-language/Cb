@@ -13,7 +13,8 @@ bool IfStmt::isLegal() const
 std::string IfStmt::translateToCpp() const
 {
     std::ostringstream oss;
-    oss << getTabs() <<  "if (" << expr->translateToCpp() << ")\n" << body->translateToCpp();
+    oss << getTabs() <<  "if (" << expr->translateToCpp() << ")" << std::endl;
+    oss << body->translateToCpp();
     if (elseIfStmt != nullptr)
     {
         std::string elseStr = elseIfStmt->translateToCpp();
