@@ -3,6 +3,7 @@
 #include <queue>
 
 #include "AST/abstract/Statement.h"
+#include "AST/statements/ArrayDeclStmt.h"
 #include "AST/statements/AssignmentStmt.h"
 #include "AST/statements/BodyStmt.h"
 #include "AST/statements/FuncCreditStmt.h"
@@ -13,6 +14,7 @@
 #include "AST/statements/expression/UnaryOpExpr.h"
 #include "AST/statements/ReturnStmt.h"
 #include "symbols/FuncCredit.h"
+#include "symbols/Type/ArrayType.h"
 
 class Error;
 
@@ -63,6 +65,7 @@ private:
     std::unique_ptr<ReturnStmt> parseReturnStmt();
     std::unique_ptr<FuncCreditStmt> parseFuncCreditStmt();
     std::unique_ptr<IfStmt> parseIfStmt();
+    std::unique_ptr<ArrayDeclStmt> parseArrayDeclStmt();
 
     // Expressions
 
@@ -78,6 +81,7 @@ private:
 
     std::unique_ptr<IType> parseIType();
     std::unique_ptr<Type> parseType();
+    std::unique_ptr<ArrayType> parseArrayType();
 
 public:
     explicit Parser(const std::vector<Token>& tokens);

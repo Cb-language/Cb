@@ -1,5 +1,6 @@
 #include "Scope.h"
 
+#include "Utils.h"
 #include "errorHandling/lexicalErrors/IdentifierTaken.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 
