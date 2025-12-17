@@ -6,6 +6,7 @@
 #include "AST/statements/ArrayDeclStmt.h"
 #include "AST/statements/AssignmentStmt.h"
 #include "AST/statements/BodyStmt.h"
+#include "AST/statements/BreakStmt.h"
 #include "AST/statements/FuncCreditStmt.h"
 #include "AST/statements/HearStmt.h"
 #include "AST/statements/IfStmt.h"
@@ -68,6 +69,7 @@ private:
     std::unique_ptr<IfStmt> parseIfStmt();
     std::unique_ptr<ArrayDeclStmt> parseArrayDeclStmt();
     std::unique_ptr<WhileStmt> parseWhileStmt();
+    std::unique_ptr<BreakStmt> parseBreakStmt();
 
     // Expressions
 
