@@ -21,6 +21,7 @@ private:
 public:
 	Array();
 	explicit Array(size_t size, T defaultValue = T());
+	Array(size_t size, const Array& other);
 	Array(const Array& other);
 	Array(const Array& other, const std::string& sliced_str);
 
@@ -60,7 +61,6 @@ public:
 			os << (first ? "" : ", ") << "[" << other[i] << "]";
 			first = false;
 		}
-
 		return os;
 	}
 };
@@ -87,6 +87,24 @@ Array<T>::Array(size_t size, T defaultValue) : defaultValueSet(defaultValue)
 	data = new T[size];
 
 	for (size_t i = 0; i < size; ++i)
+	{
+		data[i] = defaultValueSet;
+	}
+}
+
+template <typename T>
+Array<T>::Array(size_t size, const Array& other) : size(size), defaultValueSet(other.defaultValueSet)
+{
+	data = new T[size];
+
+	const size_t copyCount = std::min(size, other.size);
+
+	for (size_t i = 0; i < copyCount; i++)
+	{
+		data[i] = other[i];
+	}
+
+	for (size_t i = copyCount; i < size; i++)
 	{
 		data[i] = defaultValueSet;
 	}

@@ -215,6 +215,10 @@ const Token& Parser::expectAndGet(const Token::TokenType type, const std::wstrin
 
 std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt()
 {
+    if (match(Token::TYPE, L"riff"))
+    {
+        return parseArrayDeclStmt();
+    }
     const std::unique_ptr<IType> varType = parseIType();
 
     const std::wstring varName = expectAndGet(
@@ -573,6 +577,44 @@ std::unique_ptr<IfStmt> Parser::parseIfStmt()
     return std::make_unique<IfStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), std::move(expr), std::move(body), nullptr, false);
 }
 
+std::unique_ptr<ArrayDeclStmt> Parser::parseArrayDeclStmt()
+{
+    std::unique_ptr<IType> arrType = parseIType();
+    const std::wstring name = expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())).value;
+    std::unique_ptr<Expr> sizeExpr = nullptr;
+    std::unique_ptr<Expr> startExpr = nullptr;
+
+    Var var(std::move(arrType), name);
+
+    symTable.addVar(var.copy(), current());
+
+    expect(Token::PUNCTUATION, L"[", MissingBrace(current()));
+
+    if (match(Token::PUNCTUATION, L"]"))
+    {
+        advance();
+    }
+    else
+    {
+        sizeExpr = parseExpr();
+        expect(Token::PUNCTUATION, L"]", MissingBrace(current()));
+    }
+
+    if (match(Token::OP_ASSIGNMENT, L"="))
+    {
+        advance();
+        startExpr = parseExpr();
+    }
+
+    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+    return std::make_unique<ArrayDeclStmt>(
+        symTable.getCurrScope(), symTable.getCurrFunc(),
+        startExpr != nullptr,
+        std::move(startExpr),
+        var, std::move(sizeExpr)
+    );
+}
+
 std::unique_ptr<FuncCallExpr> Parser::parseFuncCallExpr(const bool isStmt)
 {
     const std::wstring name = expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())).value;
@@ -606,6 +648,12 @@ std::unique_ptr<FuncCallExpr> Parser::parseFuncCallExpr(const bool isStmt)
 
 std::unique_ptr<IType> Parser::parseIType()
 {
+    if (match(Token::TYPE, L"riff"))
+    {
+        advance();
+        return parseArrayType();
+    }
+
     return parseType(); // until arrays
 }
 
@@ -614,6 +662,13 @@ std::unique_ptr<Type> Parser::parseType()
     std::wstring value = expectAndGet(Token::TYPE, InvalidNumberLiteral(current())).value;
 
     return std::make_unique<Type>(value);
+}
+
+std::unique_ptr<ArrayType> Parser::parseArrayType()
+{
+    std::unique_ptr<IType> arrType = parseIType();
+
+    return std::make_unique<ArrayType>(std::move(arrType));
 }
 
 

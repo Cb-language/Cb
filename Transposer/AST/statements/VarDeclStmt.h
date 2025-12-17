@@ -10,7 +10,7 @@
 
 class VarDeclStmt : public Stmt
 {
-private:
+protected:
     const bool hasStartingValue;
     const std::unique_ptr<Expr> startingValue;
     const Var var;
