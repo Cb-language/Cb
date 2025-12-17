@@ -11,5 +11,5 @@ bool BreakStmt::isLegal() const
 
 std::string BreakStmt::translateToCpp() const
 {
-    return getTabs() + "break\n";
+    return getTabs() + "break;";
 }

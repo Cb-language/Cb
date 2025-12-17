@@ -62,7 +62,7 @@ private:
     std::unique_ptr<AssignmentStmt> parseAssignmentStmt();
     std::unique_ptr<HearStmt> parseHearStmt();
     std::unique_ptr<PlayStmt> parsePlayStmt();
-    std::unique_ptr<BodyStmt> parseBodyStmt(const std::vector<std::pair<Var, const Token>>& args, const bool isGlobal = false);
+    std::unique_ptr<BodyStmt> parseBodyStmt(const std::vector<std::pair<Var, const Token>>& args, const bool isGlobal = false, const bool isBreakable = false);
     std::unique_ptr<FuncDeclStmt> parseFuncDeclStmt();
     std::unique_ptr<ReturnStmt> parseReturnStmt();
     std::unique_ptr<FuncCreditStmt> parseFuncCreditStmt();

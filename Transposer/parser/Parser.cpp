@@ -324,13 +324,13 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
     return std::make_unique<PlayStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), args, newline);
 }
 
-std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var, const Token>>& args, const bool isGlobal)
+std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var, const Token>>& args, const bool isGlobal, const bool isBreakable)
 {
     // Enter new scope only if not global
     if (!isGlobal)
     {
         expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
-        symTable.enterScope();
+        symTable.enterScope(isBreakable);
 
         if (!args.empty())
         {
@@ -391,7 +391,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         }
         else if (match(Token::KEYWORD, L"pause"))
         {
-            if (!bodyStmts.front()->getIsBreakable())
+            if (!symTable.getCurrScope()->getIsBreakable())
             {
                 throw InvalidStatement(current());
             }
@@ -635,7 +635,7 @@ std::unique_ptr<WhileStmt> Parser::parseWhileStmt()
     std::unique_ptr<Expr> expr = parseExpr();
     expect(Token::PUNCTUATION, L":║", MissingBrace(current()));
     std::vector<std::pair<Var, const Token>> args; // args is empty
-    std::unique_ptr<Stmt> body = parseBodyStmt(args, false);
+    std::unique_ptr<Stmt> body = parseBodyStmt(args, false, true);
     return std::make_unique<WhileStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), expr, body);
 }
 

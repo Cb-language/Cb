@@ -8,6 +8,7 @@ song prelude() -> degree
     G ║: m == 1 :║
     ∮
         play("entered while")║
+        pause║
     ☉
     B\0║
 ☉

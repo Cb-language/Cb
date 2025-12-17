@@ -1,6 +1,6 @@
 #include "WhileStmt.h"
 
-WhileStmt::WhileStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& condition, std::unique_ptr<Stmt>& body) : Stmt(scope, funcDecl, true), condition(std::move(condition)), body(std::move(body))
+WhileStmt::WhileStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& condition, std::unique_ptr<Stmt>& body) : Stmt(scope, funcDecl), condition(std::move(condition)), body(std::move(body))
 {
 }
 
