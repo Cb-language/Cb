@@ -67,7 +67,14 @@ std::string ArrayDeclStmt::translateToCpp() const
             oss << ", ";
         }
 
-        oss << startingValue->translateToCpp() << ");";
+        oss << startingValue->translateToCpp();
+
+        if (arrLevel == startArrLevel + 1 && startArrLevel > 0)
+        {
+            oss << ", true";
+        }
+
+        oss << ");";
     }
     else
     {

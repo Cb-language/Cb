@@ -38,7 +38,7 @@ public:
 	bool operator!=(const Array& other) const;
 
 	template <typename U>
-	explicit Array(const Array<U>& other);
+	explicit Array(const Array<U>& other, const bool isValArray = false);
 
 	~Array();
 
@@ -276,7 +276,7 @@ bool Array<T>::operator!=(const Array<T>& other) const
 
 template<typename T>
 template <typename U>
-Array<T>::Array(const Array<U>& other)
+Array<T>::Array(const Array<U>& other, const bool isValArray)
 {
 	this->size = other.size;
 	data = new T[size];
@@ -293,6 +293,15 @@ Array<T>::Array(const Array<U>& other)
 			std::ostringstream ossData;
 			ossData << other[i];
 			data[i] = ossData.str();
+		}
+	}
+	else if (isValArray)
+	{
+		this->defaultValueSet =  static_cast<T>(other.size, other);
+
+		for (size_t i = 0; i < size; ++i)
+		{
+			data[i] = static_cast<T>(other);
 		}
 	}
 	else
