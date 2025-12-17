@@ -10,9 +10,11 @@ class Stmt
 protected:
     Scope* scope;
     FuncDeclStmt* funcDecl;
+    const bool isBreakable = false;
 
     explicit Stmt(Scope* scope);
     Stmt(Scope* scope, FuncDeclStmt* funcDecl);
+    Stmt(Scope* scope, FuncDeclStmt* funcDecl, const bool isBreakable);
     std::string getTabs() const;
 public:
     virtual ~Stmt();
@@ -29,6 +31,10 @@ inline Stmt::Stmt(Scope* scope) : scope(scope)
 }
 
 inline Stmt::Stmt(Scope* scope, FuncDeclStmt* funcDecl) : scope(scope), funcDecl(funcDecl)
+{
+}
+
+inline Stmt::Stmt(Scope* scope, FuncDeclStmt* funcDecl, const bool isBreakable) : scope(scope), funcDecl(funcDecl), isBreakable(isBreakable)
 {
 }
 
