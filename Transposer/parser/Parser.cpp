@@ -384,6 +384,10 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             bodyStmts.push_back(parseIfStmt());
         }
+        else if (match(Token::KEYWORD, L"G"))
+        {
+            bodyStmts.push_back((parseWhileStmt()));
+        }
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
         {
             advance();
@@ -613,6 +617,17 @@ std::unique_ptr<ArrayDeclStmt> Parser::parseArrayDeclStmt()
         std::move(startExpr),
         var, std::move(sizeExpr)
     );
+}
+
+std::unique_ptr<WhileStmt> Parser::parseWhileStmt()
+{
+    expect(Token::KEYWORD, L"G");
+    expect(Token::PUNCTUATION, L"║:", MissingBrace(current()));
+    std::unique_ptr<Expr> expr = parseExpr();
+    expect(Token::PUNCTUATION, L":║", MissingBrace(current()));
+    std::vector<std::pair<Var, const Token>> args; // args is empty
+    std::unique_ptr<Stmt> body = parseBodyStmt(args, false);
+    return std::make_unique<WhileStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), expr, body);
 }
 
 std::unique_ptr<FuncCallExpr> Parser::parseFuncCallExpr(const bool isStmt)

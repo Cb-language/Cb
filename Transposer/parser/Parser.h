@@ -13,6 +13,7 @@
 #include "AST/statements/VarDeclStmt.h"
 #include "AST/statements/expression/UnaryOpExpr.h"
 #include "AST/statements/ReturnStmt.h"
+#include "AST/statements/WhileStmt.h"
 #include "symbols/FuncCredit.h"
 #include "symbols/Type/ArrayType.h"
 
@@ -66,6 +67,7 @@ private:
     std::unique_ptr<FuncCreditStmt> parseFuncCreditStmt();
     std::unique_ptr<IfStmt> parseIfStmt();
     std::unique_ptr<ArrayDeclStmt> parseArrayDeclStmt();
+    std::unique_ptr<WhileStmt> parseWhileStmt();
 
     // Expressions
 
