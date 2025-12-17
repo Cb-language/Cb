@@ -1,6 +1,6 @@
 song prelude() -> degree
 ∮
-    riff degree x[3] = 3║
+    riff degree x[3] = 5║
     riff riff degree y[] = x║
     riff degree z[5] = x║
     degree m = 1║
@@ -11,4 +11,14 @@ song prelude() -> degree
         pause║
     ☉
     B\0║
+☉
+
+song playRiffDegree(riff degree x)
+∮
+    playBar(x)║
+☉
+
+song playRiffRiffDegree(riff riff degree x)
+∮
+    playBar(x)║
 ☉
