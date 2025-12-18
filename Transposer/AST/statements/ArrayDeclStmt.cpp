@@ -46,16 +46,20 @@ bool ArrayDeclStmt::isLegal() const
 std::string ArrayDeclStmt::translateToCpp() const
 {
     std::ostringstream oss;
-    const std::unique_ptr<IType> startType = startingValue->getType()->copy();
+    const std::unique_ptr<IType> startType = hasStartingValue ? startingValue->getType()->copy() : nullptr;
     const std::unique_ptr<IType> varType = var.getType()->copy();
     const unsigned int arrLevel = varType->getArrLevel();
-    const unsigned int startArrLevel = startType->getArrLevel();
+    const unsigned int startArrLevel = hasStartingValue ? startType->getArrLevel() : 0;
 
     std::string sizeStr = "";
 
     if (size != nullptr)
     {
         sizeStr = size->translateToCpp();
+    }
+    else if (!hasStartingValue)
+    {
+        return getTabs() + varType->translateTypeToCpp() + " " + Utils::wstrToStr(var.getName()) + ";";
     }
 
     oss << getTabs() << varType->translateTypeToCpp() << " " << Utils::wstrToStr(var.getName()) << "(" << sizeStr;

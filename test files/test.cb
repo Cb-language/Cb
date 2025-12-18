@@ -1,8 +1,9 @@
 song prelude() -> degree
 ∮
     riff degree x[3] = 5║
-    riff riff degree y[] = x║
+    riff degree y[]║
     riff degree z[5] = x║
+    y=x║
     degree m = 1║
 
     G ║: cres :║

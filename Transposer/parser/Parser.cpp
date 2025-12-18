@@ -685,7 +685,7 @@ std::unique_ptr<IType> Parser::parseIType()
         return parseArrayType();
     }
 
-    return parseType(); // until arrays
+    return parseType();
 }
 
 std::unique_ptr<Type> Parser::parseType()
@@ -822,7 +822,7 @@ std::unique_ptr<VarCallExpr> Parser::parseVarCallExpr()
         throw InvalidIdentifier(prev());
     }
 
-    return std::make_unique<VarCallExpr>(symTable.getCurrScope(), symTable.getCurrFunc(), var.value());
+    return std::make_unique<VarCallExpr>(symTable.getCurrScope(), symTable.getCurrFunc(), var.value().copy());
 }
 
 std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOpExpr(const bool isStmt)
