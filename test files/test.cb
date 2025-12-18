@@ -2,8 +2,19 @@ song prelude() -> degree
 ∮
     riff degree x[3] = 5║
     riff riff degree y[] = x║
-    playRiffDegree(x)║
-    playRiffRiffDegree(y)║
+    riff degree z[5] = x║
+    degree m = 1║
+
+    G ║: cres :║
+    ∮
+        playBar("entered while m=",m)║
+
+        D | m > 10 |
+        ∮
+            pause║
+        ☉
+        m♯║
+    ☉
     B\0║
 ☉
 

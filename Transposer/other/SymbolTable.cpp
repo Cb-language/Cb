@@ -6,7 +6,7 @@
 
 SymbolTable::SymbolTable()
 {
-    head = std::make_unique<Scope>();
+    head = std::make_unique<Scope>(nullptr, false);
     currScope = head.get();
     currFunc = nullptr; // global is null
 }
@@ -91,9 +91,9 @@ void SymbolTable::addFunc(const Func& f)
     funcs.push_back(f.copy());
 }
 
-void SymbolTable::enterScope()
+void SymbolTable::enterScope(bool isBreakable)
 {
-    currScope = currScope->makeNewScope();
+    currScope = currScope->makeNewScope(isBreakable);
 }
 
 void SymbolTable::exitScope()

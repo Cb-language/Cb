@@ -16,6 +16,7 @@
 #include "errorHandling/lexicalErrors/NoMain.h"
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
+#include "errorHandling/syntaxErrors/InvalidStatement.h"
 #include "errorHandling/syntaxErrors/MissingBrace.h"
 #include "errorHandling/syntaxErrors/MissingIdentifier.h"
 #include "errorHandling/syntaxErrors/MissingSemicolon.h"
@@ -323,13 +324,13 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
     return std::make_unique<PlayStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), args, newline);
 }
 
-std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var, const Token>>& args, const bool isGlobal)
+std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var, const Token>>& args, const bool isGlobal, const bool isBreakable)
 {
     // Enter new scope only if not global
     if (!isGlobal)
     {
         expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
-        symTable.enterScope();
+        symTable.enterScope(isBreakable);
 
         if (!args.empty())
         {
@@ -383,6 +384,18 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         else if (match(Token::KEYWORD, L"D"))
         {
             bodyStmts.push_back(parseIfStmt());
+        }
+        else if (match(Token::KEYWORD, L"G"))
+        {
+            bodyStmts.push_back((parseWhileStmt()));
+        }
+        else if (match(Token::KEYWORD, L"pause"))
+        {
+            if (!symTable.getCurrScope()->getIsBreakable())
+            {
+                throw InvalidStatement(current());
+            }
+            bodyStmts.push_back(parseBreakStmt());
         }
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
         {
@@ -613,6 +626,24 @@ std::unique_ptr<ArrayDeclStmt> Parser::parseArrayDeclStmt()
         std::move(startExpr),
         var, std::move(sizeExpr)
     );
+}
+
+std::unique_ptr<WhileStmt> Parser::parseWhileStmt()
+{
+    expect(Token::KEYWORD, L"G");
+    expect(Token::PUNCTUATION, L"║:", MissingBrace(current()));
+    std::unique_ptr<Expr> expr = parseExpr();
+    expect(Token::PUNCTUATION, L":║", MissingBrace(current()));
+    std::vector<std::pair<Var, const Token>> args; // args is empty
+    std::unique_ptr<Stmt> body = parseBodyStmt(args, false, true);
+    return std::make_unique<WhileStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), expr, body);
+}
+
+std::unique_ptr<BreakStmt> Parser::parseBreakStmt()
+{
+    expect(Token::KEYWORD, L"pause");
+    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+    return std::make_unique<BreakStmt>(symTable.getCurrScope(), symTable.getCurrFunc());
 }
 
 std::unique_ptr<FuncCallExpr> Parser::parseFuncCallExpr(const bool isStmt)
