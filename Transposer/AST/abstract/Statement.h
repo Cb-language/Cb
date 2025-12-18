@@ -1,6 +1,7 @@
 #pragma once
 
 #include <locale>
+#include <sstream>
 #include "other/Utils.h"
 
 class FuncDeclStmt;

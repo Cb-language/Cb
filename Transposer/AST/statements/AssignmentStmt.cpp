@@ -10,10 +10,10 @@ bool AssignmentStmt::isLegal() const
 {
     if (assignmentOp == L"-=" || assignmentOp == L"*=" || assignmentOp == L"/=" || assignmentOp == L"//=" || assignmentOp == L"%=")
     {
-        return varExpr->getType()->isNumberable() && expr->getType()->isNumberable();
+        return varExpr->getType()->copy()->isNumberable() && expr->getType()->copy()->isNumberable();
     }
 
-    return varExpr->getType() == expr->getType();
+    return *(varExpr->getType()->copy()) == *(expr->getType()->copy());
 }
 
 std::string AssignmentStmt::translateToCpp() const

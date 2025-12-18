@@ -677,6 +677,77 @@ std::unique_ptr<FuncCallExpr> Parser::parseFuncCallExpr(const bool isStmt)
     return expr;
 }
 
+std::unique_ptr<ArraySlicingExpr> Parser::parseArraySlicingExpr()
+{
+    // Default start, stop, step
+    std::unique_ptr<Expr> start = std::make_unique<ConstValueExpr>(
+        symTable.getCurrScope(),
+        symTable.getCurrFunc(),
+        std::make_unique<Type>(L"degree"),
+        L"0"
+    );
+    std::unique_ptr<Expr> stop = std::make_unique<ConstValueExpr>(
+        symTable.getCurrScope(),
+        symTable.getCurrFunc(),
+        std::make_unique<Type>(L"degree"),
+        L"-1"
+    );
+    std::unique_ptr<Expr> step = std::make_unique<ConstValueExpr>(
+        symTable.getCurrScope(),
+        symTable.getCurrFunc(),
+        std::make_unique<Type>(L"degree"),
+        L"1"
+    );
+
+    const std::optional<Var> var = symTable.getVar(
+        expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())).value
+    );
+
+    if (!var.has_value())
+    {
+        throw InvalidIdentifier(prev());
+    }
+
+    expect(Token::PUNCTUATION, L"[", MissingBrace(current()));
+
+    if (!match(Token::PUNCTUATION, L":"))
+    {
+        start = parseExpr();
+    }
+
+    if (match(Token::PUNCTUATION, L":"))
+    {
+        advance(); // consume ':'
+
+        if (!match(Token::PUNCTUATION, L":") && !match(Token::PUNCTUATION, L"]"))
+        {
+            stop = parseExpr();
+        }
+
+
+        if (match(Token::PUNCTUATION, L":"))
+        {
+            advance(); // consume ':'
+
+            if (!match(Token::PUNCTUATION, L"]"))
+            {
+                step = parseExpr();
+            }
+        }
+    }
+
+    expect(Token::PUNCTUATION, L"]", MissingBrace(current()));
+
+    return std::make_unique<ArraySlicingExpr>(
+        symTable.getCurrScope(),
+        symTable.getCurrFunc(),
+        var.value().copy(),
+        std::move(start),
+        std::move(stop),
+        std::move(step)
+    );
+}
+
 std::unique_ptr<IType> Parser::parseIType()
 {
     if (match(Token::TYPE, L"riff"))
@@ -685,7 +756,7 @@ std::unique_ptr<IType> Parser::parseIType()
         return parseArrayType();
     }
 
-    return parseType(); // until arrays
+    return parseType();
 }
 
 std::unique_ptr<Type> Parser::parseType()
@@ -813,6 +884,12 @@ std::unique_ptr<ConstValueExpr> Parser::parseConstValueExpr()
 
 std::unique_ptr<VarCallExpr> Parser::parseVarCallExpr()
 {
+
+    if (peek().value == L"[")
+    {
+        return parseArraySlicingExpr();
+    }
+
     const std::optional<Var> var = symTable.getVar(
         expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())
             ).value);
@@ -822,7 +899,7 @@ std::unique_ptr<VarCallExpr> Parser::parseVarCallExpr()
         throw InvalidIdentifier(prev());
     }
 
-    return std::make_unique<VarCallExpr>(symTable.getCurrScope(), symTable.getCurrFunc(), var.value());
+    return std::make_unique<VarCallExpr>(symTable.getCurrScope(), symTable.getCurrFunc(), var.value().copy());
 }
 
 std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOpExpr(const bool isStmt)
