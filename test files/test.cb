@@ -1,8 +1,16 @@
 song prelude() -> degree
 ∮
-    riff degree x[10] = 5║
+    degree size = 10║
+    riff degree x[size]║
+    degree i║
 
-    playBar(x[4::5])║
+    G ║: i < size :║
+    ∮
+        x[i] = i║
+        i♯║
+    ☉
+
+    playBar(x[1::2])║
 
     B\0║
 ☉
