@@ -18,8 +18,7 @@ bool AssignmentStmt::isLegal() const
 
 std::string AssignmentStmt::translateToCpp() const
 {
-
-    std::string varName = Utils::wstrToStr(varExpr->getName());
+    std::string varName = varExpr->translateToCpp();
     if (assignmentOp == L"+=" || assignmentOp == L"=")
     {
         const bool isVarStr = varExpr->getType()->getType() == L"bar";

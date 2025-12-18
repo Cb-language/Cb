@@ -15,6 +15,7 @@
 #include "AST/statements/expression/UnaryOpExpr.h"
 #include "AST/statements/ReturnStmt.h"
 #include "AST/statements/WhileStmt.h"
+#include "AST/statements/expression/ArrayIndexingExpr.h"
 #include "AST/statements/expression/ArraySlicingExpr.h"
 #include "symbols/FuncCredit.h"
 #include "symbols/Type/ArrayType.h"
@@ -56,6 +57,9 @@ private:
     const Token& expectAndGet(Token::TokenType type, const Error& err);
     const Token& expectAndGet(Token::TokenType type, const std::wstring& value, const Error& err);
 
+    bool isAssignmentStmtAhead();
+    bool isUnaryOpStmtAhead();
+
 
     // General Statements
 
@@ -78,10 +82,11 @@ private:
     std::unique_ptr<Expr> parsePrimary();
     std::unique_ptr<Expr> parseBinaryOpRight(int exprPrec,  std::unique_ptr<Expr> left);
     std::unique_ptr<ConstValueExpr> parseConstValueExpr();
-    std::unique_ptr<VarCallExpr> parseVarCallExpr();
     std::unique_ptr<UnaryOpExpr> parseUnaryOpExpr(const bool isStmt = false);
     std::unique_ptr<FuncCallExpr> parseFuncCallExpr(const bool isStmt = false);
-    std::unique_ptr<ArraySlicingExpr> parseArraySlicingExpr();
+    std::unique_ptr<VarCallExpr> parseVarCallExpr();
+    std::unique_ptr<VarCallExpr> parseArraySlicingExpr(const Var& var);
+    std::unique_ptr<VarCallExpr> parseArrayIndexingExpr(const Var& var);
 
     // Types
 

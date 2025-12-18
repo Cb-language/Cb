@@ -214,6 +214,84 @@ const Token& Parser::expectAndGet(const Token::TokenType type, const std::wstrin
     return prev();
 }
 
+bool Parser::isAssignmentStmtAhead()
+{
+    const size_t startPos = pos;
+
+    // Must start with identifier
+    if (!match(Token::IDENTIFIER))
+    {
+        return false;
+    }
+
+    advance(); // consume IDENTIFIER
+
+    // Skip any number of indexing / slicing brackets
+    while (match(Token::PUNCTUATION, L"["))
+    {
+        advance(); // consume '['
+
+        int depth = 1;
+        while (depth > 0)
+        {
+            if (match(Token::PUNCTUATION, L"["))
+            {
+                depth++;
+            }
+            else if (match(Token::PUNCTUATION, L"]"))
+            {
+                depth--;
+            }
+
+            advance();
+        }
+    }
+
+    const bool result =
+        match(Token::OP_ASSIGNMENT) ||
+        match(Token::PUNCTUATION, L"║");
+
+    pos = startPos;
+    return result;
+}
+
+bool Parser::isUnaryOpStmtAhead()
+{
+    const size_t startPos = pos;
+
+    if (!match(Token::IDENTIFIER))
+    {
+        return false;
+    }
+
+    advance(); // consume IDENTIFIER
+
+    // Skip indexing / slicing
+    while (match(Token::PUNCTUATION, L"["))
+    {
+        advance();
+
+        int depth = 1;
+        while (depth > 0)
+        {
+            if (match(Token::PUNCTUATION, L"["))
+            {
+                depth++;
+            }
+            else if (match(Token::PUNCTUATION, L"]"))
+            {
+                depth--;
+            }
+            advance();
+        }
+    }
+
+    bool result = match(Token::OP_UNARY);
+
+    pos = startPos;
+    return result;
+}
+
 std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt()
 {
     if (match(Token::TYPE, L"riff"))
@@ -350,9 +428,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             bodyStmts.push_back(parseVarDecStmt());
         }
-        else if (match(Token::IDENTIFIER) &&
-                 (peek().type == Token::OP_ASSIGNMENT ||
-                  (peek().type == Token::PUNCTUATION && peek().value == L"║")))
+        else if (match(Token::IDENTIFIER) && isAssignmentStmtAhead())
         {
             bodyStmts.push_back(parseAssignmentStmt());
         }
@@ -365,7 +441,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             bodyStmts.push_back(parsePlayStmt());
         }
-        else if (match(Token::IDENTIFIER) && peek().type == Token::OP_UNARY)
+        else if (isUnaryOpStmtAhead())
         {
             bodyStmts.push_back(parseUnaryOpExpr(true));
         }
@@ -677,7 +753,26 @@ std::unique_ptr<FuncCallExpr> Parser::parseFuncCallExpr(const bool isStmt)
     return expr;
 }
 
-std::unique_ptr<ArraySlicingExpr> Parser::parseArraySlicingExpr()
+std::unique_ptr<VarCallExpr> Parser::parseVarCallExpr()
+{
+    const std::optional<Var> var = symTable.getVar(
+        expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())
+            ).value);
+
+    if (!var.has_value())
+    {
+        throw InvalidIdentifier(prev());
+    }
+
+    if (match(Token::PUNCTUATION, L"["))
+    {
+        return parseArrayIndexingExpr(var.value());
+    }
+
+    return std::make_unique<VarCallExpr>(symTable.getCurrScope(), symTable.getCurrFunc(), var.value().copy());
+}
+
+std::unique_ptr<VarCallExpr> Parser::parseArraySlicingExpr(const Var& var)
 {
     // Default start, stop, step
     std::unique_ptr<Expr> start = std::make_unique<ConstValueExpr>(
@@ -698,15 +793,6 @@ std::unique_ptr<ArraySlicingExpr> Parser::parseArraySlicingExpr()
         std::make_unique<Type>(L"degree"),
         L"1"
     );
-
-    const std::optional<Var> var = symTable.getVar(
-        expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())).value
-    );
-
-    if (!var.has_value())
-    {
-        throw InvalidIdentifier(prev());
-    }
 
     expect(Token::PUNCTUATION, L"[", MissingBrace(current()));
 
@@ -741,10 +827,39 @@ std::unique_ptr<ArraySlicingExpr> Parser::parseArraySlicingExpr()
     return std::make_unique<ArraySlicingExpr>(
         symTable.getCurrScope(),
         symTable.getCurrFunc(),
-        var.value().copy(),
+        var.copy(),
         std::move(start),
         std::move(stop),
         std::move(step)
+    );
+}
+
+std::unique_ptr<VarCallExpr> Parser::parseArrayIndexingExpr(const Var& var)
+{
+    const size_t curr = pos;
+
+    while (!match(Token::PUNCTUATION, L"]"))
+    {
+        if (match(Token::PUNCTUATION, L":"))
+        {
+            pos = curr;
+            return parseArraySlicingExpr(var);
+        }
+
+        advance();
+    }
+
+    pos = curr;
+
+    expect(Token::PUNCTUATION, L"[", MissingBrace(current()));
+    std::unique_ptr<Expr> index = parseExpr();
+    expect(Token::PUNCTUATION, L"]", MissingBrace(current()));
+
+    return std::make_unique<ArrayIndexingExpr>(
+        symTable.getCurrScope(),
+        symTable.getCurrFunc(),
+        var.copy(),
+        std::move(index)
     );
 }
 
@@ -795,10 +910,31 @@ std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens)
 
 std::unique_ptr<Expr> Parser::parsePrimary()
 {
+    const Token t = current();
+    // Handle "unary" operators: +, -, *, /, //
+    if (t.value == L"+" || t.value == L"-" ||
+         t.value == L"*" || t.value == L"/" ||
+         t.value == L"//")
+    {
+        std::wstring op = t.value;
+        advance(); // consume unary operator
+
+        auto right = parseExpr();
+
+        return std::make_unique<BinaryOpExpr>(
+            symTable.getCurrScope(),
+            symTable.getCurrFunc(),
+            op,
+            nullptr,          // left = nullptr signals unary
+            std::move(right)
+        );
+    }
+
     if (current().isConst())
     {
         return parseConstValueExpr();
     }
+
 
     if (match(Token::IDENTIFIER))
     {
@@ -809,9 +945,10 @@ std::unique_ptr<Expr> Parser::parsePrimary()
         return parseVarCallExpr();
     }
 
+
     if (match(Token::PUNCTUATION, L"("))
     {
-        advance();
+        advance(); // consume '('
         auto expr = parseExpr(true);
         expect(Token::PUNCTUATION, L")");
         return expr;
@@ -880,26 +1017,6 @@ std::unique_ptr<ConstValueExpr> Parser::parseConstValueExpr()
 
     advance();
     return std::make_unique<ConstValueExpr>(symTable.getCurrScope(), symTable.getCurrFunc(), std::make_unique<Type>(type), t.value);
-}
-
-std::unique_ptr<VarCallExpr> Parser::parseVarCallExpr()
-{
-
-    if (peek().value == L"[")
-    {
-        return parseArraySlicingExpr();
-    }
-
-    const std::optional<Var> var = symTable.getVar(
-        expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())
-            ).value);
-
-    if (!var.has_value())
-    {
-        throw InvalidIdentifier(prev());
-    }
-
-    return std::make_unique<VarCallExpr>(symTable.getCurrScope(), symTable.getCurrFunc(), var.value().copy());
 }
 
 std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOpExpr(const bool isStmt)
