@@ -4,7 +4,7 @@
 
 class VarCallExpr : public Expr
 {
-private:
+protected:
     const Var var;
 
 public:

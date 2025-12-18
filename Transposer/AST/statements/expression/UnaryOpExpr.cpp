@@ -58,5 +58,5 @@ std::string UnaryOpExpr::translateToCpp() const
 
 std::unique_ptr<IType> UnaryOpExpr::getType() const
 {
-    return var->getType();
+    return var->getType()->copy();
 }

@@ -129,6 +129,8 @@ add_executable(Transposer
         Transposer/AST/statements/WhileStmt.h
         Transposer/AST/statements/BreakStmt.cpp
         Transposer/AST/statements/BreakStmt.h
+        Transposer/AST/statements/expression/ArraySlicingExpr.cpp
+        Transposer/AST/statements/expression/ArraySlicingExpr.h
 )
 
 # In order to call the exe from the cmd
