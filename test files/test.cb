@@ -5,10 +5,15 @@ song prelude() -> degree
     riff degree z[5] = x║
     degree m = 1║
 
-    G ║: m == 1 :║
+    G ║: cres :║
     ∮
-        play("entered while")║
-        pause║
+        playBar("entered while m=",m)║
+
+        D | m > 10 |
+        ∮
+            pause║
+        ☉
+        m♯║
     ☉
     B\0║
 ☉

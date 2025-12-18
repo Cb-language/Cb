@@ -108,8 +108,9 @@ bool Scope::getIsBreakable() const
 {
     if (isBreakable)
     {
-    return true;
+        return true;
     }
+
     if (getParent() != nullptr)
     {
         return getParent()->getIsBreakable();

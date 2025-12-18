@@ -20,7 +20,6 @@ public:
     virtual std::string translateToCpp() const = 0;
 
     void setFuncDecl(FuncDeclStmt *funcDecl);
-    const bool getIsBreakable() const;
 };
 
 inline Stmt::Stmt(Scope* scope) : scope(scope)
