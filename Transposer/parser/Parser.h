@@ -15,6 +15,7 @@
 #include "AST/statements/expression/UnaryOpExpr.h"
 #include "AST/statements/ReturnStmt.h"
 #include "AST/statements/WhileStmt.h"
+#include "AST/statements/expression/ArraySlicingExpr.h"
 #include "symbols/FuncCredit.h"
 #include "symbols/Type/ArrayType.h"
 
@@ -80,6 +81,7 @@ private:
     std::unique_ptr<VarCallExpr> parseVarCallExpr();
     std::unique_ptr<UnaryOpExpr> parseUnaryOpExpr(const bool isStmt = false);
     std::unique_ptr<FuncCallExpr> parseFuncCallExpr(const bool isStmt = false);
+    std::unique_ptr<ArraySlicingExpr> parseArraySlicingExpr();
 
     // Types
 
