@@ -910,10 +910,31 @@ std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens)
 
 std::unique_ptr<Expr> Parser::parsePrimary()
 {
+    const Token t = current();
+    // Handle "unary" operators: +, -, *, /, //
+    if (t.value == L"+" || t.value == L"-" ||
+         t.value == L"*" || t.value == L"/" ||
+         t.value == L"//")
+    {
+        std::wstring op = t.value;
+        advance(); // consume unary operator
+
+        auto right = parseExpr();
+
+        return std::make_unique<BinaryOpExpr>(
+            symTable.getCurrScope(),
+            symTable.getCurrFunc(),
+            op,
+            nullptr,          // left = nullptr signals unary
+            std::move(right)
+        );
+    }
+
     if (current().isConst())
     {
         return parseConstValueExpr();
     }
+
 
     if (match(Token::IDENTIFIER))
     {
@@ -924,9 +945,10 @@ std::unique_ptr<Expr> Parser::parsePrimary()
         return parseVarCallExpr();
     }
 
+
     if (match(Token::PUNCTUATION, L"("))
     {
-        advance();
+        advance(); // consume '('
         auto expr = parseExpr(true);
         expect(Token::PUNCTUATION, L")");
         return expr;

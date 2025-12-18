@@ -10,7 +10,12 @@ song prelude() -> degree
         i♯║
     ☉
 
-    playBar(x[1::2])║
+    playBar(x[-1:0:-2])║
+    playBar(-1)║ ?? -1
+    playBar(+2)║ ?? 2
+    playBar(*3)║ ?? 3
+    playBar(-(3+/4))║ ?? -3
+    playBar(//5)║ ?? 0.2
 
     B\0║
 ☉
