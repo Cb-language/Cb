@@ -94,7 +94,12 @@ std::string Parser::translateToCpp() const
     oss << "#include <string>" << std::endl;
     oss << "#include \"includes/Array.h\"" << std::endl;
 
-    oss << std::endl << symTable.getFuncsHeaders();
+    const std::string headers = symTable.getFuncsHeaders();
+
+    if (!headers.empty())
+    {
+        oss << std::endl << headers;
+    }
 
     for (const auto& stmt : stmts)
     {
