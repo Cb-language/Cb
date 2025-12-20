@@ -83,10 +83,10 @@ private:
     std::unique_ptr<Expr> parseBinaryOpRight(int exprPrec,  std::unique_ptr<Expr> left);
     std::unique_ptr<ConstValueExpr> parseConstValueExpr();
     std::unique_ptr<UnaryOpExpr> parseUnaryOpExpr(const bool isStmt = false);
-    std::unique_ptr<FuncCallExpr> parseFuncCallExpr(const bool isStmt = false);
-    std::unique_ptr<VarCallExpr> parseVarCallExpr();
-    std::unique_ptr<VarCallExpr> parseArraySlicingExpr(const Var& var);
-    std::unique_ptr<VarCallExpr> parseArrayIndexingExpr(const Var& var);
+    std::unique_ptr<Call> parseFuncCallExpr(const bool isStmt = false);
+    std::unique_ptr<Call> parseVarCallExpr();
+    std::unique_ptr<Call> parseArraySlicingExpr(std::unique_ptr<Call> call);
+    std::unique_ptr<Call> parseArrayIndexingExpr(std::unique_ptr<Call> call);
 
     // Types
 

@@ -5,7 +5,7 @@
 #include "AST/statements/FuncDeclStmt.h"
 
 FuncCallExpr::FuncCallExpr(Scope* scope, FuncDeclStmt* funcDecl, const std::wstring& name,std::vector<std::unique_ptr<Expr>> args, const bool isStmt)
-    : Expr(scope, funcDecl), name(name), type(std::make_unique<Type>(L"fermata")), isStmt(isStmt)
+    : Call(scope, funcDecl), name(name), type(std::make_unique<Type>(L"fermata")), isStmt(isStmt)
 {
     for (auto& arg : args)
     {

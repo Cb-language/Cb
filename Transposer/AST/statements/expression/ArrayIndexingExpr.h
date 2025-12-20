@@ -1,13 +1,14 @@
 #pragma once
-#include "VarCallExpr.h"
+#include "AST/abstract/Call.h"
 
-class ArrayIndexingExpr : public VarCallExpr
+class ArrayIndexingExpr : public Call
 {
 private:
+    std::unique_ptr<Call> call;
     std::unique_ptr<Expr> index;
 
 public:
-    ArrayIndexingExpr(Scope* scope, FuncDeclStmt* funcDecl, const Var& var, std::unique_ptr<Expr> index);
+    ArrayIndexingExpr(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, std::unique_ptr<Expr> index);
 
     std::unique_ptr<IType> getType() const override;
     std::string translateToCpp() const override;
