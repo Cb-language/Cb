@@ -12,9 +12,9 @@ HearStmt::HearStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique
 
 bool HearStmt::isLegal() const
 {
-    for (const auto& var : calls)
+    for (const auto& call : calls)
     {
-        if (var->getType()->getArrLevel() > 0 || !(var->getType()->isPrimitive()))
+        if (call->getType()->getArrLevel() > 0 || !(call->getType()->isPrimitive()))
         {
             return false;
         }

@@ -17,6 +17,7 @@
 #include "AST/statements/WhileStmt.h"
 #include "AST/statements/expression/ArrayIndexingExpr.h"
 #include "AST/statements/expression/ArraySlicingExpr.h"
+#include "AST/statements/expression/ConstValueExpr.h"
 #include "symbols/FuncCredit.h"
 #include "symbols/Type/ArrayType.h"
 
@@ -84,7 +85,8 @@ private:
     std::unique_ptr<ConstValueExpr> parseConstValueExpr();
     std::unique_ptr<UnaryOpExpr> parseUnaryOpExpr(const bool isStmt = false);
     std::unique_ptr<Call> parseFuncCallExpr(const bool isStmt = false);
-    std::unique_ptr<Call> parseVarCallExpr();
+    std::unique_ptr<Call> parseCallExpr();
+    std::unique_ptr<Call> parseArrayAccess(std::unique_ptr<Call> call);
     std::unique_ptr<Call> parseArraySlicingExpr(std::unique_ptr<Call> call);
     std::unique_ptr<Call> parseArrayIndexingExpr(std::unique_ptr<Call> call);
 
