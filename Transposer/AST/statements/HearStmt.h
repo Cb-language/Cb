@@ -1,14 +1,14 @@
 #pragma once
+#include "AST/abstract/Call.h"
 #include "AST/abstract/Statement.h"
-#include "expression/VarCallExpr.h"
 
 class HearStmt : public Stmt
 {
 private:
-    std::vector<std::unique_ptr<VarCallExpr>> vars;
+    std::vector<std::unique_ptr<Call>> calls;
 
 public:
-    HearStmt(Scope* scope, FuncDeclStmt* funcDecl, const std::vector<std::unique_ptr<VarCallExpr>>& vars);
+    HearStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Call>>& calls);
     bool isLegal() const override;
     std::string translateToCpp() const override;
 };

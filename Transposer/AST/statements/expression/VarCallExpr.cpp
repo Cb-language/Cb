@@ -1,10 +1,6 @@
 #include "VarCallExpr.h"
 
-VarCallExpr::VarCallExpr(Scope* scope, FuncDeclStmt* funcDecl, const Var& var) : Expr(scope, funcDecl), var(var.copy())
-{
-}
-
-VarCallExpr::VarCallExpr(const VarCallExpr& other) : Expr(other.scope, other.funcDecl), var(other.var.copy())
+VarCallExpr::VarCallExpr(Scope* scope, FuncDeclStmt* funcDecl, const Var& var) : Call(scope, funcDecl), var(var.copy())
 {
 }
 

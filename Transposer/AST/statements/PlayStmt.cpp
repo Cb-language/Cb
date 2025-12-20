@@ -1,11 +1,7 @@
 #include "PlayStmt.h"
 
-PlayStmt::PlayStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Expr>> &exprs, const bool printLine) : Stmt(scope, funcDecl), printLine(printLine)
+PlayStmt::PlayStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Expr>> exprs, const bool printLine) : Stmt(scope, funcDecl), exprs(std::move(exprs)) ,printLine(printLine)
 {
-    for (auto& expr : exprs)
-    {
-        this->exprs.emplace_back(std::move(expr));
-    }
 }
 
 bool PlayStmt::isLegal() const

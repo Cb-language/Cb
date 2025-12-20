@@ -1,20 +1,21 @@
 #include "ArrayIndexingExpr.h"
 
-ArrayIndexingExpr::ArrayIndexingExpr(Scope* scope, FuncDeclStmt* funcDecl, const Var& var, std::unique_ptr<Expr> index) : VarCallExpr(scope, funcDecl, var), index(std::move(index))
+ArrayIndexingExpr::ArrayIndexingExpr(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, std::unique_ptr<Expr> index)
+    : Call(scope, funcDecl), call(std::move(call)) ,index(std::move(index))
 {
 }
 
 std::unique_ptr<IType> ArrayIndexingExpr::getType() const
 {
-    return var.getType()->getArrType()->copy();
+    return call->getType()->getArrType()->copy();
 }
 
 std::string ArrayIndexingExpr::translateToCpp() const
 {
-    return Utils::wstrToStr(var.getName()) + "[" + index->translateToCpp() + "]";
+    return call->translateToCpp() + "[" + index->translateToCpp() + "]";
 }
 
 bool ArrayIndexingExpr::isLegal() const
 {
-    return var.getType()->getArrLevel() > 0 && index->isLegal() && index->getType()->isNumberable();
+    return call->getType()->getArrLevel() > 0 && index->isLegal() && index->getType()->isNumberable();
 }

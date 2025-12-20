@@ -1,21 +1,48 @@
 song prelude() -> degree
 ∮
+    test1()║
+
+    test2(2, 1)║
+
+    B\0║
+☉
+
+song test1()
+∮
     degree size = 10║
-    riff degree x[size]║
+    riff riff degree x[size][size]║
     degree i║
+    degree j║
 
     G ║: i < size :║
     ∮
-        x[i] = i║
+        j = 0║
+        G ║: j < size :║
+        ∮
+            x[i][j] = 10*i+j║
+            j♯║
+        ☉
         i♯║
     ☉
 
-    playBar(x[-1:0:-2])║
+    playBar("x: ", x)║
+    playBar("x[1::2][1::2]: ", x[1::2][1::2])║ ?? x[1::2] is x[1], x[3], x[5], x[7], x[9]. then [x[1], x[3], x[5], x[7], x[9]][1::2] is x[3], x[7]
     playBar(-1)║ ?? -1
     playBar(+2)║ ?? 2
     playBar(*3)║ ?? 3
     playBar(-(3+/4))║ ?? -3
     playBar(//5)║ ?? 0.2
+☉
 
-    B\0║
+song test2(degree size, degree val)
+∮
+    riff degree w[size] = val║
+    size♯║
+    riff riff degree x[size][] = w║
+    size♯║
+    riff riff riff degree y[size][][] = x║
+    size♯║
+    riff riff riff riff degree z[size][][][] = y║
+
+    playBar("z: ", z)║
 ☉

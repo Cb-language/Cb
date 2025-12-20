@@ -9,12 +9,12 @@
 class AssignmentStmt : public Stmt
 {
 private:
-    const std::unique_ptr<VarCallExpr> varExpr;
+    const std::unique_ptr<Call> call;
     const std::wstring assignmentOp;
     const std::unique_ptr<Expr> expr;
 
 public:
-    AssignmentStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<VarCallExpr> varExpr, const std::wstring& assignmentOp, std::unique_ptr<Expr> expr);
+    AssignmentStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, const std::wstring& assignmentOp, std::unique_ptr<Expr> expr);
     bool isLegal() const override;
     std::string translateToCpp() const override;
 };

@@ -5,9 +5,9 @@
 #include <memory>
 
 #include "../../../symbols/Type/Type.h"
-#include "AST/abstract/Expression.h"
+#include "AST/abstract/Call.h"
 
-class FuncCallExpr : public Expr
+class FuncCallExpr : public Call
 {
 private:
     const std::wstring name;
