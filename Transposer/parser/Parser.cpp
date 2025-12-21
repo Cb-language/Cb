@@ -479,6 +479,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
             }
             bodyStmts.push_back(parseBreakStmt());
         }
+
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
         {
             advance();
@@ -735,6 +736,29 @@ std::unique_ptr<BreakStmt> Parser::parseBreakStmt()
     expect(Token::KEYWORD, L"pause");
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
     return std::make_unique<BreakStmt>(symTable.getCurrScope(), symTable.getCurrFunc());
+}
+
+std::unique_ptr<CaseStmt> Parser::parseCaseStmt()
+{
+    bool isDefault = false;
+
+    expect(Token::KEYWORD, L"C");
+    std::unique_ptr<Expr> e;
+    if (match(Token::PUNCTUATION, L"\\"))
+    {
+        e = parseExpr();
+    }
+    else
+    {
+        isDefault = true;
+    }
+    std::vector<std::pair<Var, const Token>> args;
+    std::unique_ptr<Stmt> b = parseBodyStmt(args, false);
+    return std::make_unique<CaseStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), std::move(e), std::move(b), isDefault);
+}
+
+std::unique_ptr<SwitchStmt> Parser::parseSwitchStmt()
+{
 }
 
 std::unique_ptr<Call> Parser::parseFuncCallExpr(const bool isStmt)

@@ -1,9 +1,10 @@
 #include "CaseStmt.h"
 
-CaseStmt::CaseStmt(Scope *scope, FuncDeclStmt *funcDecl, std::unique_ptr<Stmt> body, std::unique_ptr<Expr> expr,
-    const bool isDefault) : Stmt(scope, funcDecl), body(std::move(body)), expr(std::move(expr)), isDefault(isDefault)
+CaseStmt::CaseStmt(Scope *scope, FuncDeclStmt *funcDecl, std::unique_ptr<Expr> expr, std::unique_ptr<Stmt> body,
+    const bool isDefault) : Stmt(scope, funcDecl), expr(std::move(expr)), body(std::move(body)), isDefault(isDefault)
 {
 }
+
 
 bool CaseStmt::isLegal() const
 {

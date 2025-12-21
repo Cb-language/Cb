@@ -7,6 +7,7 @@
 #include "AST/statements/AssignmentStmt.h"
 #include "AST/statements/BodyStmt.h"
 #include "AST/statements/BreakStmt.h"
+#include "AST/statements/CaseStmt.h"
 #include "AST/statements/FuncCreditStmt.h"
 #include "AST/statements/HearStmt.h"
 #include "AST/statements/IfStmt.h"
@@ -14,6 +15,7 @@
 #include "AST/statements/VarDeclStmt.h"
 #include "AST/statements/expression/UnaryOpExpr.h"
 #include "AST/statements/ReturnStmt.h"
+#include "AST/statements/SwitchStmt.h"
 #include "AST/statements/WhileStmt.h"
 #include "AST/statements/expression/ArrayIndexingExpr.h"
 #include "AST/statements/expression/ArraySlicingExpr.h"
@@ -76,6 +78,8 @@ private:
     std::unique_ptr<ArrayDeclStmt> parseArrayDeclStmt();
     std::unique_ptr<WhileStmt> parseWhileStmt();
     std::unique_ptr<BreakStmt> parseBreakStmt();
+    std::unique_ptr<CaseStmt> parseCaseStmt();
+    std::unique_ptr<SwitchStmt> parseSwitchStmt();
 
     // Expressions
 
