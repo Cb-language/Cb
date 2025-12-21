@@ -1,6 +1,7 @@
 #include "CaseStmt.h"
 
-CaseStmt::CaseStmt(Scope *scope, FuncDeclStmt *funcDecl, std::unique_ptr<Stmt> body, std::unique_ptr<Expr> expr) : Stmt(scope, funcDecl), body(std::move(body)), expr(std::move(expr))
+CaseStmt::CaseStmt(Scope *scope, FuncDeclStmt *funcDecl, std::unique_ptr<Stmt> body, std::unique_ptr<Expr> expr,
+    const bool isDefault) : Stmt(scope, funcDecl), body(std::move(body)), expr(std::move(expr)), isDefault(isDefault)
 {
 }
 
@@ -12,6 +13,16 @@ bool CaseStmt::isLegal() const
 std::string CaseStmt::translateToCpp() const
 {
     std::ostringstream os;
-    os << getTabs() << "case " << expr->translateToCpp() << ":\n" << body->translateToCpp();
+    os << getTabs();
+
+    if (isDefault)
+    {
+        os << "default";
+    }
+    else
+    {
+        os << "case " << expr->translateToCpp();
+    }
+    os << ":\n" << body->translateToCpp();
     return os.str();
 }

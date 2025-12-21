@@ -12,7 +12,6 @@ class SwitchStmt : public Stmt
 private:
     std::unique_ptr<Var> variable;
     std::vector<std::unique_ptr<CaseStmt>> cases;
-    bool hasDefault = false;
 public:
     SwitchStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Var> variable);
     bool isLegal() const override;
