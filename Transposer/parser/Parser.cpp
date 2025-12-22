@@ -759,6 +759,14 @@ std::unique_ptr<CaseStmt> Parser::parseCaseStmt()
 
 std::unique_ptr<SwitchStmt> Parser::parseSwitchStmt()
 {
+    expect(Token::KEYWORD, L"A");
+    expect(Token::PUNCTUATION, L"\\");
+    std::unique_ptr<Expr> e = parseExpr();
+
+    std::vector<std::pair<Var, const Token>> args;
+    parseBodyStmt(args, false, true);
+
+
 }
 
 std::unique_ptr<Call> Parser::parseFuncCallExpr(const bool isStmt)
