@@ -746,6 +746,7 @@ std::unique_ptr<CaseStmt> Parser::parseCaseStmt()
     std::unique_ptr<Expr> e;
     if (match(Token::PUNCTUATION, L"\\"))
     {
+        advance();
         e = parseExpr();
     }
     else
@@ -759,14 +760,30 @@ std::unique_ptr<CaseStmt> Parser::parseCaseStmt()
 
 std::unique_ptr<SwitchStmt> Parser::parseSwitchStmt()
 {
-    expect(Token::KEYWORD, L"A");
+    expect(Token::KEYWORD, L"A", InvalidIdentifier(current()));
     expect(Token::PUNCTUATION, L"\\");
-    std::unique_ptr<Expr> e = parseExpr();
+    const std::optional<Var> v = symTable.getVar(current().value);
+    if (!v.has_value())
+    {
+        throw InvalidIdentifier(current());
+    }
 
-    std::vector<std::pair<Var, const Token>> args;
-    parseBodyStmt(args, false, true);
+    expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+    std::vector<std::unique_ptr<CaseStmt>> cases;
 
+    while (!match(Token::PUNCTUATION, L"☉"))
+    {
+        if (match(Token::KEYWORD, L"C"))
+        {
+            cases.push_back(parseCaseStmt());
+        }
+        else
+        {
+            throw InvalidIdentifier(current()); // cant do commands in if scope only cases
+        }
+    }
 
+    return std::make_unique<SwitchStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), std::move(v), std::move(cases));
 }
 
 std::unique_ptr<Call> Parser::parseFuncCallExpr(const bool isStmt)

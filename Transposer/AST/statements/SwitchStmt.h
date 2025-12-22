@@ -10,10 +10,10 @@
 class SwitchStmt : public Stmt
 {
 private:
-    std::unique_ptr<Var> variable;
+    std::optional<Var> variable;
     std::vector<std::unique_ptr<CaseStmt>> cases;
 public:
-    SwitchStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Var> variable);
+    SwitchStmt(Scope* scope, FuncDeclStmt* funcDecl, std::optional<Var> variable, std::vector<std::unique_ptr<CaseStmt>> cases);
     bool isLegal() const override;
     std::string translateToCpp() const override;
 };

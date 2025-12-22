@@ -1,7 +1,11 @@
 #include "SwitchStmt.h"
 
-SwitchStmt::SwitchStmt(Scope *scope, FuncDeclStmt *funcDecl, std::unique_ptr<Var> variable) : Stmt(scope, funcDecl), variable(std::move(variable))
+SwitchStmt::SwitchStmt(Scope *scope, FuncDeclStmt *funcDecl, std::optional<Var> variable, std::vector<std::unique_ptr<CaseStmt>> cases) : Stmt(scope, funcDecl), variable(std::move(variable))
 {
+    for (auto& c : cases)
+    {
+        cases.push_back(std::move(c));
+    }
 }
 
 bool SwitchStmt::isLegal() const
