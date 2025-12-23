@@ -138,6 +138,8 @@ add_executable(Transposer
         Transposer/AST/statements/SwitchStmt.h
         Transposer/AST/statements/CaseStmt.cpp
         Transposer/AST/statements/CaseStmt.h
+        Transposer/AST/statements/ContinueStmt.cpp
+        Transposer/AST/statements/ContinueStmt.h
 )
 
 # In order to call the exe from the cmd
