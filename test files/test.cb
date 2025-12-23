@@ -6,7 +6,7 @@ song prelude() -> degree
     ∮
     C\0|
         playBar("case 0")║
-        pause║
+        resume║
     C|
         playBar("case default")║
         pause║

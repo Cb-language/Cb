@@ -487,6 +487,18 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
                 break;
             }
         }
+        else if (match(Token::KEYWORD, L"resume"))
+        {
+            if (!symTable.getCurrScope()->getIsBreakable())
+            {
+                throw InvalidStatement(current());
+            }
+            bodyStmts.push_back(parseContinueStmt());
+            if (!hasBrace)
+            {
+                break;
+            }
+        }
 
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
         {
