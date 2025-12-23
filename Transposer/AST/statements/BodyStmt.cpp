@@ -30,7 +30,7 @@ std::string BodyStmt::translateToCpp() const
     const std::string tabs = getTabs();
     std::string out;
 
-    if (!isGlobal)
+    if (!isGlobal && hasBrace)
     {
         out += tabs + "{\n";
     }
@@ -47,7 +47,7 @@ std::string BodyStmt::translateToCpp() const
     }
 
 
-    if (!isGlobal)
+    if (!isGlobal && hasBrace)
     {
         out += "\n" + tabs + "}";
     }
