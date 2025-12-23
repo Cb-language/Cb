@@ -8,6 +8,7 @@
 #include "AST/statements/BodyStmt.h"
 #include "AST/statements/BreakStmt.h"
 #include "AST/statements/CaseStmt.h"
+#include "AST/statements/ContinueStmt.h"
 #include "AST/statements/FuncCreditStmt.h"
 #include "AST/statements/HearStmt.h"
 #include "AST/statements/IfStmt.h"
@@ -80,6 +81,7 @@ private:
     std::unique_ptr<BreakStmt> parseBreakStmt();
     std::unique_ptr<CaseStmt> parseCaseStmt();
     std::unique_ptr<SwitchStmt> parseSwitchStmt();
+    std::unique_ptr<ContinueStmt> parseContinueStmt();
 
     // Expressions
 

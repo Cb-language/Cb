@@ -803,6 +803,13 @@ std::unique_ptr<SwitchStmt> Parser::parseSwitchStmt()
     return std::make_unique<SwitchStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), v.value().copy(), cases);
 }
 
+std::unique_ptr<ContinueStmt> Parser::parseContinueStmt()
+{
+    expect(Token::KEYWORD, L"resume");
+    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+    return std::make_unique<ContinueStmt>(symTable.getCurrScope(), symTable.getCurrFunc());
+}
+
 std::unique_ptr<Call> Parser::parseFuncCallExpr(const bool isStmt)
 {
     const std::wstring name = expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())).value;
