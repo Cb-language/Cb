@@ -6,7 +6,7 @@ BreakStmt::BreakStmt(Scope* scope, FuncDeclStmt* funcDecl) : Stmt(scope, funcDec
 
 bool BreakStmt::isLegal() const
 {
-    return true; // always true
+    return scope->getIsBreakable();
 }
 
 std::string BreakStmt::translateToCpp() const

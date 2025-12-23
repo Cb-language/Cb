@@ -6,7 +6,7 @@ ContinueStmt::ContinueStmt(Scope *scope, FuncDeclStmt *funcDecl) : Stmt(scope, f
 
 bool ContinueStmt::isLegal() const
 {
-    return true;
+    return scope->getIsBreakable();
 }
 
 std::string ContinueStmt::translateToCpp() const
