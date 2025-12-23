@@ -1,4 +1,6 @@
 #include "BodyStmt.h"
+
+#include "BreakStmt.h"
 #include "ReturnStmt.h"
 
 BodyStmt::BodyStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Stmt>>& stmts, const bool isGlobal) :
@@ -28,7 +30,7 @@ std::string BodyStmt::translateToCpp() const
     const std::string tabs = getTabs();
     std::string out;
 
-    if (!isGlobal)
+    if (!isGlobal && hasBrace)
     {
         out += tabs + "{\n";
     }
@@ -44,10 +46,16 @@ std::string BodyStmt::translateToCpp() const
         first = false;
     }
 
-    if (!isGlobal)
+
+    if (!isGlobal && hasBrace)
     {
         out += "\n" + tabs + "}";
     }
 
     return out;
+}
+
+void BodyStmt::setHasBrace(const bool hasBrace)
+{
+    this->hasBrace = hasBrace;
 }
