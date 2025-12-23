@@ -408,10 +408,10 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
     return std::make_unique<PlayStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), std::move(args), newline);
 }
 
-std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var, const Token>>& args, const bool isGlobal, const bool isBreakable)
+std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var, const Token>>& args, const bool isGlobal, const bool isBreakable, const bool hasBrace)
 {
     // Enter new scope only if not global
-    if (!isGlobal)
+    if (!isGlobal && hasBrace)
     {
         expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
         symTable.enterScope(isBreakable);
@@ -471,6 +471,10 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             bodyStmts.push_back((parseWhileStmt()));
         }
+        else if (match(Token::KEYWORD, L"A"))
+        {
+            bodyStmts.push_back(parseSwitchStmt());
+        }
         else if (match(Token::KEYWORD, L"pause"))
         {
             if (!symTable.getCurrScope()->getIsBreakable())
@@ -478,6 +482,10 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
                 throw InvalidStatement(current());
             }
             bodyStmts.push_back(parseBreakStmt());
+            if (!hasBrace)
+            {
+                break;
+            }
         }
 
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
@@ -491,7 +499,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
     }
 
     // Consume closing brace
-    if (!isGlobal)
+    if (!isGlobal && hasBrace)
     {
         if (isAtEnd())
         {
@@ -753,21 +761,28 @@ std::unique_ptr<CaseStmt> Parser::parseCaseStmt()
     {
         isDefault = true;
     }
+    expect(Token::PUNCTUATION, L"|");
+
+    symTable.enterScope(true);
     std::vector<std::pair<Var, const Token>> args;
-    std::unique_ptr<Stmt> b = parseBodyStmt(args, false);
-    return std::make_unique<CaseStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), std::move(e), std::move(b), isDefault);
+    std::unique_ptr<BodyStmt> body = parseBodyStmt(args, false, true, false);
+    body->setHasBrace(false);
+
+    symTable.exitScope();
+
+    return std::make_unique<CaseStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), std::move(e), std::move(body), isDefault);
 }
 
 std::unique_ptr<SwitchStmt> Parser::parseSwitchStmt()
 {
     expect(Token::KEYWORD, L"A", InvalidIdentifier(current()));
     expect(Token::PUNCTUATION, L"\\");
-    const std::optional<Var> v = symTable.getVar(current().value);
-    if (!v.has_value())
+    std::optional<Var> v = symTable.getCurrScope()->getVar(current().value)->copy();
+    if (v == std::nullopt)
     {
         throw InvalidIdentifier(current());
     }
-
+    advance();
     expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
     std::vector<std::unique_ptr<CaseStmt>> cases;
 
@@ -779,11 +794,13 @@ std::unique_ptr<SwitchStmt> Parser::parseSwitchStmt()
         }
         else
         {
-            throw InvalidIdentifier(current()); // cant do commands in if scope only cases
+            throw InvalidStatement(current()); // cant do commands in if scope only cases
         }
     }
 
-    return std::make_unique<SwitchStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), std::move(v), std::move(cases));
+    expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+
+    return std::make_unique<SwitchStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), v.value().copy(), cases);
 }
 
 std::unique_ptr<Call> Parser::parseFuncCallExpr(const bool isStmt)

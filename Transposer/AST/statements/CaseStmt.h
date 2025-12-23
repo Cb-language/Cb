@@ -7,10 +7,10 @@ class CaseStmt : public Stmt
 {
 private:
     std::unique_ptr<Expr> expr;
-    std::unique_ptr<Stmt> body;
+    std::unique_ptr<BodyStmt> body;
     bool isDefault = false;
 public:
-    CaseStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr> expr, std::unique_ptr<Stmt> body, const bool isDefault = false);
+    CaseStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr> expr, std::unique_ptr<BodyStmt> body, const bool isDefault = false);
     bool isLegal() const override;
     std::string translateToCpp() const override;
 

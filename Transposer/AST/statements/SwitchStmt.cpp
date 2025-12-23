@@ -1,27 +1,30 @@
 #include "SwitchStmt.h"
 
-SwitchStmt::SwitchStmt(Scope *scope, FuncDeclStmt *funcDecl, std::optional<Var> variable, std::vector<std::unique_ptr<CaseStmt>> cases) : Stmt(scope, funcDecl), variable(std::move(variable))
+SwitchStmt::SwitchStmt(Scope *scope, FuncDeclStmt *funcDecl, Var var, std::vector<std::unique_ptr<CaseStmt>>& cases) : Stmt(scope, funcDecl), var(std::move(var)), cases(std::move(cases))
 {
-    for (auto& c : cases)
-    {
-        cases.push_back(std::move(c));
-    }
 }
 
 bool SwitchStmt::isLegal() const
 {
-    return variable != nullptr;
+    for (const auto& c : cases)
+    {
+        if (!c->isLegal())
+        {
+            return false;
+        }
+    }
+    return var.isNumberable();
 }
 
 std::string SwitchStmt::translateToCpp() const
 {
     std::ostringstream os;
-    os << getTabs() << "switch (" << Utils::wstrToStr(variable->getName()) << ")\n";
-    os << "{\n";
+    os << getTabs() << "switch (" << Utils::wstrToStr(var.getName()) << ")\n";
+    os << getTabs() << "{\n";
     for (const auto& c : cases)
     {
         os << c->translateToCpp();
     }
-    os << "}\n";
+    os << getTabs() << "}\n";
     return os.str();
 }
