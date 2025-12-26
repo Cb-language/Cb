@@ -11,17 +11,17 @@ ForStmt::ForStmt(Scope* scope, FuncDeclStmt* funcDecl,
 bool ForStmt::isLegal() const
 {
     // Must have start expr!!
-    if (startExpr == nullptr || !startExpr->isLegal())
+    if (startExpr == nullptr || !startExpr->getType()->isNumberable() || !startExpr->isLegal())
     {
         return false;
     }
 
-    if (stepExpr != nullptr && !stepExpr->isLegal())
+    if (stepExpr != nullptr && (!stepExpr->getType()->isNumberable() || !stepExpr->isLegal()))
     {
         return false;
     }
 
-    if (stopExpr != nullptr && !stopExpr->isLegal())
+    if (stopExpr != nullptr && (!stopExpr->getType()->isNumberable() || !stopExpr->isLegal()))
     {
         return false;
     }
@@ -39,16 +39,16 @@ std::string ForStmt::translateToCpp() const
 
     if (stepStr == "1")
     {
-        stepFullStr = nameStr + stepStr + (isIncreasing ? "++" : "--");
+        stepFullStr = nameStr + (isIncreasing ? "++" : "--");
     }
     else
     {
-        stepFullStr = stepStr + (isIncreasing ? " += " : " -= ") + stepStr;
+        stepFullStr = nameStr + (isIncreasing ? " += " : " -= ") + stepStr;
     }
 
     oss << getTabs() << "for (int " << nameStr << " = " << startStr << "; ";
     oss << nameStr << (isIncreasing ? " < " : " >= ") << stopStr << "; ";
-    oss << stepFullStr << ";)" << std::endl;
+    oss << stepFullStr << ")" << std::endl;
     oss << body->translateToCpp();
     return oss.str();
 }

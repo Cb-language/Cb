@@ -15,7 +15,7 @@ private:
 
 public:
     ForStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<BodyStmt> body, const bool isIncreasing, std::unique_ptr<Expr> startExpr,
-        std::unique_ptr<Expr> stepExpr, std::unique_ptr<Expr> stopExpr, const std::wstring& varName = L"i");
+        std::unique_ptr<Expr> stepExpr, std::unique_ptr<Expr> stopExpr, const std::wstring& varName);
 
     bool isLegal() const override;
     std::string translateToCpp() const override;
