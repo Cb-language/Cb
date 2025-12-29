@@ -1,16 +1,8 @@
 song prelude() -> degree
 ∮
-    degree x = 0║
-
-    A\x
+    Fmaj0#3
     ∮
-    C\0|
-        playBar("case 0")║
-        resume║
-    C|
-        playBar("case default")║
-        pause║
+        playBar(i)║
     ☉
-
     B\0║
 ☉

@@ -499,7 +499,10 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
                 break;
             }
         }
-
+        else if (match(Token::KEYWORD, L"Fmaj") || match(Token::KEYWORD, L"Fmin"))
+        {
+            bodyStmts.push_back(parseForStmt());
+        }
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
         {
             advance();
@@ -820,6 +823,57 @@ std::unique_ptr<ContinueStmt> Parser::parseContinueStmt()
     expect(Token::KEYWORD, L"resume");
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
     return std::make_unique<ContinueStmt>(symTable.getCurrScope(), symTable.getCurrFunc());
+}
+
+std::unique_ptr<ForStmt> Parser::parseForStmt()
+{
+    bool isIncreasing = false;
+    std::unique_ptr<Expr> startExpr = nullptr;
+    std::unique_ptr<Expr> stopExpr = nullptr;
+    std::unique_ptr<Expr> stepExpr = nullptr;
+    std::unique_ptr<BodyStmt> body = nullptr;
+    std::wstring varName = L"i";
+
+    if (match(Token::KEYWORD, L"Fmaj"))
+    {
+        isIncreasing = true;
+        advance();
+    }
+    else
+    {
+        expect(Token::KEYWORD, L"Fmin", InvalidStatement(current()));
+    }
+
+    // ReSharper disable once CppJoinDeclarationAndAssignment
+    // order matters
+    startExpr = parseExpr();
+
+
+    if ((isIncreasing && match(Token::OP_UNARY, L"♯"))|| (!isIncreasing && match(Token::OP_UNARY, L"♭")))
+    {
+        advance();
+        stepExpr = parseExpr();
+    }
+
+    if (match(Token::PUNCTUATION, L"#"))
+    {
+        advance();
+        stopExpr = parseExpr();
+    }
+
+    if (match(Token::PUNCTUATION, L"\\"))
+    {
+        advance();
+        varName = current().value;
+        advance();
+    }
+
+    std::vector<std::pair<Var, const Token>> args;
+    args.emplace_back( Var(std::make_unique<Type>(L"degree"), varName), current());
+    body = parseBodyStmt(args, false, true);
+
+    return std::make_unique<ForStmt>(symTable.getCurrScope(), symTable.getCurrFunc(),
+        std::move(body), isIncreasing, std::move(startExpr), std::move(stepExpr), std::move(stopExpr), varName);
 }
 
 std::unique_ptr<Call> Parser::parseFuncCallExpr(const bool isStmt)

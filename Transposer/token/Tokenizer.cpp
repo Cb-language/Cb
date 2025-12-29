@@ -11,14 +11,14 @@ const std::vector<std::wstring> Tokenizer::capture_blocks = {
     LR"((?<ConstChar>'(\\.|[^\\'\n])'))",
     LR"((?<ConstStr>"(\\.|[\s\S])*?"))",
     LR"((?<Type>\b((flat|sharp)[\s\r\n]*(degree|freq|note))\b)|(?<Type>\b(degree|freq|note)\b)|(?<Type>\b(mute|bar|riff|fermata)\b))",
-    LR"((?<Keyword>\b(pause|resume|break|play(Bar)?|hear|D|E|A|C|B|G|Fmin|Fmaj|song)\b))",
+    LR"((?<Keyword>(pause|resume|break|playBar|play|hear|F(?:maj|min)|[A-EG]|song)(?![A-Za-z])))",
     LR"((?<Punctuation>->))",
     LR"((?<UnaryOp>♯|♭|♮))",
     LR"((?<AssignmentOp>\+=|-=|//=|/=|\*=|%=))",
     LR"((?<BinaryOp>==|!=|>=|<=|<|>|\+|-|//|/|\*|%|\b(divis|chord)\b))",
     LR"((?<AssignmentOp>=))",
     LR"((?<UnaryOp>!))",
-    LR"((?<Punctuation>(,|∮|☉|©|\[|\]|║\:|\:║|║|\:|\\|\(|\)|\|)))",
+    LR"((?<Punctuation>(#|,|∮|☉|©|\[|\]|║\:|\:║|║|\:|\\|\(|\)|\|)))",
     LR"((?<Identifier>[a-zA-Z_][a-zA-Z_0-9]*))",
     LR"((?<Newline>\n))"
 };
