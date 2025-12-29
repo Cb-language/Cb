@@ -408,13 +408,13 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
     return std::make_unique<PlayStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), std::move(args), newline);
 }
 
-std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var, const Token>>& args, const bool isGlobal, const bool isBreakable, const bool hasBrace)
+std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var, const Token>>& args, const bool isGlobal, const bool isBreakable, const bool isContinueAble, const bool hasBrace)
 {
     // Enter new scope only if not global
     if (!isGlobal && hasBrace)
     {
         expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
-        symTable.enterScope(isBreakable);
+        symTable.enterScope(isBreakable, isContinueAble);
 
         if (!args.empty())
         {
@@ -489,7 +489,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         }
         else if (match(Token::KEYWORD, L"resume"))
         {
-            if (!symTable.getCurrScope()->getIsBreakable())
+            if (!symTable.getCurrScope()->getIsContinueAble())
             {
                 throw InvalidStatement(current());
             }
@@ -750,7 +750,7 @@ std::unique_ptr<WhileStmt> Parser::parseWhileStmt()
     std::unique_ptr<Expr> expr = parseExpr();
     expect(Token::PUNCTUATION, L":║", MissingBrace(current()));
     std::vector<std::pair<Var, const Token>> args; // args is empty
-    std::unique_ptr<Stmt> body = parseBodyStmt(args, false, true);
+    std::unique_ptr<Stmt> body = parseBodyStmt(args, false, true, true, true);
     return std::make_unique<WhileStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), expr, body);
 }
 
@@ -778,9 +778,9 @@ std::unique_ptr<CaseStmt> Parser::parseCaseStmt()
     }
     expect(Token::PUNCTUATION, L"|");
 
-    symTable.enterScope(true);
+    symTable.enterScope(true, false);
     std::vector<std::pair<Var, const Token>> args;
-    std::unique_ptr<BodyStmt> body = parseBodyStmt(args, false, true, false);
+    std::unique_ptr<BodyStmt> body = parseBodyStmt(args, false, true, false, false);
     body->setHasBrace(false);
 
     symTable.exitScope();
@@ -870,7 +870,7 @@ std::unique_ptr<ForStmt> Parser::parseForStmt()
 
     std::vector<std::pair<Var, const Token>> args;
     args.emplace_back( Var(std::make_unique<Type>(L"degree"), varName), current());
-    body = parseBodyStmt(args, false, true);
+    body = parseBodyStmt(args, false, true, true, true);
 
     return std::make_unique<ForStmt>(symTable.getCurrScope(), symTable.getCurrFunc(),
         std::move(body), isIncreasing, std::move(startExpr), std::move(stepExpr), std::move(stopExpr), varName);

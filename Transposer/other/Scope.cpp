@@ -8,7 +8,7 @@ Scope::Scope(Scope* parent) : parent(parent)
 {
 }
 
-Scope::Scope(Scope* parent, const bool isBreakable) : parent(parent), isBreakable(isBreakable)
+Scope::Scope(Scope* parent, const bool isBreakable, const bool isContinueAble) : parent(parent), isBreakable(isBreakable), isContinueAble(isContinueAble)
 {
 }
 
@@ -44,9 +44,9 @@ std::optional<Var> Scope::getVar(const std::wstring& name) const
     return std::nullopt;
 }
 
-Scope* Scope::makeNewScope(bool isBreakable)
+Scope* Scope::makeNewScope(bool isBreakable, bool isContinueAble)
 {
-    auto s = std::make_unique<Scope>(this, isBreakable);
+    auto s = std::make_unique<Scope>(this, isBreakable, isContinueAble);
     Scope* raw = s.get();       // keep raw pointer
     children.push_back(std::move(s));
     return raw;
@@ -114,6 +114,20 @@ bool Scope::getIsBreakable() const
     if (getParent() != nullptr)
     {
         return getParent()->getIsBreakable();
+    }
+    return false;
+}
+
+bool Scope::getIsContinueAble() const
+{
+    if (isContinueAble)
+    {
+        return true;
+    }
+
+    if (getParent() != nullptr)
+    {
+        return getParent()->getIsContinueAble();
     }
     return false;
 }

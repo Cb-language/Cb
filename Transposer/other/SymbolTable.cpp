@@ -91,9 +91,9 @@ void SymbolTable::addFunc(const Func& f)
     funcs.push_back(f.copy());
 }
 
-void SymbolTable::enterScope(bool isBreakable)
+void SymbolTable::enterScope(bool isBreakable, bool isContinueAble)
 {
-    currScope = currScope->makeNewScope(isBreakable);
+    currScope = currScope->makeNewScope(isBreakable, isContinueAble);
 }
 
 void SymbolTable::exitScope()

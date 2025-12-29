@@ -31,7 +31,7 @@ public:
     std::unique_ptr<IType> getCallType(FuncCallExpr* expr) const;
     void addFunc(const Func& f);
 
-    void enterScope(bool isBreakable);
+    void enterScope(bool isBreakable, bool isContinueAble);
     void exitScope();
 
     int getLevel() const;

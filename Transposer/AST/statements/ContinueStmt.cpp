@@ -11,5 +11,5 @@ bool ContinueStmt::isLegal() const
 
 std::string ContinueStmt::translateToCpp() const
 {
-    return getTabs() + "continue;\n";
+    return getTabs() + "continue;";
 }
