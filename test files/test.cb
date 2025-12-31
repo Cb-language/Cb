@@ -16,6 +16,12 @@ song prelude() -> degree
         ☉
 
         playBar("DecToBin(BinToDec(x)) ?= x:", BinToDec(DecToBin(x)) == x)║
+        resume║
+    ☉
+
+    Fmin9
+    ∮
+        resume║
     ☉
 
     B\0║
