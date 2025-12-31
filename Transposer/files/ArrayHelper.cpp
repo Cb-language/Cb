@@ -3,8 +3,6 @@
 const std::string ArrayHelper::hStr = R"(#pragma once
 #include <sstream>
 
-typedef signed long long ssize_t;
-
 template <typename T>
 class Array
 {
@@ -16,7 +14,7 @@ private:
 	size_t size;
 	T defaultValueSet;
 
-	size_t getNormalIndex(ssize_t index) const;
+	size_t getNormalIndex(size_t index) const;
 
 public:
 	Array();
@@ -43,13 +41,13 @@ public:
 	~Array();
 
 	T& operator[](int index);
-	const T& operator[](ssize_t index) const;
+	const T& operator[](size_t index) const;
 
 	size_t Length() const;
-	ssize_t NegLength() const;
+	size_t NegLength() const;
 
-	void remove(ssize_t removeIndex = -1);
-	void add(const T& value, ssize_t addIndex = -1);
+	void remove(size_t removeIndex = -1);
+	void add(const T& value, size_t addIndex = -1);
 
 	Array slice(int start, int stop, int step) const;
 
@@ -347,7 +345,7 @@ T& Array<T>::operator[](int index)
 
 // Const version of operator[]
 template<typename T>
-const T& Array<T>::operator[](ssize_t index) const
+const T& Array<T>::operator[](size_t index) const
 {
 	const int sz = static_cast<int>(size);
 	if (index < 0)
@@ -376,18 +374,18 @@ size_t Array<T>::Length() const
 
 // -Size
 template<typename T>
-ssize_t Array<T>::NegLength() const
+size_t Array<T>::NegLength() const
 {
 	return -size - 1;
 }
 
 
 template <typename T>
-size_t Array<T>::getNormalIndex(ssize_t index) const
+size_t Array<T>::getNormalIndex(size_t index) const
 {
 	if (index < 0)
 	{
-		index += static_cast<ssize_t>(size);
+		index += static_cast<size_t>(size);
 	}
 
 	if (index < 0 || static_cast<size_t>(index) >= size)
@@ -400,7 +398,7 @@ size_t Array<T>::getNormalIndex(ssize_t index) const
 
 
 template<typename T>
-void Array<T>::remove(ssize_t removeIndex)
+void Array<T>::remove(size_t removeIndex)
 {
 	T* newData = new T[size - 1];
 	int newIndex = 0;
@@ -423,7 +421,7 @@ void Array<T>::remove(ssize_t removeIndex)
 }
 
 template <typename T>
-void Array<T>::add(const T& value, ssize_t addIndex)
+void Array<T>::add(const T& value, size_t addIndex)
 {
 	if (addIndex == -1 || addIndex == size)
 	{
