@@ -109,23 +109,20 @@ int main(int argc, char* argv[])
     }
 
 
-    std::string exePath = fileManager.getOutputPath();
+    std::filesystem::path exePath = fileManager.getOutputPath();
 
     if (mode == COMPILE || mode == RUN)
     {
-        std::ostringstream cmd;
-        size_t pos = exePath.rfind(".cpp");
-        if (pos != std::string::npos)
+        std::ostringstream cmd;;
+        if (exePath.extension() == ".cpp")
         {
-            exePath.replace(pos, 4, ".exe");
+            exePath.replace_extension(".exe");
         }
         else
         {
             std::cerr << "Error with output path :(" << std::endl;
             return 2;
         }
-
-        exePath = "\"" + exePath + "\"";
 
         std::string filesStr = "";
         const auto paths = FileManager::getAllCppFiles();

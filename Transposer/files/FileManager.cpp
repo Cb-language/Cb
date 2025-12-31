@@ -8,31 +8,35 @@
 #include "../other/Utils.h"
 
 bool FileManager::wroteArrayFiles = false;
-std::string FileManager::currFolder = "C:\\";
+std::filesystem::path FileManager::folder = "C:\\";
 
 FileManager::FileManager(const std::string& inPath, const std::string& outPath) : isOpen(false)
 {
-	int length = inPath.length();
+	this->inputPath = inPath;
+	this->outputPath = outPath;
+
+	if (inputPath.parent_path() != outputPath.parent_path())
+	{
+		std::filesystem::create_directories(outputPath.parent_path());
+	}
 
 	// Check for .cb extension in source file
-	if (inPath.ends_with(".cb"))
+	if (inputPath.extension() == ".cb")
 	{
-		inputFile.open(inPath, std::ios::binary);
+		inputFile.open(inputPath, std::ios::binary);
 		if (!inputFile.is_open())
 		{
 			std::cout << "Failed to open input file: " << inPath << std::endl;
 			return;
 		}
 		inputFile.imbue(std::locale(inputFile.getloc(), new std::codecvt_utf8<wchar_t>));
-
-		this->inputPath = inPath;
 	}
 
-	std::string outputPath = outPath;
 	// If no output file path provided, create one by replacing .cb with .cpp
 	if (outPath.empty())
 	{
-		outputPath = inPath.substr(0, length - 3) + ".cpp";
+		outputPath = inputPath;
+		outputPath.replace_extension(".cpp");
 	}
 
 	// Open output file in write mode
@@ -43,14 +47,8 @@ FileManager::FileManager(const std::string& inPath, const std::string& outPath) 
 		return;
 	}
 
-	this->outputPath = outPath;
-
-	if (inPath.find_last_of("/\\") != std::string::npos)
-	{
-		currFolder = inPath.substr(0, inPath.find_last_of("/\\"));
-		std::ranges::replace(currFolder, '\\', '/');
-	}
-
+	folder = outputPath;
+	folder = folder.parent_path();
 	isOpen = true;
 }
 
@@ -83,12 +81,12 @@ bool FileManager::writeFile(const std::string& data)
 	return true;
 }
 
-std::string FileManager::getInputPath() const
+std::filesystem::path FileManager::getInputPath() const
 {
 	return inputPath;
 }
 
-std::string FileManager::getOutputPath() const
+std::filesystem::path FileManager::getOutputPath() const
 {
 	return outputPath;
 }
@@ -104,7 +102,7 @@ bool FileManager::writeArrayFiles()
 
 	wroteArrayFiles = true;
 
-	const std::filesystem::path includeDir = std::filesystem::path(currFolder) / "includes";
+	const std::filesystem::path includeDir = std::filesystem::path(folder) / "includes";
 
 	std::filesystem::create_directories(includeDir);
 
@@ -138,14 +136,14 @@ bool FileManager::getIsOpen() const
 	return isOpen;
 }
 
-std::string FileManager::getCurrFolder()
+std::filesystem::path FileManager::getCurrFolder()
 {
-	return currFolder;
+	return folder;
 }
 
 std::vector<std::filesystem::path> FileManager::getAllCppFiles()
 {
-	const std::filesystem::path rootDir = currFolder;
+	const std::filesystem::path rootDir = folder;
 	std::vector<std::filesystem::path> result;
 
 	if (!std::filesystem::exists(rootDir))

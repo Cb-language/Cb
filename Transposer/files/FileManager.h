@@ -13,25 +13,25 @@ public:
 	std::wstring readFile();
 	bool writeFile(const std::string& data);
 
-	std::string getInputPath() const;
-	std::string getOutputPath() const;
+	std::filesystem::path getInputPath() const;
+	std::filesystem::path getOutputPath() const;
 
 	static bool writeArrayFiles();
 
 	bool getIsOpen() const;
 
-	static std::string getCurrFolder();
+	static std::filesystem::path getCurrFolder();
 
 	static std::vector<std::filesystem::path> getAllCppFiles();
 private:
 	std::wifstream inputFile;
 	std::ofstream outputFile;
 
-	std::string inputPath;
-	std::string outputPath;
+	std::filesystem::path inputPath;
+	std::filesystem::path outputPath;
 
 	bool isOpen;
 
 	static bool wroteArrayFiles;
-	static std::string currFolder;
+	static std::filesystem::path folder;
 };
