@@ -4,5 +4,5 @@
 class InvalidMainArgs : public Error
 {
 public:
-    InvalidMainArgs(const Token &token);;
+    InvalidMainArgs(const Token &token);
 };

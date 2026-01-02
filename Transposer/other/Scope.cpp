@@ -1,8 +1,8 @@
 #include "Scope.h"
 
 #include "Utils.h"
-#include "errorHandling/lexicalErrors/IdentifierTaken.h"
-#include "errorHandling/syntaxErrors/UnexpectedToken.h"
+#include "../errorHandling/errorTypes/IdentifierTaken.h"
+#include "../errorHandling/errorTypes/UnexpectedToken.h"
 
 Scope::Scope(Scope* parent) : parent(parent)
 {
