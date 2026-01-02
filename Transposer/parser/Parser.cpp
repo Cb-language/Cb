@@ -5,37 +5,44 @@
 #include <sstream>
 #include <vector>
 
+// ---------- AST related ----------
 #include "AST/statements/FuncDeclStmt.h"
 #include "AST/statements/expression/BinaryOpExpr.h"
 #include "AST/statements/expression/FuncCallExpr.h"
-#include "errorHandling/errorTypes/ExpectedAnExpression.h"
-#include "../errorHandling/errorTypes/IdentifierTaken.h"
-#include "errorHandling/errorTypes/InvalidMainArgs.h"
-#include "errorHandling/errorTypes/InvalidMainReturnType.h"
-#include "errorHandling/errorTypes/MainOverride.h"
-#include "errorHandling/errorTypes/NoMain.h"
-#include "errorHandling/errorTypes/UnexpectedEOF.h"
-#include "errorHandling/errorTypes/HowDidYouGetHere.h"
-#include "errorHandling/errorTypes/StmtNotBreakable.h"
-#include "errorHandling/errorTypes/StmtNotContinueAble.h"
-#include "errorHandling/errorTypes/UnrecognizedToken.h"
-#include "../errorHandling/errorTypes/InvalidExpression.h"
-#include "errorHandling/errorTypes/MissingBrace.h"
-#include "errorHandling/errorTypes/MissingIdentifier.h"
-#include "errorHandling/errorTypes/MissingSemicolon.h"
-#include "errorHandling/errorTypes/NoReturnStmt.h"
-#include "errorHandling/errorTypes/UnexpectedToken.h"
-#include "errorHandling/errorTypes/InvalidNumberLiteral.h"
-#include "errorHandling/errorTypes/MissingBrace.h"
-#include "errorHandling/errorTypes/MissingPipe.h"
-#include "errorHandling/errorTypes/MissingSemicolon.h"
-#include "errorHandling/errorTypes/NoPlacementOperator.h"
-#include "errorHandling/errorTypes/NoReturnStmt.h"
-#include "errorHandling/errorTypes/StmtInsideSwitchThatIsNotCase.h"
-#include "errorHandling/errorTypes/UnrecognizedIdentifier.h"
-#include "errorHandling/errorTypes/WrongReturnType.h"
-#include "errorHandling/errorTypes/WrongReturnType.h"
-#include "errorHandling/errorTypes/MissingParenthesis.h"
+
+// ---------- syntax errors ----------
+#include "../errorHandling/syntaxErrors/UnexpectedToken.h"
+#include "../errorHandling/syntaxErrors/ExpectedAnExpression.h"
+#include "../errorHandling/syntaxErrors/MissingBrace.h"
+#include "../errorHandling/syntaxErrors/MissingPipe.h"
+#include "../errorHandling/syntaxErrors/MissingSemicolon.h"
+#include "../errorHandling/syntaxErrors/NoPlacementOperator.h"
+#include "../errorHandling/syntaxErrors/InvalidExpression.h"
+#include "../errorHandling/syntaxErrors/StmtInsideSwitchThatIsNotCase.h"
+#include "../errorHandling/syntaxErrors/MissingIdentifier.h"
+#include "../errorHandling/syntaxErrors/MissingParenthesis.h"
+
+// ---------- semantic errors ----------
+#include "../errorHandling/semanticErrors/IdentifierTaken.h"
+#include "../errorHandling/semanticErrors/StmtNotBreakable.h"
+#include "../errorHandling/semanticErrors/StmtNotContinueAble.h"
+#include "../errorHandling/semanticErrors/NoReturnStmt.h"
+#include "../errorHandling/semanticErrors/WrongReturnType.h"
+#include "../errorHandling/semanticErrors/UnrecognizedIdentifier.h"
+
+// ---------- entry point errors ----------
+#include "../errorHandling/entryPointErrors/InvalidMainReturnType.h"
+#include "../errorHandling/entryPointErrors/InvalidMainArgs.h"
+#include "../errorHandling/entryPointErrors/MainOverride.h"
+#include "../errorHandling/entryPointErrors/NoMain.h"
+
+// ---------- lexical errors ----------
+#include "../errorHandling/lexicalErrors/InvalidNumberLiteral.h"
+#include "../errorHandling/lexicalErrors/UnexpectedEOF.h"
+#include "../errorHandling/lexicalErrors/UnrecognizedToken.h"
+
+// ---------- just how ----------
+#include "../errorHandling/how/HowDidYouGetHere.h"
 
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), symTable(SymbolTable()), hasMain(false)
