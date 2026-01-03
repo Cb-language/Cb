@@ -4,5 +4,5 @@
 class IllegalOpOnType : public Error
 {
 public:
-    IllegalOpOnType(const Token& token, const std::string& op, const std::string& type);
+    IllegalOpOnType(const Token& token, const std::string& type);
 };
