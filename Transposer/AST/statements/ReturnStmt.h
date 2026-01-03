@@ -11,7 +11,7 @@ private:
     std::unique_ptr<Expr> rExpr;
 
 public:
-    ReturnStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& rExpr);
+    ReturnStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& rExpr);
 
     void analyze() const override;
     std::string translateToCpp() const override;

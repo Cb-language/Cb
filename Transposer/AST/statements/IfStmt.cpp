@@ -1,7 +1,8 @@
 #include "IfStmt.h"
 
-IfStmt::IfStmt(Scope *scope, FuncDeclStmt *funcDecl, std::unique_ptr<Expr> expr, std::unique_ptr<Stmt> body,
-               std::unique_ptr<Stmt> elseIfStmt, const bool isElseIf) : Stmt(scope, funcDecl), expr(std::move(expr)), body(std::move(body)), elseIfStmt(std::move(elseIfStmt)), isElseIf(isElseIf)
+IfStmt::IfStmt(const Token& token, Scope *scope, FuncDeclStmt *funcDecl, std::unique_ptr<Expr> expr, std::unique_ptr<Stmt> body,
+               std::unique_ptr<Stmt> elseIfStmt, const bool isElseIf)
+               : Stmt(token, scope, funcDecl), expr(std::move(expr)), body(std::move(body)), elseIfStmt(std::move(elseIfStmt)), isElseIf(isElseIf)
 {
 }
 

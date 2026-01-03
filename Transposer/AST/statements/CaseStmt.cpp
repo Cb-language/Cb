@@ -1,7 +1,7 @@
 #include "CaseStmt.h"
 
-CaseStmt::CaseStmt(Scope *scope, FuncDeclStmt *funcDecl, std::unique_ptr<Expr> expr, std::unique_ptr<BodyStmt> body,
-    const bool isDefault) : Stmt(scope, funcDecl), expr(std::move(expr)), body(std::move(body)), isDefault(isDefault)
+CaseStmt::CaseStmt(const Token& token, Scope *scope, FuncDeclStmt *funcDecl, std::unique_ptr<Expr> expr, std::unique_ptr<BodyStmt> body,
+    const bool isDefault) : Stmt(token, scope, funcDecl), expr(std::move(expr)), body(std::move(body)), isDefault(isDefault)
 {
 }
 

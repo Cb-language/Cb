@@ -1,6 +1,6 @@
 #include "BreakStmt.h"
 
-BreakStmt::BreakStmt(Scope* scope, FuncDeclStmt* funcDecl) : Stmt(scope, funcDecl)
+BreakStmt::BreakStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl) : Stmt(token, scope, funcDecl)
 {
 }
 

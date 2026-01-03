@@ -6,7 +6,7 @@ class ContinueStmt : public Stmt
 private:
 
 public:
-    ContinueStmt(Scope* scope, FuncDeclStmt* funcDecl);
+    ContinueStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl);
     void analyze() const override;
     std::string translateToCpp() const override;
 };

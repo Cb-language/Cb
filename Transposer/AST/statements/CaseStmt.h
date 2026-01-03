@@ -10,7 +10,7 @@ private:
     std::unique_ptr<BodyStmt> body;
     bool isDefault = false;
 public:
-    CaseStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr> expr, std::unique_ptr<BodyStmt> body, const bool isDefault = false);
+    CaseStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr> expr, std::unique_ptr<BodyStmt> body, const bool isDefault = false);
     void analyze() const override;
     std::string translateToCpp() const override;
 

@@ -54,9 +54,9 @@ std::string ArrayDeclStmt::createConstructor(IType* type, const size_t dim) cons
     return oss.str();
 }
 
-ArrayDeclStmt::ArrayDeclStmt(Scope* scope, FuncDeclStmt* funcDecl, const bool hasStartingValue,
+ArrayDeclStmt::ArrayDeclStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, const bool hasStartingValue,
                              std::unique_ptr<Expr> startingValue, const Var& var, std::vector<std::unique_ptr<Expr>> sizes) :
-        VarDeclStmt(scope, funcDecl, hasStartingValue, std::move(startingValue), var), sizes(std::move(sizes))
+        VarDeclStmt(token, scope, funcDecl, hasStartingValue, std::move(startingValue), var), sizes(std::move(sizes))
 {
 }
 

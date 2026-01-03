@@ -3,7 +3,6 @@
 
 #include "AST/abstract/Statement.h"
 #include "symbols/Var.h"
-#include <sstream>
 
 #include "CaseStmt.h"
 
@@ -13,7 +12,7 @@ private:
     const Var var;
     std::vector<std::unique_ptr<CaseStmt>> cases;
 public:
-    SwitchStmt(Scope* scope, FuncDeclStmt* funcDecl, Var var, std::vector<std::unique_ptr<CaseStmt>>& cases);
+    SwitchStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, Var var, std::vector<std::unique_ptr<CaseStmt>>& cases);
     void analyze() const override;
     std::string translateToCpp() const override;
 };

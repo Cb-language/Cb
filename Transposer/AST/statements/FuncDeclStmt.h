@@ -17,7 +17,7 @@ private:
     bool hasReturned;
 
 public:
-    FuncDeclStmt(Scope* scope, const std::wstring &funcName, std::unique_ptr<IType> returnType, const std::vector<Var> &args, std::vector<std::unique_ptr<FuncCreditStmt>>& credited);
+    FuncDeclStmt(const Token& token, Scope* scope, const std::wstring &funcName, std::unique_ptr<IType> returnType, const std::vector<Var> &args, std::vector<std::unique_ptr<FuncCreditStmt>>& credited);
 
     const std::vector<Var>& getArgs() const;
     std::wstring getName() const;

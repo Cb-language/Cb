@@ -1,7 +1,7 @@
 #include "ArrayIndexingExpr.h"
 
-ArrayIndexingExpr::ArrayIndexingExpr(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, std::unique_ptr<Expr> index)
-    : Call(scope, funcDecl), call(std::move(call)) ,index(std::move(index))
+ArrayIndexingExpr::ArrayIndexingExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, std::unique_ptr<Expr> index)
+    : Call(token, scope, funcDecl), call(std::move(call)) ,index(std::move(index))
 {
 }
 

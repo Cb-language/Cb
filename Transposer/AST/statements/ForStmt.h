@@ -14,7 +14,7 @@ private:
     const std::wstring varName;
 
 public:
-    ForStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<BodyStmt> body, const bool isIncreasing, std::unique_ptr<Expr> startExpr,
+    ForStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<BodyStmt> body, const bool isIncreasing, std::unique_ptr<Expr> startExpr,
         std::unique_ptr<Expr> stepExpr, std::unique_ptr<Expr> stopExpr, const std::wstring& varName);
 
     void analyze() const override;

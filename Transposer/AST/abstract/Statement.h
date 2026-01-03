@@ -9,11 +9,12 @@ class FuncDeclStmt;
 class Stmt
 {
 protected:
+    const Token token;
     Scope* scope;
     FuncDeclStmt* funcDecl;
 
-    explicit Stmt(Scope* scope);
-    Stmt(Scope* scope, FuncDeclStmt* funcDecl);
+    Stmt(const Token& token, Scope* scope);
+    Stmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl);
     std::string getTabs() const;
 public:
     virtual ~Stmt();
@@ -23,12 +24,12 @@ public:
     void setFuncDecl(FuncDeclStmt *funcDecl);
 };
 
-inline Stmt::Stmt(Scope* scope) : scope(scope)
+inline Stmt::Stmt(const Token& token, Scope* scope) : token(token), scope(scope)
 {
     funcDecl = nullptr;
 }
 
-inline Stmt::Stmt(Scope* scope, FuncDeclStmt* funcDecl) : scope(scope), funcDecl(funcDecl)
+inline Stmt::Stmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl) : token(token), scope(scope), funcDecl(funcDecl)
 {
 }
 

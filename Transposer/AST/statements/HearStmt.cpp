@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-HearStmt::HearStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Call>>& calls) : Stmt(scope, funcDecl)
+HearStmt::HearStmt(const Token& token,  Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Call>>& calls) : Stmt(token, scope, funcDecl)
 {
     for (auto& call : calls)
     {

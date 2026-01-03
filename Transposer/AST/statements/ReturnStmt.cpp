@@ -1,7 +1,7 @@
 #include "ReturnStmt.h"
 
-ReturnStmt::ReturnStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& rExpr)
-: Stmt(scope, funcDecl), rType(rExpr == nullptr ? std::make_unique<Type>(L"fermata") : rExpr->getType()), rExpr(rExpr == nullptr ? nullptr : std::move(rExpr))
+ReturnStmt::ReturnStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& rExpr)
+: Stmt(token, scope, funcDecl), rType(rExpr == nullptr ? std::make_unique<Type>(L"fermata") : rExpr->getType()), rExpr(rExpr == nullptr ? nullptr : std::move(rExpr))
 {
 }
 

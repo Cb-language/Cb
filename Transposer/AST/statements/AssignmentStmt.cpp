@@ -1,8 +1,8 @@
 #include "AssignmentStmt.h"
 
 
-AssignmentStmt::AssignmentStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, const std::wstring& assignmentOp,
-                               std::unique_ptr<Expr> expr) : Stmt(scope, funcDecl), call(std::move(call)), assignmentOp(assignmentOp), expr(std::move(expr))
+AssignmentStmt::AssignmentStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, const std::wstring& assignmentOp,
+                               std::unique_ptr<Expr> expr) : Stmt(token, scope, funcDecl), call(std::move(call)), assignmentOp(assignmentOp), expr(std::move(expr))
 {
 }
 

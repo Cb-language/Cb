@@ -3,8 +3,8 @@
 #include <algorithm>
 
 
-ConstValueExpr::ConstValueExpr(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<IType> type, const std::wstring &value)
-    : Expr(scope, funcDecl), type(std::move(type)), value(value)
+ConstValueExpr::ConstValueExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<IType> type, const std::wstring &value)
+    : Expr(token, scope, funcDecl), type(std::move(type)), value(value)
 {
 }
 

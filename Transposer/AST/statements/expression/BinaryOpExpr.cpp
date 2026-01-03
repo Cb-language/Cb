@@ -2,8 +2,8 @@
 
 #include <sstream>
 
-BinaryOpExpr::BinaryOpExpr(Scope* scope, FuncDeclStmt* funcDecl, const std::wstring& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, const bool hasParens)
-: Expr(scope, funcDecl, hasParens), op(op), left(std::move(left)), right(std::move(right))
+BinaryOpExpr::BinaryOpExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, const std::wstring& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, const bool hasParens)
+: Expr(token, scope, funcDecl, hasParens), op(op), left(std::move(left)), right(std::move(right))
 {
 }
 

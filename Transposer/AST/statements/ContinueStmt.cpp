@@ -1,6 +1,6 @@
 #include "ContinueStmt.h"
 
-ContinueStmt::ContinueStmt(Scope *scope, FuncDeclStmt *funcDecl) : Stmt(scope, funcDecl)
+ContinueStmt::ContinueStmt(const Token& token, Scope *scope, FuncDeclStmt *funcDecl) : Stmt(token, scope, funcDecl)
 {
 }
 

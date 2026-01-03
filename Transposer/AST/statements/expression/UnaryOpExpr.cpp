@@ -1,7 +1,7 @@
 #include "UnaryOpExpr.h"
 
-UnaryOpExpr::UnaryOpExpr(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, const UnaryOp op, const bool isStmt)
-: Expr(scope, funcDecl), call(std::move(call)), op(op), isStmt(isStmt)
+UnaryOpExpr::UnaryOpExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, const UnaryOp op, const bool isStmt)
+: Expr(token, scope, funcDecl), call(std::move(call)), op(op), isStmt(isStmt)
 {
     if (!isStmt && op == UnaryOp::Zero)
     {

@@ -1,6 +1,6 @@
 #include "FuncCreditStmt.h"
 
-FuncCreditStmt::FuncCreditStmt(Scope* scope, FuncDeclStmt* funcDecl, const FuncCredit& funcCredit) : Stmt(scope, funcDecl), funcCredit(funcCredit)
+FuncCreditStmt::FuncCreditStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, const FuncCredit& funcCredit) : Stmt(token, scope, funcDecl), funcCredit(funcCredit)
 {
 }
 

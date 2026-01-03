@@ -1,9 +1,9 @@
 #include "ForStmt.h"
 
-ForStmt::ForStmt(Scope* scope, FuncDeclStmt* funcDecl,
+ForStmt::ForStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl,
     std::unique_ptr<BodyStmt> body, const bool isIncreasing, std::unique_ptr<Expr> startExpr, std::unique_ptr<Expr> stepExpr, std::unique_ptr<Expr> stopExpr,
     const std::wstring& varName)
-    : Stmt(scope, funcDecl), body(std::move(body)), isIncreasing(isIncreasing),
+    : Stmt(token, scope, funcDecl), body(std::move(body)), isIncreasing(isIncreasing),
     startExpr(std::move(startExpr)), stepExpr(std::move(stepExpr)), stopExpr(std::move(stopExpr)), varName(varName)
 {
 }

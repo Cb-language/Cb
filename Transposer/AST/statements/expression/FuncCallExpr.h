@@ -16,7 +16,7 @@ private:
     const bool isStmt;
 
 public:
-    FuncCallExpr(Scope* scope, FuncDeclStmt* funcDecl, const std::wstring& name, std::vector<std::unique_ptr<Expr>> args, const bool isStmt);
+    FuncCallExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, const std::wstring& name, std::vector<std::unique_ptr<Expr>> args, const bool isStmt);
 
     std::unique_ptr<IType> getType() const override;
     void analyze() const override;

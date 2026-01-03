@@ -1,6 +1,6 @@
 #include "SwitchStmt.h"
 
-SwitchStmt::SwitchStmt(Scope *scope, FuncDeclStmt *funcDecl, Var var, std::vector<std::unique_ptr<CaseStmt>>& cases) : Stmt(scope, funcDecl), var(std::move(var)), cases(std::move(cases))
+SwitchStmt::SwitchStmt(const Token& token, Scope *scope, FuncDeclStmt *funcDecl, Var var, std::vector<std::unique_ptr<CaseStmt>>& cases) : Stmt(token, scope, funcDecl), var(std::move(var)), cases(std::move(cases))
 {
 }
 

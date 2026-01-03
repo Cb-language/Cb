@@ -8,7 +8,7 @@ class ArrayDeclStmt : public VarDeclStmt
     bool isLegalSizes() const;
     std::string createConstructor(IType* type, const size_t dim) const;
 public:
-    ArrayDeclStmt(Scope* scope, FuncDeclStmt* funcDecl, bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var &var, std::vector<std::unique_ptr<Expr>> sizes);
+    ArrayDeclStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var &var, std::vector<std::unique_ptr<Expr>> sizes);
 
     void analyze() const override;
     std::string translateToCpp() const override;

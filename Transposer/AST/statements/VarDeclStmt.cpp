@@ -1,7 +1,7 @@
 #include "VarDeclStmt.h"
 
-VarDeclStmt::VarDeclStmt(Scope* scope, FuncDeclStmt* funcDecl, const bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var& var) :
-    Stmt(scope, funcDecl), hasStartingValue(hasStartingValue), startingValue(std::move(startingValue)) , var(var.copy())
+VarDeclStmt::VarDeclStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, const bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var& var) :
+    Stmt(token, scope, funcDecl), hasStartingValue(hasStartingValue), startingValue(std::move(startingValue)) , var(var.copy())
 {
 }
 
