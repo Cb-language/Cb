@@ -81,7 +81,7 @@ add_executable(Transposer
         Transposer/errorHandling/semanticErrors/WrongReturnType.cpp
         Transposer/errorHandling/semanticErrors/WrongReturnType.h
         Transposer/errorHandling/semanticErrors/NoReturnStmt.cpp
-        Transposer/errorHandling/semanticErrors/NoReturnStmt.h
+        Transposer/errorHandling/semanticErrors/NoReturn.h
         Transposer/errorHandling/entryPointErrors/MainOverride.cpp
         Transposer/errorHandling/entryPointErrors/MainOverride.h
         Transposer/errorHandling/entryPointErrors/NoMain.cpp
