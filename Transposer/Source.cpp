@@ -125,12 +125,15 @@ int main(int argc, char* argv[])
         }
 
         std::string filesStr = "";
-        const auto paths = FileManager::getAllCppFiles();
+        // const auto paths = FileManager::getAllCppFiles();
+        //
+        // for (const auto& path : paths)
+        // {
+        //     filesStr += " \"" + path.string() + "\" ";
+        // }
 
-        for (const auto& path : paths)
-        {
-            filesStr += " \"" + path.string() + "\" ";
-        }
+        // TODO: remove later this line:
+        filesStr = " \"" + fileManager.getOutputPath().string() + "\" ";
 
         cmd << "g++ -static -static-libgcc -static-libstdc++ -pthread"
         << filesStr << "-Iincludes -o " << exePath << std::endl;
