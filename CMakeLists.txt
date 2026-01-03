@@ -146,8 +146,8 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/MissingPipe.h
         Transposer/errorHandling/semanticErrors/IllegalTypeCast.cpp
         Transposer/errorHandling/semanticErrors/IllegalTypeCast.h
-        Transposer/errorHandling/semanticErrors/IllegalCaseVar.cpp
-        Transposer/errorHandling/semanticErrors/IllegalCaseVar.h
+        Transposer/errorHandling/semanticErrors/IllegalSwitchVar.cpp
+        Transposer/errorHandling/semanticErrors/IllegalSwitchVar.h
         Transposer/errorHandling/semanticErrors/IllegalHear.cpp
         Transposer/errorHandling/semanticErrors/IllegalHear.h
         Transposer/errorHandling/semanticErrors/FuncInsideFunc.cpp
