@@ -1,14 +1,8 @@
 #include "Utils.h"
 
 #include <codecvt>
+#include <iostream>
 #include <locale>
-
-SymbolTable* Utils::symTable = nullptr;
-
-void Utils::init(SymbolTable* symTable)
-{
-    Utils::symTable = symTable;
-}
 
 std::string Utils::wstrToStr(const std::wstring& wstr)
 {
@@ -22,11 +16,6 @@ void Utils::logMsg(const std::string& msg)
         << msg
         << "\033[0m" // reset
         << std::endl;
-}
-
-void Utils::reset()
-{
-    symTable = nullptr;
 }
 
 std::string Utils::removeFirstTabs(std::string& str)

@@ -2,6 +2,8 @@
 
 #include <locale>
 #include <sstream>
+
+#include "other/Scope.h"
 #include "other/Utils.h"
 
 class FuncDeclStmt;
