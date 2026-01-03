@@ -81,7 +81,7 @@ add_executable(Transposer
         Transposer/errorHandling/semanticErrors/WrongReturnType.cpp
         Transposer/errorHandling/semanticErrors/WrongReturnType.h
         Transposer/errorHandling/semanticErrors/NoReturnStmt.cpp
-        Transposer/errorHandling/semanticErrors/NoReturnStmt.h
+        Transposer/errorHandling/semanticErrors/NoReturn.h
         Transposer/errorHandling/entryPointErrors/MainOverride.cpp
         Transposer/errorHandling/entryPointErrors/MainOverride.h
         Transposer/errorHandling/entryPointErrors/NoMain.cpp
@@ -144,6 +144,22 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/ExpectedAnExpression.h
         Transposer/errorHandling/syntaxErrors/MissingPipe.cpp
         Transposer/errorHandling/syntaxErrors/MissingPipe.h
+        Transposer/errorHandling/semanticErrors/IllegalTypeCast.cpp
+        Transposer/errorHandling/semanticErrors/IllegalTypeCast.h
+        Transposer/errorHandling/semanticErrors/IllegalSwitchVar.cpp
+        Transposer/errorHandling/semanticErrors/IllegalSwitchVar.h
+        Transposer/errorHandling/semanticErrors/IllegalHear.cpp
+        Transposer/errorHandling/semanticErrors/IllegalHear.h
+        Transposer/errorHandling/semanticErrors/FuncInsideFunc.cpp
+        Transposer/errorHandling/semanticErrors/FuncInsideFunc.h
+        Transposer/errorHandling/semanticErrors/IllegalOpOnType.cpp
+        Transposer/errorHandling/semanticErrors/IllegalOpOnType.h
+        Transposer/errorHandling/semanticErrors/CallWithoutCopyright.cpp
+        Transposer/errorHandling/semanticErrors/CallWithoutCopyright.h
+        Transposer/errorHandling/semanticErrors/IllegalCredit.cpp
+        Transposer/errorHandling/semanticErrors/IllegalCredit.h
+        Transposer/errorHandling/semanticErrors/IllegalCall.cpp
+        Transposer/errorHandling/semanticErrors/IllegalCall.h
 )
 
 # In order to call the exe from the cmd

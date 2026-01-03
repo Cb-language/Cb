@@ -17,8 +17,8 @@ private:
     const UnaryOp op;
     const bool isStmt;
 public:
-    UnaryOpExpr(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, const UnaryOp op, const bool isStmt = false);
-    bool isLegal() const override;
+    UnaryOpExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, const UnaryOp op, const bool isStmt = false);
+    void analyze() const override;
     std::string translateToCpp() const override;
     std::unique_ptr<IType> getType() const override;
 };

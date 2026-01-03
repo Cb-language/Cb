@@ -8,8 +8,8 @@ private:
     std::unique_ptr<IType> type;
     std::wstring value;
 public:
-    ConstValueExpr(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<IType> type, const std::wstring &value);
-    bool isLegal() const override;
+    ConstValueExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<IType> type, const std::wstring &value);
+    void analyze() const override;
     std::string translateToCpp() const override;
     std::unique_ptr<IType> getType() const override;
     std::wstring getValue() const;

@@ -1,19 +1,16 @@
 #include "PlayStmt.h"
 
-PlayStmt::PlayStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Expr>> exprs, const bool printLine) : Stmt(scope, funcDecl), exprs(std::move(exprs)) ,printLine(printLine)
+PlayStmt::PlayStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Expr>> exprs, const bool printLine)
+    : Stmt(token, scope, funcDecl), exprs(std::move(exprs)) ,printLine(printLine)
 {
 }
 
-bool PlayStmt::isLegal() const
+void PlayStmt::analyze() const
 {
     for (const auto& var : exprs)
     {
-        if (!var->isLegal())
-        {
-            return false;
-        }
+        var->analyze();
     }
-    return true;
 }
 
 std::string PlayStmt::translateToCpp() const

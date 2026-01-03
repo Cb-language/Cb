@@ -12,8 +12,8 @@ protected:
     std::string errorMessage;
     std::string fullMessage;
 public:
-    Error(const Token &token, std::string errorMessage);
-    virtual ~Error() = default;
+    Error(const Token &token, const std::string& errorMessage);
+    ~Error() override = default;
     void print() const;
     const char* what() const noexcept override;
 };

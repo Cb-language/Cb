@@ -1,17 +1,22 @@
 #include "ReturnStmt.h"
 
-ReturnStmt::ReturnStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& rExpr)
-: Stmt(scope, funcDecl), rType(rExpr == nullptr ? std::make_unique<Type>(L"fermata") : rExpr->getType()), rExpr(rExpr == nullptr ? nullptr : std::move(rExpr))
+#include "errorHandling/semanticErrors/WrongReturnType.h"
+
+ReturnStmt::ReturnStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& rExpr)
+: Stmt(token, scope, funcDecl), rType(rExpr == nullptr ? std::make_unique<Type>(L"fermata") : rExpr->getType()), rExpr(rExpr == nullptr ? nullptr : std::move(rExpr))
 {
 }
 
-bool ReturnStmt::isLegal() const
+void ReturnStmt::analyze() const
 {
-    if (rExpr == nullptr)
+    if (rExpr == nullptr && rType->getType() != L"fermata")
     {
-        return rType->getType() == L"fermata";
+        throw WrongReturnType(token);
     }
-    return *(rExpr->getType()) == *rType;
+    if (rExpr != nullptr && *(rExpr->getType()) != *rType)
+    {
+        throw WrongReturnType(token);
+    }
 }
 
 std::string ReturnStmt::translateToCpp() const

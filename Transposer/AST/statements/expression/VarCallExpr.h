@@ -8,8 +8,8 @@ protected:
     const Var var;
 
 public:
-    VarCallExpr(Scope* scope, FuncDeclStmt* funcDecl, const Var& var);
-    bool isLegal() const override;
+    VarCallExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, const Var& var);
+    void analyze() const override;
     std::string translateToCpp() const override;
     std::unique_ptr<IType> getType() const override;
     std::wstring getName() const;

@@ -1,6 +1,6 @@
 #include "FuncCreditStmt.h"
 
-FuncCreditStmt::FuncCreditStmt(Scope* scope, FuncDeclStmt* funcDecl, const FuncCredit& funcCredit) : Stmt(scope, funcDecl), funcCredit(funcCredit)
+FuncCreditStmt::FuncCreditStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, const FuncCredit& funcCredit) : Stmt(token, scope, funcDecl), funcCredit(funcCredit)
 {
 }
 
@@ -10,9 +10,8 @@ const std::wstring& FuncCreditStmt::getName() const
 }
 
 // checked after the parsing via the credit queue
-bool FuncCreditStmt::isLegal() const
+void FuncCreditStmt::analyze() const
 {
-    return true;
 }
 
 // no such thing in cpp -> no translating

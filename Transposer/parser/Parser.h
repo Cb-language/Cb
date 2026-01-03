@@ -22,6 +22,8 @@
 #include "AST/statements/expression/ArrayIndexingExpr.h"
 #include "AST/statements/expression/ArraySlicingExpr.h"
 #include "AST/statements/expression/ConstValueExpr.h"
+#include "AST/statements/expression/FuncCallExpr.h"
+#include "other/SymbolTable.h"
 #include "symbols/FuncCredit.h"
 #include "symbols/Type/ArrayType.h"
 
@@ -108,7 +110,7 @@ public:
     explicit Parser(const std::vector<Token>& tokens);
     ~Parser();
     void parse();
-    bool checkLegal();
+    void analyze();
     std::string translateToCpp() const;
 };
 

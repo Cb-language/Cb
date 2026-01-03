@@ -9,9 +9,9 @@ private:
     std::unique_ptr<Expr> stop;
     std::unique_ptr<Expr> step;
 public:
-    ArraySlicingExpr(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, std::unique_ptr<Expr> start, std::unique_ptr<Expr> stop, std::unique_ptr<Expr> step);
+    ArraySlicingExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, std::unique_ptr<Expr> start, std::unique_ptr<Expr> stop, std::unique_ptr<Expr> step);
     ArraySlicingExpr(const ArraySlicingExpr& other);
-    bool isLegal() const override;
+    void analyze() const override;
     std::string translateToCpp() const override;
     std::unique_ptr<IType> getType() const override;
 };
