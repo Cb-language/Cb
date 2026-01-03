@@ -156,6 +156,8 @@ add_executable(Transposer
         Transposer/errorHandling/semanticErrors/IllegalOpOnType.h
         Transposer/errorHandling/semanticErrors/CallWithoutCopyright.cpp
         Transposer/errorHandling/semanticErrors/CallWithoutCopyright.h
+        Transposer/errorHandling/semanticErrors/IllegalCredit.cpp
+        Transposer/errorHandling/semanticErrors/IllegalCredit.h
 )
 
 # In order to call the exe from the cmd
