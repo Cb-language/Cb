@@ -696,10 +696,10 @@ std::unique_ptr<FuncCreditStmt> Parser::parseFuncCreditStmt()
 std::unique_ptr<IfStmt> Parser::parseIfStmt()
 {
     expect(Token::KEYWORD, L"D", HowDidYouGetHere(current()));
-    expect(Token::PUNCTUATION, L"|", MissingParenthesis(current()));
+    expect(Token::PUNCTUATION, L"|", MissingPipe(current()));
     std::unique_ptr<Expr> expr = parseExpr();
-    expect(Token::PUNCTUATION, L"|", MissingParenthesis(current()));
-    std::vector<std::pair<Var, const Token>> args; // args is empty
+    expect(Token::PUNCTUATION, L"|", MissingPipe(current()));
+    constexpr std::vector<std::pair<Var, const Token>> args; // args is empty
     std::unique_ptr<Stmt> body = parseBodyStmt(args, false);
 
     if (match(Token::KEYWORD, L"E"))
