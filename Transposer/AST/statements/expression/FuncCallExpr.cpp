@@ -3,6 +3,8 @@
 #include <sstream>
 
 #include "AST/statements/FuncDeclStmt.h"
+#include "errorHandling/how/HowDidYouGetHere.h"
+#include "errorHandling/semanticErrors/CallWithoutCopyright.h"
 
 FuncCallExpr::FuncCallExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, const std::wstring& name,std::vector<std::unique_ptr<Expr>> args, const bool isStmt)
     : Call(token, scope, funcDecl), name(name), type(std::make_unique<Type>(L"fermata")), isStmt(isStmt)
@@ -18,31 +20,31 @@ std::unique_ptr<IType> FuncCallExpr::getType() const
     return type->copy();
 }
 
-bool FuncCallExpr::isLegal() const
+void FuncCallExpr::analyze() const
 {
     if (funcDecl == nullptr)
     {
-        return false;
+        throw HowDidYouGetHere(token);
     }
 
     if (funcDecl->getName() == L"prelude")
     {
-        return true; // main doesnt have to copy right
+        return; // main doesnt have to copy right
     }
 
     if (funcDecl->getName() == name)
     {
-        return true; // a func doesn't have to copyright itself
+        return; // a func doesn't have to copyright itself
     }
 
     for (const auto& credit : funcDecl->getCredited())
     {
         if (credit->getName() == name)
         {
-            return true;
+            return;
         }
     }
-    return false;
+   throw CallWithoutCopyright(token, Utils::wstrToStr(name));
 }
 
 std::string FuncCallExpr::translateToCpp() const
@@ -98,4 +100,14 @@ bool FuncCallExpr::isLegalCall(const Func& func) const
         }
     }
     return true;
+}
+
+const Token& FuncCallExpr::getToken() const
+{
+    return token;
+}
+
+const std::wstring& FuncCallExpr::getName() const
+{
+    return name;
 }

@@ -5,9 +5,10 @@ WhileStmt::WhileStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, s
 {
 }
 
-bool WhileStmt::isLegal() const
+void WhileStmt::analyze() const
 {
-    return body->isLegal() && condition->isLegal();
+    body->analyze();
+    condition->analyze();
 }
 
 std::string WhileStmt::translateToCpp() const

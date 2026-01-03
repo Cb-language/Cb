@@ -13,16 +13,12 @@ std::vector<std::unique_ptr<Stmt>>& BodyStmt::getStmts()
     return stmts;
 }
 
-bool BodyStmt::isLegal() const
+void BodyStmt::analyze() const
 {
     for (const auto& stmt : stmts)
     {
-        if (!stmt->isLegal())
-        {
-            return false;
-        }
+        stmt->analyze();
     }
-    return true;
 }
 
 std::string BodyStmt::translateToCpp() const

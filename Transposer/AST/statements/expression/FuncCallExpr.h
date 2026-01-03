@@ -6,6 +6,7 @@
 
 #include "../../../symbols/Type/Type.h"
 #include "AST/abstract/Call.h"
+#include "symbols/Func.h"
 
 class FuncCallExpr : public Call
 {
@@ -24,4 +25,7 @@ public:
 
     void setType(std::unique_ptr<IType> type);
     bool isLegalCall(const Func& func) const;
+
+    const Token& getToken() const;
+    const std::wstring& getName() const;
 };

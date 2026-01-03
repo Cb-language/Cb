@@ -2,6 +2,8 @@
 
 #include <sstream>
 
+#include "errorHandling/semanticErrors/IllegalHear.h"
+
 HearStmt::HearStmt(const Token& token,  Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Call>>& calls) : Stmt(token, scope, funcDecl)
 {
     for (auto& call : calls)
@@ -10,17 +12,15 @@ HearStmt::HearStmt(const Token& token,  Scope* scope, FuncDeclStmt* funcDecl, st
     }
 }
 
-bool HearStmt::isLegal() const
+void HearStmt::analyze() const
 {
     for (const auto& call : calls)
     {
         if (call->getType()->getArrLevel() > 0 || !(call->getType()->isPrimitive()))
         {
-            return false;
+            throw IllegalHear(token, call->getType()->toString());
         }
     }
-
-    return true;
 }
 
 std::string HearStmt::translateToCpp() const

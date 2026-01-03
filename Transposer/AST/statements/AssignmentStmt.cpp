@@ -1,19 +1,32 @@
 #include "AssignmentStmt.h"
 
+#include "errorHandling/semanticErrors/IllegalTypeCast.h"
+
 
 AssignmentStmt::AssignmentStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, const std::wstring& assignmentOp,
                                std::unique_ptr<Expr> expr) : Stmt(token, scope, funcDecl), call(std::move(call)), assignmentOp(assignmentOp), expr(std::move(expr))
 {
 }
 
-bool AssignmentStmt::isLegal() const
+void AssignmentStmt::analyze() const
 {
     if (assignmentOp == L"-=" || assignmentOp == L"*=" || assignmentOp == L"/=" || assignmentOp == L"//=" || assignmentOp == L"%=")
     {
-        return call->getType()->copy()->isNumberable() && expr->getType()->copy()->isNumberable();
+        if (!call->getType()->copy()->isNumberable())
+        {
+            throw IllegalTypeCast(token, call->getType()->toString(), "degree");
+        }
+
+        if (!expr->getType()->copy()->isNumberable())
+        {
+            throw IllegalTypeCast(token, expr->getType()->toString(), "degree");
+        }
     }
 
-    return *(call->getType()->copy()) == *(expr->getType()->copy());
+    if (*(call->getType()->copy()) != *(expr->getType()->copy()))
+    {
+        throw IllegalTypeCast(token, expr->getType()->toString(), call->getType()->toString());
+    }
 }
 
 std::string AssignmentStmt::translateToCpp() const

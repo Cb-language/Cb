@@ -26,9 +26,11 @@
 #include "../errorHandling/semanticErrors/IdentifierTaken.h"
 #include "../errorHandling/semanticErrors/StmtNotBreakable.h"
 #include "../errorHandling/semanticErrors/StmtNotContinueAble.h"
-#include "../errorHandling/semanticErrors/NoReturnStmt.h"
+#include "../errorHandling/semanticErrors/NoReturn.h"
 #include "../errorHandling/semanticErrors/WrongReturnType.h"
 #include "../errorHandling/semanticErrors/UnrecognizedIdentifier.h"
+#include "../errorHandling/semanticErrors/IllegalCredit.h"
+#include "../errorHandling/semanticErrors/IllegalCall.h"
 
 // ---------- entry point errors ----------
 #include "../errorHandling/entryPointErrors/InvalidMainReturnType.h"
@@ -47,12 +49,10 @@
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), symTable(SymbolTable()), hasMain(false)
 {
-    Utils::init(&symTable);
 }
 
 Parser::~Parser()
 {
-    Utils::reset();
 }
 
 void Parser::parse()
@@ -64,7 +64,7 @@ void Parser::parse()
     }
 }
 
-bool Parser::checkLegal()
+void Parser::analyze()
 {
     if (!hasMain)
     {
@@ -75,7 +75,7 @@ bool Parser::checkLegal()
     {
         if (!symTable.isLegalCredit(creditsQ.front()))
         {
-            return false;
+            throw IllegalCredit(creditsQ.front().getToken(), Utils::wstrToStr(creditsQ.front().getName()));
         }
 
         creditsQ.pop();
@@ -88,7 +88,7 @@ bool Parser::checkLegal()
 
         if (t == nullptr)
         {
-            return false;
+            throw IllegalCall(call->getToken(), Utils::wstrToStr(call->getName()));
         }
 
         call->setType(std::move(t));
@@ -96,15 +96,10 @@ bool Parser::checkLegal()
         callsQ.pop();
     }
 
-    // for (const auto& stmt : stmts)
-    // {
-    //     if (!stmt->isLegal())
-    //     {
-    //         return false;
-    //     }
-    // }
-
-    return true;
+    for (const auto& stmt : stmts)
+    {
+        stmt->analyze();
+    }
 }
 
 std::string Parser::translateToCpp() const
@@ -658,7 +653,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
 
     if (!funcDeclStmt->getHasReturned())
     {
-        throw(NoReturnStmt(prev()));
+        throw(NoReturn(prev()));
     }
 
     symTable.changeFunc(currFunc);

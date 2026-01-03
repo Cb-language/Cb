@@ -2,6 +2,8 @@
 
 #include <sstream>
 
+#include "errorHandling/semanticErrors/IllegalOpOnType.h"
+
 BinaryOpExpr::BinaryOpExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, const std::wstring& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, const bool hasParens)
 : Expr(token, scope, funcDecl, hasParens), op(op), left(std::move(left)), right(std::move(right))
 {
@@ -69,7 +71,7 @@ std::unique_ptr<IType> BinaryOpExpr::getType() const
     return std::make_unique<Type>(L"fermata");
 }
 
-bool BinaryOpExpr::isLegal() const
+void BinaryOpExpr::analyze() const
 {
     auto leftType = left != nullptr ? left->getType() : nullptr;
     auto rightType = right->getType();
@@ -79,24 +81,36 @@ bool BinaryOpExpr::isLegal() const
         op == L"<"  || op == L">"  ||
         op == L"<=" || op == L">=")
     {
-        return *leftType == *rightType;
+        if (*leftType != *rightType)
+        {
+            throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), Utils::wstrToStr(op));
+        }
     }
 
     // Logical operators
     if (op == L"&&" || op == L"||")
     {
-        return *leftType == *rightType;
+        if (*leftType != *rightType)
+        {
+            throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), Utils::wstrToStr(op));
+        }
     }
 
     if (left == nullptr)
     {
-        return rightType->isNumberable();
+        if (!rightType->isNumberable())
+        {
+            throw IllegalOpOnType(token, rightType->toString());
+        }
     }
 
     // the + op
     if (op == L"+")
     {
-        return (leftType->isNumberable() && rightType->isNumberable()) || (leftType->isStringable() && rightType->isStringable());
+        if (!(leftType->isNumberable() && rightType->isNumberable()) || (leftType->isStringable() && rightType->isStringable()))
+        {
+            throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), "+");
+        }
     }
 
     // Arithmetic operators
@@ -104,10 +118,11 @@ bool BinaryOpExpr::isLegal() const
         op == L"*"  || op == L"/" ||
         op == L"%")
     {
-        return leftType->isNumberable() && rightType->isNumberable();
+        if (!(leftType->isNumberable() && rightType->isNumberable()))
+        {
+            throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), Utils::wstrToStr(op));
+        }
     }
-
-    return false;
 }
 
 std::string BinaryOpExpr::translateToCpp() const

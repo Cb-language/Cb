@@ -1,12 +1,14 @@
 #include "BreakStmt.h"
 
+#include "errorHandling/semanticErrors/StmtNotBreakable.h"
+
 BreakStmt::BreakStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl) : Stmt(token, scope, funcDecl)
 {
 }
 
-bool BreakStmt::isLegal() const
+void BreakStmt::analyze() const
 {
-    return scope->getIsBreakable();
+    if (!scope->getIsBreakable()) throw StmtNotBreakable(token);
 }
 
 std::string BreakStmt::translateToCpp() const

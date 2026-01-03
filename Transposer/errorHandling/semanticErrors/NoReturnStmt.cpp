@@ -1,5 +1,5 @@
-#include "NoReturnStmt.h"
+#include "NoReturn.h"
 
-NoReturnStmt::NoReturnStmt(const Token& token) : Error(token, "no return statement")
+NoReturn::NoReturn(const Token& token) : Error(token, "no return statement")
 {
 }

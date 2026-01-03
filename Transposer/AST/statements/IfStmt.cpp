@@ -6,9 +6,10 @@ IfStmt::IfStmt(const Token& token, Scope *scope, FuncDeclStmt *funcDecl, std::un
 {
 }
 
-bool IfStmt::isLegal() const
+void IfStmt::analyze() const
 {
-    return body->isLegal() && expr->isLegal();
+    body->analyze();
+    expr->analyze();
 }
 
 std::string IfStmt::translateToCpp() const

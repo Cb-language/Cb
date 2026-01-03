@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
 
     if (!fileManager.getIsOpen())
     {
-        return -1;
+        return -2;
     }
 
     const std::wstring wstr = fileManager.readFile();
@@ -90,12 +90,7 @@ int main(int argc, char* argv[])
     {
         Utils::logMsg("Translating...");
         parser.parse();
-
-        if (!parser.checkLegal())
-        {
-            std::cerr << "Code Illegal :(" << std::endl;
-            return -2;
-        }
+        parser.analyze();
     }
     catch (const Error& err)
     {
@@ -105,7 +100,7 @@ int main(int argc, char* argv[])
 
     if (!fileManager.writeFile(parser.translateToCpp()) || !FileManager::writeArrayFiles())
     {
-        return -1;
+        return -3;
     }
 
 
@@ -143,7 +138,7 @@ int main(int argc, char* argv[])
         if (std::system(cmd.str().c_str()) != 0)
         {
             std::cerr << "Error with g++ : command: " << cmd.str() << std::endl;
-            return -3;
+            return -4;
         }
     }
 

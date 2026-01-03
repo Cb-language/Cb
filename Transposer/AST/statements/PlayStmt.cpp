@@ -5,16 +5,12 @@ PlayStmt::PlayStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std
 {
 }
 
-bool PlayStmt::isLegal() const
+void PlayStmt::analyze() const
 {
     for (const auto& var : exprs)
     {
-        if (!var->isLegal())
-        {
-            return false;
-        }
+        var->analyze();
     }
-    return true;
 }
 
 std::string PlayStmt::translateToCpp() const

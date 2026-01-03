@@ -1,5 +1,8 @@
 #include "UnaryOpExpr.h"
 
+#include "errorHandling/semanticErrors/IllegalOpOnType.h"
+#include "errorHandling/semanticErrors/IllegalTypeCast.h"
+
 UnaryOpExpr::UnaryOpExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, const UnaryOp op, const bool isStmt)
 : Expr(token, scope, funcDecl), call(std::move(call)), op(op), isStmt(isStmt)
 {
@@ -9,14 +12,17 @@ UnaryOpExpr::UnaryOpExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDec
     }
 }
 
-bool UnaryOpExpr::isLegal() const
+void UnaryOpExpr::analyze() const
 {
-    if (op == UnaryOp::Not)
+    if (op == UnaryOp::Not && *(call->getType()) != L"mute")
     {
-        return *(call->getType()) == L"mute";
+        throw IllegalTypeCast(token, call->getType()->toString(), "mute");
     }
 
-    return call->getType()->getArrLevel() == 0 && call->getType()->isPrimitive();
+    if (call->getType()->getArrLevel() != 0 || !call->getType()->isPrimitive())
+    {
+        throw IllegalOpOnType(token, call->getType()->toString());
+    }
 }
 
 std::string UnaryOpExpr::translateToCpp() const

@@ -1,12 +1,17 @@
 #include "ContinueStmt.h"
 
+#include "errorHandling/semanticErrors/StmtNotContinueAble.h"
+
 ContinueStmt::ContinueStmt(const Token& token, Scope *scope, FuncDeclStmt *funcDecl) : Stmt(token, scope, funcDecl)
 {
 }
 
-bool ContinueStmt::isLegal() const
+void ContinueStmt::analyze() const
 {
-    return scope->getIsBreakable();
+    if (!scope->getIsContinueAble())
+    {
+        throw StmtNotContinueAble(token);
+    }
 }
 
 std::string ContinueStmt::translateToCpp() const

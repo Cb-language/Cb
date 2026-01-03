@@ -4,9 +4,8 @@ VarCallExpr::VarCallExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDec
 {
 }
 
-bool VarCallExpr::isLegal() const
+void VarCallExpr::analyze() const
 {
-    return true;
 }
 
 std::string VarCallExpr::translateToCpp() const

@@ -2,22 +2,26 @@
 
 #include <sstream>
 
-bool ArrayDeclStmt::isLegalSizes() const
+#include "errorHandling/Error.h"
+#include "errorHandling/how/HowDidYouGetHere.h"
+#include "errorHandling/semanticErrors/IllegalTypeCast.h"
+
+void ArrayDeclStmt::analyzeSizes() const
 {
+    // Can't get here but always check
     if (var.getType()->getArrLevel() != sizes.size())
     {
-        return false;
+        throw HowDidYouGetHere(token);
     }
 
     for (const auto& size : sizes)
     {
-        if (!size->isLegal()|| !size->getType()->isNumberable())
+        size->analyze();
+        if (!size->getType()->isNumberable())
         {
-            return false;
+            throw IllegalTypeCast(token, Utils::wstrToStr(size->getType()->getType()), "degree");
         }
     }
-
-    return true;
 }
 
 std::string ArrayDeclStmt::createConstructor(IType* type, const size_t dim) const
@@ -60,11 +64,11 @@ ArrayDeclStmt::ArrayDeclStmt(const Token& token, Scope* scope, FuncDeclStmt* fun
 {
 }
 
-bool ArrayDeclStmt::isLegal() const
+void ArrayDeclStmt::analyze() const
 {
-    if (!sizes.empty() && !isLegalSizes())
+    if (!sizes.empty())
     {
-        return false;
+        analyzeSizes();
     }
 
     if (hasStartingValue)
@@ -74,18 +78,25 @@ bool ArrayDeclStmt::isLegal() const
         const unsigned int arrLevel = varType->getArrLevel();
         const unsigned int startArrLevel = startType->getArrLevel();
 
+        // Can't get here but always check
         if (arrLevel == 0)
         {
-            return false;
+            throw HowDidYouGetHere(token);
         }
 
         if (arrLevel == startArrLevel) // Array<int> x = 3; Array<int> y = x;
         {
-            return *varType == *startType;
+            if (*varType != *startType)
+            {
+                throw IllegalTypeCast(token, startType->toString(), varType->toString());
+            }
         }
         else if (arrLevel == startArrLevel + 1) // Array<int> x = 3; or Array<int> y; Array<Array<int>> x = y;
         {
-            return *(varType->getArrType()) == *startType;
+            if (*(varType->getArrType()) != *startType)
+            {
+                throw IllegalTypeCast(token, startType->toString(), varType->getArrType()->toString());
+            }
         }
         else if (arrLevel > 1 && startArrLevel == 0) // Array<Array<int>> y = 3;
         {
@@ -96,13 +107,12 @@ bool ArrayDeclStmt::isLegal() const
                 type = type->getArrType()->copy();
             }
 
-            return *type == *startType;
+            if (*type != *startType)
+            {
+                throw IllegalTypeCast(token, startType->toString(), type->toString());
+            }
         }
-
-        return false;
     }
-
-    return true;
 }
 
 std::string ArrayDeclStmt::translateToCpp() const

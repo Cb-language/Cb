@@ -1,9 +1,12 @@
 #include "FuncDeclStmt.h"
 
+#include "errorHandling/semanticErrors/FuncInsideFunc.h"
+#include "errorHandling/semanticErrors/NoReturn.h"
+
 FuncDeclStmt::FuncDeclStmt(const Token& token, Scope* scope, const std::wstring& funcName, std::unique_ptr<IType> returnType,
-const std::vector<Var>& args, std::vector<std::unique_ptr<FuncCreditStmt>>& credited) : Stmt(token, scope),
-    func(Func(std::move(returnType), funcName, args)), body(nullptr),
-    hasReturned(false)
+                           const std::vector<Var>& args, std::vector<std::unique_ptr<FuncCreditStmt>>& credited) : Stmt(token, scope),
+                                                                                                                   func(Func(std::move(returnType), funcName, args)), body(nullptr),
+                                                                                                                   hasReturned(false)
 {
     for (auto& c : credited)
     {
@@ -51,9 +54,19 @@ const std::vector<std::unique_ptr<FuncCreditStmt>>& FuncDeclStmt::getCredited() 
     return credited;
 }
 
-bool FuncDeclStmt::isLegal() const
+void FuncDeclStmt::analyze() const
 {
-    return (func.getType()->getType() == L"fermata" || hasReturned) && this->funcDecl == nullptr && body->isLegal(); // if not nullptr, there is a func inside a func
+    if (func.getType()->getType() != L"fermata" && !hasReturned)
+    {
+        throw NoReturn(token);
+    }
+
+    if (this->funcDecl != nullptr)
+    {
+        throw FuncInsideFunc(token);
+    }
+
+    body->analyze();
 }
 
 

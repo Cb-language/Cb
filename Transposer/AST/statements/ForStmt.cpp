@@ -1,31 +1,39 @@
 #include "ForStmt.h"
 
+#include "errorHandling/how/HowDidYouGetHere.h"
+
 ForStmt::ForStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl,
-    std::unique_ptr<BodyStmt> body, const bool isIncreasing, std::unique_ptr<Expr> startExpr, std::unique_ptr<Expr> stepExpr, std::unique_ptr<Expr> stopExpr,
-    const std::wstring& varName)
+                 std::unique_ptr<BodyStmt> body, const bool isIncreasing, std::unique_ptr<Expr> startExpr, std::unique_ptr<Expr> stepExpr, std::unique_ptr<Expr> stopExpr,
+                 const std::wstring& varName)
     : Stmt(token, scope, funcDecl), body(std::move(body)), isIncreasing(isIncreasing),
     startExpr(std::move(startExpr)), stepExpr(std::move(stepExpr)), stopExpr(std::move(stopExpr)), varName(varName)
 {
 }
 
-bool ForStmt::isLegal() const
+void ForStmt::analyze() const
 {
     // Must have start expr!!
-    if (startExpr == nullptr || !startExpr->getType()->isNumberable() || !startExpr->isLegal())
+    if (startExpr == nullptr || !startExpr->getType()->isNumberable())
     {
-        return false;
+        startExpr->analyze();
     }
 
-    if (stepExpr != nullptr && (!stepExpr->getType()->isNumberable() || !stepExpr->isLegal()))
+    if (stepExpr != nullptr && !stepExpr->getType()->isNumberable())
     {
-        return false;
+        stepExpr->analyze();
     }
 
-    if (stopExpr != nullptr && (!stopExpr->getType()->isNumberable() || !stopExpr->isLegal()))
+    if (stopExpr != nullptr && !stopExpr->getType()->isNumberable())
     {
-        return false;
+        stopExpr->analyze();
     }
-    return body != nullptr && body->isLegal();
+
+    // Can't really get here, but it's good to check
+    if (body == nullptr)
+    {
+        throw HowDidYouGetHere(token);
+    }
+    body->analyze();
 }
 
 std::string ForStmt::translateToCpp() const
