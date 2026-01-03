@@ -150,6 +150,8 @@ add_executable(Transposer
         Transposer/errorHandling/semanticErrors/IllegalCaseVar.h
         Transposer/errorHandling/semanticErrors/IllegalHear.cpp
         Transposer/errorHandling/semanticErrors/IllegalHear.h
+        Transposer/errorHandling/semanticErrors/FuncInsideFunc.cpp
+        Transposer/errorHandling/semanticErrors/FuncInsideFunc.h
 )
 
 # In order to call the exe from the cmd
