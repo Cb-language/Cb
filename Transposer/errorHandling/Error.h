@@ -13,7 +13,7 @@ protected:
     std::string fullMessage;
 public:
     Error(const Token &token, std::string errorMessage);
-    virtual ~Error() = default;
+    ~Error() override = default;
     void print() const;
     const char* what() const noexcept override;
 };
