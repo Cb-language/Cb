@@ -15,6 +15,6 @@ private:
 
 public:
     AssignmentStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, const std::wstring& assignmentOp, std::unique_ptr<Expr> expr);
-    bool isLegal() const override;
+    void analyze() const override;
     std::string translateToCpp() const override;
 };

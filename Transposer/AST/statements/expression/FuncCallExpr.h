@@ -19,7 +19,7 @@ public:
     FuncCallExpr(Scope* scope, FuncDeclStmt* funcDecl, const std::wstring& name, std::vector<std::unique_ptr<Expr>> args, const bool isStmt);
 
     std::unique_ptr<IType> getType() const override;
-    bool isLegal() const override;
+    void analyze() const override;
     std::string translateToCpp() const override;
 
     void setType(std::unique_ptr<IType> type);

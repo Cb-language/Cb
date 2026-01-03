@@ -11,7 +11,7 @@ public:
     Expr(Scope* scope, FuncDeclStmt* funcDecl);
     ~Expr() override = default;
     virtual std::unique_ptr<IType> getType() const = 0;
-    bool isLegal() const override = 0;
+    void analyze() const override = 0;
     std::string translateToCpp() const override = 0;
 
     virtual void setHasParens(const bool hasParens);

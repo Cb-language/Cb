@@ -12,5 +12,5 @@ public:
 
     std::unique_ptr<IType> getType() const override;
     std::string translateToCpp() const override;
-    bool isLegal() const override;
+    void analyze() const override;
 };

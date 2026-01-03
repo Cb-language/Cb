@@ -9,7 +9,7 @@ protected:
 
 public:
     VarCallExpr(Scope* scope, FuncDeclStmt* funcDecl, const Var& var);
-    bool isLegal() const override;
+    void analyze() const override;
     std::string translateToCpp() const override;
     std::unique_ptr<IType> getType() const override;
     std::wstring getName() const;

@@ -12,6 +12,6 @@ public:
 
     const std::wstring& getName() const;
 
-    bool isLegal() const override;
+    void analyze() const override;
     std::string translateToCpp() const override;
 };

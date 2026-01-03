@@ -10,7 +10,7 @@ class ArrayDeclStmt : public VarDeclStmt
 public:
     ArrayDeclStmt(Scope* scope, FuncDeclStmt* funcDecl, bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var &var, std::vector<std::unique_ptr<Expr>> sizes);
 
-    bool isLegal() const override;
+    void analyze() const override;
     std::string translateToCpp() const override;
 };
 

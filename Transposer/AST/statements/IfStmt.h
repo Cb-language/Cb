@@ -15,6 +15,6 @@ private:
 public:
     IfStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr> expr, std::unique_ptr<Stmt> body, std::unique_ptr<Stmt> elseIfStmt, const bool isElseIf);
 
-    bool isLegal() const override;
+    void analyze() const override;
     std::string translateToCpp() const override;
 };

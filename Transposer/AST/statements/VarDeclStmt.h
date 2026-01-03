@@ -18,6 +18,6 @@ protected:
 public:
     VarDeclStmt(Scope* scope, FuncDeclStmt* funcDecl, bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var &var);
 
-    bool isLegal() const override;
+    void analyze() const override;
     std::string translateToCpp() const override;
 };

@@ -9,6 +9,6 @@ private:
 
 public:
     HearStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Call>>& calls);
-    bool isLegal() const override;
+    void analyze() const override;
     std::string translateToCpp() const override;
 };

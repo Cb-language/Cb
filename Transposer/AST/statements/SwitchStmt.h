@@ -14,6 +14,6 @@ private:
     std::vector<std::unique_ptr<CaseStmt>> cases;
 public:
     SwitchStmt(Scope* scope, FuncDeclStmt* funcDecl, Var var, std::vector<std::unique_ptr<CaseStmt>>& cases);
-    bool isLegal() const override;
+    void analyze() const override;
     std::string translateToCpp() const override;
 };

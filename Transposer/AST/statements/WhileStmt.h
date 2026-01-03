@@ -10,6 +10,6 @@ private:
     std::unique_ptr<Stmt> body;
 public:
     WhileStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& condition, std::unique_ptr<Stmt>& body);
-    bool isLegal() const override;
+    void analyze() const override;
     std::string translateToCpp() const override;
 };

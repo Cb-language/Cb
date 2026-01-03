@@ -7,6 +7,6 @@ private:
 
 public:
     BreakStmt(Scope* scope, FuncDeclStmt* funcDecl);
-    bool isLegal() const override;
+    void analyze() const override;
     std::string translateToCpp() const override;
 };

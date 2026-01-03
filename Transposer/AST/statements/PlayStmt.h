@@ -10,6 +10,6 @@ private:
     bool printLine = false;
 public:
     PlayStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Expr>> exprs, bool printLine = false);
-    bool isLegal() const override;
+    void analyze() const override;
     std::string translateToCpp() const override;
 };

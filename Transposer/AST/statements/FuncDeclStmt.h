@@ -32,6 +32,6 @@ public:
 
     const std::vector<std::unique_ptr<FuncCreditStmt>>& getCredited() const;
 
-    bool isLegal() const override;
+    void analyze() const override;
     std::string translateToCpp() const override;
 };

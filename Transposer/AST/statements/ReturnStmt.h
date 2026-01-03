@@ -13,7 +13,7 @@ private:
 public:
     ReturnStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& rExpr);
 
-    bool isLegal() const override;
+    void analyze() const override;
     std::string translateToCpp() const override;
 
 };

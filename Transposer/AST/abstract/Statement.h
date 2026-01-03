@@ -17,7 +17,7 @@ protected:
     std::string getTabs() const;
 public:
     virtual ~Stmt();
-    virtual bool isLegal() const = 0;
+    virtual void analyze() const = 0;
     virtual std::string translateToCpp() const = 0;
 
     void setFuncDecl(FuncDeclStmt *funcDecl);
