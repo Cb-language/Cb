@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ErrorHandler.h"
 #include "token/Token.h"
 #include <iostream>
 #include <locale>

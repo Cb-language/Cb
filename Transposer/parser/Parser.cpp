@@ -5,25 +5,44 @@
 #include <sstream>
 #include <vector>
 
+// ---------- AST related ----------
 #include "AST/statements/FuncDeclStmt.h"
 #include "AST/statements/expression/BinaryOpExpr.h"
 #include "AST/statements/expression/FuncCallExpr.h"
-#include "errorHandling/lexicalErrors/IdentifierTaken.h"
-#include "errorHandling/lexicalErrors/InvalidIdentifier.h"
-#include "errorHandling/lexicalErrors/InvalidMainArgs.h"
-#include "errorHandling/lexicalErrors/InvalidMainReturnType.h"
-#include "errorHandling/lexicalErrors/InvalidNumberLiteral.h"
-#include "errorHandling/lexicalErrors/MainOverride.h"
-#include "errorHandling/lexicalErrors/NoMain.h"
-#include "errorHandling/lexicalErrors/UnexpectedEOF.h"
-#include "errorHandling/syntaxErrors/InvalidExpression.h"
-#include "errorHandling/syntaxErrors/InvalidStatement.h"
-#include "errorHandling/syntaxErrors/MissingBrace.h"
-#include "errorHandling/syntaxErrors/MissingIdentifier.h"
-#include "errorHandling/syntaxErrors/MissingSemicolon.h"
-#include "errorHandling/syntaxErrors/NoReturnStmt.h"
-#include "errorHandling/syntaxErrors/UnexpectedToken.h"
-#include "errorHandling/syntaxErrors/WrongReturnType.h"
+
+// ---------- syntax errors ----------
+#include "../errorHandling/syntaxErrors/UnexpectedToken.h"
+#include "../errorHandling/syntaxErrors/ExpectedAnExpression.h"
+#include "../errorHandling/syntaxErrors/MissingBrace.h"
+#include "../errorHandling/syntaxErrors/MissingPipe.h"
+#include "../errorHandling/syntaxErrors/MissingSemicolon.h"
+#include "../errorHandling/syntaxErrors/NoPlacementOperator.h"
+#include "../errorHandling/syntaxErrors/InvalidExpression.h"
+#include "../errorHandling/syntaxErrors/StmtInsideSwitchThatIsNotCase.h"
+#include "../errorHandling/syntaxErrors/MissingIdentifier.h"
+#include "../errorHandling/syntaxErrors/MissingParenthesis.h"
+
+// ---------- semantic errors ----------
+#include "../errorHandling/semanticErrors/IdentifierTaken.h"
+#include "../errorHandling/semanticErrors/StmtNotBreakable.h"
+#include "../errorHandling/semanticErrors/StmtNotContinueAble.h"
+#include "../errorHandling/semanticErrors/NoReturnStmt.h"
+#include "../errorHandling/semanticErrors/WrongReturnType.h"
+#include "../errorHandling/semanticErrors/UnrecognizedIdentifier.h"
+
+// ---------- entry point errors ----------
+#include "../errorHandling/entryPointErrors/InvalidMainReturnType.h"
+#include "../errorHandling/entryPointErrors/InvalidMainArgs.h"
+#include "../errorHandling/entryPointErrors/MainOverride.h"
+#include "../errorHandling/entryPointErrors/NoMain.h"
+
+// ---------- lexical errors ----------
+#include "../errorHandling/lexicalErrors/InvalidNumberLiteral.h"
+#include "../errorHandling/lexicalErrors/UnexpectedEOF.h"
+#include "../errorHandling/lexicalErrors/UnrecognizedToken.h"
+
+// ---------- just how ----------
+#include "../errorHandling/how/HowDidYouGetHere.h"
 
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), symTable(SymbolTable()), hasMain(false)
@@ -320,7 +339,7 @@ std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt()
         return std::make_unique<VarDeclStmt>(symTable.getCurrScope(), symTable.getCurrFunc(), false, nullptr, var);
     }
 
-    expect(Token::OP_ASSIGNMENT, L"=");
+    expect(Token::OP_ASSIGNMENT, L"=" , NoPlacementOperator(current()));
 
     auto expr = parseExpr();
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
@@ -344,7 +363,7 @@ std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
 std::unique_ptr<HearStmt> Parser::parseHearStmt()
 {
     std::vector<std::unique_ptr<Call>> calls;
-    expect(Token::KEYWORD, L"hear");
+    expect(Token::KEYWORD, L"hear", HowDidYouGetHere(current()));
     expect(
         Token::PUNCTUATION, L"(", MissingBrace(current())
         );
@@ -385,7 +404,7 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
     }
     else
     {
-        throw UnexpectedToken(current());
+        throw HowDidYouGetHere(current());
     }
 
     expect(Token::PUNCTUATION, L"(", MissingBrace(current()));
@@ -479,7 +498,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             if (!symTable.getCurrScope()->getIsBreakable())
             {
-                throw InvalidStatement(current());
+                throw StmtNotBreakable(current());
             }
             bodyStmts.push_back(parseBreakStmt());
             if (!hasBrace)
@@ -491,7 +510,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             if (!symTable.getCurrScope()->getIsContinueAble())
             {
-                throw InvalidStatement(current());
+                throw StmtNotContinueAble(current());
             }
             bodyStmts.push_back(parseContinueStmt());
             if (!hasBrace)
@@ -509,7 +528,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         }
         else
         {
-            throw UnexpectedToken(current());
+            throw UnrecognizedToken(current());
         }
     }
 
@@ -534,7 +553,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
     std::vector<std::unique_ptr<FuncCreditStmt>> credited;
     FuncDeclStmt* currFunc = symTable.getCurrFunc();
 
-    expect(Token::KEYWORD, L"song");
+    expect(Token::KEYWORD, L"song", HowDidYouGetHere(current()));
 
     if (match(Token::PUNCTUATION, L"©")) // all functions giving copyrights to
     {
@@ -564,7 +583,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
         throw IdentifierTaken(current());
     }
 
-    expect(Token::PUNCTUATION, L"(");
+    expect(Token::PUNCTUATION, L"(", MissingParenthesis(current()));
     while (!match(Token::PUNCTUATION, L")"))
     {
         const std::unique_ptr<IType> type = parseIType();
@@ -641,14 +660,14 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
 
 std::unique_ptr<ReturnStmt> Parser::parseReturnStmt()
 {
-    expect(Token::KEYWORD, L"B");
+    expect(Token::KEYWORD, L"B", HowDidYouGetHere(current()));
 
     FuncDeclStmt* currFunc = symTable.getCurrFunc();
     std::unique_ptr<Expr> expr = nullptr;
 
     if (currFunc->getReturnType()->getType() != L"fermata")
     {
-        expect(Token::PUNCTUATION, L"\\");
+        expect(Token::PUNCTUATION, L"\\", ExpectedAnExpression(current()));
         expr = parseExpr();
         if (*(currFunc->getReturnType()) != *(expr->getType()))
         {
@@ -676,11 +695,11 @@ std::unique_ptr<FuncCreditStmt> Parser::parseFuncCreditStmt()
 
 std::unique_ptr<IfStmt> Parser::parseIfStmt()
 {
-    expect(Token::KEYWORD, L"D");
-    expect(Token::PUNCTUATION, L"|", MissingBrace(current()));
+    expect(Token::KEYWORD, L"D", HowDidYouGetHere(current()));
+    expect(Token::PUNCTUATION, L"|", MissingPipe(current()));
     std::unique_ptr<Expr> expr = parseExpr();
-    expect(Token::PUNCTUATION, L"|", MissingBrace(current()));
-    std::vector<std::pair<Var, const Token>> args; // args is empty
+    expect(Token::PUNCTUATION, L"|", MissingPipe(current()));
+    constexpr std::vector<std::pair<Var, const Token>> args; // args is empty
     std::unique_ptr<Stmt> body = parseBodyStmt(args, false);
 
     if (match(Token::KEYWORD, L"E"))
@@ -745,7 +764,7 @@ std::unique_ptr<ArrayDeclStmt> Parser::parseArrayDeclStmt()
 
 std::unique_ptr<WhileStmt> Parser::parseWhileStmt()
 {
-    expect(Token::KEYWORD, L"G");
+    expect(Token::KEYWORD, L"G", HowDidYouGetHere(current()));
     expect(Token::PUNCTUATION, L"║:", MissingBrace(current()));
     std::unique_ptr<Expr> expr = parseExpr();
     expect(Token::PUNCTUATION, L":║", MissingBrace(current()));
@@ -756,7 +775,7 @@ std::unique_ptr<WhileStmt> Parser::parseWhileStmt()
 
 std::unique_ptr<BreakStmt> Parser::parseBreakStmt()
 {
-    expect(Token::KEYWORD, L"pause");
+    expect(Token::KEYWORD, L"pause", HowDidYouGetHere(current()));
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
     return std::make_unique<BreakStmt>(symTable.getCurrScope(), symTable.getCurrFunc());
 }
@@ -776,7 +795,7 @@ std::unique_ptr<CaseStmt> Parser::parseCaseStmt()
     {
         isDefault = true;
     }
-    expect(Token::PUNCTUATION, L"|");
+    expect(Token::PUNCTUATION, L"|", MissingPipe(current()));
 
     symTable.enterScope(true, false);
     std::vector<std::pair<Var, const Token>> args;
@@ -790,12 +809,12 @@ std::unique_ptr<CaseStmt> Parser::parseCaseStmt()
 
 std::unique_ptr<SwitchStmt> Parser::parseSwitchStmt()
 {
-    expect(Token::KEYWORD, L"A", InvalidIdentifier(current()));
+    expect(Token::KEYWORD, L"A", HowDidYouGetHere(current()));
     expect(Token::PUNCTUATION, L"\\");
     std::optional<Var> v = symTable.getCurrScope()->getVar(current().value)->copy();
     if (v == std::nullopt)
     {
-        throw InvalidIdentifier(current());
+        throw UnrecognizedIdentifier(current());
     }
     advance();
     expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
@@ -809,7 +828,7 @@ std::unique_ptr<SwitchStmt> Parser::parseSwitchStmt()
         }
         else
         {
-            throw InvalidStatement(current()); // cant do commands in if scope only cases
+            throw StmtInsideSwitchThatIsNotCase(current()); // cant do commands in if scope only cases
         }
     }
 
@@ -820,7 +839,7 @@ std::unique_ptr<SwitchStmt> Parser::parseSwitchStmt()
 
 std::unique_ptr<ContinueStmt> Parser::parseContinueStmt()
 {
-    expect(Token::KEYWORD, L"resume");
+    expect(Token::KEYWORD, L"resume", MissingBrace(current()));
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
     return std::make_unique<ContinueStmt>(symTable.getCurrScope(), symTable.getCurrFunc());
 }
@@ -841,7 +860,7 @@ std::unique_ptr<ForStmt> Parser::parseForStmt()
     }
     else
     {
-        expect(Token::KEYWORD, L"Fmin", InvalidStatement(current()));
+        expect(Token::KEYWORD, L"Fmin", HowDidYouGetHere(current()));
     }
 
     // ReSharper disable once CppJoinDeclarationAndAssignment
@@ -881,7 +900,7 @@ std::unique_ptr<Call> Parser::parseFuncCallExpr(const bool isStmt)
     const std::wstring name = expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())).value;
     std::vector<std::unique_ptr<Expr>> args;
 
-    expect(Token::PUNCTUATION, L"(", MissingBrace(current()));
+    expect(Token::PUNCTUATION, L"(", MissingParenthesis(current()));
 
     bool first = true;
     while (!match(Token::PUNCTUATION, L")"))
@@ -915,7 +934,7 @@ std::unique_ptr<Call> Parser::parseCallExpr()
 
     if (!var.has_value())
     {
-        throw InvalidIdentifier(prev());
+        throw UnrecognizedIdentifier(prev());
     }
 
     std::unique_ptr<Call> call = std::make_unique<VarCallExpr>(symTable.getCurrScope(), symTable.getCurrFunc(), var.value().copy());
@@ -1126,7 +1145,7 @@ std::unique_ptr<Expr> Parser::parsePrimary()
     {
         advance(); // consume '('
         auto expr = parseExpr(true);
-        expect(Token::PUNCTUATION, L")");
+        expect(Token::PUNCTUATION, L")", MissingParenthesis(current()));
         return expr;
     }
 
