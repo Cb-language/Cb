@@ -146,6 +146,8 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/MissingPipe.h
         Transposer/errorHandling/semanticErrors/IllegalTypeCast.cpp
         Transposer/errorHandling/semanticErrors/IllegalTypeCast.h
+        Transposer/errorHandling/semanticErrors/IllegalCaseVar.cpp
+        Transposer/errorHandling/semanticErrors/IllegalCaseVar.h
 )
 
 # In order to call the exe from the cmd

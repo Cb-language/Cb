@@ -2,7 +2,7 @@
 
 #include "other/Utils.h"
 
-Error::Error(const Token &token, std::string errorMessage) : token(token), errorMessage(std::move(errorMessage))
+Error::Error(const Token &token, const std::string& errorMessage) : token(token), errorMessage(std::move(errorMessage))
 {
     fullMessage = (this->errorMessage +
                    " at line: " + std::to_string(token.line) +
