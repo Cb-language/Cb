@@ -1,6 +1,7 @@
 #pragma once
 
 #include <locale>
+#include <sstream>
 #include "other/Utils.h"
 
 class FuncDeclStmt;
@@ -20,7 +21,6 @@ public:
     virtual std::string translateToCpp() const = 0;
 
     void setFuncDecl(FuncDeclStmt *funcDecl);
-
 };
 
 inline Stmt::Stmt(Scope* scope) : scope(scope)

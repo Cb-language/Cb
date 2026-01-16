@@ -4,24 +4,24 @@
 #include <vector>
 #include <memory>
 
-#include "symbols/Type.h"
-#include "AST/abstract/Expression.h"
+#include "../../../symbols/Type/Type.h"
+#include "AST/abstract/Call.h"
 
-class FuncCallExpr : public Expr
+class FuncCallExpr : public Call
 {
 private:
     const std::wstring name;
     std::vector<std::unique_ptr<Expr>> args;
-    Type type;
+    std::unique_ptr<IType> type;
     const bool isStmt;
 
 public:
-    FuncCallExpr(Scope* scope, FuncDeclStmt* funcDecl,  const std::wstring& name, std::vector<std::unique_ptr<Expr>> args, const bool isStmt);
+    FuncCallExpr(Scope* scope, FuncDeclStmt* funcDecl, const std::wstring& name, std::vector<std::unique_ptr<Expr>> args, const bool isStmt);
 
-    Type getType() const override;
+    std::unique_ptr<IType> getType() const override;
     bool isLegal() const override;
     std::string translateToCpp() const override;
 
-    void setType(Type type);
+    void setType(std::unique_ptr<IType> type);
     bool isLegalCall(const Func& func) const;
 };

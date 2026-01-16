@@ -1,45 +1,55 @@
 song prelude() -> degree
 ∮
-    f()║
-    playBar("k:",k())║
-    p("p()")║
+    playBar("Enter a positive whole number, 0 to exit")║
+    playBar()║
 
-    bar b1 = "add(3,2) + k() = " + (add(3,2) + k())║
-    p(b1)║
-    getAndPrint()║
+    G║:cres:║
+    ∮
+        sharp degree x║
+        play("Enter x:")║
+        hear(x)║
+        playBar()║
+
+        D |x == 0|
+        ∮
+            pause║
+        ☉
+
+        playBar("DecToBin(BinToDec(x)) ?= x:", BinToDec(DecToBin(x)) == x)║
+        resume║
+    ☉
+
+    Fmin9
+    ∮
+        resume║
+    ☉
+
     B\0║
 ☉
 
-song k() -> note
+song BinToDec(sharp degree b) -> sharp degree
 ∮
-    B\'s'║
+    sharp degree x║
+    G ║:b > 0:║
+    ∮
+        x += b % 10║
+        x *= 2║
+        b /= 10║
+    ☉
+
+    B\x║
 ☉
 
-song ©(p) f()
+song DecToBin(sharp degree n) -> sharp degree
 ∮
-    p("Hello World!")║
-    B║
-☉
+    sharp degree x║
 
-song p(bar b)
-∮
-    playBar(b)║
-☉
+    G ║: n > 0 :║
+    ∮
+        x *= 10║
+        x += 1 - n % 2║
+        n /= 2║
+    ☉
 
-song add(degree x, degree y) -> degree
-∮
-    B\x+y║
-☉
-
-song recursion(degree x)
-∮
-    recursion(x-1)║
-☉
-
-song ©(p) getAndPrint()
-∮
-    playBar("Enter a bar")║
-    bar b║
-    hear(b)║
-    p(b)║
+    B\x║
 ☉

@@ -1,9 +1,14 @@
 #include "Scope.h"
 
+#include "Utils.h"
 #include "errorHandling/lexicalErrors/IdentifierTaken.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 
 Scope::Scope(Scope* parent) : parent(parent)
+{
+}
+
+Scope::Scope(Scope* parent, const bool isBreakable, const bool isContinueAble) : parent(parent), isBreakable(isBreakable), isContinueAble(isContinueAble)
 {
 }
 
@@ -23,11 +28,11 @@ Scope::~Scope()
 
 std::optional<Var> Scope::getVar(const std::wstring& name) const
 {
-    for (const auto& var : vars)
+    for (auto& var : vars)
     {
         if (name == var.getName())
         {
-            return var;
+            return var.copy();
         }
     }
 
@@ -39,9 +44,9 @@ std::optional<Var> Scope::getVar(const std::wstring& name) const
     return std::nullopt;
 }
 
-Scope* Scope::makeNewScope()
+Scope* Scope::makeNewScope(bool isBreakable, bool isContinueAble)
 {
-    auto s = std::make_unique<Scope>(this);
+    auto s = std::make_unique<Scope>(this, isBreakable, isContinueAble);
     Scope* raw = s.get();       // keep raw pointer
     children.push_back(std::move(s));
     return raw;
@@ -52,14 +57,14 @@ Scope* Scope::getParent() const
     return parent;
 }
 
-void Scope::addVar(const Type& type, const Token& token)
+void Scope::addVar(std::unique_ptr<IType> type, const Token& token)
 {
     if (token.type != Token::IDENTIFIER)
     {
         throw UnexpectedToken(token);
     }
 
-    const Var v = Var(type , token.value);
+    Var v = Var(std::move(type) , token.value);
     for (const auto& var : vars)
     {
         if (v == var)
@@ -68,7 +73,7 @@ void Scope::addVar(const Type& type, const Token& token)
         }
     }
 
-    vars.push_back(v);
+    vars.emplace_back(std::move(v));
 }
 
 void Scope::addVar(const Var& var, const Token& token)
@@ -81,7 +86,7 @@ void Scope::addVar(const Var& var, const Token& token)
         }
     }
 
-    vars.push_back(var);
+    vars.emplace_back(var.copy());
 }
 
 int Scope::getLevel() const
@@ -97,4 +102,32 @@ int Scope::getLevel() const
     }
 
     return level;
+}
+
+bool Scope::getIsBreakable() const
+{
+    if (isBreakable)
+    {
+        return true;
+    }
+
+    if (getParent() != nullptr)
+    {
+        return getParent()->getIsBreakable();
+    }
+    return false;
+}
+
+bool Scope::getIsContinueAble() const
+{
+    if (isContinueAble)
+    {
+        return true;
+    }
+
+    if (getParent() != nullptr)
+    {
+        return getParent()->getIsContinueAble();
+    }
+    return false;
 }

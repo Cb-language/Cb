@@ -1,8 +1,8 @@
 #include "AssignmentStmt.h"
 
 
-AssignmentStmt::AssignmentStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<VarCallExpr> varExpr, const std::wstring& assignmentOp,
-                               std::unique_ptr<Expr> expr) : Stmt(scope, funcDecl), varExpr(std::move(varExpr)), assignmentOp(assignmentOp), expr(std::move(expr))
+AssignmentStmt::AssignmentStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, const std::wstring& assignmentOp,
+                               std::unique_ptr<Expr> expr) : Stmt(scope, funcDecl), call(std::move(call)), assignmentOp(assignmentOp), expr(std::move(expr))
 {
 }
 
@@ -10,20 +10,19 @@ bool AssignmentStmt::isLegal() const
 {
     if (assignmentOp == L"-=" || assignmentOp == L"*=" || assignmentOp == L"/=" || assignmentOp == L"//=" || assignmentOp == L"%=")
     {
-        return varExpr->getType().isNumberable() && expr->getType().isNumberable(); // is numberable
+        return call->getType()->copy()->isNumberable() && expr->getType()->copy()->isNumberable();
     }
 
-    return varExpr->getType() == expr->getType();
+    return *(call->getType()->copy()) == *(expr->getType()->copy());
 }
 
 std::string AssignmentStmt::translateToCpp() const
 {
-
-    std::string varName = Utils::wstrToStr(varExpr->getName());
+    const std::string varName = call->translateToCpp();
     if (assignmentOp == L"+=" || assignmentOp == L"=")
     {
-        const bool isVarStr = varExpr->getType().getType() == L"bar";
-        const bool isExprStr = expr->getType().getType() == L"bar" || expr->getType().getType() == L"note";
+        const bool isVarStr = call->getType()->getType() == L"bar";
+        const bool isExprStr = expr->getType()->getType() == L"bar" || expr->getType()->getType() == L"note";
 
         if (isVarStr && !isExprStr)
         {

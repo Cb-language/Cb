@@ -1,12 +1,12 @@
 #include "Var.h"
 
-Var::Var(const Type& type, const std::wstring& name) : type(type), name(name)
+Var::Var(std::unique_ptr<IType> type, const std::wstring& name) : type(std::move(type)), name(name)
 {
 }
 
-Type Var::getType() const
+std::unique_ptr<IType> Var::getType() const
 {
-    return type;
+    return type->copy();
 }
 
 std::wstring Var::getName() const
@@ -16,25 +16,30 @@ std::wstring Var::getName() const
 
 bool Var::operator==(const Var& other) const
 {
-    return this->name == other.name && this->type == other.type;
+    return this->name == other.name && *(this->type) == *(other.type);
 }
 
 bool Var::operator==(const std::wstring& other) const
 {
-    return this->type == other;
+    return *type == other;
 }
 
 bool Var::isNumberable() const
 {
-    return type.isNumberable();
+    return type->isNumberable();
 }
 
 bool Var::isStringable() const
 {
-    return type.isStringable();
+    return type->isStringable();
 }
 
 bool Var::isPrimitive() const
 {
-    return type.isPrimitive();
+    return type->isPrimitive();
+}
+
+Var Var::copy() const
+{
+    return Var(type->copy(), name);
 }

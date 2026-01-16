@@ -3,15 +3,27 @@
 #include <queue>
 
 #include "AST/abstract/Statement.h"
+#include "AST/statements/ArrayDeclStmt.h"
 #include "AST/statements/AssignmentStmt.h"
 #include "AST/statements/BodyStmt.h"
+#include "AST/statements/BreakStmt.h"
+#include "AST/statements/CaseStmt.h"
+#include "AST/statements/ContinueStmt.h"
+#include "AST/statements/ForStmt.h"
 #include "AST/statements/FuncCreditStmt.h"
 #include "AST/statements/HearStmt.h"
+#include "AST/statements/IfStmt.h"
 #include "AST/statements/PlayStmt.h"
 #include "AST/statements/VarDeclStmt.h"
 #include "AST/statements/expression/UnaryOpExpr.h"
 #include "AST/statements/ReturnStmt.h"
+#include "AST/statements/SwitchStmt.h"
+#include "AST/statements/WhileStmt.h"
+#include "AST/statements/expression/ArrayIndexingExpr.h"
+#include "AST/statements/expression/ArraySlicingExpr.h"
+#include "AST/statements/expression/ConstValueExpr.h"
 #include "symbols/FuncCredit.h"
+#include "symbols/Type/ArrayType.h"
 
 class Error;
 
@@ -50,6 +62,9 @@ private:
     const Token& expectAndGet(Token::TokenType type, const Error& err);
     const Token& expectAndGet(Token::TokenType type, const std::wstring& value, const Error& err);
 
+    bool isAssignmentStmtAhead();
+    bool isUnaryOpStmtAhead();
+
 
     // General Statements
 
@@ -57,10 +72,18 @@ private:
     std::unique_ptr<AssignmentStmt> parseAssignmentStmt();
     std::unique_ptr<HearStmt> parseHearStmt();
     std::unique_ptr<PlayStmt> parsePlayStmt();
-    std::unique_ptr<BodyStmt> parseBodyStmt(const std::vector<std::pair<Var, const Token>>& args, const bool isGlobal = false);
+    std::unique_ptr<BodyStmt> parseBodyStmt(const std::vector<std::pair<Var, const Token>>& args, const bool isGlobal = false, const bool isBreakable = false, const bool isContinueAble = false, const bool hasBrace = true);
     std::unique_ptr<FuncDeclStmt> parseFuncDeclStmt();
     std::unique_ptr<ReturnStmt> parseReturnStmt();
     std::unique_ptr<FuncCreditStmt> parseFuncCreditStmt();
+    std::unique_ptr<IfStmt> parseIfStmt();
+    std::unique_ptr<ArrayDeclStmt> parseArrayDeclStmt();
+    std::unique_ptr<WhileStmt> parseWhileStmt();
+    std::unique_ptr<BreakStmt> parseBreakStmt();
+    std::unique_ptr<CaseStmt> parseCaseStmt();
+    std::unique_ptr<SwitchStmt> parseSwitchStmt();
+    std::unique_ptr<ContinueStmt> parseContinueStmt();
+    std::unique_ptr<ForStmt> parseForStmt();
 
     // Expressions
 
@@ -68,9 +91,18 @@ private:
     std::unique_ptr<Expr> parsePrimary();
     std::unique_ptr<Expr> parseBinaryOpRight(int exprPrec,  std::unique_ptr<Expr> left);
     std::unique_ptr<ConstValueExpr> parseConstValueExpr();
-    std::unique_ptr<VarCallExpr> parseVarCallExpr();
     std::unique_ptr<UnaryOpExpr> parseUnaryOpExpr(const bool isStmt = false);
-    std::unique_ptr<FuncCallExpr> parseFuncCallExpr(const bool isStmt = false);
+    std::unique_ptr<Call> parseFuncCallExpr(const bool isStmt = false);
+    std::unique_ptr<Call> parseCallExpr();
+    std::unique_ptr<Call> parseArrayAccess(std::unique_ptr<Call> call);
+    std::unique_ptr<Call> parseArraySlicingExpr(std::unique_ptr<Call> call);
+    std::unique_ptr<Call> parseArrayIndexingExpr(std::unique_ptr<Call> call);
+
+    // Types
+
+    std::unique_ptr<IType> parseIType();
+    std::unique_ptr<Type> parseType();
+    std::unique_ptr<ArrayType> parseArrayType();
 
 public:
     explicit Parser(const std::vector<Token>& tokens);

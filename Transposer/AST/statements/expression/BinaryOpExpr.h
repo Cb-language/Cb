@@ -15,7 +15,7 @@ private:
 public:
     BinaryOpExpr(Scope* scope, FuncDeclStmt* funcDecl, const std::wstring& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, const bool hasParens = false);
 
-    Type getType() const override;
+    std::unique_ptr<IType> getType() const override;
     bool isLegal() const override;
     std::string translateToCpp() const override;
 

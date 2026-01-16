@@ -5,16 +5,17 @@
 #include "AST/statements/FuncDeclStmt.h"
 
 FuncCallExpr::FuncCallExpr(Scope* scope, FuncDeclStmt* funcDecl, const std::wstring& name,std::vector<std::unique_ptr<Expr>> args, const bool isStmt)
-    : Expr(scope, funcDecl), name(name), type(Type(L"fermata")), isStmt(isStmt)
+    : Call(scope, funcDecl), name(name), type(std::make_unique<Type>(L"fermata")), isStmt(isStmt)
 {
     for (auto& arg : args)
     {
         this->args.emplace_back(std::move(arg));
     }
 }
-Type FuncCallExpr::getType() const
+
+std::unique_ptr<IType> FuncCallExpr::getType() const
 {
-    return type;
+    return type->copy();
 }
 
 bool FuncCallExpr::isLegal() const
@@ -36,7 +37,7 @@ bool FuncCallExpr::isLegal() const
 
     for (const auto& credit : funcDecl->getCredited())
     {
-        if (credit.get()->getName() == name)
+        if (credit->getName() == name)
         {
             return true;
         }
@@ -77,23 +78,21 @@ std::string FuncCallExpr::translateToCpp() const
     return oss.str();
 }
 
-void FuncCallExpr::setType(Type type)
+void FuncCallExpr::setType(std::unique_ptr<IType> type)
 {
-    this->type = type;
+    this->type = std::move(type);
 }
 
 bool FuncCallExpr::isLegalCall(const Func& func) const
 {
-    auto fArgs = func.getArgs();
-
-    if (name != func.getFuncName() || args.size() != fArgs.size())
+    if (name != func.getFuncName() || args.size() != func.getArgs().size())
     {
         return false;
     }
 
-    for (int i = 0; i < fArgs.size(); i++)
+    for (int i = 0; i < func.getArgs().size(); i++)
     {
-        if (fArgs[i].getType() != args[i]->getType())
+        if (*(func.getArgs()[i].getType()) != *(args[i]->getType()))
         {
             return false;
         }

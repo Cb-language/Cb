@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Statement.h"
-#include "../../symbols/Type.h"
 
 class Expr : public Stmt
 {
@@ -11,11 +10,11 @@ protected:
 public:
     Expr(Scope* scope, FuncDeclStmt* funcDecl);
     ~Expr() override = default;
-    virtual Type getType() const = 0;
+    virtual std::unique_ptr<IType> getType() const = 0;
     bool isLegal() const override = 0;
     std::string translateToCpp() const override = 0;
 
-    void setHasParens(const bool hasParens);
+    virtual void setHasParens(const bool hasParens);
 };
 
 inline Expr::Expr(Scope* scope, FuncDeclStmt* funcDecl) : Expr(scope, funcDecl, false)

@@ -2,19 +2,19 @@
 
 #include <sstream>
 
-HearStmt::HearStmt(Scope* scope, FuncDeclStmt* funcDecl, const std::vector<std::unique_ptr<VarCallExpr>>& vars) : Stmt(scope, funcDecl)
+HearStmt::HearStmt(Scope* scope, FuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Call>>& calls) : Stmt(scope, funcDecl)
 {
-    for (const auto& expr : vars)
+    for (auto& call : calls)
     {
-        this->vars.push_back(std::make_unique<VarCallExpr>(*expr));
+        this->calls.push_back(std::move(call));
     }
 }
 
 bool HearStmt::isLegal() const
 {
-    for (const auto& var : vars)
+    for (const auto& call : calls)
     {
-        if (!(var->getType().isPrimitive()))
+        if (call->getType()->getArrLevel() > 0 || !(call->getType()->isPrimitive()))
         {
             return false;
         }
@@ -27,7 +27,7 @@ std::string HearStmt::translateToCpp() const
 {
     std::ostringstream oss;
 
-    if (vars.empty())
+    if (calls.empty())
     {
         oss << getTabs() << "system(\"pause\");";
         return oss.str();
@@ -35,9 +35,9 @@ std::string HearStmt::translateToCpp() const
 
     oss << getTabs() << "std::cin";
 
-    for (const auto& var : vars)
+    for (const auto& call : calls)
     {
-        oss << " >> " << Utils::wstrToStr(var->getName());
+        oss << " >> " << call->translateToCpp();
     }
 
     oss << ";";

@@ -2,7 +2,7 @@
 #include <sstream>
 #include <windows.h>
 #include "token/Tokenizer.h"
-#include "FileManager.h"
+#include "files/FileManager.h"
 #include "errorHandling/Error.h"
 #include "parser/Parser.h"
 
@@ -78,6 +78,11 @@ int main(int argc, char* argv[])
 
     FileManager fileManager(inPath, outPath);
 
+    if (!fileManager.getIsOpen())
+    {
+        return -1;
+    }
+
     const std::wstring wstr = fileManager.readFile();
     Parser parser(Tokenizer::tokenize(wstr));
 
@@ -98,37 +103,55 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    fileManager.writeFile(parser.translateToCpp());
+    if (!fileManager.writeFile(parser.translateToCpp()) || !FileManager::writeArrayFiles())
+    {
+        return -1;
+    }
 
 
-    std::string exePath = fileManager.getOutputPath();
+    std::filesystem::path exePath = fileManager.getOutputPath();
 
     if (mode == COMPILE || mode == RUN)
     {
-        std::ostringstream cmd;
-        size_t pos = exePath.rfind(".cpp");
-        if (pos != std::string::npos)
+        std::ostringstream cmd;;
+        if (exePath.extension() == ".cpp")
         {
-            exePath.replace(pos, 4, ".exe");
+            exePath.replace_extension(".exe");
         }
         else
         {
             std::cerr << "Error with output path :(" << std::endl;
             return 2;
         }
-        cmd << "g++ \"" << fileManager.getOutputPath() << "\" -o \"" << exePath << "\"" << std::endl;
+
+        std::string filesStr = "";
+        const auto paths = FileManager::getAllCppFiles();
+
+        for (const auto& path : paths)
+        {
+            filesStr += " \"" + path.string() + "\" ";
+        }
+
+        cmd << "g++ -static -static-libgcc -static-libstdc++ -pthread"
+        << filesStr << "-Iincludes -o " << exePath << std::endl;
 
         Utils::logMsg("Compiling...");
 
-        std::system(cmd.str().c_str());
+        if (std::system(cmd.str().c_str()) != 0)
+        {
+            std::cerr << "Error with g++ : command: " << cmd.str() << std::endl;
+            return -3;
+        }
     }
 
     if (mode == RUN)
     {
+        std::ostringstream cmd;
         Utils::logMsg("Running...");
-        exePath = R"(start cmd /k ")" + exePath + "\"";
 
-        std::system(exePath.c_str());
+        cmd << "start \"\" cmd /c \"" << exePath << " & pause\"";
+
+        std::system(cmd.str().c_str());
     }
 
     return 0;

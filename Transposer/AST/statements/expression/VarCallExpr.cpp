@@ -1,10 +1,6 @@
 #include "VarCallExpr.h"
 
-VarCallExpr::VarCallExpr(Scope* scope, FuncDeclStmt* funcDecl, const Var& var) : Expr(scope, funcDecl), var(var)
-{
-}
-
-VarCallExpr::VarCallExpr(const VarCallExpr& other) : Expr(other.scope, other.funcDecl), var(other.var)
+VarCallExpr::VarCallExpr(Scope* scope, FuncDeclStmt* funcDecl, const Var& var) : Call(scope, funcDecl), var(var.copy())
 {
 }
 
@@ -18,9 +14,9 @@ std::string VarCallExpr::translateToCpp() const
     return Utils::wstrToStr(var.getName());
 }
 
-Type VarCallExpr::getType() const
+std::unique_ptr<IType> VarCallExpr::getType() const
 {
-    return var.getType();
+    return var.getType()->copy();
 }
 
 std::wstring VarCallExpr::getName() const

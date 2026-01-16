@@ -1,7 +1,7 @@
 #include "UnaryOpExpr.h"
 
-UnaryOpExpr::UnaryOpExpr(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<VarCallExpr> var, const UnaryOp op, const bool isStmt)
-: Expr(scope, funcDecl), var(std::move(var)), op(op), isStmt(isStmt)
+UnaryOpExpr::UnaryOpExpr(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, const UnaryOp op, const bool isStmt)
+: Expr(scope, funcDecl), call(std::move(call)), op(op), isStmt(isStmt)
 {
     if (!isStmt && op == UnaryOp::Zero)
     {
@@ -13,19 +13,19 @@ bool UnaryOpExpr::isLegal() const
 {
     if (op == UnaryOp::Not)
     {
-        return var->getType() == L"mute";
+        return *(call->getType()) == L"mute";
     }
 
-    return var->getType().isPrimitive();
+    return call->getType()->getArrLevel() == 0 && call->getType()->isPrimitive();
 }
 
 std::string UnaryOpExpr::translateToCpp() const
 {
-    std::string ret = getTabs() + Utils::wstrToStr(var->getName());
+    std::string ret = getTabs() + call->translateToCpp();
     switch (op)
     {
     case UnaryOp::Zero:
-        if (var->getType().getType() == L"bar")
+        if (call->getType()->getType() == L"bar")
         {
             ret += " = \"\"";
         }
@@ -56,7 +56,7 @@ std::string UnaryOpExpr::translateToCpp() const
     return ret;
 }
 
-Type UnaryOpExpr::getType() const
+std::unique_ptr<IType> UnaryOpExpr::getType() const
 {
-    return var->getType();
+    return call->getType()->copy();
 }

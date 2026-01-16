@@ -28,3 +28,13 @@ void Utils::reset()
 {
     symTable = nullptr;
 }
+
+std::string Utils::removeFirstTabs(std::string& str)
+{
+    if (!str.starts_with("\t"))
+    {
+        return str;
+    }
+    str.erase(0, 1);
+    return removeFirstTabs(str);
+}

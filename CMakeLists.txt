@@ -15,8 +15,8 @@ set(CMAKE_CXX_STANDARD 20)
 include_directories(Transposer)
 
 add_executable(Transposer
-        Transposer/FileManager.cpp
-        Transposer/FileManager.h
+        Transposer/files/FileManager.cpp
+        Transposer/files/FileManager.h
         Transposer/Source.cpp
         Transposer/token/Token.cpp
         Transposer/token/Token.h
@@ -57,8 +57,8 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.h
         Transposer/parser/parser.cpp
         Transposer/parser/parser.h
-        Transposer/Symbols/Type.cpp
-        Transposer/Symbols/Type.h
+        Transposer/symbols/Type/Type.cpp
+        Transposer/symbols/Type/Type.h
         Transposer/AST/abstract/Expression.h
         Transposer/AST/statements/expression/ConstValueExpr.cpp
         Transposer/AST/statements/expression/ConstValueExpr.h
@@ -114,6 +114,34 @@ add_executable(Transposer
         Transposer/AST/statements/FuncCreditStmt.h
         Transposer/AST/statements/expression/FuncCallExpr.cpp
         Transposer/AST/statements/expression/FuncCallExpr.h
+        Transposer/files/ArrayHelper.cpp
+        Transposer/files/ArrayHelper.h
+        Transposer/symbols/Type/IType.h
+        Transposer/AST/statements/IfStmt.cpp
+        Transposer/AST/statements/IfStmt.h
+        Transposer/errorHandling/syntaxErrors/ElseWithoutIf.cpp
+        Transposer/errorHandling/syntaxErrors/ElseWithoutIf.h
+        Transposer/AST/statements/ArrayDeclStmt.cpp
+        Transposer/AST/statements/ArrayDeclStmt.h
+        Transposer/symbols/Type/ArrayType.cpp
+        Transposer/symbols/Type/ArrayType.h
+        Transposer/AST/statements/WhileStmt.cpp
+        Transposer/AST/statements/WhileStmt.h
+        Transposer/AST/statements/BreakStmt.cpp
+        Transposer/AST/statements/BreakStmt.h
+        Transposer/AST/statements/expression/ArraySlicingExpr.cpp
+        Transposer/AST/statements/expression/ArraySlicingExpr.h
+        Transposer/AST/statements/expression/ArrayIndexingExpr.cpp
+        Transposer/AST/statements/expression/ArrayIndexingExpr.h
+        Transposer/AST/abstract/Call.h
+        Transposer/AST/statements/SwitchStmt.cpp
+        Transposer/AST/statements/SwitchStmt.h
+        Transposer/AST/statements/CaseStmt.cpp
+        Transposer/AST/statements/CaseStmt.h
+        Transposer/AST/statements/ContinueStmt.cpp
+        Transposer/AST/statements/ContinueStmt.h
+        Transposer/AST/statements/ForStmt.cpp
+        Transposer/AST/statements/ForStmt.h
 )
 
 # In order to call the exe from the cmd

@@ -17,11 +17,11 @@ private:
     bool hasReturned;
 
 public:
-    FuncDeclStmt(Scope* scope, const std::wstring &funcName, const Type &returnType, const std::vector<Var> &args, std::vector<std::unique_ptr<FuncCreditStmt>>& credited);
+    FuncDeclStmt(Scope* scope, const std::wstring &funcName, std::unique_ptr<IType> returnType, const std::vector<Var> &args, std::vector<std::unique_ptr<FuncCreditStmt>>& credited);
 
     const std::vector<Var>& getArgs() const;
     std::wstring getName() const;
-    Type getReturnType() const;
+    std::unique_ptr<IType> getReturnType() const;
     const Func& getFunc() const;
 
     // is called after the ctor
