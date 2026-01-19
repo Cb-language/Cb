@@ -26,6 +26,7 @@
 #include "other/SymbolTable.h"
 #include "symbols/FuncCredit.h"
 #include "symbols/Type/ArrayType.h"
+#include "AST/statements/IncludeStmt.h"
 
 class Error;
 

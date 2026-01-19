@@ -4,6 +4,7 @@
 #include <ranges>
 #include <sstream>
 #include <vector>
+#include <filesystem>
 
 // ---------- AST related ----------
 #include "AST/statements/FuncDeclStmt.h"
@@ -22,6 +23,7 @@
 #include "../errorHandling/syntaxErrors/MissingIdentifier.h"
 #include "../errorHandling/syntaxErrors/MissingParenthesis.h"
 #include "../errorHandling/syntaxErrors/IncludeNotInTop.h"
+#include "../errorHandling/syntaxErrors/ExpectedAPath.h"
 
 // ---------- semantic errors ----------
 #include "../errorHandling/semanticErrors/IdentifierTaken.h"
@@ -32,6 +34,7 @@
 #include "../errorHandling/semanticErrors/UnrecognizedIdentifier.h"
 #include "../errorHandling/semanticErrors/IllegalCredit.h"
 #include "../errorHandling/semanticErrors/IllegalCall.h"
+#include "../errorHandling/semanticErrors/InvalidPathExtension.h"
 
 // ---------- entry point errors ----------
 #include "../errorHandling/entryPointErrors/InvalidMainReturnType.h"
@@ -447,6 +450,25 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
     }
 
     std::vector<std::unique_ptr<Stmt>> bodyStmts;
+
+    // parse includes
+    if (isGlobal)
+    {
+        while (match(Token::KEYWORD, L"feat"))
+        {
+            advance();
+            Token pathToken = expectAndGet(Token::CONST_STR, ExpectedAPath(current()));
+            std::filesystem::path path = pathToken.value;
+            expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+
+            if (path.extension() != "cb" && path.extension() != ".stem")
+            {
+                throw InvalidPathExtension(current());
+            }
+
+            bodyStmts.push_back(std::make_unique<IncludeStmt>(pathToken, symTable.getCurrScope(), symTable.getCurrFunc(), path));
+        }
+    }
 
     // Loop until closing brace
     while (!isAtEnd() && !match(Token::PUNCTUATION, L"☉")) // if global, until EOF, otherwise, until ☉
