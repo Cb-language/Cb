@@ -21,6 +21,7 @@
 #include "../errorHandling/syntaxErrors/StmtInsideSwitchThatIsNotCase.h"
 #include "../errorHandling/syntaxErrors/MissingIdentifier.h"
 #include "../errorHandling/syntaxErrors/MissingParenthesis.h"
+#include "../errorHandling/syntaxErrors/IncludeNotInTop.h"
 
 // ---------- semantic errors ----------
 #include "../errorHandling/semanticErrors/IdentifierTaken.h"
@@ -526,6 +527,10 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
         {
             advance();
+        }
+        else if (match(Token::KEYWORD, L"feat"))
+        {
+            throw IncludeNotInTop(current());
         }
         else
         {
