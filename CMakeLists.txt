@@ -164,6 +164,10 @@ add_executable(Transposer
         Transposer/AST/statements/IncludeStmt.h
         Transposer/errorHandling/syntaxErrors/IncludeNotInTop.cpp
         Transposer/errorHandling/syntaxErrors/IncludeNotInTop.h
+        Transposer/errorHandling/semanticErrors/InvalidPathExtension.cpp
+        Transposer/errorHandling/semanticErrors/InvalidPathExtension.h
+        Transposer/errorHandling/syntaxErrors/ExpectedAPath.cpp
+        Transposer/errorHandling/syntaxErrors/ExpectedAPath.h
 )
 
 # In order to call the exe from the cmd
