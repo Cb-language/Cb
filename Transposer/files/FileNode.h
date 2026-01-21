@@ -7,6 +7,7 @@
 class FileNode
 {
 private:
+    friend class FileGraph;
     File file;
 
     std::set<FileNode*> children;
@@ -30,7 +31,6 @@ private:
 
     static void deleteNode(FileNode* node);
 
-public:
     static FileNode* build(const std::filesystem::path& path);
 
     void start();
