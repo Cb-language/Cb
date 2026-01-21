@@ -168,6 +168,8 @@ add_executable(Transposer
         Transposer/errorHandling/semanticErrors/InvalidPathExtension.h
         Transposer/errorHandling/syntaxErrors/ExpectedAPath.cpp
         Transposer/errorHandling/syntaxErrors/ExpectedAPath.h
+        Transposer/files/File.cpp
+        Transposer/files/File.h
 )
 
 # In order to call the exe from the cmd
