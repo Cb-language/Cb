@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
     }
 
     const std::wstring wstr = fileManager.readFile();
-    Parser parser(Tokenizer::tokenize(wstr));
+    Parser parser(Tokenizer::tokenize(wstr, inPath));
 
     try
     {

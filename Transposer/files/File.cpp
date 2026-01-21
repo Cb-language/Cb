@@ -57,7 +57,7 @@ void File::write() const
 
     if(!file || !file.is_open())
     {
-        throw Error(Token(Token::COMMENT_SINGLE, inPath.wstring(),0,0),
+        throw Error(Token(Token::COMMENT_SINGLE, inPath.wstring(),0,0, inPath),
             "Unexpected Error: couldn't open file: \"" + inPath.string() + "\"");
     }
     file << parser.translateToCpp();
@@ -71,7 +71,7 @@ std::vector<Token> File::tokenize() const
 
     if(!file || !file.is_open())
     {
-        throw Error(Token(Token::COMMENT_SINGLE, inPath.wstring(),0,0),
+        throw Error(Token(Token::COMMENT_SINGLE, inPath.wstring(),0,0, inPath),
             "Unexpected Error: couldn't open file: \"" + inPath.string() + "\"");
     }
     file.imbue(std::locale(file.getloc(), new std::codecvt_utf8<wchar_t>));
@@ -84,7 +84,7 @@ std::vector<Token> File::tokenize() const
 
     file.close();
 
-    return Tokenizer::tokenize(data);
+    return Tokenizer::tokenize(data, inPath);
 }
 
 void File::setMainPath(const std::filesystem::path& mainPath)

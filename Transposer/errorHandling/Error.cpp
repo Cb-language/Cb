@@ -5,6 +5,7 @@
 Error::Error(const Token &token, const std::string& errorMessage) : token(token), errorMessage(std::move(errorMessage))
 {
     fullMessage = (this->errorMessage +
+                   " in file: \"" + token.path.string() + "\"" +
                    " at line: " + std::to_string(token.line) +
                    " at column: " + std::to_string(token.column) +
                    " near token: " + Utils::wstrToStr(token.value) + "\n");
