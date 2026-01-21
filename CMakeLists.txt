@@ -172,6 +172,8 @@ add_executable(Transposer
         Transposer/files/File.h
         Transposer/files/FileNode.cpp
         Transposer/files/FileNode.h
+        Transposer/files/FileGraph.cpp
+        Transposer/files/FileGraph.h
 )
 
 # In order to call the exe from the cmd
