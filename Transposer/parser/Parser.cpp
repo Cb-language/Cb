@@ -75,7 +75,6 @@ const std::vector<std::pair<std::filesystem::path, Token>>& Parser::readIncludes
             }
 
             paths.emplace_back(path, pathToken);
-            res.push_back(path);
         }
     }
 
@@ -149,11 +148,6 @@ std::string Parser::translateToCpp() const
     }
 
     return oss.str();
-}
-
-std::vector<std::filesystem::path> Parser::getIncludes() const
-{
-    return paths;
 }
 
 const Token& Parser::current() const
@@ -483,7 +477,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
     {
         for (const auto& p : paths)
         {
-            bodyStmts.push_back(std::make_unique<IncludeStmt>())
+            bodyStmts.push_back(std::make_unique<IncludeStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), p.first));
         }
     }
 
