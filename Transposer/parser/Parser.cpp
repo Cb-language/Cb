@@ -56,7 +56,29 @@ Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.si
 }
 
 Parser::~Parser()
+= default;
+
+const std::vector<std::pair<std::filesystem::path, Token>>& Parser::readIncludes()
 {
+    if (paths.empty() && pos == 0)
+    {
+        while (match(Token::KEYWORD, L"feat"))
+        {
+            advance();
+            Token pathToken = expectAndGet(Token::CONST_STR, ExpectedAPath(current()));
+            std::filesystem::path path = pathToken.value;
+            expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+
+            if (path.extension() != "cb" && path.extension() != ".stem")
+            {
+                throw InvalidPathExtension(current());
+            }
+
+            paths.emplace_back(path, pathToken);
+        }
+    }
+
+    return paths;
 }
 
 void Parser::parse()
@@ -451,22 +473,11 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
 
     std::vector<std::unique_ptr<Stmt>> bodyStmts;
 
-    // parse includes
     if (isGlobal)
     {
-        while (match(Token::KEYWORD, L"feat"))
+        for (const auto& p : paths)
         {
-            advance();
-            Token pathToken = expectAndGet(Token::CONST_STR, ExpectedAPath(current()));
-            std::filesystem::path path = pathToken.value;
-            expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
-
-            if (path.extension() != "cb" && path.extension() != ".stem")
-            {
-                throw InvalidPathExtension(current());
-            }
-
-            bodyStmts.push_back(std::make_unique<IncludeStmt>(pathToken, symTable.getCurrScope(), symTable.getCurrFunc(), path));
+            bodyStmts.push_back(std::make_unique<IncludeStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), p.first));
         }
     }
 

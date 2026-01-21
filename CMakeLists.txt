@@ -170,6 +170,8 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/ExpectedAPath.h
         Transposer/files/File.cpp
         Transposer/files/File.h
+        Transposer/files/FileNode.cpp
+        Transposer/files/FileNode.h
 )
 
 # In order to call the exe from the cmd

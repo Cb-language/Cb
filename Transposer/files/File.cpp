@@ -22,6 +22,13 @@ const std::filesystem::path& File::getOutPath() const
     return outPath;
 }
 
+const std::vector<std::pair<std::filesystem::path, Token>>& File::getIncludes()
+{
+    if (readIncludes) return {};
+    readIncludes = true;
+    return parser.readIncludes();
+}
+
 void File::parse()
 {
     if (parsed) return;
