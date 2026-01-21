@@ -19,6 +19,7 @@ private:
 
     static bool first;
 
+    FileNode(const std::filesystem::path& inPath, const std::filesystem::path& outPath);
     explicit FileNode(const std::filesystem::path& path);
 
     void readAndAddChildren();
@@ -31,6 +32,8 @@ private:
 
 public:
     static FileNode* build(const std::filesystem::path& path);
+
+    void start();
 
     static void clear(FileNode* main);
 };
