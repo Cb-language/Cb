@@ -22,6 +22,35 @@ const std::filesystem::path& File::getOutPath() const
     return outPath;
 }
 
+void File::parse()
+{
+    if (parsed) return;
+    parsed = true;
+    parser.parse();
+}
+
+void File::analyze()
+{
+    if (analyzed) return;
+    if (!parsed) parse();
+    analyzed = true;
+    parser.analyze();
+}
+
+void File::write() const
+{
+    std::ofstream file(outPath, std::ios::out);
+
+    if(!file || !file.is_open())
+    {
+        throw Error(Token(Token::COMMENT_SINGLE, inPath.wstring(),0,0),
+            "Unexpected Error: couldn't open file: \"" + inPath.string() + "\"");
+    }
+    file << parser.translateToCpp();
+
+    file.close();
+}
+
 std::vector<Token> File::tokenize() const
 {
     std::wifstream file(inPath, std::ios::binary);
@@ -36,8 +65,12 @@ std::vector<Token> File::tokenize() const
     file.clear();
     file.seekg(0);
 
-    return Tokenizer::tokenize(std::wstring((std::istreambuf_iterator<wchar_t>(file)),
-                             std::istreambuf_iterator<wchar_t>()));
+    const std::wstring data = std::wstring((std::istreambuf_iterator<wchar_t>(file)),
+                             std::istreambuf_iterator<wchar_t>());
+
+    file.close();
+
+    return Tokenizer::tokenize(data);
 }
 
 void File::setMainPath(const std::filesystem::path& mainPath)
