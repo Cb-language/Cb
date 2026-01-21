@@ -18,10 +18,8 @@ private:
         std::unique_ptr<FileNode>
     > nodes;
 
-    static bool first;
-
-    FileNode(const std::filesystem::path& inPath, const std::filesystem::path& outPath);
-    explicit FileNode(const std::filesystem::path& path);
+    FileNode(const std::filesystem::path& inFilename, const std::filesystem::path& outFilename);
+    explicit FileNode(const std::filesystem::path& filename);
 
     void readAndAddChildren();
 

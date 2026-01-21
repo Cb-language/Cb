@@ -6,9 +6,14 @@
 #include "token/Tokenizer.h"
 
 std::filesystem::path File::mainPath = "C\\:";
+std::filesystem::path File::outDir = "C\\:";
 
-File::File(const std::wstring& inPath, const std::wstring& outPath)
-    : inPath(mainPath / inPath), outPath(mainPath / outPath), parser(Parser(tokenize()))
+File::File(const std::wstring& inFilename, const std::wstring& outFilename)
+    : inPath(mainPath / inFilename), outPath(outDir / outFilename), parser(Parser(tokenize()))
+{
+}
+
+File::File(const std::filesystem::path& path) : File(path, std::filesystem::path(path).replace_extension("cpp"))
 {
 }
 
@@ -24,9 +29,11 @@ const std::filesystem::path& File::getOutPath() const
 
 const std::vector<std::pair<std::filesystem::path, Token>>& File::getIncludes()
 {
-    if (readIncludes) return {};
+    if (readIncludes) return includes;
     readIncludes = true;
-    return parser.readIncludes();
+
+    includes = std::vector(parser.readIncludes());
+    return includes;
 }
 
 void File::parse()
@@ -83,4 +90,19 @@ std::vector<Token> File::tokenize() const
 void File::setMainPath(const std::filesystem::path& mainPath)
 {
     File::mainPath = mainPath;
+}
+
+const std::filesystem::path& File::getMainPath()
+{
+    return mainPath;
+}
+
+void File::setOutDir(const std::filesystem::path& outDir)
+{
+    File::outDir = outDir;
+}
+
+const std::filesystem::path& File::getOutDir()
+{
+    return outDir;
 }

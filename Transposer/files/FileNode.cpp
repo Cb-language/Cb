@@ -6,15 +6,14 @@ std::unordered_map<
         std::filesystem::path,
         std::unique_ptr<FileNode>
     > FileNode::nodes;
-bool FileNode::first = true;
 
-FileNode::FileNode(const std::filesystem::path& inPath, const std::filesystem::path& outPath)
-    : file(File(inPath,outPath))
+FileNode::FileNode(const std::filesystem::path& inPath, const std::filesystem::path& outFilename)
+    : file(File(inPath,outFilename))
 {
 }
 
-FileNode::FileNode(const std::filesystem::path& path)
-    : file(File(path, path))
+FileNode::FileNode(const std::filesystem::path& filename)
+    : file(File(filename))
 {
 }
 
@@ -75,12 +74,6 @@ FileNode* FileNode::getNode(const std::filesystem::path& path)
 
 FileNode* FileNode::build(const std::filesystem::path& path)
 {
-    if (first)
-    {
-        File::setMainPath(path.parent_path());
-        first = false;
-    }
-
     // Get or create the node for this path
     FileNode* node = getNode(path);
 

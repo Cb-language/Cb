@@ -8,7 +8,7 @@ FileGraph& FileGraph::Instance()
 
 FileNode* FileGraph::GetMain() const
 {
-    return FileGraph::Instance().main;
+    return main;
 }
 
 void FileGraph::reset()
@@ -20,9 +20,11 @@ void FileGraph::reset()
     }
 }
 
-void FileGraph::build(const std::filesystem::path& main)
+void FileGraph::build(const std::filesystem::path& main, const std::filesystem::path& outDir)
 {
-    this->main = FileNode::build(main);
+    File::setMainPath(main);
+    File::setOutDir(outDir);
+    this->main = FileNode::build(main.filename());
 }
 
 void FileGraph::start() const

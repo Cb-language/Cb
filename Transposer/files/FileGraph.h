@@ -15,7 +15,7 @@ public:
     FileNode* GetMain() const;
 
     void reset();
-    void build(const std::filesystem::path& main);
+    void build(const std::filesystem::path& main, const std::filesystem::path& outDir);
     void start() const;
 
 private:
