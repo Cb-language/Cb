@@ -128,6 +128,11 @@ std::string Parser::translateToCpp() const
     return oss.str();
 }
 
+std::vector<std::filesystem::path> Parser::getIncludes() const
+{
+    return paths;
+}
+
 const Token& Parser::current() const
 {
     return tokens[pos];
@@ -466,6 +471,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
                 throw InvalidPathExtension(current());
             }
 
+            paths.push_back(path);
             bodyStmts.push_back(std::make_unique<IncludeStmt>(pathToken, symTable.getCurrScope(), symTable.getCurrFunc(), path));
         }
     }
