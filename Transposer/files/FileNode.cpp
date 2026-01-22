@@ -1,5 +1,7 @@
 #include "FileNode.h"
 
+#include <ranges>
+
 #include "errorHandling/Error.h"
 
 std::unordered_map<
@@ -72,10 +74,54 @@ FileNode* FileNode::getNode(const std::filesystem::path& path)
     return raw;
 }
 
+FileNode* FileNode::getNode(const std::filesystem::path& inPath, const std::filesystem::path& outPath)
+{
+    const std::filesystem::path canonicalIn =
+        std::filesystem::weakly_canonical(inPath);
+    const std::filesystem::path canonicalOut =
+        std::filesystem::weakly_canonical(outPath);
+
+    auto it = nodes.find(canonicalIn);
+    if (it != nodes.end())
+    {
+        return it->second.get();
+    }
+
+    auto node = std::unique_ptr<FileNode>(new FileNode(canonicalIn, canonicalOut));
+    FileNode* raw = node.get();
+
+    nodes.emplace(canonicalIn, std::move(node));
+    return raw;
+}
+
 FileNode* FileNode::build(const std::filesystem::path& path)
 {
     // Get or create the node for this path
     FileNode* node = getNode(path);
+
+    // If the node already has children, we have already built its subtree
+    // This prevents infinite recursion on circular includes (though canAdd already prevents them)
+    if (!node->children.empty())
+    {
+        return node;
+    }
+
+    // Read the file and recursively add children
+    node->readAndAddChildren();
+
+    // Recursively build the include graph for each child
+    for (const FileNode* child : node->children)
+    {
+        build(child->file.getInPath());
+    }
+
+    return node;
+}
+
+FileNode* FileNode::build(const std::filesystem::path& inPath, const std::filesystem::path& outPath)
+{
+    // Get or create the node for this path
+    FileNode* node = getNode(inPath, outPath);
 
     // If the node already has children, we have already built its subtree
     // This prevents infinite recursion on circular includes (though canAdd already prevents them)
@@ -102,6 +148,11 @@ void FileNode::start()
 
     file.parse();
     file.analyze();
+}
+
+void FileNode::write() const
+{
+    for (auto& child : children) child->write();
     file.write();
 }
 
@@ -111,6 +162,17 @@ void FileNode::clear(FileNode* main)
     deleteNode(main);
 
     nodes.clear();
+}
+
+std::vector<std::filesystem::path> FileNode::getAllCppPath()
+{
+    std::vector<std::filesystem::path> v;
+    for (const auto& node : nodes | std::views::values)
+    {
+        v.emplace_back(node->file.getOutPath());
+    }
+
+    return v;
 }
 
 void FileNode::deleteNode(FileNode* node)

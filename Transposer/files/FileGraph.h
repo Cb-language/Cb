@@ -17,6 +17,9 @@ public:
     void reset();
     void build(const std::filesystem::path& main, const std::filesystem::path& outDir);
     void start() const;
+    void write() const;
+    static std::vector<std::filesystem::path> getAllCppPaths();
+
 
 private:
     ~FileGraph();

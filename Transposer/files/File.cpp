@@ -89,7 +89,7 @@ std::vector<Token> File::tokenize() const
 
 void File::setMainPath(const std::filesystem::path& mainPath)
 {
-    File::mainPath = mainPath;
+    File::mainPath = mainPath.parent_path();
 }
 
 const std::filesystem::path& File::getMainPath()
@@ -99,7 +99,7 @@ const std::filesystem::path& File::getMainPath()
 
 void File::setOutDir(const std::filesystem::path& outDir)
 {
-    File::outDir = outDir;
+    File::outDir = outDir.parent_path();
 }
 
 const std::filesystem::path& File::getOutDir()

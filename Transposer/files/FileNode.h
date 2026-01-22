@@ -26,12 +26,18 @@ private:
     bool canAdd(const std::filesystem::path& path) const;
 
     static FileNode* getNode(const std::filesystem::path& path);
+    static FileNode* getNode(const std::filesystem::path& inPath, const std::filesystem::path& outPath);
 
     static void deleteNode(FileNode* node);
 
     static FileNode* build(const std::filesystem::path& path);
+    static FileNode* build(const std::filesystem::path& inPath, const std::filesystem::path& outPath);
 
     void start();
 
+    void write() const;
+
     static void clear(FileNode* main);
+
+    static std::vector<std::filesystem::path> getAllCppPath();
 };
