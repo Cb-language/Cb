@@ -25,29 +25,48 @@ void FileNode::readAndAddChildren()
 
     for (const auto& p : res)
     {
-        const auto path = p.first;
-        const Token t = p.second;
-        if (!std::filesystem::exists(File::getMainPath() / path))
+        const std::filesystem::path fullPath =
+            std::filesystem::weakly_canonical(
+                File::getMainPath() / p.first
+            );
+
+        const Token& t = p.second;
+
+        if (!std::filesystem::exists(fullPath))
         {
-            throw Error(t, "\"" + path.string() + "\" doesn't exists");
+            throw Error(
+                t,
+                "Include file not found: \"" + fullPath.string() + "\""
+            );
         }
-        if (!canAdd(path))
+
+        if (!canAdd(fullPath))
         {
-            throw Error(t, "Creating circular include: \"" + file.getInPath().string() + "\" -> \"" + path.string() + "\"");
+            throw Error(
+                t,
+                "Creating circular include: \"" +
+                file.getInPath().string() +
+                "\" -> \"" +
+                fullPath.string() +
+                "\""
+            );
         }
-        FileNode* f = getNode(path);
+
+        FileNode* f = getNode(fullPath);
 
         children.emplace(f);
         f->parents.emplace(this);
     }
 }
 
+
 bool FileNode::canAdd(const std::filesystem::path& path) const
 {
     if (file.getInPath() == path) return false;
-    for (const auto& p : parents)
+
+    for (const FileNode* p : parents)
     {
-        if (p->file.getInPath() == path || !(p->canAdd(path)))
+        if (!p->canAdd(path))
         {
             return false;
         }
@@ -55,6 +74,7 @@ bool FileNode::canAdd(const std::filesystem::path& path) const
 
     return true;
 }
+
 
 FileNode* FileNode::getNode(const std::filesystem::path& path)
 {

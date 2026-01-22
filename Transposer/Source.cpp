@@ -84,8 +84,6 @@ int main(int argc, char* argv[])
         Utils::logMsg("Translating...");
         graph.build(inPath, outPath);
         graph.start();
-
-        std::cout << File::getMainPath() << std::endl;
     }
     catch (const Error& err)
     {

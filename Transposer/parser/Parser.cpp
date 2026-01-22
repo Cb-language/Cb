@@ -77,7 +77,6 @@ const std::vector<std::pair<std::filesystem::path, Token>>& Parser::readIncludes
 
             if (path.extension() != ".cb")
             {
-                Utils::logMsg(path.extension().string());
                 throw InvalidPathExtension(current());
             }
 
