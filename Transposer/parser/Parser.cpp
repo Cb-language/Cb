@@ -202,6 +202,7 @@ bool Parser::match(const Token::TokenType type) const
 
 bool Parser::match(const Token::TokenType type, const std::wstring& value) const
 {
+    if (isAtEnd()) throw UnexpectedEOF(tokens[len-1]);
     const Token t = current();
 
     return t.type == type && t.value == value;
