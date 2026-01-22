@@ -5,6 +5,7 @@
 #include <sstream>
 #include <vector>
 #include <filesystem>
+#include <algorithm>
 
 // ---------- AST related ----------
 #include "AST/statements/FuncDeclStmt.h"
@@ -66,11 +67,17 @@ const std::vector<std::pair<std::filesystem::path, Token>>& Parser::readIncludes
         {
             advance();
             Token pathToken = expectAndGet(Token::CONST_STR, ExpectedAPath(current()));
-            std::filesystem::path path = pathToken.value;
+            std::wstring wstr = pathToken.value;
+            wstr.erase(
+                std::remove(wstr.begin(), wstr.end(), L'"'),
+                wstr.end()
+            );
+            std::filesystem::path path = wstr;
             expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-            if (path.extension() != "cb" && path.extension() != ".stem")
+            if (path.extension() != ".cb")
             {
+                Utils::logMsg(path.extension().string());
                 throw InvalidPathExtension(current());
             }
 

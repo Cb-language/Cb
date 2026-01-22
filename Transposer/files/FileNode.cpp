@@ -27,7 +27,7 @@ void FileNode::readAndAddChildren()
     {
         const auto path = p.first;
         const Token t = p.second;
-        if (!std::filesystem::exists(path))
+        if (!std::filesystem::exists(File::getMainPath() / path))
         {
             throw Error(t, "\"" + path.string() + "\" doesn't exists");
         }
