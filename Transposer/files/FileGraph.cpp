@@ -57,7 +57,7 @@ std::filesystem::path FileGraph::getOutPath(const std::filesystem::path& inPath)
     {
         if (normalize(path) == normalize(File::getMainPath() / inPath))
         {
-            return node->file.outPath;
+            return node->file.outPathH;
         }
     }
 

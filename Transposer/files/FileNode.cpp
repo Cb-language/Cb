@@ -189,7 +189,7 @@ std::vector<std::filesystem::path> FileNode::getAllCppPath()
     std::vector<std::filesystem::path> v;
     for (const auto& node : nodes | std::views::values)
     {
-        v.emplace_back(node->file.getOutPath());
+        v.emplace_back(node->file.outPathCpp);
     }
 
     return v;

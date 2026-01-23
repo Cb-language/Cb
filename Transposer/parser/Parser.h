@@ -114,6 +114,7 @@ public:
     const std::vector<std::pair<std::filesystem::path, Token>>& readIncludes();
     void parse();
     void analyze();
-    std::string translateToCpp() const;
+    std::string translateToCpp(const std::filesystem::path& hPath) const;
+    std::string translateToH() const;
 };
 

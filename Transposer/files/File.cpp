@@ -9,11 +9,12 @@ std::filesystem::path File::mainPath = "C\\:";
 std::filesystem::path File::outDir = "C\\:";
 
 File::File(const std::wstring& inFilename, const std::wstring& outFilename)
-    : inPath(mainPath / inFilename), outPath(outDir / outFilename), parser(Parser(tokenize()))
+    : inPath(mainPath / inFilename), outPathH((outDir / outFilename).replace_extension("h")),
+    outPathCpp((outDir / outFilename).replace_extension("cpp")), parser(Parser(tokenize()))
 {
 }
 
-File::File(const std::filesystem::path& path) : File(path, std::filesystem::path(path).replace_extension("cpp"))
+File::File(const std::filesystem::path& path) : File(path, std::filesystem::path(path))
 {
 }
 
@@ -22,9 +23,14 @@ const std::filesystem::path& File::getInPath() const
     return inPath;
 }
 
-const std::filesystem::path& File::getOutPath() const
+const std::filesystem::path& File::getOutHPath() const
 {
-    return outPath;
+    return outPathH;
+}
+
+const std::filesystem::path& File::getOutCppPath() const
+{
+    return outPathCpp;
 }
 
 const std::vector<std::pair<std::filesystem::path, Token>>& File::getIncludes()
@@ -53,16 +59,27 @@ void File::analyze()
 
 void File::write() const
 {
-    std::ofstream file(outPath, std::ios::out);
+    std::ofstream fileH(outPathH, std::ios::out);
 
-    if(!file || !file.is_open())
+    if(!fileH || !fileH.is_open())
     {
-        throw Error(Token(Token::COMMENT_SINGLE, inPath.wstring(),0,0, inPath),
-            "Unexpected Error: couldn't open file: \"" + inPath.string() + "\"");
+        throw Error(Token(Token::UNDEFINED_TOKEN, inPath.wstring(),0,0, outPathH),
+            "Unexpected Error: couldn't open file: \"" + outPathH.string() + "\"");
     }
-    file << parser.translateToCpp();
+    fileH << parser.translateToH();
 
-    file.close();
+    fileH.close();
+
+    std::ofstream fileCpp(outPathCpp, std::ios::out);
+
+    if(!fileCpp || !fileCpp.is_open())
+    {
+        throw Error(Token(Token::UNDEFINED_TOKEN, inPath.wstring(),0,0, outPathCpp),
+            "Unexpected Error: couldn't open file: \"" + outPathCpp.string() + "\"");
+    }
+    fileCpp << parser.translateToCpp(outPathH);
+
+    fileCpp.close();
 }
 
 std::vector<Token> File::tokenize() const

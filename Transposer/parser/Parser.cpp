@@ -136,23 +136,30 @@ void Parser::analyze()
     }
 }
 
-std::string Parser::translateToCpp() const
+std::string Parser::translateToCpp(const std::filesystem::path& hPath) const
 {
     std::ostringstream oss;
-    oss << "#include <iostream>" << std::endl;
     oss << "#include <string>" << std::endl;
-    oss << "#include \"" << File::getOutDir().string() << R"(\includes\Array.h")" << std::endl;
-
-    const std::string headers = symTable.getFuncsHeaders();
-
-    if (!headers.empty())
-    {
-        oss << std::endl << headers;
-    }
+    oss << "#include \"" << hPath.string() << "\"" << std::endl;
 
     for (const auto& stmt : stmts)
     {
         oss << std::endl << stmt->translateToCpp();
+    }
+
+    return oss.str();
+}
+
+std::string Parser::translateToH() const
+{
+    std::ostringstream oss;
+    oss << "#pragma once" << std::endl;
+    oss << "#include <iostream>" << std::endl;
+
+    const std::string headers = symTable.getFuncsHeaders();
+    if (!headers.empty())
+    {
+        oss << std::endl << headers;
     }
 
     return oss.str();

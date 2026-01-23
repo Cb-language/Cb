@@ -10,7 +10,8 @@ private:
     friend class FileGraph;
 
     const std::filesystem::path inPath;
-    const std::filesystem::path outPath;
+    const std::filesystem::path outPathH;
+    const std::filesystem::path outPathCpp;
     Parser parser;
 
     std::vector<std::pair<std::filesystem::path, Token>> includes;
@@ -26,7 +27,8 @@ private:
     File(const std::wstring& inFilename, const std::wstring& outFilename);
     explicit File(const std::filesystem::path& path);
     const std::filesystem::path& getInPath() const;
-    const std::filesystem::path& getOutPath() const;
+    const std::filesystem::path& getOutHPath() const;
+    const std::filesystem::path& getOutCppPath() const;
     const std::vector<std::pair<std::filesystem::path, Token>>& getIncludes();
     void parse();
     void analyze();
