@@ -7,6 +7,7 @@ class File
 {
 private:
     friend class FileNode;
+    friend class FileGraph;
 
     const std::filesystem::path inPath;
     const std::filesystem::path outPath;

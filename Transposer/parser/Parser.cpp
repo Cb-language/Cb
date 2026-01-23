@@ -50,6 +50,7 @@
 
 // ---------- just how ----------
 #include "../errorHandling/how/HowDidYouGetHere.h"
+#include "files/FileGraph.h"
 
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), symTable(SymbolTable()), hasMain(false)
@@ -98,10 +99,11 @@ void Parser::parse()
 
 void Parser::analyze()
 {
-    if (!hasMain)
-    {
-        throw NoMain(tokens[len-1]);
-    }
+    // TEMP, until multi file sym table task
+    // if (!hasMain)
+    // {
+    //     throw NoMain(tokens[len-1]);
+    // }
 
     while (!creditsQ.empty())
     {
@@ -139,7 +141,7 @@ std::string Parser::translateToCpp() const
     std::ostringstream oss;
     oss << "#include <iostream>" << std::endl;
     oss << "#include <string>" << std::endl;
-    oss << "#include \"includes/Array.h\"" << std::endl;
+    oss << "#include \"" << File::getOutDir().string() << R"(\includes\Array.h")" << std::endl;
 
     const std::string headers = symTable.getFuncsHeaders();
 

@@ -20,6 +20,7 @@ public:
     void write() const;
     static std::vector<std::filesystem::path> getAllCppPaths();
 
+    static std::filesystem::path getOutPath(const std::filesystem::path& inPath);
 
 private:
     ~FileGraph();

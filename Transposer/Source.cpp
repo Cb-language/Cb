@@ -2,8 +2,8 @@
 #include <sstream>
 #include <windows.h>
 #include "token/Tokenizer.h"
-#include "files/FileManager.h"
 #include "errorHandling/Error.h"
+#include "files/ArrayHelper.h"
 #include "files/FileGraph.h"
 #include "parser/Parser.h"
 
@@ -84,6 +84,8 @@ int main(int argc, char* argv[])
         Utils::logMsg("Translating...");
         graph.build(inPath, outPath);
         graph.start();
+        graph.write();
+        ArrayHelper::write(File::getOutDir());
     }
     catch (const Error& err)
     {

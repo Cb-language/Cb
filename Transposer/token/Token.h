@@ -9,6 +9,7 @@ struct Token
 {
 	enum TokenType : byte
 	{
+		UNDEFINED_TOKEN = 0,
 		IDENTIFIER = 1,
 		TYPE,
 		KEYWORD,

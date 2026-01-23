@@ -15,8 +15,6 @@ set(CMAKE_CXX_STANDARD 20)
 include_directories(Transposer)
 
 add_executable(Transposer
-        Transposer/files/FileManager.cpp
-        Transposer/files/FileManager.h
         Transposer/Source.cpp
         Transposer/token/Token.cpp
         Transposer/token/Token.h

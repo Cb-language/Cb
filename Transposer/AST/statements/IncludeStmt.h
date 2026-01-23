@@ -6,9 +6,10 @@
 class IncludeStmt : public Stmt
 {
 private:
-    std::filesystem::path path;
+    std::filesystem::path inPath;
+    std::filesystem::path outPath;
 public:
-    IncludeStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, const std::filesystem::path& path);
+    IncludeStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, const std::filesystem::path& inPath);
 
     void analyze() const override;
     std::string translateToCpp() const override;

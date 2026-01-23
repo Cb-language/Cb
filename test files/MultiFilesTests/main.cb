@@ -1,0 +1,7 @@
+feat "A.cb"║
+feat "B.cb"║
+song prelude() -> degree
+∮
+    playBar("Hello World!")║
+    B\0║
+☉
