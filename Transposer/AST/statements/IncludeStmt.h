@@ -13,4 +13,6 @@ public:
 
     void analyze() const override;
     std::string translateToCpp() const override;
+
+    const std::filesystem::path& getOutPath() const;
 };

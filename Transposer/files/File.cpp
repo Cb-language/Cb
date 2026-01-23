@@ -57,18 +57,25 @@ void File::analyze()
     parser.analyze();
 }
 
-void File::write() const
+void File::write(const bool isMain)
 {
-    std::ofstream fileH(outPathH, std::ios::out);
+    if (writen) return;
 
-    if(!fileH || !fileH.is_open())
+    writen = true;
+
+    if (!isMain)
     {
-        throw Error(Token(Token::UNDEFINED_TOKEN, inPath.wstring(),0,0, outPathH),
-            "Unexpected Error: couldn't open file: \"" + outPathH.string() + "\"");
-    }
-    fileH << parser.translateToH();
+        std::ofstream fileH(outPathH, std::ios::out);
 
-    fileH.close();
+        if(!fileH || !fileH.is_open())
+        {
+            throw Error(Token(Token::UNDEFINED_TOKEN, inPath.wstring(),0,0, outPathH),
+                "Unexpected Error: couldn't open file: \"" + outPathH.string() + "\"");
+        }
+        fileH << parser.translateToH();
+
+        fileH.close();
+    }
 
     std::ofstream fileCpp(outPathCpp, std::ios::out);
 
@@ -77,7 +84,7 @@ void File::write() const
         throw Error(Token(Token::UNDEFINED_TOKEN, inPath.wstring(),0,0, outPathCpp),
             "Unexpected Error: couldn't open file: \"" + outPathCpp.string() + "\"");
     }
-    fileCpp << parser.translateToCpp(outPathH);
+    fileCpp << parser.translateToCpp(outPathH, isMain);
 
     fileCpp.close();
 }

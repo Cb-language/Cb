@@ -60,9 +60,10 @@ Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.si
 Parser::~Parser()
 = default;
 
-const std::vector<std::pair<std::filesystem::path, Token>>& Parser::readIncludes()
+std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
 {
-    if (paths.empty() && pos == 0)
+    std::vector<std::pair<std::filesystem::path, Token>> v;
+    if (includes.empty() && pos == 0)
     {
         while (match(Token::KEYWORD, L"feat"))
         {
@@ -70,7 +71,7 @@ const std::vector<std::pair<std::filesystem::path, Token>>& Parser::readIncludes
             Token pathToken = expectAndGet(Token::CONST_STR, ExpectedAPath(current()));
             std::wstring wstr = pathToken.value;
             wstr.erase(
-                std::remove(wstr.begin(), wstr.end(), L'"'),
+                std::ranges::remove(wstr, L'"').begin(),
                 wstr.end()
             );
             std::filesystem::path path = wstr;
@@ -81,11 +82,12 @@ const std::vector<std::pair<std::filesystem::path, Token>>& Parser::readIncludes
                 throw InvalidPathExtension(current());
             }
 
-            paths.emplace_back(path, pathToken);
+            includes.emplace_back(std::make_unique<IncludeStmt>(pathToken, symTable.getCurrScope(), symTable.getCurrFunc(), path));
+            v.emplace_back(path, pathToken);
         }
     }
 
-    return paths;
+    return v;
 }
 
 void Parser::parse()
@@ -136,11 +138,15 @@ void Parser::analyze()
     }
 }
 
-std::string Parser::translateToCpp(const std::filesystem::path& hPath) const
+std::string Parser::translateToCpp(const std::filesystem::path& hPath, const bool isMain) const
 {
     std::ostringstream oss;
-    oss << "#include <string>" << std::endl;
-    oss << "#include \"" << hPath.string() << "\"" << std::endl;
+
+    oss << "#include <iostream>" << std::endl;
+
+    if (isMain) oss << translateToH(isMain);
+    else oss << "#include \"" << hPath.string() << "\"" << std::endl;
+
 
     for (const auto& stmt : stmts)
     {
@@ -150,17 +156,22 @@ std::string Parser::translateToCpp(const std::filesystem::path& hPath) const
     return oss.str();
 }
 
-std::string Parser::translateToH() const
+std::string Parser::translateToH(const bool isMain) const
 {
     std::ostringstream oss;
-    oss << "#pragma once" << std::endl;
-    oss << "#include <iostream>" << std::endl;
+    if (!isMain) oss << "#pragma once" << std::endl;
 
-    const std::string headers = symTable.getFuncsHeaders();
-    if (!headers.empty())
+    oss << "#include <string>" << std::endl;
+
+    if (!includes.empty()) oss << std::endl;
+
+    for (const auto& i : includes)
     {
-        oss << std::endl << headers;
+        oss << i->translateToCpp() << std::endl;
     }
+
+    const std::string funcHeaders = symTable.getFuncsHeaders();
+    if (!funcHeaders.empty()) oss << std::endl << funcHeaders;
 
     return oss.str();
 }
@@ -488,14 +499,6 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
     }
 
     std::vector<std::unique_ptr<Stmt>> bodyStmts;
-
-    if (isGlobal)
-    {
-        for (const auto& p : paths)
-        {
-            bodyStmts.push_back(std::make_unique<IncludeStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), p.first));
-        }
-    }
 
     // Loop until closing brace
     while (!isAtEnd() && !match(Token::PUNCTUATION, L"☉")) // if global, until EOF, otherwise, until ☉

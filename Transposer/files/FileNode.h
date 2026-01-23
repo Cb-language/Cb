@@ -35,7 +35,7 @@ private:
 
     void start();
 
-    void write() const;
+    void write(const bool isMain = false);
 
     static void clear(FileNode* main);
 

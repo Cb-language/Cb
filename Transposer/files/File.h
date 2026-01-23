@@ -18,6 +18,7 @@ private:
     bool readIncludes = false;
     bool parsed = false;
     bool analyzed = false;
+    bool writen = false;
 
     std::vector<Token> tokenize() const;
 
@@ -32,7 +33,7 @@ private:
     const std::vector<std::pair<std::filesystem::path, Token>>& getIncludes();
     void parse();
     void analyze();
-    void write() const;
+    void write(const bool isMain = false);
 
 public:
     static void setMainPath(const std::filesystem::path& mainPath);

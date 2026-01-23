@@ -170,10 +170,10 @@ void FileNode::start()
     file.analyze();
 }
 
-void FileNode::write() const
+void FileNode::write(const bool isMain)
 {
     for (auto& child : children) child->write();
-    file.write();
+    file.write(isMain);
 }
 
 void FileNode::clear(FileNode* main)

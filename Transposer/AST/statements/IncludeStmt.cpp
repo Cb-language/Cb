@@ -3,7 +3,8 @@
 #include "files/FileGraph.h"
 
 IncludeStmt::IncludeStmt(const Token &token, Scope *scope, FuncDeclStmt *funcDecl,
-                         const std::filesystem::path &inPath) : Stmt(token, scope, funcDecl), inPath(inPath), outPath(FileGraph::getOutPath(inPath))
+                         const std::filesystem::path &inPath) : Stmt(token, scope, funcDecl), inPath(inPath),
+                         outPath((File::getOutDir() / inPath.filename()).replace_extension("h"))
 {
 }
 
@@ -14,5 +15,10 @@ void IncludeStmt::analyze() const
 
 std::string IncludeStmt::translateToCpp() const
 {
-    return "#include \"" + outPath.string() + "\"\n";
+    return "#include \"" + Utils::normalizePath(outPath) + "\"";
+}
+
+const std::filesystem::path& IncludeStmt::getOutPath() const
+{
+    return outPath;
 }
