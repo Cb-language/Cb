@@ -1,22 +1,44 @@
 ﻿#include <iostream>
 #include <sstream>
-#include <windows.h>
+#include <filesystem>
 #include "token/Tokenizer.h"
 #include "errorHandling/Error.h"
 #include "files/ArrayHelper.h"
 #include "files/FileGraph.h"
 #include "parser/Parser.h"
 
+// --- OS SPECIFIC DEFINITIONS ---
 #ifdef _WIN32
-#include <windows.h>
-void EnableANSI() {
-    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD mode = 0;
-    GetConsoleMode(hOut, &mode);
-    mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-    SetConsoleMode(hOut, mode);
-}
+    #include <windows.h>
+    const std::string NULL_DEVICE = ">nul 2>&1";
+    const std::string EXE_EXT = ".exe";
+
+    void EnableANSI()
+    {
+        HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+        DWORD mode = 0;
+        GetConsoleMode(hOut, &mode);
+        mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+        SetConsoleMode(hOut, mode);
+    }
+
+    void SetupConsole()
+    {
+        EnableANSI();
+        SetConsoleOutputCP(CP_UTF8);
+    }
+#else
+    // Linux implementations
+    #include <cstdlib>
+    const std::string NULL_DEVICE = ">/dev/null 2>&1";
+    const std::string EXE_EXT; // No extension needed on Linux
+
+    void SetupConsole()
+    {
+        // No action needed here
+    }
 #endif
+// -------------------------------
 
 enum Mode
 {
@@ -27,31 +49,23 @@ enum Mode
 
 int main(int argc, char* argv[])
 {
-#ifdef _WIN32
-    EnableANSI();
-#endif
-    // Enable UTF-8 output (mostly for other parts that may use cout)
-    SetConsoleOutputCP(CP_UTF8);
+    SetupConsole();
 
-    // Initialize tokenizer
     Tokenizer::init();
 
-    // Check for correct number of arguments
     if (argc < 3 || argc > 4)
     {
         std::cout << "Usage: <main_path> <mode> [save_path]" << std::endl;
         return 1;
     }
 
-    // Create FileManager instance and perform file operations
-    std::string inPath = std::string(argv[1]);
+    auto inPath = std::string(argv[1]);
     std::string outPath;
     if (argc == 4)
     {
         outPath = std::string(argv[3]);
     }
 
-    // Determine mode of operation
     std::string arg = argv[2];
     int mode = arg == "T" ? TRANSLATE :
                arg == "R" ? RUN :
@@ -63,18 +77,21 @@ int main(int argc, char* argv[])
         Utils::logMsg("Translating Mode");
         break;
     case RUN:
-            Utils::logMsg("Running Mode");
+        Utils::logMsg("Running Mode");
         break;
     case COMPILE:
         Utils::logMsg("Compiling Mode");
-    break;
+        break;
     default:
         std::cout << "Invalid mode. Use T for Translate, C for Compile, R for Run." << std::endl;
+        return 1; // Exit on invalid mode
     }
 
-    if (mode != TRANSLATE && std::system("g++ --version >nul 2>&1") != 0)
+    // Check for g++ using the OS-specific NULL_DEVICE
+    if (mode != TRANSLATE && std::system(("g++ --version " + NULL_DEVICE).c_str()) != 0)
     {
         std::cerr << "g++ not installed" << std::endl;
+        return -1;
     }
 
     FileGraph& graph = FileGraph::Instance();
@@ -94,14 +111,23 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    // Handle executable extension cross-platform
     std::filesystem::path exePath = outPath;
-    exePath = exePath.replace_extension(".exe");
+    if (!EXE_EXT.empty())
+    {
+        exePath.replace_extension(EXE_EXT);
+    }
+    else
+    {
+        // On Linux, ensure we remove any existing extension or keep it extension-less
+        exePath.replace_extension("");
+    }
 
     if (mode == COMPILE || mode == RUN)
     {
         std::ostringstream cmd;
 
-        std::string filesStr = "";
+        std::string filesStr;
         const auto paths = FileGraph::getAllCppPaths();
 
         for (const auto& path : paths)
@@ -109,8 +135,11 @@ int main(int argc, char* argv[])
             filesStr += " \"" + path.string() + "\" ";
         }
 
-        cmd << "g++ -static -static-libgcc -static-libstdc++ -pthread"
-        << filesStr << "-Iincludes -o " << exePath << std::endl;
+        cmd << "g++ -pthread " << filesStr << "-Iincludes -o \"" << exePath.string() << "\"";
+
+        #ifdef _WIN32
+             cmd << " -static -static-libgcc -static-libstdc++";
+        #endif
 
         Utils::logMsg("Compiling...");
 
@@ -129,7 +158,21 @@ int main(int argc, char* argv[])
         std::ostringstream cmd;
         Utils::logMsg("Running...");
 
-        cmd << "start \"\" cmd /c \"" << exePath << " & pause\"";
+        #ifdef _WIN32
+            // Windows: Open new window and pause
+            cmd << "start \"\" cmd /c \"" << exePath.string() << " & pause\"";
+        #else
+            // Linux: Run in current terminal
+            // We need ./ if it's in the current directory, but absolute path is safer
+            if (exePath.is_absolute())
+            {
+                 cmd << "\"" << exePath.string() << "\"";
+            }
+            else
+            {
+                 cmd << "./\"" << exePath.string() << "\"";
+            }
+        #endif
 
         std::system(cmd.str().c_str());
     }
