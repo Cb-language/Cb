@@ -2,8 +2,9 @@
 #include <sstream>
 #include <windows.h>
 #include "token/Tokenizer.h"
-#include "files/FileManager.h"
 #include "errorHandling/Error.h"
+#include "files/ArrayHelper.h"
+#include "files/FileGraph.h"
 #include "parser/Parser.h"
 
 #ifdef _WIN32
@@ -76,59 +77,37 @@ int main(int argc, char* argv[])
         std::cerr << "g++ not installed" << std::endl;
     }
 
-    FileManager fileManager(inPath, outPath);
-
-    if (!fileManager.getIsOpen())
-    {
-        return -2;
-    }
-
-    const std::wstring wstr = fileManager.readFile();
-    Parser parser(Tokenizer::tokenize(wstr));
-
+    FileGraph& graph = FileGraph::Instance();
+    graph.reset();
     try
     {
         Utils::logMsg("Translating...");
-        parser.parse();
-        parser.analyze();
+        graph.build(inPath, outPath);
+        graph.start();
+        graph.write();
+        ArrayHelper::write(File::getOutDir());
     }
     catch (const Error& err)
     {
         std::cerr << err.what() << std::endl;
+        graph.reset();
         return -1;
     }
 
-    if (!fileManager.writeFile(parser.translateToCpp()) || !FileManager::writeArrayFiles())
-    {
-        return -3;
-    }
-
-
-    std::filesystem::path exePath = fileManager.getOutputPath();
+    std::filesystem::path exePath = outPath;
+    exePath = exePath.replace_extension(".exe");
 
     if (mode == COMPILE || mode == RUN)
     {
-        std::ostringstream cmd;;
-        if (exePath.extension() == ".cpp")
-        {
-            exePath.replace_extension(".exe");
-        }
-        else
-        {
-            std::cerr << "Error with output path :(" << std::endl;
-            return 2;
-        }
+        std::ostringstream cmd;
 
         std::string filesStr = "";
-        // const auto paths = FileManager::getAllCppFiles();
-        //
-        // for (const auto& path : paths)
-        // {
-        //     filesStr += " \"" + path.string() + "\" ";
-        // }
+        const auto paths = FileGraph::getAllCppPaths();
 
-        // TODO: remove later this line:
-        filesStr = " \"" + fileManager.getOutputPath().string() + "\" ";
+        for (const auto& path : paths)
+        {
+            filesStr += " \"" + path.string() + "\" ";
+        }
 
         cmd << "g++ -static -static-libgcc -static-libstdc++ -pthread"
         << filesStr << "-Iincludes -o " << exePath << std::endl;
@@ -138,9 +117,12 @@ int main(int argc, char* argv[])
         if (std::system(cmd.str().c_str()) != 0)
         {
             std::cerr << "Error with g++ : command: " << cmd.str() << std::endl;
+            graph.reset();
             return -4;
         }
     }
+
+    graph.reset();
 
     if (mode == RUN)
     {

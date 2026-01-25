@@ -4,6 +4,8 @@
 #include <ranges>
 #include <sstream>
 #include <vector>
+#include <filesystem>
+#include <algorithm>
 
 // ---------- AST related ----------
 #include "AST/statements/FuncDeclStmt.h"
@@ -21,6 +23,8 @@
 #include "../errorHandling/syntaxErrors/StmtInsideSwitchThatIsNotCase.h"
 #include "../errorHandling/syntaxErrors/MissingIdentifier.h"
 #include "../errorHandling/syntaxErrors/MissingParenthesis.h"
+#include "../errorHandling/syntaxErrors/IncludeNotInTop.h"
+#include "../errorHandling/syntaxErrors/ExpectedAPath.h"
 
 // ---------- semantic errors ----------
 #include "../errorHandling/semanticErrors/IdentifierTaken.h"
@@ -31,6 +35,7 @@
 #include "../errorHandling/semanticErrors/UnrecognizedIdentifier.h"
 #include "../errorHandling/semanticErrors/IllegalCredit.h"
 #include "../errorHandling/semanticErrors/IllegalCall.h"
+#include "../errorHandling/semanticErrors/InvalidPathExtension.h"
 
 // ---------- entry point errors ----------
 #include "../errorHandling/entryPointErrors/InvalidMainReturnType.h"
@@ -45,6 +50,7 @@
 
 // ---------- just how ----------
 #include "../errorHandling/how/HowDidYouGetHere.h"
+#include "files/FileGraph.h"
 
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), symTable(SymbolTable()), hasMain(false)
@@ -52,7 +58,36 @@ Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.si
 }
 
 Parser::~Parser()
+= default;
+
+std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
 {
+    std::vector<std::pair<std::filesystem::path, Token>> v;
+    if (includes.empty() && pos == 0)
+    {
+        while (match(Token::KEYWORD, L"feat"))
+        {
+            advance();
+            Token pathToken = expectAndGet(Token::CONST_STR, ExpectedAPath(current()));
+            std::wstring wstr = pathToken.value;
+            wstr.erase(
+                std::ranges::remove(wstr, L'"').begin(),
+                wstr.end()
+            );
+            std::filesystem::path path = wstr;
+            expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+
+            if (path.extension() != ".cb")
+            {
+                throw InvalidPathExtension(current());
+            }
+
+            includes.emplace_back(std::make_unique<IncludeStmt>(pathToken, symTable.getCurrScope(), symTable.getCurrFunc(), path));
+            v.emplace_back(path, pathToken);
+        }
+    }
+
+    return v;
 }
 
 void Parser::parse()
@@ -66,10 +101,11 @@ void Parser::parse()
 
 void Parser::analyze()
 {
-    if (!hasMain)
-    {
-        throw NoMain(tokens[len-1]);
-    }
+    // TEMP, until multi file sym table task
+    // if (!hasMain)
+    // {
+    //     throw NoMain(tokens[len-1]);
+    // }
 
     while (!creditsQ.empty())
     {
@@ -102,24 +138,40 @@ void Parser::analyze()
     }
 }
 
-std::string Parser::translateToCpp() const
+std::string Parser::translateToCpp(const std::filesystem::path& hPath, const bool isMain) const
 {
     std::ostringstream oss;
+
     oss << "#include <iostream>" << std::endl;
-    oss << "#include <string>" << std::endl;
-    oss << "#include \"includes/Array.h\"" << std::endl;
 
-    const std::string headers = symTable.getFuncsHeaders();
+    if (isMain) oss << translateToH(isMain);
+    else oss << "#include \"" << hPath.string() << "\"" << std::endl;
 
-    if (!headers.empty())
-    {
-        oss << std::endl << headers;
-    }
 
     for (const auto& stmt : stmts)
     {
         oss << std::endl << stmt->translateToCpp();
     }
+
+    return oss.str();
+}
+
+std::string Parser::translateToH(const bool isMain) const
+{
+    std::ostringstream oss;
+    if (!isMain) oss << "#pragma once" << std::endl;
+
+    oss << "#include <string>" << std::endl;
+
+    if (!includes.empty()) oss << std::endl;
+
+    for (const auto& i : includes)
+    {
+        oss << i->translateToCpp() << std::endl;
+    }
+
+    const std::string funcHeaders = symTable.getFuncsHeaders();
+    if (!funcHeaders.empty()) oss << std::endl << funcHeaders;
 
     return oss.str();
 }
@@ -169,6 +221,7 @@ bool Parser::match(const Token::TokenType type) const
 
 bool Parser::match(const Token::TokenType type, const std::wstring& value) const
 {
+    if (isAtEnd()) throw UnexpectedEOF(tokens[len-1]);
     const Token t = current();
 
     return t.type == type && t.value == value;
@@ -526,6 +579,10 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
         {
             advance();
+        }
+        else if (match(Token::KEYWORD, L"feat"))
+        {
+            throw IncludeNotInTop(current());
         }
         else
         {

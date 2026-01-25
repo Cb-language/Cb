@@ -11,7 +11,7 @@ const std::vector<std::wstring> Tokenizer::capture_blocks = {
     LR"((?<ConstChar>'(\\.|[^\\'\n])'))",
     LR"((?<ConstStr>"(\\.|[\s\S])*?"))",
     LR"((?<Type>\b((flat|sharp)[\s\r\n]*(degree|freq|note))\b)|(?<Type>\b(degree|freq|note)\b)|(?<Type>\b(mute|bar|riff|fermata)\b))",
-    LR"((?<Keyword>(pause|resume|break|playBar|play|hear|F(?:maj|min)|[A-EG]|song)(?![A-Za-z])))",
+    LR"((?<Keyword>(pause|resume|break|playBar|play|hear|F(?:maj|min)|[A-EG]|song|feat)(?![A-Za-z])))",
     LR"((?<Punctuation>->))",
     LR"((?<UnaryOp>♯|♭|♮))",
     LR"((?<AssignmentOp>\+=|-=|//=|/=|\*=|%=))",
@@ -65,7 +65,7 @@ void Tokenizer::init()
     inited = true;
 }
 
-std::vector<Token> Tokenizer::tokenize(const std::wstring& code)
+std::vector<Token> Tokenizer::tokenize(const std::wstring& code, const std::filesystem::path& path)
 {
     std::vector<Token> tokens;
     size_t current_line = 1;
@@ -79,16 +79,16 @@ std::vector<Token> Tokenizer::tokenize(const std::wstring& code)
         const boost::wsmatch& match = *it;
 
         if (match[L"Newline"].matched) { current_line++; current_col = 0; }
-        else if (match[L"CommentSingle"].matched) { tokens.push_back(Token(Token::COMMENT_SINGLE, match.str(), current_line, current_col)); }
-        else if (match[L"CommentMulti"].matched) { tokens.push_back(Token(Token::COMMENT_MULTI, match.str(), current_line, current_col)); }
-        else if (match[L"ConstBool"].matched) { tokens.push_back(Token(Token::CONST_BOOL, match.str(), current_line, current_col)); }
-        else if (match[L"ConstFloat"].matched) { tokens.push_back(Token(Token::CONST_FLOAT, match.str(), current_line, current_col)); }
-        else if (match[L"ConstInt"].matched) { tokens.push_back(Token(Token::CONST_INT, match.str(), current_line, current_col)); }
-        else if (match[L"ConstChar"].matched) { tokens.push_back(Token(Token::CONST_CHAR, match.str(), current_line, current_col)); }
+        else if (match[L"CommentSingle"].matched) { tokens.push_back(Token(Token::COMMENT_SINGLE, match.str(), current_line, current_col, path)); }
+        else if (match[L"CommentMulti"].matched) { tokens.push_back(Token(Token::COMMENT_MULTI, match.str(), current_line, current_col, path)); }
+        else if (match[L"ConstBool"].matched) { tokens.push_back(Token(Token::CONST_BOOL, match.str(), current_line, current_col, path)); }
+        else if (match[L"ConstFloat"].matched) { tokens.push_back(Token(Token::CONST_FLOAT, match.str(), current_line, current_col, path)); }
+        else if (match[L"ConstInt"].matched) { tokens.push_back(Token(Token::CONST_INT, match.str(), current_line, current_col, path)); }
+        else if (match[L"ConstChar"].matched) { tokens.push_back(Token(Token::CONST_CHAR, match.str(), current_line, current_col, path)); }
         else if (match[L"ConstStr"].matched) 
         {
             std::wstring txt = match.str();
-            tokens.push_back(Token(Token::CONST_STR, txt, current_line, current_col));
+            tokens.push_back(Token(Token::CONST_STR, txt, current_line, current_col, path));
 
             size_t newlines = std::ranges::count(txt, L'\n');
 
@@ -132,7 +132,7 @@ std::vector<Token> Tokenizer::tokenize(const std::wstring& code)
                 cleanedType.pop_back();
             }
 
-            tokens.push_back(Token(Token::TYPE, match.str(), current_line, current_col));
+            tokens.push_back(Token(Token::TYPE, match.str(), current_line, current_col, path));
             size_t newlines = std::ranges::count(typeText, L'\n');
 
             if (newlines > 0)
@@ -141,12 +141,12 @@ std::vector<Token> Tokenizer::tokenize(const std::wstring& code)
                 current_line += newlines;
             }
         }
-        else if (match[L"Keyword"].matched) { tokens.push_back(Token(Token::KEYWORD, match.str(), current_line, current_col)); }
-        else if (match[L"UnaryOp"].matched) { tokens.push_back(Token(Token::OP_UNARY, match.str(), current_line, current_col)); }
-        else if (match[L"AssignmentOp"].matched) { tokens.push_back(Token(Token::OP_ASSIGNMENT, match.str(), current_line, current_col)); }
-        else if (match[L"BinaryOp"].matched) { tokens.push_back(Token(Token::OP_BINARY, match.str(), current_line, current_col)); }
-        else if (match[L"Punctuation"].matched) { tokens.push_back(Token(Token::PUNCTUATION, match.str(), current_line, current_col)); }
-        else if (match[L"Identifier"].matched) { tokens.push_back(Token(Token::IDENTIFIER, match.str(), current_line, current_col)); }
+        else if (match[L"Keyword"].matched) { tokens.push_back(Token(Token::KEYWORD, match.str(), current_line, current_col, path)); }
+        else if (match[L"UnaryOp"].matched) { tokens.push_back(Token(Token::OP_UNARY, match.str(), current_line, current_col, path)); }
+        else if (match[L"AssignmentOp"].matched) { tokens.push_back(Token(Token::OP_ASSIGNMENT, match.str(), current_line, current_col, path)); }
+        else if (match[L"BinaryOp"].matched) { tokens.push_back(Token(Token::OP_BINARY, match.str(), current_line, current_col, path)); }
+        else if (match[L"Punctuation"].matched) { tokens.push_back(Token(Token::PUNCTUATION, match.str(), current_line, current_col, path)); }
+        else if (match[L"Identifier"].matched) { tokens.push_back(Token(Token::IDENTIFIER, match.str(), current_line, current_col, path)); }
 
         current_col++;
     }
