@@ -37,8 +37,8 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/InvalidExpression.h
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.cpp
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.h
-        Transposer/parser/parser.cpp
-        Transposer/parser/parser.h
+        Transposer/parser/Parser.cpp
+        Transposer/parser/Parser.h
         Transposer/symbols/Type/Type.cpp
         Transposer/symbols/Type/Type.h
         Transposer/AST/abstract/Expression.h
