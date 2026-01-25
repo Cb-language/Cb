@@ -10,7 +10,7 @@ std::unordered_map<
     > FileNode::nodes;
 
 FileNode::FileNode(const std::filesystem::path& inPath, const std::filesystem::path& outFilename)
-    : file(File(inPath,outFilename))
+    : file(File(inPath.c_str(),outFilename))
 {
 }
 
