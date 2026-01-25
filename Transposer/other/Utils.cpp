@@ -27,3 +27,20 @@ std::string Utils::removeFirstTabs(std::string& str)
     str.erase(0, 1);
     return removeFirstTabs(str);
 }
+
+std::string Utils::normalizePath(const std::filesystem::path& path)
+{
+    std::string res;
+    bool dontAddBackslash = true;
+    for (auto& part : path)
+    {
+        if (!dontAddBackslash)
+        {
+            if (part == "\\") continue;
+            res += "/";
+        }
+        else dontAddBackslash = false;
+        res += part.string();
+    }
+    return res;
+}

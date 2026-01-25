@@ -15,8 +15,6 @@ set(CMAKE_CXX_STANDARD 20)
 include_directories(Transposer)
 
 add_executable(Transposer
-        Transposer/files/FileManager.cpp
-        Transposer/files/FileManager.h
         Transposer/Source.cpp
         Transposer/token/Token.cpp
         Transposer/token/Token.h
@@ -168,6 +166,12 @@ add_executable(Transposer
         Transposer/errorHandling/semanticErrors/InvalidPathExtension.h
         Transposer/errorHandling/syntaxErrors/ExpectedAPath.cpp
         Transposer/errorHandling/syntaxErrors/ExpectedAPath.h
+        Transposer/files/File.cpp
+        Transposer/files/File.h
+        Transposer/files/FileNode.cpp
+        Transposer/files/FileNode.h
+        Transposer/files/FileGraph.cpp
+        Transposer/files/FileGraph.h
 )
 
 # In order to call the exe from the cmd

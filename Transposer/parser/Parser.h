@@ -39,6 +39,7 @@ private:
     std::vector<std::unique_ptr<Stmt>> stmts;
     std::queue<FuncCredit> creditsQ;
     std::queue<FuncCallExpr*> callsQ;
+    std::vector<std::unique_ptr<IncludeStmt>> includes;
 
     bool hasMain;
 
@@ -110,8 +111,10 @@ private:
 public:
     explicit Parser(const std::vector<Token>& tokens);
     ~Parser();
+    std::vector<std::pair<std::filesystem::path, Token>> readIncludes();
     void parse();
     void analyze();
-    std::string translateToCpp() const;
+    std::string translateToCpp(const std::filesystem::path& hPath, const bool isMain = false) const;
+    std::string translateToH(const bool isMain = false) const;
 };
 
