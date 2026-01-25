@@ -598,8 +598,15 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
             throw MissingBrace(prev());
         }
 
-        expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
-        symTable.exitScope();
+        if (match(Token::PUNCTUATION, L"☉"))
+        {
+            advance();
+            symTable.exitScope();
+        }
+        else
+        {
+            throw MissingBrace(current());
+        }
     }
 
     return std::make_unique<BodyStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), bodyStmts, isGlobal);
