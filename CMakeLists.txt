@@ -172,6 +172,13 @@ add_executable(Transposer
         Transposer/files/FileNode.h
         Transposer/files/FileGraph.cpp
         Transposer/files/FileGraph.h
+        Transposer/multyOSSupport/CMD.h
+        Transposer/multyOSSupport/CMDFactory.cpp
+        Transposer/multyOSSupport/CMDFactory.h
+        Transposer/multyOSSupport/UnixCMD.cpp
+        Transposer/multyOSSupport/UnixCMD.h
+        Transposer/multyOSSupport/WindowsCMD.cpp
+        Transposer/multyOSSupport/WindowsCMD.h
 )
 
 # In order to call the exe from the cmd

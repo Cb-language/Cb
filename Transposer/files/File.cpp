@@ -14,6 +14,12 @@ File::File(const std::wstring& inFilename, const std::wstring& outFilename)
 {
 }
 
+File::File(const std::filesystem::path& inPath, const std::filesystem::path& outPath)
+    : inPath(mainPath / Utils::normalizePath(inPath)), outPathH((outDir / Utils::normalizePath(outPath)).replace_extension("h")),
+        outPathCpp((outDir / Utils::normalizePath(outPath)).replace_extension("cpp")), parser(Parser(tokenize()))
+{
+}
+
 File::File(const std::filesystem::path& path) : File(path, std::filesystem::path(path))
 {
 }

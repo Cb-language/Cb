@@ -26,6 +26,7 @@ private:
     static std::filesystem::path outDir;
 
     File(const std::wstring& inFilename, const std::wstring& outFilename);
+    File(const std::filesystem::path& inPath, const std::filesystem::path& outPath);
     explicit File(const std::filesystem::path& path);
     const std::filesystem::path& getInPath() const;
     const std::filesystem::path& getOutHPath() const;

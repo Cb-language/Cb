@@ -53,7 +53,7 @@
 #include "files/FileGraph.h"
 
 
-Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), symTable(SymbolTable()), hasMain(false)
+Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), hasMain(false), symTable(SymbolTable())
 {
 }
 
@@ -598,7 +598,15 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
             throw MissingBrace(prev());
         }
 
-        expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+        // this is an if and not expect because it would crash if the brace is the end of the file
+        if (!match(Token::PUNCTUATION, L"☉"))
+        {
+            throw MissingBrace(current());
+        }
+        if (isAtEnd())
+        {
+            advance();
+        }
         symTable.exitScope();
     }
 
