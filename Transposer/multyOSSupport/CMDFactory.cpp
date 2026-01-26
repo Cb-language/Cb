@@ -1,10 +1,7 @@
 #include "CMDFactory.h"
 
-#ifdef _WIN32
 #include "WindowsCMD.h"
-#else
 #include "UnixCMD.h"
-#endif
 
 std::unique_ptr<CMD> CMDFactory::createCMD()
 {
