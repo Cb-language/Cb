@@ -6,7 +6,7 @@
 #include "files/ArrayHelper.h"
 #include "files/FileGraph.h"
 #include "parser/Parser.h"
-#include "multyOSSupport/TypeCMD.h"
+#include "multyOSSupport/CMDFactory.h"
 
 enum Mode
 {
@@ -15,7 +15,7 @@ enum Mode
 
 int main(int argc, char* argv[])
 {
-    std::unique_ptr<CMD> cmd = createCMD();
+    std::unique_ptr<CMD> cmd = CMDFactory::createCMD();
 
     cmd->setupConsole();
 

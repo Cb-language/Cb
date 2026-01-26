@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include <memory>
 
 class CMD
 {
@@ -17,5 +16,3 @@ public:
 
     virtual void runExecutable(const std::string& path) const = 0;
 };
-
-std::unique_ptr<CMD> createCMD();
