@@ -116,5 +116,7 @@ public:
     void analyze();
     std::string translateToCpp(const std::filesystem::path& hPath, const bool isMain = false) const;
     std::string translateToH(const bool isMain = false) const;
+    void addToSymTable(const SymbolTable& symTable);
+    const SymbolTable& getSymTable() const;
 };
 

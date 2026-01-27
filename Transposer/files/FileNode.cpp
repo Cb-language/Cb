@@ -164,7 +164,11 @@ FileNode* FileNode::build(const std::filesystem::path& inPath, const std::filesy
 
 void FileNode::start()
 {
-    for (auto& child : children) child->start();
+    for (auto& child : children)
+    {
+        child->start();
+        file.parser.addToSymTable(child->file.parser.getSymTable());
+    }
 
     file.parse();
     file.analyze();
