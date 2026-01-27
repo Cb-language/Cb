@@ -151,3 +151,21 @@ std::string SymbolTable::getFuncsHeaders() const
 
     return oss.str();
 }
+
+SymbolTable& SymbolTable::operator+=(const SymbolTable& other)
+{
+
+    for (const auto& func : other.funcs)
+    {
+        addFunc(func);
+    }
+
+    if (other.head == nullptr) return *this;
+
+    for (const auto& [var, token] : other.head->getCurrVars())
+    {
+        addVar(var.copy(), token);
+    }
+
+    return *this;
+}

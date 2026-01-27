@@ -43,4 +43,6 @@ public:
     std::unique_ptr<Func> getFunc(const std::wstring& name) const;
 
     std::string getFuncsHeaders() const;
+
+    SymbolTable& operator+=(const SymbolTable& other);
 };
