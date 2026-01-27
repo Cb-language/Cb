@@ -3,6 +3,8 @@
 #include "WindowsCMD.h"
 #include <windows.h>
 #include <cstdlib>
+#include <iostream>
+#include <ostream>
 
 void WindowsCMD::setupConsole()
 {
@@ -32,7 +34,7 @@ std::string WindowsCMD::getCompileFlags() const
 
 void WindowsCMD::runExecutable(const std::string& path) const
 {
-    std::string cmd = "start \"\" cmd /c \"" + path + " & pause\"";
+    const std::string cmd = R"(start "" cmd /c "")" + path + R"(" & pause")";       // add pause inside same quotes
     std::system(cmd.c_str());
 }
 
