@@ -176,6 +176,16 @@ std::string Parser::translateToH(const bool isMain) const
     return oss.str();
 }
 
+void Parser::addToSymTable(const SymbolTable& symTable)
+{
+    this->symTable += symTable;
+}
+
+const SymbolTable& Parser::getSymTable() const
+{
+    return symTable;
+}
+
 const Token& Parser::current() const
 {
     return tokens[pos];
