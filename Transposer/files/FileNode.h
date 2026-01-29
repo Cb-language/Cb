@@ -37,6 +37,8 @@ private:
 
     void write(const bool isMain = false);
 
+    bool hasMain() const;
+
     static void clear(FileNode* main);
 
     static std::vector<std::filesystem::path> getAllCppPath();

@@ -2,6 +2,8 @@
 
 #include <ranges>
 
+#include "errorHandling/entryPointErrors/NoMain.h"
+
 FileGraph& FileGraph::Instance()
 {
     static FileGraph instance;
@@ -32,6 +34,11 @@ void FileGraph::build(const std::filesystem::path& main, const std::filesystem::
 void FileGraph::start() const
 {
     main->start();
+
+    if (!main->hasMain())
+    {
+        throw NoMain(main->file.parser.getLast());
+    }
 }
 
 void FileGraph::write() const

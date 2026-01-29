@@ -118,5 +118,7 @@ public:
     std::string translateToH(const bool isMain = false) const;
     void addToSymTable(const SymbolTable& symTable);
     const SymbolTable& getSymTable() const;
+    bool getHasMain() const;
+    const Token& getLast() const;
 };
 

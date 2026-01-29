@@ -171,6 +171,11 @@ void FileNode::write(const bool isMain)
     file.write(isMain);
 }
 
+bool FileNode::hasMain() const
+{
+    return file.parser.getHasMain();
+}
+
 void FileNode::clear(FileNode* main)
 {
     if (main == nullptr) return;

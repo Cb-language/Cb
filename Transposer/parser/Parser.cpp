@@ -100,11 +100,6 @@ void Parser::parse()
 
 void Parser::analyze()
 {
-    if (!hasMain)
-    {
-        throw NoMain(tokens[len-1]);
-    }
-
     while (!creditsQ.empty())
     {
         if (!symTable.isLegalCredit(creditsQ.front()))
@@ -182,6 +177,16 @@ void Parser::addToSymTable(const SymbolTable& symTable)
 const SymbolTable& Parser::getSymTable() const
 {
     return symTable;
+}
+
+bool Parser::getHasMain() const
+{
+    return hasMain;
+}
+
+const Token& Parser::getLast() const
+{
+    return tokens[len - 1];
 }
 
 const Token& Parser::current() const
