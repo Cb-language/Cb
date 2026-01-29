@@ -2,7 +2,7 @@
 
 #include <ranges>
 
-#include "errorHandling/Error.h"
+#include "errorHandling/preproccessorErrors/IncludePathNotFound.h"
 
 std::unordered_map<
         std::filesystem::path,
@@ -34,10 +34,7 @@ void FileNode::readAndAddChildren()
 
         if (!std::filesystem::exists(fullPath))
         {
-            throw Error(
-                t,
-                "Include file not found: \"" + fullPath.string() + "\""
-            );
+            throw IncludePathNotFound(t, fullPath);
         }
 
         if (!canAdd(fullPath))
