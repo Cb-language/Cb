@@ -181,6 +181,8 @@ add_executable(Transposer
         Transposer/multyOSSupport/WindowsCMD.h
         Transposer/errorHandling/preproccessorErrors/IncludePathNotFound.cpp
         Transposer/errorHandling/preproccessorErrors/IncludePathNotFound.h
+        Transposer/errorHandling/preproccessorErrors/CircularDependency.cpp
+        Transposer/errorHandling/preproccessorErrors/CircularDependency.h
 )
 
 # In order to call the exe from the cmd

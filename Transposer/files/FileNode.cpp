@@ -2,6 +2,7 @@
 
 #include <ranges>
 
+#include "errorHandling/preproccessorErrors/CircularDependency.h"
 #include "errorHandling/preproccessorErrors/IncludePathNotFound.h"
 
 std::unordered_map<
@@ -39,14 +40,7 @@ void FileNode::readAndAddChildren()
 
         if (!canAdd(fullPath))
         {
-            throw Error(
-                t,
-                "Creating circular include: \"" +
-                file.getInPath().string() +
-                "\" -> \"" +
-                fullPath.string() +
-                "\""
-            );
+            throw CircularDependency(t, file.getInPath(), fullPath);
         }
 
         FileNode* f = getNode(fullPath);
