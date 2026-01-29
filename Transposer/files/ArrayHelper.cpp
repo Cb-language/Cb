@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "errorHandling/Error.h"
+#include "errorHandling/preproccessorErrors/CouldntOpenFileForWriting.h"
 
 const std::string ArrayHelper::hStr = R"(#pragma once
 #include <sstream>
@@ -538,16 +539,14 @@ void ArrayHelper::write(const std::filesystem::path& dir)
 	std::filesystem::create_directory(dir / "includes");
 	std::ofstream fileH(hPath);
 
-	if (!fileH || !fileH.is_open()) throw Error(Token(Token::UNDEFINED_TOKEN, L"", 0, 0, hPath),
-		"Could not open file for writing:\"" + hPath.string() + "\"");
+	if (!fileH || !fileH.is_open()) throw CouldntOpenFileForWriting(Token(Token::UNDEFINED_TOKEN, L"", 0, 0, hPath), hPath);
 
 	std::ofstream fileTpp(tppPath);
 
 	if (!fileTpp || !fileTpp.is_open())
 	{
 		fileH.close();
-		throw Error(Token(Token::UNDEFINED_TOKEN, L"", 0, 0, tppPath),
-			"Could not open file for writing:\"" + tppPath.string() + "\"");
+		throw CouldntOpenFileForWriting(Token(Token::UNDEFINED_TOKEN, L"", 0, 0, tppPath), tppPath);
 	}
 
 	fileH << ArrayHelper::hStr;

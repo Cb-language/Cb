@@ -185,6 +185,8 @@ add_executable(Transposer
         Transposer/errorHandling/preproccessorErrors/CircularDependency.h
         Transposer/errorHandling/preproccessorErrors/CouldntOpenFile.cpp
         Transposer/errorHandling/preproccessorErrors/CouldntOpenFile.h
+        Transposer/errorHandling/preproccessorErrors/CouldntOpenFileForWriting.cpp
+        Transposer/errorHandling/preproccessorErrors/CouldntOpenFileForWriting.h
 )
 
 # In order to call the exe from the cmd
