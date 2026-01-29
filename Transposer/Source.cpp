@@ -80,9 +80,12 @@ int main(int argc, char* argv[])
 
     std::filesystem::path exePath = outPath;
     std::string ext = cmd->getExeExtension();
-    if (!ext.empty()) {
+    if (!ext.empty())
+    {
         exePath.replace_extension(ext);
-    } else {
+    }
+    else
+    {
         exePath.replace_extension("");
     }
 
@@ -116,7 +119,6 @@ int main(int argc, char* argv[])
     if (mode == RUN)
     {
         Utils::logMsg("Running...");
-        // 5. Use Abstract Run Logic
         cmd->runExecutable(exePath.string());
     }
 

@@ -57,8 +57,7 @@ Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.si
 {
 }
 
-Parser::~Parser()
-= default;
+Parser::~Parser() = default;
 
 std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
 {
@@ -101,11 +100,10 @@ void Parser::parse()
 
 void Parser::analyze()
 {
-    // TEMP, until multi file sym table task
-    // if (!hasMain)
-    // {
-    //     throw NoMain(tokens[len-1]);
-    // }
+    if (!hasMain)
+    {
+        throw NoMain(tokens[len-1]);
+    }
 
     while (!creditsQ.empty())
     {

@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "errorHandling/Error.h"
+#include "errorHandling/preproccessorErrors/CouldntOpenFile.h"
 #include "token/Tokenizer.h"
 
 std::filesystem::path File::mainPath = "C\\:";
@@ -75,8 +76,7 @@ void File::write(const bool isMain)
 
         if(!fileH || !fileH.is_open())
         {
-            throw Error(Token(Token::UNDEFINED_TOKEN, inPath.wstring(),0,0, outPathH),
-                "Unexpected Error: couldn't open file: \"" + outPathH.string() + "\"");
+            throw CouldntOpenFile(Token(Token::UNDEFINED_TOKEN, inPath.wstring(),0,0, outPathH), outPathH);
         }
         fileH << parser.translateToH();
 
@@ -87,8 +87,7 @@ void File::write(const bool isMain)
 
     if(!fileCpp || !fileCpp.is_open())
     {
-        throw Error(Token(Token::UNDEFINED_TOKEN, inPath.wstring(),0,0, outPathCpp),
-            "Unexpected Error: couldn't open file: \"" + outPathCpp.string() + "\"");
+        throw CouldntOpenFile(Token(Token::UNDEFINED_TOKEN, inPath.wstring(),0,0, outPathCpp), outPathCpp);
     }
     fileCpp << parser.translateToCpp(outPathH, isMain);
 
@@ -101,8 +100,7 @@ std::vector<Token> File::tokenize() const
 
     if(!file || !file.is_open())
     {
-        throw Error(Token(Token::COMMENT_SINGLE, inPath.wstring(),0,0, inPath),
-            "Unexpected Error: couldn't open file: \"" + inPath.string() + "\"");
+        throw CouldntOpenFile(Token(Token::COMMENT_SINGLE, inPath.wstring(),0,0, inPath), inPath);
     }
     file.imbue(std::locale(file.getloc(), new std::codecvt_utf8<wchar_t>));
 
