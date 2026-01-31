@@ -1,6 +1,4 @@
-feat "test.cb"║
-
-song prelude() -> degree
+song some() -> degree
 ∮
     sharp degree size║
 
