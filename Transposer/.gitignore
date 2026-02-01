@@ -134,6 +134,22 @@ CMakeUserPresets.json
 # External projects
 *-prefix/
 
+# Ignore all .exe and .cpp files in "Transposer/test files" folder
+/Transposer/test files/*.exe
+/Transposer/test files/*.cpp
+/Transposer/test files/**/*.exe
+/Transposer/test files/**/*.cpp
+/Transposer/test files/**/*.tpp
+/Transposer/test files/**/*.hpp
+/Transposer/test files/**/*.h
+
+!/Transposer/Transposer/*.h
+!/Transposer/Transposer/*.cpp
+
+!/Transposer/Transposer/**/*.h
+!/Transposer/Transposer/**/*.cpp
+
+
 ### Rider ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839

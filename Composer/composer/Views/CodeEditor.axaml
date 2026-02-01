@@ -1,0 +1,22 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:avaloniaEdit="clr-namespace:AvaloniaEdit;assembly=AvaloniaEdit"
+             
+             xmlns:vm="clr-namespace:composer.ViewModels"
+             
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="composer.Views.CodeEditor">
+    
+    <avaloniaEdit:TextEditor Name="Editor"
+                             FontFamily="Consolas, Menlo, Monaco, Courier New, Monospace"
+                             
+                             FontSize="{Binding ((vm:MainViewModel)DataContext).EditorFontSize, RelativeSource={RelativeSource AncestorType=Window}}"
+                             
+                             ShowLineNumbers="True"
+                             Background="{DynamicResource PrimaryBackground}"
+                             Foreground="{DynamicResource PrimaryForeground}"
+                             HorizontalScrollBarVisibility="Auto"
+                             VerticalScrollBarVisibility="Visible"/>
+</UserControl>
