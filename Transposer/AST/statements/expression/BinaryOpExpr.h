@@ -13,10 +13,10 @@ private:
     const std::unique_ptr<Expr> right;
 
 public:
-    BinaryOpExpr(Scope* scope, FuncDeclStmt* funcDecl, const std::wstring& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, const bool hasParens = false);
+    BinaryOpExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, const std::wstring& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, const bool hasParens = false);
 
     std::unique_ptr<IType> getType() const override;
-    bool isLegal() const override;
+    void analyze() const override;
     std::string translateToCpp() const override;
 
     static int getPrecedence(const std::wstring &op) ;

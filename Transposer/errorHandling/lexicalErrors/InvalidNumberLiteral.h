@@ -1,8 +1,8 @@
 #pragma once
-#include "../Error.h"
+#include "errorHandling/Error.h"
 
 class InvalidNumberLiteral : public Error
 {
 public:
-    InvalidNumberLiteral(const Token &token);
+    InvalidNumberLiteral(const Token& token);
 };

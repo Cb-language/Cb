@@ -4,8 +4,8 @@
 class Call : public Expr
 {
 protected:
-    explicit Call(Scope* scope, FuncDeclStmt* funcDecl, const bool hasParens) : Expr(scope, funcDecl, hasParens) {}
+    explicit Call(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, const bool hasParens) : Expr(token, scope, funcDecl, hasParens) {}
 
 public:
-    Call(Scope* scope, FuncDeclStmt* funcDecl) : Expr(scope, funcDecl) {}
+    Call(const Token& token, Scope* scope, FuncDeclStmt* funcDecl) : Expr(token, scope, funcDecl) {}
 };

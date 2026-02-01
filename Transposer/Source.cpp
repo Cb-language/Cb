@@ -1,56 +1,36 @@
 ﻿#include <iostream>
 #include <sstream>
-#include <windows.h>
+#include <filesystem>
 #include "token/Tokenizer.h"
-#include "files/FileManager.h"
 #include "errorHandling/Error.h"
+#include "files/ArrayHelper.h"
+#include "files/FileGraph.h"
 #include "parser/Parser.h"
-
-#ifdef _WIN32
-#include <windows.h>
-void EnableANSI() {
-    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD mode = 0;
-    GetConsoleMode(hOut, &mode);
-    mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-    SetConsoleMode(hOut, mode);
-}
-#endif
+#include "multyOSSupport/CMDFactory.h"
 
 enum Mode
 {
-    TRANSLATE,
-    COMPILE,
-    RUN
+    TRANSLATE, COMPILE, RUN
 };
 
 int main(int argc, char* argv[])
 {
-#ifdef _WIN32
-    EnableANSI();
-#endif
-    // Enable UTF-8 output (mostly for other parts that may use cout)
-    SetConsoleOutputCP(CP_UTF8);
+    std::unique_ptr<CMD> cmd = CMDFactory::createCMD();
 
-    // Initialize tokenizer
+    cmd->setupConsole();
+
     Tokenizer::init();
 
-    // Check for correct number of arguments
     if (argc < 3 || argc > 4)
     {
         std::cout << "Usage: <main_path> <mode> [save_path]" << std::endl;
         return 1;
     }
 
-    // Create FileManager instance and perform file operations
-    std::string inPath = std::string(argv[1]);
+    auto inPath = std::string(argv[1]);
     std::string outPath;
-    if (argc == 4)
-    {
-        outPath = std::string(argv[3]);
-    }
+    if (argc == 4) outPath = std::string(argv[3]);
 
-    // Determine mode of operation
     std::string arg = argv[2];
     int mode = arg == "T" ? TRANSLATE :
                arg == "R" ? RUN :
@@ -58,100 +38,88 @@ int main(int argc, char* argv[])
 
     switch (mode)
     {
-    case TRANSLATE:
-        Utils::logMsg("Translating Mode");
-        break;
-    case RUN:
+        case TRANSLATE:
+            Utils::logMsg("Translating Mode");
+            break;
+
+        case RUN:
             Utils::logMsg("Running Mode");
-        break;
-    case COMPILE:
-        Utils::logMsg("Compiling Mode");
-    break;
-    default:
-        std::cout << "Invalid mode. Use T for Translate, C for Compile, R for Run." << std::endl;
+            break;
+
+        case COMPILE:
+            Utils::logMsg("Compiling Mode");
+            break;
+
+        default:
+            std::cout << "Invalid mode. Use T, C, or R." << std::endl;
+            return 1;
     }
 
-    if (mode != TRANSLATE && std::system("g++ --version >nul 2>&1") != 0)
+    if (mode != TRANSLATE && std::system(("g++ --version " + cmd->getNullDevice()).c_str()) != 0)
     {
         std::cerr << "g++ not installed" << std::endl;
-    }
-
-    FileManager fileManager(inPath, outPath);
-
-    if (!fileManager.getIsOpen())
-    {
         return -1;
     }
 
-    const std::wstring wstr = fileManager.readFile();
-    Parser parser(Tokenizer::tokenize(wstr));
-
+    FileGraph& graph = FileGraph::Instance();
+    graph.reset();
     try
     {
         Utils::logMsg("Translating...");
-        parser.parse();
-
-        if (!parser.checkLegal())
-        {
-            std::cerr << "Code Illegal :(" << std::endl;
-            return -2;
-        }
+        graph.build(inPath, outPath);
+        graph.start();
+        graph.write();
+        ArrayHelper::write(File::getOutDir());
     }
     catch (const Error& err)
     {
         std::cerr << err.what() << std::endl;
+        graph.reset();
         return -1;
     }
 
-    if (!fileManager.writeFile(parser.translateToCpp()) || !FileManager::writeArrayFiles())
+    std::filesystem::path exePath = outPath;
+    std::string ext = cmd->getExeExtension();
+    if (!ext.empty())
     {
-        return -1;
+        exePath.replace_extension(ext);
     }
-
-
-    std::filesystem::path exePath = fileManager.getOutputPath();
+    else
+    {
+        exePath.replace_extension("");
+    }
 
     if (mode == COMPILE || mode == RUN)
     {
-        std::ostringstream cmd;;
-        if (exePath.extension() == ".cpp")
-        {
-            exePath.replace_extension(".exe");
-        }
-        else
-        {
-            std::cerr << "Error with output path :(" << std::endl;
-            return 2;
-        }
-
-        std::string filesStr = "";
-        const auto paths = FileManager::getAllCppFiles();
+        std::ostringstream cmdBuild;
+        std::string filesStr;
+        const auto paths = FileGraph::getAllCppPaths();
 
         for (const auto& path : paths)
         {
             filesStr += " \"" + path.string() + "\" ";
         }
 
-        cmd << "g++ -static -static-libgcc -static-libstdc++ -pthread"
-        << filesStr << "-Iincludes -o " << exePath << std::endl;
+        cmdBuild << "g++ -pthread " << filesStr
+                 << "-Iincludes -o \"" << exePath.string() << "\""
+                 << cmd->getCompileFlags();
 
         Utils::logMsg("Compiling...");
 
-        if (std::system(cmd.str().c_str()) != 0)
+        if (std::system(cmdBuild.str().c_str()) != 0)
         {
-            std::cerr << "Error with g++ : command: " << cmd.str() << std::endl;
-            return -3;
+            std::cerr << "Error with g++ : command: " << cmdBuild.str() << std::endl;
+            graph.reset();
+            return -4;
         }
     }
 
+    graph.reset();
+
     if (mode == RUN)
     {
-        std::ostringstream cmd;
         Utils::logMsg("Running...");
-
-        cmd << "start \"\" cmd /c \"" << exePath << " & pause\"";
-
-        std::system(cmd.str().c_str());
+        cmd->runExecutable(exePath.string());
     }
 
     return 0;

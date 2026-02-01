@@ -2,20 +2,20 @@
 
 #include <algorithm>
 
+#include "errorHandling/how/HowDidYouGetHere.h"
 
-ConstValueExpr::ConstValueExpr(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<IType> type, const std::wstring &value)
-    : Expr(scope, funcDecl), type(std::move(type)), value(value)
+
+ConstValueExpr::ConstValueExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<IType> type, const std::wstring &value)
+    : Expr(token, scope, funcDecl), type(std::move(type)), value(value)
 {
 }
 
-bool ConstValueExpr::isLegal() const
+void ConstValueExpr::analyze() const
 {
     if (value.empty())
     {
-        return false;
+        throw HowDidYouGetHere(token);
     }
-    // literal is always legal
-    return true;
 }
 
 std::string ConstValueExpr::translateToCpp() const

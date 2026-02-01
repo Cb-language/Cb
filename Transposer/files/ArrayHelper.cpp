@@ -1,5 +1,10 @@
 #include "ArrayHelper.h"
 
+#include <fstream>
+
+#include "errorHandling/Error.h"
+#include "errorHandling/preproccessorErrors/CouldntOpenFileForWriting.h"
+
 const std::string ArrayHelper::hStr = R"(#pragma once
 #include <sstream>
 
@@ -520,3 +525,33 @@ Array<T> Array<T>::slice(int start, int stop, int step)  const
 	return result;
 }
 )";
+
+bool ArrayHelper::wrote = false;
+
+void ArrayHelper::write(const std::filesystem::path& dir)
+{
+	if (ArrayHelper::wrote) return;
+	wrote = true;
+
+	const std::filesystem::path hPath = dir / "includes" / "Array.h";
+	const std::filesystem::path tppPath = dir / "includes" / "Array.tpp";
+
+	std::filesystem::create_directory(dir / "includes");
+	std::ofstream fileH(hPath);
+
+	if (!fileH || !fileH.is_open()) throw CouldntOpenFileForWriting(Token(Token::UNDEFINED_TOKEN, L"", 0, 0, hPath), hPath);
+
+	std::ofstream fileTpp(tppPath);
+
+	if (!fileTpp || !fileTpp.is_open())
+	{
+		fileH.close();
+		throw CouldntOpenFileForWriting(Token(Token::UNDEFINED_TOKEN, L"", 0, 0, tppPath), tppPath);
+	}
+
+	fileH << ArrayHelper::hStr;
+	fileTpp << ArrayHelper::tppStr;
+
+	fileH.close();
+	fileTpp.close();
+}

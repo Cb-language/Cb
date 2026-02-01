@@ -1,17 +1,28 @@
 #include "CaseStmt.h"
 
-CaseStmt::CaseStmt(Scope *scope, FuncDeclStmt *funcDecl, std::unique_ptr<Expr> expr, std::unique_ptr<BodyStmt> body,
-    const bool isDefault) : Stmt(scope, funcDecl), expr(std::move(expr)), body(std::move(body)), isDefault(isDefault)
+#include "errorHandling/how/HowDidYouGetHere.h"
+#include "errorHandling/semanticErrors/IllegalTypeCast.h"
+
+CaseStmt::CaseStmt(const Token& token, Scope *scope, FuncDeclStmt *funcDecl, std::unique_ptr<Expr> expr, std::unique_ptr<BodyStmt> body,
+                   const bool isDefault) : Stmt(token, scope, funcDecl), expr(std::move(expr)), body(std::move(body)), isDefault(isDefault)
 {
 }
 
-bool CaseStmt::isLegal() const
+void CaseStmt::analyze() const
 {
-    if (expr == nullptr && isDefault)
+    // Can't really get here, but it's good to check
+    if (body == nullptr)
     {
-        return body->isLegal();
+        throw HowDidYouGetHere(token);
     }
-    return body->isLegal() && expr->isLegal() && expr->getType()->isNumberable();
+
+    if (!expr->getType()->isNumberable())
+    {
+        throw IllegalTypeCast(token, expr->getType()->toString(), "degree");
+    }
+
+    body->analyze();
+    expr->analyze();
 }
 
 std::string CaseStmt::translateToCpp() const

@@ -22,8 +22,11 @@
 #include "AST/statements/expression/ArrayIndexingExpr.h"
 #include "AST/statements/expression/ArraySlicingExpr.h"
 #include "AST/statements/expression/ConstValueExpr.h"
+#include "AST/statements/expression/FuncCallExpr.h"
+#include "other/SymbolTable.h"
 #include "symbols/FuncCredit.h"
 #include "symbols/Type/ArrayType.h"
+#include "AST/statements/IncludeStmt.h"
 
 class Error;
 
@@ -36,6 +39,7 @@ private:
     std::vector<std::unique_ptr<Stmt>> stmts;
     std::queue<FuncCredit> creditsQ;
     std::queue<FuncCallExpr*> callsQ;
+    std::vector<std::unique_ptr<IncludeStmt>> includes;
 
     bool hasMain;
 
@@ -107,8 +111,14 @@ private:
 public:
     explicit Parser(const std::vector<Token>& tokens);
     ~Parser();
+    std::vector<std::pair<std::filesystem::path, Token>> readIncludes();
     void parse();
-    bool checkLegal();
-    std::string translateToCpp() const;
+    void analyze();
+    std::string translateToCpp(const std::filesystem::path& hPath, const bool isMain = false) const;
+    std::string translateToH(const bool isMain = false) const;
+    void addToSymTable(const SymbolTable& symTable);
+    const SymbolTable& getSymTable() const;
+    bool getHasMain() const;
+    const Token& getLast() const;
 };
 

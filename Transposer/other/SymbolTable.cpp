@@ -1,5 +1,6 @@
 #include "SymbolTable.h"
 
+#include <ranges>
 #include <sstream>
 
 #include "AST/statements/expression/FuncCallExpr.h"
@@ -37,7 +38,7 @@ void SymbolTable::addVar(const Var& var, const Token& token) const
 
 bool SymbolTable::doesFuncExist(const Func& f) const
 {
-    for (const auto& func : funcs)
+    for (const auto& func : funcs | std::views::keys)
     {
         if (func == f)
         {
@@ -50,7 +51,7 @@ bool SymbolTable::doesFuncExist(const Func& f) const
 
 bool SymbolTable::doesFuncExist(const std::wstring& name) const
 {
-    for (const auto& func : funcs)
+    for (const auto& func : funcs| std::views::keys)
     {
         if (func.getFuncName() == name)
         {
@@ -62,7 +63,7 @@ bool SymbolTable::doesFuncExist(const std::wstring& name) const
 
 bool SymbolTable::isLegalCredit(const FuncCredit& credit) const
 {
-    for (const auto& func : funcs)
+    for (const auto& func : funcs| std::views::keys)
     {
         if (credit.isLegalCredit(func))
         {
@@ -75,7 +76,7 @@ bool SymbolTable::isLegalCredit(const FuncCredit& credit) const
 
 std::unique_ptr<IType> SymbolTable::getCallType(FuncCallExpr* expr) const
 {
-    for (const auto& func : funcs)
+    for (const auto& func : funcs| std::views::keys)
     {
         if (expr->isLegalCall(func))
         {
@@ -86,12 +87,12 @@ std::unique_ptr<IType> SymbolTable::getCallType(FuncCallExpr* expr) const
     return nullptr;
 }
 
-void SymbolTable::addFunc(const Func& f)
+void SymbolTable::addFunc(const Func& f, const bool isIncluded)
 {
-    funcs.push_back(f.copy());
+    funcs.insert(std::make_pair(f.copy(), isIncluded));
 }
 
-void SymbolTable::enterScope(bool isBreakable, bool isContinueAble)
+void SymbolTable::enterScope(const bool isBreakable, const bool isContinueAble)
 {
     currScope = currScope->makeNewScope(isBreakable, isContinueAble);
 }
@@ -127,7 +128,7 @@ std::unique_ptr<Func> SymbolTable::getFunc(const std::wstring& name) const
     {
         return nullptr;
     }
-    for (const auto& func : funcs)
+    for (const auto& func : funcs | std::views::keys)
     {
         if (func.getFuncName() == name)
         {
@@ -140,14 +141,32 @@ std::unique_ptr<Func> SymbolTable::getFunc(const std::wstring& name) const
 std::string SymbolTable::getFuncsHeaders() const
 {
     std::ostringstream oss;
-    for (const auto& func : funcs)
+    for (const auto& [func, isIncluded] : funcs)
     {
         // convention to note write the main's header
-        if (func.getFuncName() != L"prelude")
+        if (func.getFuncName() != L"prelude" && !isIncluded)
         {
             oss << func.translateToCpp() << ";" << std::endl;
         }
     }
 
     return oss.str();
+}
+
+SymbolTable& SymbolTable::operator+=(const SymbolTable& other)
+{
+
+    for (const auto& func : other.funcs | std::views::keys)
+    {
+        addFunc(func, true);
+    }
+
+    if (other.head == nullptr) return *this;
+
+    for (const auto& [var, token] : other.head->getCurrVars())
+    {
+        addVar(var.copy(), token);
+    }
+
+    return *this;
 }

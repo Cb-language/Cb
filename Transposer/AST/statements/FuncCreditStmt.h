@@ -8,10 +8,10 @@ private:
     const FuncCredit funcCredit;
 
 public:
-    FuncCreditStmt(Scope* scope, FuncDeclStmt* funcDecl,const FuncCredit& funcCredit);
+    FuncCreditStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl,const FuncCredit& funcCredit);
 
     const std::wstring& getName() const;
 
-    bool isLegal() const override;
+    void analyze() const override;
     std::string translateToCpp() const override;
 };

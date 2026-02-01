@@ -1,8 +1,10 @@
 #include "Scope.h"
 
+#include <ranges>
+
 #include "Utils.h"
-#include "errorHandling/lexicalErrors/IdentifierTaken.h"
-#include "errorHandling/syntaxErrors/UnexpectedToken.h"
+#include "../errorHandling/semanticErrors/IdentifierTaken.h"
+#include "../errorHandling/syntaxErrors/UnexpectedToken.h"
 
 Scope::Scope(Scope* parent) : parent(parent)
 {
@@ -28,7 +30,7 @@ Scope::~Scope()
 
 std::optional<Var> Scope::getVar(const std::wstring& name) const
 {
-    for (auto& var : vars)
+    for (const auto& var : vars | std::views::keys)
     {
         if (name == var.getName())
         {
@@ -65,7 +67,7 @@ void Scope::addVar(std::unique_ptr<IType> type, const Token& token)
     }
 
     Var v = Var(std::move(type) , token.value);
-    for (const auto& var : vars)
+    for (const auto& var : vars | std::views::keys)
     {
         if (v == var)
         {
@@ -73,12 +75,12 @@ void Scope::addVar(std::unique_ptr<IType> type, const Token& token)
         }
     }
 
-    vars.emplace_back(std::move(v));
+    vars.emplace_back(std::move(v), token);
 }
 
 void Scope::addVar(const Var& var, const Token& token)
 {
-    for (const auto& v : vars)
+    for (const auto& v : vars| std::views::keys)
     {
         if (var == v)
         {
@@ -86,7 +88,7 @@ void Scope::addVar(const Var& var, const Token& token)
         }
     }
 
-    vars.emplace_back(var.copy());
+    vars.emplace_back(var.copy(), token);
 }
 
 int Scope::getLevel() const
@@ -130,4 +132,9 @@ bool Scope::getIsContinueAble() const
         return getParent()->getIsContinueAble();
     }
     return false;
+}
+
+const std::vector<std::pair<Var, Token>>& Scope::getCurrVars() const
+{
+    return vars;
 }

@@ -9,7 +9,7 @@
 class Scope
 {
 private:
-    std::vector<Var> vars;
+    std::vector<std::pair<Var, Token>> vars;
     Scope* parent;
     std::vector<std::unique_ptr<Scope>> children;
     const bool isBreakable = false;
@@ -29,4 +29,6 @@ public:
     int getLevel() const;
     bool getIsBreakable() const;
     bool getIsContinueAble() const;
+
+    const std::vector<std::pair<Var, Token>>& getCurrVars() const;
 };

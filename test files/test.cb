@@ -1,55 +1,8 @@
+feat "pascal.cb"║
+
 song prelude() -> degree
 ∮
-    playBar("Enter a positive whole number, 0 to exit")║
-    playBar()║
-
-    G║:cres:║
-    ∮
-        sharp degree x║
-        play("Enter x:")║
-        hear(x)║
-        playBar()║
-
-        D |x == 0|
-        ∮
-            pause║
-        ☉
-
-        playBar("DecToBin(BinToDec(x)) ?= x:", BinToDec(DecToBin(x)) == x)║
-        resume║
-    ☉
-
-    Fmin9
-    ∮
-        resume║
-    ☉
+    playBar("Hello World!")║
 
     B\0║
-☉
-
-song BinToDec(sharp degree b) -> sharp degree
-∮
-    sharp degree x║
-    G ║:b > 0:║
-    ∮
-        x += b % 10║
-        x *= 2║
-        b /= 10║
-    ☉
-
-    B\x║
-☉
-
-song DecToBin(sharp degree n) -> sharp degree
-∮
-    sharp degree x║
-
-    G ║: n > 0 :║
-    ∮
-        x *= 10║
-        x += 1 - n % 2║
-        n /= 2║
-    ☉
-
-    B\x║
 ☉

@@ -1,17 +1,18 @@
 #include "VarDeclStmt.h"
 
-VarDeclStmt::VarDeclStmt(Scope* scope, FuncDeclStmt* funcDecl, const bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var& var) :
-    Stmt(scope, funcDecl), hasStartingValue(hasStartingValue), startingValue(std::move(startingValue)) , var(var.copy())
+#include "errorHandling/semanticErrors/IllegalTypeCast.h"
+
+VarDeclStmt::VarDeclStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, const bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var& var) :
+    Stmt(token, scope, funcDecl), hasStartingValue(hasStartingValue), startingValue(std::move(startingValue)) , var(var.copy())
 {
 }
 
-bool VarDeclStmt::isLegal() const
+void VarDeclStmt::analyze() const
 {
-    if (hasStartingValue)
+    if (hasStartingValue && *(var.getType()) != *(startingValue->getType()))
     {
-        return *(var.getType()) == *(startingValue->getType());
+        throw IllegalTypeCast(token, var.getType()->toString(), startingValue->getType()->toString());
     }
-    return true;
 }
 
 std::string VarDeclStmt::translateToCpp() const

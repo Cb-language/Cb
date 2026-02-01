@@ -1,19 +1,44 @@
 #include "ArraySlicingExpr.h"
 
-ArraySlicingExpr::ArraySlicingExpr(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, std::unique_ptr<Expr> start, std::unique_ptr<Expr> stop, std::unique_ptr<Expr> step)
-    : Call(scope, funcDecl), call(std::move(call)), start(std::move(start)), stop(std::move(stop)), step(std::move(step))
+#include "errorHandling/semanticErrors/IllegalOpOnType.h"
+#include "errorHandling/semanticErrors/IllegalTypeCast.h"
+
+ArraySlicingExpr::ArraySlicingExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, std::unique_ptr<Expr> start, std::unique_ptr<Expr> stop, std::unique_ptr<Expr> step)
+    : Call(token, scope, funcDecl), call(std::move(call)), start(std::move(start)), stop(std::move(stop)), step(std::move(step))
 {
 }
 
 ArraySlicingExpr::ArraySlicingExpr(const ArraySlicingExpr& other)
-    : Call(other.scope, other.funcDecl), call(other.call.get()), start(other.start.get()), stop(other.stop.get()), step(other.step.get())
+    : Call(other.token, other.scope, other.funcDecl), call(other.call.get()), start(other.start.get()), stop(other.stop.get()), step(other.step.get())
 {
 }
 
-bool ArraySlicingExpr::isLegal() const
+void ArraySlicingExpr::analyze() const
 {
-    return call->getType()->getArrLevel() > 0 && call->isLegal() && start->isLegal() && stop->isLegal() && step->isLegal()
-    && start->getType()->isNumberable() && stop->getType()->isNumberable() && step->getType()->isNumberable();
+    if (call->getType()->getArrLevel() == 0)
+    {
+        throw IllegalOpOnType(token, call->getType()->toString());
+    }
+
+    if (!start->getType()->isNumberable())
+    {
+        throw IllegalTypeCast(token, start->getType()->toString(), "degree");
+    }
+
+    if (!step->getType()->isNumberable())
+    {
+        throw IllegalTypeCast(token, step->getType()->toString(), "degree");
+    }
+
+    if (!stop->getType()->isNumberable())
+    {
+        throw IllegalTypeCast(token, stop->getType()->toString(), "degree");
+    }
+
+    call->analyze();
+    start->analyze();
+    stop->analyze();
+    step->analyze();
 }
 
 std::string ArraySlicingExpr::translateToCpp() const

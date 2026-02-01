@@ -25,4 +25,6 @@ public:
     bool isLegalCall(const Func& other) const;
 
     Func copy() const;
+
+    bool operator<(const Func& other) const;
 };

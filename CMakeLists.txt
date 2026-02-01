@@ -15,30 +15,16 @@ set(CMAKE_CXX_STANDARD 20)
 include_directories(Transposer)
 
 add_executable(Transposer
-        Transposer/files/FileManager.cpp
-        Transposer/files/FileManager.h
         Transposer/Source.cpp
         Transposer/token/Token.cpp
         Transposer/token/Token.h
         Transposer/token/Tokenizer.cpp
         Transposer/token/Tokenizer.h
         Transposer/AST/abstract/Statement.h
-        Transposer/errorHandling/ErrorHandler.cpp
-        Transposer/errorHandling/ErrorHandler.h
-        Transposer/errorHandling/lexicalErrors/UnidentifiedToken.cpp
-        Transposer/errorHandling/lexicalErrors/UnidentifiedToken.h
         Transposer/errorHandling/Error.cpp
         Transposer/errorHandling/Error.h
-        Transposer/errorHandling/lexicalErrors/InvalidNumberLiteral.cpp
-        Transposer/errorHandling/lexicalErrors/InvalidNumberLiteral.h
-        Transposer/errorHandling/lexicalErrors/UnterminatedString.cpp
-        Transposer/errorHandling/lexicalErrors/UnterminatedString.h
-        Transposer/errorHandling/lexicalErrors/InvalidEscapeSequence.cpp
-        Transposer/errorHandling/lexicalErrors/InvalidEscapeSequence.h
         Transposer/errorHandling/lexicalErrors/UnexpectedEOF.cpp
         Transposer/errorHandling/lexicalErrors/UnexpectedEOF.h
-        Transposer/errorHandling/lexicalErrors/InvalidCharacterEncoding.cpp
-        Transposer/errorHandling/lexicalErrors/InvalidCharacterEncoding.h
         Transposer/errorHandling/syntaxErrors/MissingSemicolon.cpp
         Transposer/errorHandling/syntaxErrors/MissingSemicolon.h
         Transposer/errorHandling/syntaxErrors/MissingParenthesis.cpp
@@ -47,16 +33,12 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/MissingBrace.h
         Transposer/errorHandling/syntaxErrors/UnexpectedToken.cpp
         Transposer/errorHandling/syntaxErrors/UnexpectedToken.h
-        Transposer/errorHandling/syntaxErrors/MisplacedKeyword.cpp
-        Transposer/errorHandling/syntaxErrors/MisplacedKeyword.h
         Transposer/errorHandling/syntaxErrors/InvalidExpression.cpp
         Transposer/errorHandling/syntaxErrors/InvalidExpression.h
-        Transposer/errorHandling/syntaxErrors/InvalidStatement.cpp
-        Transposer/errorHandling/syntaxErrors/InvalidStatement.h
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.cpp
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.h
-        Transposer/parser/parser.cpp
-        Transposer/parser/parser.h
+        Transposer/parser/Parser.cpp
+        Transposer/parser/Parser.h
         Transposer/symbols/Type/Type.cpp
         Transposer/symbols/Type/Type.h
         Transposer/AST/abstract/Expression.h
@@ -68,16 +50,14 @@ add_executable(Transposer
         Transposer/other/Scope.h
         Transposer/symbols/Var.cpp
         Transposer/symbols/Var.h
-        Transposer/errorHandling/lexicalErrors/IdentifierTaken.cpp
-        Transposer/errorHandling/lexicalErrors/IdentifierTaken.h
+        Transposer/errorHandling/semanticErrors/IdentifierTaken.cpp
+        Transposer/errorHandling/semanticErrors/IdentifierTaken.h
         Transposer/other/Utils.cpp
         Transposer/other/Utils.h
         Transposer/AST/statements/VarDeclStmt.cpp
         Transposer/AST/statements/VarDeclStmt.h
         Transposer/AST/statements/AssignmentStmt.cpp
         Transposer/AST/statements/AssignmentStmt.h
-        Transposer/errorHandling/lexicalErrors/InvalidIdentifier.cpp
-        Transposer/errorHandling/lexicalErrors/InvalidIdentifier.h
         Transposer/AST/statements/expression/VarCallExpr.cpp
         Transposer/AST/statements/expression/VarCallExpr.h
         Transposer/AST/statements/expression/BinaryOpExpr.cpp
@@ -96,18 +76,18 @@ add_executable(Transposer
         Transposer/AST/statements/FuncDeclStmt.h
         Transposer/AST/statements/ReturnStmt.cpp
         Transposer/AST/statements/ReturnStmt.h
-        Transposer/errorHandling/syntaxErrors/WrongReturnType.cpp
-        Transposer/errorHandling/syntaxErrors/WrongReturnType.h
-        Transposer/errorHandling/syntaxErrors/NoReturnStmt.cpp
-        Transposer/errorHandling/syntaxErrors/NoReturnStmt.h
-        Transposer/errorHandling/lexicalErrors/MainOverride.cpp
-        Transposer/errorHandling/lexicalErrors/MainOverride.h
-        Transposer/errorHandling/lexicalErrors/NoMain.cpp
-        Transposer/errorHandling/lexicalErrors/NoMain.h
-        Transposer/errorHandling/lexicalErrors/InvalidMainArgs.cpp
-        Transposer/errorHandling/lexicalErrors/InvalidMainArgs.h
-        Transposer/errorHandling/lexicalErrors/InvalidMainReturnType.cpp
-        Transposer/errorHandling/lexicalErrors/InvalidMainReturnType.h
+        Transposer/errorHandling/semanticErrors/WrongReturnType.cpp
+        Transposer/errorHandling/semanticErrors/WrongReturnType.h
+        Transposer/errorHandling/semanticErrors/NoReturnStmt.cpp
+        Transposer/errorHandling/semanticErrors/NoReturn.h
+        Transposer/errorHandling/entryPointErrors/MainOverride.cpp
+        Transposer/errorHandling/entryPointErrors/MainOverride.h
+        Transposer/errorHandling/entryPointErrors/NoMain.cpp
+        Transposer/errorHandling/entryPointErrors/NoMain.h
+        Transposer/errorHandling/entryPointErrors/InvalidMainArgs.cpp
+        Transposer/errorHandling/entryPointErrors/InvalidMainArgs.h
+        Transposer/errorHandling/entryPointErrors/InvalidMainReturnType.cpp
+        Transposer/errorHandling/entryPointErrors/InvalidMainReturnType.h
         Transposer/symbols/FuncCredit.cpp
         Transposer/symbols/FuncCredit.h
         Transposer/AST/statements/FuncCreditStmt.cpp
@@ -142,6 +122,71 @@ add_executable(Transposer
         Transposer/AST/statements/ContinueStmt.h
         Transposer/AST/statements/ForStmt.cpp
         Transposer/AST/statements/ForStmt.h
+        Transposer/errorHandling/how/HowDidYouGetHere.cpp
+        Transposer/errorHandling/how/HowDidYouGetHere.h
+        Transposer/errorHandling/semanticErrors/StmtNotBreakable.cpp
+        Transposer/errorHandling/semanticErrors/StmtNotBreakable.h
+        Transposer/errorHandling/semanticErrors/StmtNotContinueAble.cpp
+        Transposer/errorHandling/semanticErrors/StmtNotContinueAble.h
+        Transposer/errorHandling/lexicalErrors/UnrecognizedToken.cpp
+        Transposer/errorHandling/lexicalErrors/UnrecognizedToken.h
+        Transposer/errorHandling/semanticErrors/UnrecognizedIdentifier.cpp
+        Transposer/errorHandling/semanticErrors/UnrecognizedIdentifier.h
+        Transposer/errorHandling/syntaxErrors/StmtInsideSwitchThatIsNotCase.cpp
+        Transposer/errorHandling/syntaxErrors/StmtInsideSwitchThatIsNotCase.h
+        Transposer/errorHandling/lexicalErrors/InvalidNumberLiteral.cpp
+        Transposer/errorHandling/lexicalErrors/InvalidNumberLiteral.h
+        Transposer/errorHandling/syntaxErrors/NoPlacementOperator.cpp
+        Transposer/errorHandling/syntaxErrors/NoPlacementOperator.h
+        Transposer/errorHandling/syntaxErrors/ExpectedAnExpression.cpp
+        Transposer/errorHandling/syntaxErrors/ExpectedAnExpression.h
+        Transposer/errorHandling/syntaxErrors/MissingPipe.cpp
+        Transposer/errorHandling/syntaxErrors/MissingPipe.h
+        Transposer/errorHandling/semanticErrors/IllegalTypeCast.cpp
+        Transposer/errorHandling/semanticErrors/IllegalTypeCast.h
+        Transposer/errorHandling/semanticErrors/IllegalSwitchVar.cpp
+        Transposer/errorHandling/semanticErrors/IllegalSwitchVar.h
+        Transposer/errorHandling/semanticErrors/IllegalHear.cpp
+        Transposer/errorHandling/semanticErrors/IllegalHear.h
+        Transposer/errorHandling/semanticErrors/FuncInsideFunc.cpp
+        Transposer/errorHandling/semanticErrors/FuncInsideFunc.h
+        Transposer/errorHandling/semanticErrors/IllegalOpOnType.cpp
+        Transposer/errorHandling/semanticErrors/IllegalOpOnType.h
+        Transposer/errorHandling/semanticErrors/CallWithoutCopyright.cpp
+        Transposer/errorHandling/semanticErrors/CallWithoutCopyright.h
+        Transposer/errorHandling/semanticErrors/IllegalCredit.cpp
+        Transposer/errorHandling/semanticErrors/IllegalCredit.h
+        Transposer/errorHandling/semanticErrors/IllegalCall.cpp
+        Transposer/errorHandling/semanticErrors/IllegalCall.h
+        Transposer/AST/statements/IncludeStmt.cpp
+        Transposer/AST/statements/IncludeStmt.h
+        Transposer/errorHandling/syntaxErrors/IncludeNotInTop.cpp
+        Transposer/errorHandling/syntaxErrors/IncludeNotInTop.h
+        Transposer/errorHandling/semanticErrors/InvalidPathExtension.cpp
+        Transposer/errorHandling/semanticErrors/InvalidPathExtension.h
+        Transposer/errorHandling/syntaxErrors/ExpectedAPath.cpp
+        Transposer/errorHandling/syntaxErrors/ExpectedAPath.h
+        Transposer/files/File.cpp
+        Transposer/files/File.h
+        Transposer/files/FileNode.cpp
+        Transposer/files/FileNode.h
+        Transposer/files/FileGraph.cpp
+        Transposer/files/FileGraph.h
+        Transposer/multyOSSupport/CMD.h
+        Transposer/multyOSSupport/CMDFactory.cpp
+        Transposer/multyOSSupport/CMDFactory.h
+        Transposer/multyOSSupport/UnixCMD.cpp
+        Transposer/multyOSSupport/UnixCMD.h
+        Transposer/multyOSSupport/WindowsCMD.cpp
+        Transposer/multyOSSupport/WindowsCMD.h
+        Transposer/errorHandling/preproccessorErrors/IncludePathNotFound.cpp
+        Transposer/errorHandling/preproccessorErrors/IncludePathNotFound.h
+        Transposer/errorHandling/preproccessorErrors/CircularDependency.cpp
+        Transposer/errorHandling/preproccessorErrors/CircularDependency.h
+        Transposer/errorHandling/preproccessorErrors/CouldntOpenFile.cpp
+        Transposer/errorHandling/preproccessorErrors/CouldntOpenFile.h
+        Transposer/errorHandling/preproccessorErrors/CouldntOpenFileForWriting.cpp
+        Transposer/errorHandling/preproccessorErrors/CouldntOpenFileForWriting.h
 )
 
 # In order to call the exe from the cmd

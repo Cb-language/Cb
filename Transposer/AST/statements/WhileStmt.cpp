@@ -1,12 +1,14 @@
 #include "WhileStmt.h"
 
-WhileStmt::WhileStmt(Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& condition, std::unique_ptr<Stmt>& body) : Stmt(scope, funcDecl), condition(std::move(condition)), body(std::move(body))
+WhileStmt::WhileStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& condition, std::unique_ptr<Stmt>& body)
+    : Stmt(token, scope, funcDecl), condition(std::move(condition)), body(std::move(body))
 {
 }
 
-bool WhileStmt::isLegal() const
+void WhileStmt::analyze() const
 {
-    return body->isLegal() && condition->isLegal();
+    body->analyze();
+    condition->analyze();
 }
 
 std::string WhileStmt::translateToCpp() const

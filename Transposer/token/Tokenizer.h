@@ -15,5 +15,5 @@ private:
 
 public:
 	static void init();
-	static std::vector<Token> tokenize(const std::wstring& code);
+	static std::vector<Token> tokenize(const std::wstring& code, const std::filesystem::path& path);
 };

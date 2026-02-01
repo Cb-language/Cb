@@ -6,7 +6,7 @@ class BreakStmt : public Stmt
 private:
 
 public:
-    BreakStmt(Scope* scope, FuncDeclStmt* funcDecl);
-    bool isLegal() const override;
+    BreakStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl);
+    void analyze() const override;
     std::string translateToCpp() const override;
 };

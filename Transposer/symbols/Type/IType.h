@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 
+#include "other/Utils.h"
+
 class IType
 {
 protected:
@@ -29,4 +31,9 @@ public:
     virtual unsigned int getArrLevel() const {return 0;} // 0 - non array
 
     virtual std::unique_ptr<IType> getArrType() const {return nullptr;}
+
+    std::string toString() const
+    {
+        return Utils::wstrToStr(this->getType());
+    }
 };

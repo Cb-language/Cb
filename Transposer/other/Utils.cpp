@@ -1,14 +1,8 @@
 #include "Utils.h"
 
 #include <codecvt>
+#include <iostream>
 #include <locale>
-
-SymbolTable* Utils::symTable = nullptr;
-
-void Utils::init(SymbolTable* symTable)
-{
-    Utils::symTable = symTable;
-}
 
 std::string Utils::wstrToStr(const std::wstring& wstr)
 {
@@ -24,11 +18,6 @@ void Utils::logMsg(const std::string& msg)
         << std::endl;
 }
 
-void Utils::reset()
-{
-    symTable = nullptr;
-}
-
 std::string Utils::removeFirstTabs(std::string& str)
 {
     if (!str.starts_with("\t"))
@@ -37,4 +26,21 @@ std::string Utils::removeFirstTabs(std::string& str)
     }
     str.erase(0, 1);
     return removeFirstTabs(str);
+}
+
+std::string Utils::normalizePath(const std::filesystem::path& path)
+{
+    std::string res;
+    bool dontAddBackslash = true;
+    for (auto& part : path)
+    {
+        if (!dontAddBackslash)
+        {
+            if (part == "\\") continue;
+            res += "/";
+        }
+        else dontAddBackslash = false;
+        res += part.string();
+    }
+    return res;
 }

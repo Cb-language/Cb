@@ -93,3 +93,8 @@ Func Func::copy() const
 {
     return Func(rType->copy(), funcName, args);
 }
+
+bool Func::operator<(const Func& other) const
+{
+    return funcName < other.funcName;
+}
