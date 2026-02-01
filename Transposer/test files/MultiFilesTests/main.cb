@@ -1,6 +1,6 @@
 feat "A.cb"║
 feat "B.cb"║
-song ©(a, b) playsome()
+song prelude() -> degree
 ∮
     playBar("Hello World!")║
     a()║
