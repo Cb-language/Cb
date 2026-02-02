@@ -17,7 +17,7 @@ protected:
 
     Stmt(const Token& token, Scope* scope);
     Stmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl);
-    std::string getTabs() const;
+    std::string getTabs(const int offset = 0) const;
 public:
     virtual ~Stmt();
     virtual void analyze() const = 0;
@@ -36,12 +36,12 @@ inline Stmt::Stmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl) : to
 {
 }
 
-inline std::string Stmt::getTabs() const
+inline std::string Stmt::getTabs(const int offset) const
 {
     const int level = scope->getLevel();
     std::string res;
 
-    for (auto i = 0; i < level; i++)
+    for (auto i = 0; i < level + offset; i++)
     {
         res += "\t";
     }

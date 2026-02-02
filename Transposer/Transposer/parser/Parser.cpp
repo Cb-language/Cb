@@ -166,6 +166,8 @@ std::string Parser::translateToH(const bool isMain) const
     const std::string funcHeaders = symTable.getFuncsHeaders();
     if (!funcHeaders.empty()) oss << std::endl << funcHeaders;
 
+    for (const auto& stmt : stmts) oss << stmt->translateToH();
+
     return oss.str();
 }
 
@@ -589,6 +591,10 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             bodyStmts.push_back(parseForStmt());
         }
+        else if (match(Token::KEYWORD, L"instrument"))
+        {
+            bodyStmts.push_back(parseClassDeclStmt());
+        }
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
         {
             advance();
@@ -991,36 +997,52 @@ std::unique_ptr<ForStmt> Parser::parseForStmt()
         std::move(body), isIncreasing, std::move(startExpr), std::move(stepExpr), std::move(stopExpr), varName);
 }
 
-std::unique_ptr<FieldDeclStmt> Parser::parseFieldDeclStmt(const bool isPublic)
+std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
 {
-    if (match(Token::TYPE, L"riff"))
+    Token t = current();
+    expect(Token::KEYWORD, L"instrument", HowDidYouGetHere(t));
+
+    const std::wstring name = expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())).value;
+    std::vector<Field> fields;
+    std::vector<Method> methods;
+
+    expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+
+    while (!match(Token::PUNCTUATION, L"☉"))
     {
-        return parseArrayDeclStmt();
+        if (match(Token::KEYWORD, L"playerScore"))
+        {
+            advance();
+            expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+
+            while (!match(Token::PUNCTUATION, L"☉"))
+            {
+                if (match(Token::KEYWORD, L"song")) methods.emplace_back(false, parseFuncDeclStmt());
+                else fields.emplace_back(false, parseVarDecStmt());
+            }
+            advance();
+        }
+        else if (match(Token::KEYWORD, L"conductorScore"))
+        {
+            advance();
+            expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+
+            while (!match(Token::PUNCTUATION, L"☉"))
+            {
+                if (match(Token::KEYWORD, L"song")) methods.emplace_back(true, parseFuncDeclStmt());
+                else fields.emplace_back(true, parseVarDecStmt());
+            }
+            advance();
+        }
+        else
+        {
+            throw UnrecognizedIdentifier(current());
+        }
+
     }
+    advance();
 
-    const Token& t = current();
-    const std::unique_ptr<IType> varType = parseIType();
-
-    const std::wstring varName = expectAndGet(
-        Token::IDENTIFIER, MissingIdentifier(current())
-        ).value;
-
-    const Var var(varType->copy(), varName);
-    const Token identifierToken = prev();
-
-    if (match(Token::PUNCTUATION, L"║"))
-    {
-        symTable.addVar(varType->copy(), identifierToken);
-        advance();
-        return std::make_unique<VarDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), false, nullptr, var);
-    }
-
-    expect(Token::OP_ASSIGNMENT, L"=" , NoPlacementOperator(current()));
-
-    auto expr = parseExpr();
-    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
-    symTable.addVar(varType->copy(), identifierToken); // to avoid degree x = x + 1║ ...
-    return std::make_unique<VarDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), true, std::move(expr), var);
+    return std::make_unique<ClassDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), name, fields, methods);
 }
 
 std::unique_ptr<Call> Parser::parseFuncCallExpr(const bool isStmt)

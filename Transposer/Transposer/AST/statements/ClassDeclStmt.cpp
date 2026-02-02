@@ -32,22 +32,22 @@ std::string ClassDeclStmt::translateToH() const
     std::ostringstream publics;
 
     privates << "private:";
-    privates << "public:";
+    publics << "public:";
 
     oss << "class " << Utils::wstrToStr(name) << std::endl << "{" << std::endl;
 
     for (const auto& [isPublic, field] : fields)
     {
-        if (isPublic) publics << getTabs() << field->translateToCpp() << std::endl;
-        else privates << getTabs() << field->translateToCpp() << std::endl;
+        if (isPublic) publics << std::endl << getTabs(1) << field->translateToCpp();
+        else privates << std::endl << getTabs(1) << field->translateToCpp();
     }
 
     for (const auto& [isPublic, method] : methods)
     {
-        if (isPublic) publics << getTabs() << method->translateToH() << ";" << std::endl;
-        else privates << getTabs() << method->translateToH() << ";" << std::endl;
+        if (isPublic) publics << std::endl << getTabs(1) << method->translateToH() << ";";
+        else privates << std::endl << getTabs(1) << method->translateToH() << ";";
     }
 
-    oss << privates.str() << std::endl << publics.str() << std::endl << "};" << std::endl;
+    oss << privates.str() << std::endl << std::endl << publics.str() << std::endl << "};" << std::endl;
     return oss.str();
 }

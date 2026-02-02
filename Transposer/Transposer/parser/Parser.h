@@ -8,8 +8,8 @@
 #include "AST/statements/BodyStmt.h"
 #include "AST/statements/BreakStmt.h"
 #include "AST/statements/CaseStmt.h"
+#include "AST/statements/ClassDeclStmt.h"
 #include "AST/statements/ContinueStmt.h"
-#include "AST/statements/FieldDeclStmt.h"
 #include "AST/statements/ForStmt.h"
 #include "AST/statements/FuncCreditStmt.h"
 #include "AST/statements/HearStmt.h"
@@ -89,7 +89,7 @@ private:
     std::unique_ptr<SwitchStmt> parseSwitchStmt();
     std::unique_ptr<ContinueStmt> parseContinueStmt();
     std::unique_ptr<ForStmt> parseForStmt();
-    std::unique_ptr<FieldDeclStmt> parseFieldDeclStmt(const bool isPublic);
+    std::unique_ptr<ClassDeclStmt> parseClassDeclStmt();
 
     // Expressions
 

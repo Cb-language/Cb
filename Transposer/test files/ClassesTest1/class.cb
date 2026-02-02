@@ -1,0 +1,17 @@
+instrument Test
+∮
+    playerScore
+    ∮
+        degree x║
+        song f() ∮playBar("Hello World!")║
+    ☉
+    conductorScore
+    ∮
+        mute m = cres║
+        song ©(f) g(degree z) -> degree
+        ∮
+            f()║
+            B\z*z║
+        ☉
+    ☉
+☉
