@@ -991,6 +991,38 @@ std::unique_ptr<ForStmt> Parser::parseForStmt()
         std::move(body), isIncreasing, std::move(startExpr), std::move(stepExpr), std::move(stopExpr), varName);
 }
 
+std::unique_ptr<FieldDeclStmt> Parser::parseFieldDeclStmt(const bool isPublic)
+{
+    if (match(Token::TYPE, L"riff"))
+    {
+        return parseArrayDeclStmt();
+    }
+
+    const Token& t = current();
+    const std::unique_ptr<IType> varType = parseIType();
+
+    const std::wstring varName = expectAndGet(
+        Token::IDENTIFIER, MissingIdentifier(current())
+        ).value;
+
+    const Var var(varType->copy(), varName);
+    const Token identifierToken = prev();
+
+    if (match(Token::PUNCTUATION, L"║"))
+    {
+        symTable.addVar(varType->copy(), identifierToken);
+        advance();
+        return std::make_unique<VarDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), false, nullptr, var);
+    }
+
+    expect(Token::OP_ASSIGNMENT, L"=" , NoPlacementOperator(current()));
+
+    auto expr = parseExpr();
+    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+    symTable.addVar(varType->copy(), identifierToken); // to avoid degree x = x + 1║ ...
+    return std::make_unique<VarDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), true, std::move(expr), var);
+}
+
 std::unique_ptr<Call> Parser::parseFuncCallExpr(const bool isStmt)
 {
     const Token& t = current();

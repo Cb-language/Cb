@@ -22,6 +22,7 @@ public:
     virtual ~Stmt();
     virtual void analyze() const = 0;
     virtual std::string translateToCpp() const = 0;
+    virtual std::string translateToH() const;
 
     void setFuncDecl(FuncDeclStmt *funcDecl);
 };
@@ -52,6 +53,11 @@ inline Stmt::~Stmt()
 {
     scope = nullptr;
     funcDecl = nullptr;
+}
+
+inline std::string Stmt::translateToH() const
+{
+    return ""; // not a lot of thing need it
 }
 
 inline void Stmt::setFuncDecl(FuncDeclStmt* funcDecl)

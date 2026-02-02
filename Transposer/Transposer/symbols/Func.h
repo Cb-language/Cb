@@ -18,7 +18,7 @@ public:
     const std::wstring& getFuncName() const;
     std::unique_ptr<IType> getType() const;
 
-    std::string translateToCpp() const;
+    std::string translateToCpp(const std::wstring& className = L"") const;
 
     bool operator==(const Func& other) const;
 

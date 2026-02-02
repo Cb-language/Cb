@@ -187,6 +187,12 @@ add_executable(Transposer
         Transposer/errorHandling/preproccessorErrors/CouldntOpenFile.h
         Transposer/errorHandling/preproccessorErrors/CouldntOpenFileForWriting.cpp
         Transposer/errorHandling/preproccessorErrors/CouldntOpenFileForWriting.h
+        Transposer/AST/statements/FieldDeclStmt.cpp
+        Transposer/AST/statements/FieldDeclStmt.h
+        Transposer/errorHandling/classErrors/IllegalFieldName.cpp
+        Transposer/errorHandling/classErrors/IllegalFieldName.h
+        Transposer/AST/statements/ClassDeclStmt.cpp
+        Transposer/AST/statements/ClassDeclStmt.h
 )
 
 # In order to call the exe from the cmd

@@ -34,4 +34,5 @@ public:
 
     void analyze() const override;
     std::string translateToCpp() const override;
+    std::string translateToCppClass(const std::wstring& className) const;
 };

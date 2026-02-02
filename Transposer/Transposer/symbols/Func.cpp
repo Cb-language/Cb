@@ -25,7 +25,7 @@ std::unique_ptr<IType> Func::getType() const
     return rType->copy();
 }
 
-std::string Func::translateToCpp() const
+std::string Func::translateToCpp(const std::wstring& className) const
 {
     std::string funcNameStr = Utils::wstrToStr(funcName);
 
@@ -34,7 +34,14 @@ std::string Func::translateToCpp() const
         funcNameStr = "main";
     }
 
-    std::string header = rType->translateTypeToCpp() + " " +  funcNameStr + "(";
+    std::string header = rType->translateTypeToCpp() + " ";
+
+    if (!className.empty())
+    {
+        header += Utils::wstrToStr(className) + "::";
+    }
+
+    header += funcNameStr + "(";
 
     bool first = true;
     for (const auto& arg : args)
