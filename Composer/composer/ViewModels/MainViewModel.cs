@@ -132,7 +132,7 @@ public partial class MainViewModel : ViewModelBase
             Debug.WriteLine($"Folder opened: {CurrentFolderPath}");
 
             FolderFiles.Clear();
-            var files = Directory.GetFiles(CurrentFolderPath, "*.cb", SearchOption.AllDirectories);
+            var files = Directory.GetFiles(CurrentFolderPath, "*.cb", SearchOption.TopDirectoryOnly);
             foreach (var file in files)
             {
                 FolderFiles.Add(Path.GetFileName(file));
@@ -147,7 +147,7 @@ public partial class MainViewModel : ViewModelBase
         var found = 0;
         string? mainFile = null;
         
-        var files = Directory.GetFiles(folderPath, "*.cb", SearchOption.AllDirectories);
+        var files = Directory.GetFiles(folderPath, "*.cb", SearchOption.TopDirectoryOnly);
         foreach (var file in files)
         {
             try
@@ -451,7 +451,7 @@ public partial class MainViewModel : ViewModelBase
         if (string.IsNullOrEmpty(CurrentFolderPath)) return;
 
         // this is a hack to get the full path, since the file list only has the file name
-        var fullPath = Directory.GetFiles(CurrentFolderPath, fileName, SearchOption.AllDirectories).FirstOrDefault();
+        var fullPath = Directory.GetFiles(CurrentFolderPath, fileName, SearchOption.TopDirectoryOnly).FirstOrDefault();
 
         if (string.IsNullOrEmpty(fullPath)) return;
         
