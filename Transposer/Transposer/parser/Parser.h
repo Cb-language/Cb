@@ -73,7 +73,7 @@ private:
 
     // General Statements
 
-    std::unique_ptr<VarDeclStmt> parseVarDecStmt();
+    std::unique_ptr<VarDeclStmt> parseVarDecStmt(const bool isField = false);
     std::unique_ptr<AssignmentStmt> parseAssignmentStmt();
     std::unique_ptr<HearStmt> parseHearStmt();
     std::unique_ptr<PlayStmt> parsePlayStmt();

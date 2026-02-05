@@ -50,6 +50,7 @@
 
 // ---------- just how ----------
 #include "../errorHandling/how/HowDidYouGetHere.h"
+#include "errorHandling/classErrors/MissingClassPipe.h"
 #include "files/FileGraph.h"
 
 
@@ -380,7 +381,7 @@ bool Parser::isUnaryOpStmtAhead()
     return result;
 }
 
-std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt()
+std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt(const bool isField)
 {
     if (match(Token::TYPE, L"riff"))
     {
@@ -397,6 +398,12 @@ std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt()
     const Var var(varType->copy(), varName);
     const Token identifierToken = prev();
 
+    if (isField && !match(Token::OP_ASSIGNMENT, L"="))
+    {
+        symTable.addVar(varType->copy(), identifierToken);
+        return std::make_unique<VarDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), false, nullptr, var);
+    }
+
     if (match(Token::PUNCTUATION, L"║"))
     {
         symTable.addVar(varType->copy(), identifierToken);
@@ -407,7 +414,7 @@ std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt()
     expect(Token::OP_ASSIGNMENT, L"=" , NoPlacementOperator(current()));
 
     auto expr = parseExpr();
-    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+    if (!isField) expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
     symTable.addVar(varType->copy(), identifierToken); // to avoid degree x = x + 1║ ...
     return std::make_unique<VarDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), true, std::move(expr), var);
 }
@@ -1015,24 +1022,40 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
             advance();
             expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
 
-            while (!match(Token::PUNCTUATION, L"☉"))
+            while (true)
             {
                 if (match(Token::KEYWORD, L"song")) methods.emplace_back(false, parseFuncDeclStmt());
-                else fields.emplace_back(false, parseVarDecStmt());
+                else fields.emplace_back(false, parseVarDecStmt(true));
+
+                if (match(Token::PUNCTUATION, L"║"))
+                {
+                    break;
+                }
+
+                expect(Token::PUNCTUATION, L"|", MissingClassPipe(current()));
             }
-            advance();
+            advance(); // consume the ║
+            expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
         }
         else if (match(Token::KEYWORD, L"conductorScore"))
         {
             advance();
             expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
 
-            while (!match(Token::PUNCTUATION, L"☉"))
+            while (true)
             {
                 if (match(Token::KEYWORD, L"song")) methods.emplace_back(true, parseFuncDeclStmt());
-                else fields.emplace_back(true, parseVarDecStmt());
+                else fields.emplace_back(true, parseVarDecStmt(true));
+
+                if (match(Token::PUNCTUATION, L"║"))
+                {
+                    break;
+                }
+
+                expect(Token::PUNCTUATION, L"|", MissingClassPipe(current()));
             }
-            advance();
+            advance(); // consume the ║
+            expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
         }
         else
         {

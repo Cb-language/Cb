@@ -191,6 +191,8 @@ add_executable(Transposer
         Transposer/errorHandling/classErrors/IllegalFieldName.h
         Transposer/AST/statements/ClassDeclStmt.cpp
         Transposer/AST/statements/ClassDeclStmt.h
+        Transposer/errorHandling/classErrors/MissingClassPipe.cpp
+        Transposer/errorHandling/classErrors/MissingClassPipe.h
 )
 
 # In order to call the exe from the cmd

@@ -1,17 +1,9 @@
 instrument Test
 ∮
     playerScore
-    ∮
-        degree x║
-        song f() ∮playBar("Hello World!")║☉
-    ☉
+    ∮degree x | song f() ∮playBar("Hello World!")║☉ | bar b = "sdadasd"║☉
     conductorScore
-    ∮
-        mute m = cres║
-        song ©(f) g(degree z) -> degree
-        ∮
-            f()║
-            B\z*z║
-        ☉
-    ☉
+    ∮ mute m = cres | song ©(f) g(degree z) -> degree
+    ∮f()║ B\z*z║☉
+    | note n║☉
 ☉
