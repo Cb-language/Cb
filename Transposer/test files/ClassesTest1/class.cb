@@ -3,7 +3,7 @@ instrument Test
     playerScore
     ∮
         degree x║
-        song f() ∮playBar("Hello World!")║
+        song f() ∮playBar("Hello World!")║☉
     ☉
     conductorScore
     ∮

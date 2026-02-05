@@ -622,7 +622,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             throw MissingBrace(current());
         }
-        if (isAtEnd())
+        if (!isAtEnd())
         {
             advance();
         }
