@@ -1013,8 +1013,96 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
     std::vector<Field> fields;
     std::vector<Method> methods;
 
-    expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+    const size_t tempPos = pos;
 
+    expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+    parseFields(fields);
+    expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+
+    pos = tempPos;
+
+    expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+    parseMethods(methods);
+    expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+
+    return std::make_unique<ClassDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), name, fields, methods);
+}
+
+void Parser::parseFields(std::vector<Field>& fields)
+{
+    while (!match(Token::PUNCTUATION, L"☉"))
+    {
+        if (match(Token::KEYWORD, L"playerScore"))
+        {
+            advance();
+            expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+
+            while (true)
+            {
+                if (!match(Token::KEYWORD, L"song")) fields.emplace_back(false, parseVarDecStmt(true));
+                else // skip func decl
+                {
+                    unsigned int level = 0;
+                    while (true)
+                    {
+                        if (level == 0 && (match(Token::PUNCTUATION, L"|") || match(Token::PUNCTUATION, L"║"))) break;
+
+                        if (match(Token::PUNCTUATION, L"∮")) level++;
+                        else if (match(Token::PUNCTUATION, L"☉")) level--;
+                        advance();
+                    }
+                }
+
+                if (match(Token::PUNCTUATION, L"║"))
+                {
+                    break;
+                }
+
+                expect(Token::PUNCTUATION, L"|", MissingClassPipe(current()));
+            }
+            advance(); // consume the ║
+            expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+        }
+        else if (match(Token::KEYWORD, L"conductorScore"))
+        {
+            advance();
+            expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+
+            while (true)
+            {
+                if (!match(Token::KEYWORD, L"song")) fields.emplace_back(true, parseVarDecStmt(true));
+                else // skip func decl
+                {
+                    unsigned int level = 0;
+                    while (true)
+                    {
+                        if (level == 0 && (match(Token::PUNCTUATION, L"|") || match(Token::PUNCTUATION, L"║"))) break;
+
+                        if (match(Token::PUNCTUATION, L"∮")) level++;
+                        else if (match(Token::PUNCTUATION, L"☉")) level--;
+                        advance();
+                    }
+                }
+
+                if (match(Token::PUNCTUATION, L"║"))
+                {
+                    break;
+                }
+
+                expect(Token::PUNCTUATION, L"|", MissingClassPipe(current()));
+            }
+            advance(); // consume the ║
+            expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+        }
+        else
+        {
+            throw UnrecognizedIdentifier(current());
+        }
+    }
+}
+
+void Parser::parseMethods(std::vector<Method>& methods)
+{
     while (!match(Token::PUNCTUATION, L"☉"))
     {
         if (match(Token::KEYWORD, L"playerScore"))
@@ -1025,7 +1113,7 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
             while (true)
             {
                 if (match(Token::KEYWORD, L"song")) methods.emplace_back(false, parseFuncDeclStmt());
-                else fields.emplace_back(false, parseVarDecStmt(true));
+                else while (!match(Token::PUNCTUATION, L"|") && !match(Token::PUNCTUATION, L"║")) advance(); // skip the var decl
 
                 if (match(Token::PUNCTUATION, L"║"))
                 {
@@ -1045,7 +1133,7 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
             while (true)
             {
                 if (match(Token::KEYWORD, L"song")) methods.emplace_back(true, parseFuncDeclStmt());
-                else fields.emplace_back(true, parseVarDecStmt(true));
+                else while (!match(Token::PUNCTUATION, L"|") && !match(Token::PUNCTUATION, L"║")) advance(); // skip the var decl
 
                 if (match(Token::PUNCTUATION, L"║"))
                 {
@@ -1061,11 +1149,7 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
         {
             throw UnrecognizedIdentifier(current());
         }
-
     }
-    advance();
-
-    return std::make_unique<ClassDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), name, fields, methods);
 }
 
 std::unique_ptr<Call> Parser::parseFuncCallExpr(const bool isStmt)
