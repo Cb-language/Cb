@@ -19,6 +19,7 @@ const std::vector<std::wstring> Tokenizer::capture_blocks = {
     LR"((?<AssignmentOp>=))",
     LR"((?<UnaryOp>!))",
     LR"((?<Punctuation>(\||#|,|∮|☉|©|\[|\]|║\:|\:║|║|\:|\\|\(|\)|\|)))",
+    LR"((?<IdentifierCall>[a-zA-Z_][a-zA-Z_0-9]*_call))",
     LR"((?<Identifier>[a-zA-Z_][a-zA-Z_0-9]*))",
     LR"((?<Newline>\n))"
 };
@@ -146,6 +147,7 @@ std::vector<Token> Tokenizer::tokenize(const std::wstring& code, const std::file
         else if (match[L"AssignmentOp"].matched) { tokens.push_back(Token(Token::OP_ASSIGNMENT, match.str(), current_line, current_col, path)); }
         else if (match[L"BinaryOp"].matched) { tokens.push_back(Token(Token::OP_BINARY, match.str(), current_line, current_col, path)); }
         else if (match[L"Punctuation"].matched) { tokens.push_back(Token(Token::PUNCTUATION, match.str(), current_line, current_col, path)); }
+        else if (match[L"IdentifierCall"].matched) { tokens.push_back(Token(Token::IDENTIFIER_CALL, match.str(), current_line, current_col, path)); }
         else if (match[L"Identifier"].matched) { tokens.push_back(Token(Token::IDENTIFIER, match.str(), current_line, current_col, path)); }
 
         current_col++;
