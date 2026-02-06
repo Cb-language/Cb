@@ -134,6 +134,22 @@ bool Scope::getIsContinueAble() const
     return false;
 }
 
+const std::optional<Class>& Scope::getCurrClass() const
+{
+    if (!currClass.has_value())
+    {
+        if (parent == nullptr) return std::nullopt;
+        return parent->getCurrClass();
+    }
+
+    return currClass;
+}
+
+void Scope::setCurrClass(Class& currClass)
+{
+    this->currClass.emplace(currClass.copy());
+}
+
 const std::vector<std::pair<Var, Token>>& Scope::getCurrVars() const
 {
     return vars;

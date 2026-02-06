@@ -20,4 +20,6 @@ public:
     const std::vector<std::pair<bool, Func>>& getMethods() const;
     const std::vector<std::pair<bool, Var>>& getFields() const;
     const std::vector<std::pair<bool, Constractor>>& getConstractors() const;
+
+    Class copy() const;
 };

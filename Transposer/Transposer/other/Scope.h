@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "../symbols/Var.h"
+#include "symbols/Class.h"
 #include "token/Token.h"
 
 class Scope
@@ -12,6 +13,7 @@ private:
     std::vector<std::pair<Var, Token>> vars;
     Scope* parent;
     std::vector<std::unique_ptr<Scope>> children;
+    std::optional<Class> currClass = std::nullopt;
     const bool isBreakable = false;
     const bool isContinueAble = false;
 public:
@@ -29,6 +31,9 @@ public:
     int getLevel() const;
     bool getIsBreakable() const;
     bool getIsContinueAble() const;
+
+    const std::optional<Class>& getCurrClass() const;
+    void setCurrClass(Class& currClass);
 
     const std::vector<std::pair<Var, Token>>& getCurrVars() const;
 };

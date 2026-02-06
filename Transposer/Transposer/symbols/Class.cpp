@@ -27,3 +27,8 @@ const std::vector<std::pair<bool, Constractor>>& Class::getConstractors() const
 {
     return constractors;
 }
+
+Class Class::copy() const
+{
+    return Class(name, methods, fields, constractors);
+}
