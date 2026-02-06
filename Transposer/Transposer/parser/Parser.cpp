@@ -1012,7 +1012,7 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
     const std::wstring name = expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())).value;
     std::vector<Field> fields;
     std::vector<Method> methods;
-    std::vector<Ctor> ctors
+    std::vector<Ctor> ctors;
 
     const size_t tempPos = pos;
 
