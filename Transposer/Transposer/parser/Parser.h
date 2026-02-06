@@ -90,8 +90,10 @@ private:
     std::unique_ptr<ContinueStmt> parseContinueStmt();
     std::unique_ptr<ForStmt> parseForStmt();
     std::unique_ptr<ClassDeclStmt> parseClassDeclStmt();
+    std::unique_ptr<ConstractorDeclStmt> parseCtor();
     void parseFields(std::vector<Field>& fields);
     void parseMethods(std::vector<Method>& methods);
+    void parseCtors(std::vector<Ctor>& ctors);
 
     // Expressions
 

@@ -33,6 +33,7 @@ public:
     bool getIsContinueAble() const;
 
     const std::optional<Class>& getCurrClass() const;
+    const std::wstring& getCurrClassName() const;
     void setCurrClass(Class& currClass);
 
     const std::vector<std::pair<Var, Token>>& getCurrVars() const;

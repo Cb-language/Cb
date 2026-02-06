@@ -10,7 +10,9 @@ private:
     Constractor constractor;
 
 public:
-    ConstractorDeclStmt(const Token& token, Scope* scope, const std::wstring& className, const std::vector<Var>& args, std::unique_ptr<BodyStmt>& body);
+    ConstractorDeclStmt(const Token& token, Scope* scope, const std::wstring& className, const std::vector<Var>& args);
+
+    void setBody(std::unique_ptr<BodyStmt> body);
 
     void analyze() const override;
     std::string translateToCpp() const override;

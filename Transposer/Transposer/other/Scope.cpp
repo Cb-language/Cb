@@ -145,6 +145,13 @@ const std::optional<Class>& Scope::getCurrClass() const
     return currClass;
 }
 
+const std::wstring& Scope::getCurrClassName() const
+{
+    auto c = getCurrClass();
+    if (c.has_value()) return c->getClassName();
+    return L"";
+}
+
 void Scope::setCurrClass(Class& currClass)
 {
     this->currClass.emplace(currClass.copy());

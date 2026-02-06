@@ -1012,6 +1012,7 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
     const std::wstring name = expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())).value;
     std::vector<Field> fields;
     std::vector<Method> methods;
+    std::vector<Ctor> ctors
 
     const size_t tempPos = pos;
 
@@ -1025,7 +1026,67 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
     parseMethods(methods);
     expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
 
-    return std::make_unique<ClassDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), name, fields, methods);
+    pos = tempPos;
+
+    expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+    parseCtors(ctors);
+    expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+
+    return std::make_unique<ClassDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), name, fields, methods, ctors);
+}
+
+std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
+{
+    const Token& t = current();
+    std::vector<std::pair<Var, const Token>> args;
+    std::vector<std::unique_ptr<FuncCreditStmt>> credited;
+    FuncDeclStmt* currFunc = symTable.getCurrFunc();
+
+    expect(Token::IDENTIFIER_CALL, MissingIdentifier(t));
+
+    const std::wstring funcName = expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())).value;
+
+    if (symTable.doesFuncExist(funcName)) // TODO: replace with ctor check
+    {
+        throw IdentifierTaken(current());
+    }
+
+    expect(Token::PUNCTUATION, L"(", MissingParenthesis(current()));
+    while (!match(Token::PUNCTUATION, L")"))
+    {
+        const std::unique_ptr<IType> type = parseIType();
+        std::wstring currName = expectAndGet(Token::IDENTIFIER, MissingBrace(current())).value;
+
+        args.emplace_back(Var(type->copy(), currName), current());
+
+        if (!match(Token::PUNCTUATION, L")"))
+        {
+            expect(Token::PUNCTUATION, L",", UnexpectedToken(current()));
+        }
+    }
+    advance(); // matched the closing brace now moving forward
+
+    std::vector<Var> varArgs;
+
+    if (!args.empty())
+    {
+        for (const auto& key : args | std::views::keys)
+        {
+            varArgs.emplace_back(key.copy());
+        }
+    }
+
+    Scope* s = symTable.getCurrScope();
+    auto ctorDeclStmt = std::make_unique<ConstractorDeclStmt>(t, s, s->getCurrClassName(), varArgs);
+
+    // TODO: figure this out
+    // symTable.addFunc(ctorDeclStmt->getFunc());
+    // symTable.changeFunc(funcDeclStmt.get());
+
+    ctorDeclStmt->setBody(std::move(parseBodyStmt(args)));
+
+    symTable.changeFunc(currFunc);
+    return std::move(ctorDeclStmt);
 }
 
 void Parser::parseFields(std::vector<Field>& fields)
@@ -1133,6 +1194,57 @@ void Parser::parseMethods(std::vector<Method>& methods)
             while (true)
             {
                 if (match(Token::KEYWORD, L"song")) methods.emplace_back(true, parseFuncDeclStmt());
+                else while (!match(Token::PUNCTUATION, L"|") && !match(Token::PUNCTUATION, L"║")) advance(); // skip the var decl
+
+                if (match(Token::PUNCTUATION, L"║"))
+                {
+                    break;
+                }
+
+                expect(Token::PUNCTUATION, L"|", MissingClassPipe(current()));
+            }
+            advance(); // consume the ║
+            expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+        }
+        else
+        {
+            throw UnrecognizedIdentifier(current());
+        }
+    }
+}
+
+void Parser::parseCtors(std::vector<Ctor>& ctors)
+{
+    while (!match(Token::PUNCTUATION, L"☉"))
+    {
+        if (match(Token::KEYWORD, L"playerScore"))
+        {
+            advance();
+            expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+
+            while (true)
+            {
+                if (match(Token::IDENTIFIER_CALL)) ctors.emplace_back(false, parseCtor());
+                else while (!match(Token::PUNCTUATION, L"|") && !match(Token::PUNCTUATION, L"║")) advance(); // skip the var decl
+
+                if (match(Token::PUNCTUATION, L"║"))
+                {
+                    break;
+                }
+
+                expect(Token::PUNCTUATION, L"|", MissingClassPipe(current()));
+            }
+            advance(); // consume the ║
+            expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+        }
+        else if (match(Token::KEYWORD, L"conductorScore"))
+        {
+            advance();
+            expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+
+            while (true)
+            {
+                if (match(Token::IDENTIFIER_CALL)) ctors.emplace_back(true, parseCtor());
                 else while (!match(Token::PUNCTUATION, L"|") && !match(Token::PUNCTUATION, L"║")) advance(); // skip the var decl
 
                 if (match(Token::PUNCTUATION, L"║"))
