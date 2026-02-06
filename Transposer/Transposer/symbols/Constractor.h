@@ -6,7 +6,7 @@
 class Constractor
 {
 private:
-    const std::wstring className;
+    std::wstring className;
     std::vector<Var> args;
 
 public:
