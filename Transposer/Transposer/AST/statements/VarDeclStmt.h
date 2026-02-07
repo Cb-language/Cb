@@ -18,4 +18,6 @@ public:
 
     void analyze() const override;
     std::string translateToCpp() const override;
+
+    const Var& getVar() const;
 };

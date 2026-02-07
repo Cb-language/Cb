@@ -37,3 +37,8 @@ std::string VarDeclStmt::translateToCpp() const
     ret += ";";
     return ret;
 }
+
+const Var& VarDeclStmt::getVar() const
+{
+    return var;
+}

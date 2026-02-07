@@ -10,6 +10,10 @@ Func::Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std
     }
 }
 
+Func::Func(const Func& other) : Func(other.rType->copy(), other.funcName, other.args)
+{
+}
+
 const std::vector<Var>& Func::getArgs() const
 {
     return args;
@@ -98,7 +102,7 @@ bool Func::isLegalCall(const Func& other) const
 
 Func Func::copy() const
 {
-    return Func(rType->copy(), funcName, args);
+    return Func(*this);
 }
 
 bool Func::operator<(const Func& other) const

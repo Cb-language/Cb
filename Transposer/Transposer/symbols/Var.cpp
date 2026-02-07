@@ -1,6 +1,12 @@
 #include "Var.h"
 
+#include <algorithm>
+
 Var::Var(std::unique_ptr<IType> type, const std::wstring& name) : type(std::move(type)), name(name)
+{
+}
+
+Var::Var(const Var& other) : Var(other.type->copy(), other.name)
 {
 }
 
@@ -41,5 +47,5 @@ bool Var::isPrimitive() const
 
 Var Var::copy() const
 {
-    return Var(type->copy(), name);
+    return Var(*this);
 }

@@ -16,5 +16,7 @@ public:
 
     void analyze() const override;
     std::string translateToCpp() const override;
-    inline std::string translateToH() const override;
+    std::string translateToH() const override;
+
+    const Constractor& getConstractor() const;
 };

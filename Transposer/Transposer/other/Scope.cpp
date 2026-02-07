@@ -134,7 +134,7 @@ bool Scope::getIsContinueAble() const
     return false;
 }
 
-const std::optional<Class>& Scope::getCurrClass() const
+std::optional<Class> Scope::getCurrClass() const
 {
     if (!currClass.has_value())
     {
@@ -145,7 +145,7 @@ const std::optional<Class>& Scope::getCurrClass() const
     return currClass;
 }
 
-const std::wstring& Scope::getCurrClassName() const
+std::wstring Scope::getCurrClassName() const
 {
     auto c = getCurrClass();
     if (c.has_value()) return c->getClassName();

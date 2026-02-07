@@ -13,6 +13,7 @@ private:
 
 public:
     Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std::vector<Var>& args);
+    Func(const Func& other);
 
     const std::vector<Var>& getArgs() const;
     const std::wstring& getFuncName() const;

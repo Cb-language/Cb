@@ -13,7 +13,7 @@ private:
     std::vector<std::pair<Var, Token>> vars;
     Scope* parent;
     std::vector<std::unique_ptr<Scope>> children;
-    std::optional<Class> currClass = std::nullopt;
+    std::optional<Class> currClass;
     const bool isBreakable = false;
     const bool isContinueAble = false;
 public:
@@ -32,8 +32,8 @@ public:
     bool getIsBreakable() const;
     bool getIsContinueAble() const;
 
-    const std::optional<Class>& getCurrClass() const;
-    const std::wstring& getCurrClassName() const;
+    std::optional<Class> getCurrClass() const;
+    std::wstring getCurrClassName() const;
     void setCurrClass(Class& currClass);
 
     const std::vector<std::pair<Var, Token>>& getCurrVars() const;

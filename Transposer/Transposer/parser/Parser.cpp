@@ -1014,6 +1014,9 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
     std::vector<Method> methods;
     std::vector<Ctor> ctors;
 
+    Class c(name);
+    symTable.getCurrScope()->setCurrClass(c);
+
     const size_t tempPos = pos;
 
     expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
@@ -1044,7 +1047,7 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
 
     expect(Token::IDENTIFIER_CALL, MissingIdentifier(t));
 
-    const std::wstring funcName = expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())).value;
+    const std::wstring funcName = t.value;
 
     if (symTable.doesFuncExist(funcName)) // TODO: replace with ctor check
     {
@@ -1100,7 +1103,16 @@ void Parser::parseFields(std::vector<Field>& fields)
 
             while (true)
             {
-                if (!match(Token::KEYWORD, L"song")) fields.emplace_back(false, parseVarDecStmt(true));
+                if (match(Token::TYPE))
+                {
+                    auto field = parseVarDecStmt(true);
+
+                    if (!symTable.getCurrScope()->getCurrClass().has_value()) throw Error(current(), "Not in class");
+
+                    symTable.getCurrScope()->getCurrClass()->addField(false, field->getVar().copy());
+
+                    fields.emplace_back(false, std::move(field));
+                }
                 else // skip func decl
                 {
                     unsigned int level = 0;
@@ -1131,7 +1143,16 @@ void Parser::parseFields(std::vector<Field>& fields)
 
             while (true)
             {
-                if (!match(Token::KEYWORD, L"song")) fields.emplace_back(true, parseVarDecStmt(true));
+                if (match(Token::TYPE))
+                {
+                    auto field = parseVarDecStmt(true);
+
+                    if (!symTable.getCurrScope()->getCurrClass().has_value()) throw Error(current(), "Not in class");
+
+                    symTable.getCurrScope()->getCurrClass()->addField(true, field->getVar().copy());
+
+                    fields.emplace_back(true, std::move(field));
+                }
                 else // skip func decl
                 {
                     unsigned int level = 0;
@@ -1173,7 +1194,16 @@ void Parser::parseMethods(std::vector<Method>& methods)
 
             while (true)
             {
-                if (match(Token::KEYWORD, L"song")) methods.emplace_back(false, parseFuncDeclStmt());
+                if (match(Token::KEYWORD, L"song"))
+                {
+                    auto method = parseFuncDeclStmt();
+
+                    if (!symTable.getCurrScope()->getCurrClass().has_value()) throw Error(current(), "Not in class");
+
+                    symTable.getCurrScope()->getCurrClass()->addMethod(false, method->getFunc().copy());
+
+                    methods.emplace_back(false, std::move(method));
+                }
                 else while (!match(Token::PUNCTUATION, L"|") && !match(Token::PUNCTUATION, L"║")) advance(); // skip the var decl
 
                 if (match(Token::PUNCTUATION, L"║"))
@@ -1193,7 +1223,16 @@ void Parser::parseMethods(std::vector<Method>& methods)
 
             while (true)
             {
-                if (match(Token::KEYWORD, L"song")) methods.emplace_back(true, parseFuncDeclStmt());
+                if (match(Token::KEYWORD, L"song"))
+                {
+                    auto method = parseFuncDeclStmt();
+
+                    if (!symTable.getCurrScope()->getCurrClass().has_value()) throw Error(current(), "Not in class");
+
+                    symTable.getCurrScope()->getCurrClass()->addMethod(true, method->getFunc().copy());
+
+                    methods.emplace_back(true, std::move(method));
+                }
                 else while (!match(Token::PUNCTUATION, L"|") && !match(Token::PUNCTUATION, L"║")) advance(); // skip the var decl
 
                 if (match(Token::PUNCTUATION, L"║"))
@@ -1224,8 +1263,28 @@ void Parser::parseCtors(std::vector<Ctor>& ctors)
 
             while (true)
             {
-                if (match(Token::IDENTIFIER_CALL)) ctors.emplace_back(false, parseCtor());
-                else while (!match(Token::PUNCTUATION, L"|") && !match(Token::PUNCTUATION, L"║")) advance(); // skip the var decl
+                if (match(Token::IDENTIFIER_CALL))
+                {
+                    auto ctor = parseCtor();
+
+                    if (!symTable.getCurrScope()->getCurrClass().has_value()) throw Error(current(), "Not in class");
+
+                    symTable.getCurrScope()->getCurrClass()->addConstractor(false, ctor->getConstractor().copy());
+
+                    ctors.emplace_back(false, std::move(ctor));
+                }
+                else // skip func decl
+                {
+                    unsigned int level = 0;
+                    while (true)
+                    {
+                        if (level == 0 && (match(Token::PUNCTUATION, L"|") || match(Token::PUNCTUATION, L"║"))) break;
+
+                        if (match(Token::PUNCTUATION, L"∮")) level++;
+                        else if (match(Token::PUNCTUATION, L"☉")) level--;
+                        advance();
+                    }
+                }
 
                 if (match(Token::PUNCTUATION, L"║"))
                 {
@@ -1244,8 +1303,28 @@ void Parser::parseCtors(std::vector<Ctor>& ctors)
 
             while (true)
             {
-                if (match(Token::IDENTIFIER_CALL)) ctors.emplace_back(true, parseCtor());
-                else while (!match(Token::PUNCTUATION, L"|") && !match(Token::PUNCTUATION, L"║")) advance(); // skip the var decl
+                if (match(Token::IDENTIFIER_CALL))
+                {
+                    auto ctor = parseCtor();
+
+                    if (!symTable.getCurrScope()->getCurrClass().has_value()) throw Error(current(), "Not in class");
+
+                    symTable.getCurrScope()->getCurrClass()->addConstractor(true, ctor->getConstractor().copy());
+
+                    ctors.emplace_back(true, std::move(ctor));
+                }
+                else // skip func decl
+                {
+                    unsigned int level = 0;
+                    while (true)
+                    {
+                        if (level == 0 && (match(Token::PUNCTUATION, L"|") || match(Token::PUNCTUATION, L"║"))) break;
+
+                        if (match(Token::PUNCTUATION, L"∮")) level++;
+                        else if (match(Token::PUNCTUATION, L"☉")) level--;
+                        advance();
+                    }
+                }
 
                 if (match(Token::PUNCTUATION, L"║"))
                 {
