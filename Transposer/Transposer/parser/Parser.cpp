@@ -414,8 +414,13 @@ std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt(const bool isField)
     expect(Token::OP_ASSIGNMENT, L"=" , NoPlacementOperator(current()));
 
     auto expr = parseExpr();
-    if (!isField) expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
-    symTable.addVar(varType->copy(), identifierToken); // to avoid degree x = x + 1║ ...
+
+    if (!isField)
+    {
+        expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+        symTable.addVar(varType->copy(), identifierToken); // to avoid degree x = x + 1║ ...
+    }
+
     return std::make_unique<VarDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), true, std::move(expr), var);
 }
 
@@ -639,7 +644,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
     return std::make_unique<BodyStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), bodyStmts, isGlobal);
 }
 
-std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
+std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
 {
     std::vector<std::pair<Var, const Token>> args;
     std::vector<std::unique_ptr<FuncCreditStmt>> credited;
@@ -737,7 +742,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
 
     auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), funcName, rType->copy(), varArgs, credited);
 
-    symTable.addFunc(funcDeclStmt->getFunc());
+    if (!isMethod) symTable.addFunc(funcDeclStmt->getFunc());
     symTable.changeFunc(funcDeclStmt.get());
 
     funcDeclStmt->setBody(std::move(parseBodyStmt(args)));
@@ -1107,9 +1112,7 @@ void Parser::parseFields(std::vector<Field>& fields)
                 {
                     auto field = parseVarDecStmt(true);
 
-                    if (!symTable.getCurrScope()->getCurrClass().has_value()) throw Error(current(), "Not in class");
-
-                    symTable.getCurrScope()->getCurrClass()->addField(false, field->getVar().copy());
+                    symTable.getCurrScope()->addField(false, field->getVar().copy(), current());
 
                     fields.emplace_back(false, std::move(field));
                 }
@@ -1147,9 +1150,7 @@ void Parser::parseFields(std::vector<Field>& fields)
                 {
                     auto field = parseVarDecStmt(true);
 
-                    if (!symTable.getCurrScope()->getCurrClass().has_value()) throw Error(current(), "Not in class");
-
-                    symTable.getCurrScope()->getCurrClass()->addField(true, field->getVar().copy());
+                    symTable.getCurrScope()->addField(true, field->getVar().copy(), current());
 
                     fields.emplace_back(true, std::move(field));
                 }
@@ -1198,9 +1199,7 @@ void Parser::parseMethods(std::vector<Method>& methods)
                 {
                     auto method = parseFuncDeclStmt();
 
-                    if (!symTable.getCurrScope()->getCurrClass().has_value()) throw Error(current(), "Not in class");
-
-                    symTable.getCurrScope()->getCurrClass()->addMethod(false, method->getFunc().copy());
+                    symTable.getCurrScope()->addMethod(false, method->getFunc().copy(), current());
 
                     methods.emplace_back(false, std::move(method));
                 }
@@ -1227,9 +1226,7 @@ void Parser::parseMethods(std::vector<Method>& methods)
                 {
                     auto method = parseFuncDeclStmt();
 
-                    if (!symTable.getCurrScope()->getCurrClass().has_value()) throw Error(current(), "Not in class");
-
-                    symTable.getCurrScope()->getCurrClass()->addMethod(true, method->getFunc().copy());
+                    symTable.getCurrScope()->addMethod(false, method->getFunc().copy(), current());
 
                     methods.emplace_back(true, std::move(method));
                 }
@@ -1267,9 +1264,7 @@ void Parser::parseCtors(std::vector<Ctor>& ctors)
                 {
                     auto ctor = parseCtor();
 
-                    if (!symTable.getCurrScope()->getCurrClass().has_value()) throw Error(current(), "Not in class");
-
-                    symTable.getCurrScope()->getCurrClass()->addConstractor(false, ctor->getConstractor().copy());
+                    symTable.getCurrScope()->addConstractor(false, ctor->getConstractor().copy(), current());
 
                     ctors.emplace_back(false, std::move(ctor));
                 }
@@ -1307,9 +1302,7 @@ void Parser::parseCtors(std::vector<Ctor>& ctors)
                 {
                     auto ctor = parseCtor();
 
-                    if (!symTable.getCurrScope()->getCurrClass().has_value()) throw Error(current(), "Not in class");
-
-                    symTable.getCurrScope()->getCurrClass()->addConstractor(true, ctor->getConstractor().copy());
+                    symTable.getCurrScope()->addConstractor(true, ctor->getConstractor().copy(), current());
 
                     ctors.emplace_back(true, std::move(ctor));
                 }

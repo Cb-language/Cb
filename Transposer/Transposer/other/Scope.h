@@ -16,6 +16,9 @@ private:
     std::optional<Class> currClass;
     const bool isBreakable = false;
     const bool isContinueAble = false;
+
+    Class* getCurrClassPtr();
+
 public:
     explicit Scope(Scope* parent = nullptr);
     explicit Scope(Scope* parent = nullptr, bool isBreakable = false, bool isContinueAble = false);
@@ -33,6 +36,10 @@ public:
     bool getIsContinueAble() const;
 
     std::optional<Class> getCurrClass() const;
+    void addMethod(const bool isPublic, const Func& method, const Token& token);
+    void addField(const bool isPublic, const Var& field, const Token& token);
+    void addConstractor(const bool isPublic, const Constractor& constractor, const Token& token);
+
     std::wstring getCurrClassName() const;
     void setCurrClass(Class& currClass);
 

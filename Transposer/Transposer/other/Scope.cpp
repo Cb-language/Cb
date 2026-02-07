@@ -6,6 +6,16 @@
 #include "../errorHandling/semanticErrors/IdentifierTaken.h"
 #include "../errorHandling/syntaxErrors/UnexpectedToken.h"
 
+Class* Scope::getCurrClassPtr()
+{
+    if (!currClass.has_value())
+    {
+        return parent ? parent->getCurrClassPtr() : nullptr;
+    }
+
+    return &currClass.value();
+}
+
 Scope::Scope(Scope* parent) : parent(parent)
 {
 }
@@ -143,6 +153,30 @@ std::optional<Class> Scope::getCurrClass() const
     }
 
     return currClass;
+}
+
+void Scope::addMethod(const bool isPublic, const Func& method, const Token& token)
+{
+    Class* c = getCurrClassPtr();
+    if (c == nullptr) throw Error(token, "Not in class");
+
+    c->addMethod(isPublic, method);
+}
+
+void Scope::addField(const bool isPublic, const Var& field, const Token& token)
+{
+    Class* c = getCurrClassPtr();
+    if (c == nullptr) throw Error(token, "Not in class");
+
+    c->addField(isPublic, field);
+}
+
+void Scope::addConstractor(const bool isPublic, const Constractor& constractor, const Token& token)
+{
+    Class* c = getCurrClassPtr();
+    if (c == nullptr) throw Error(token, "Not in class");
+
+    c->addConstractor(isPublic, constractor);
 }
 
 std::wstring Scope::getCurrClassName() const
