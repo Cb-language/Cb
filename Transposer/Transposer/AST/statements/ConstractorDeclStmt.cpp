@@ -20,7 +20,7 @@ void ConstractorDeclStmt::analyze() const
 
 std::string ConstractorDeclStmt::translateToCpp() const
 {
-    return Utils::wstrToStr(constractor.getClassName()) + "::" + constractor.translateToCpp() + "\n" + body->translateToCpp();
+    return Utils::wstrToStr(constractor.getClassName()) + "::" + constractor.translateToCpp() + "\n" + body->translateToCpp() + "\n";
 }
 
 std::string ConstractorDeclStmt::translateToH() const
