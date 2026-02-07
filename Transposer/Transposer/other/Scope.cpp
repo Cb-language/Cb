@@ -48,6 +48,19 @@ std::optional<Var> Scope::getVar(const std::wstring& name) const
         }
     }
 
+    if (currClass.has_value())
+    {
+        for (const auto& [isPublic, field] : currClass->getFields())
+        {
+            if (!isPublic) continue;
+
+            if (name == field.getName())
+            {
+                return field.copy();
+            }
+        }
+    }
+
     if (parent != nullptr)
     {
         return parent->getVar(name);

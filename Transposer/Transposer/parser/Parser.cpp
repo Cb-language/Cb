@@ -1203,7 +1203,18 @@ void Parser::parseMethods(std::vector<Method>& methods)
 
                     methods.emplace_back(false, std::move(method));
                 }
-                else while (!match(Token::PUNCTUATION, L"|") && !match(Token::PUNCTUATION, L"║")) advance(); // skip the var decl
+                else
+                {
+                    unsigned int level = 0;
+                    while (true)
+                    {
+                        if (level == 0 && (match(Token::PUNCTUATION, L"|") || match(Token::PUNCTUATION, L"║"))) break;
+
+                        if (match(Token::PUNCTUATION, L"∮")) level++;
+                        else if (match(Token::PUNCTUATION, L"☉")) level--;
+                        advance();
+                    }
+                }
 
                 if (match(Token::PUNCTUATION, L"║"))
                 {
@@ -1230,7 +1241,18 @@ void Parser::parseMethods(std::vector<Method>& methods)
 
                     methods.emplace_back(true, std::move(method));
                 }
-                else while (!match(Token::PUNCTUATION, L"|") && !match(Token::PUNCTUATION, L"║")) advance(); // skip the var decl
+                else
+                {
+                    unsigned int level = 0;
+                    while (true)
+                    {
+                        if (level == 0 && (match(Token::PUNCTUATION, L"|") || match(Token::PUNCTUATION, L"║"))) break;
+
+                        if (match(Token::PUNCTUATION, L"∮")) level++;
+                        else if (match(Token::PUNCTUATION, L"☉")) level--;
+                        advance();
+                    }
+                }
 
                 if (match(Token::PUNCTUATION, L"║"))
                 {
