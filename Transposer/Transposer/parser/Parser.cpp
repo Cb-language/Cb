@@ -164,9 +164,6 @@ std::string Parser::translateToH(const bool isMain) const
         oss << i->translateToCpp() << std::endl;
     }
 
-    const std::string funcHeaders = symTable.getFuncsHeaders();
-    if (!funcHeaders.empty()) oss << std::endl << funcHeaders;
-
     for (const auto& stmt : stmts) oss << stmt->translateToH();
 
     return oss.str();

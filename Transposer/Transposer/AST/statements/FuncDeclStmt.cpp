@@ -77,7 +77,7 @@ std::string FuncDeclStmt::translateToCpp() const
 
 std::string FuncDeclStmt::translateToH() const
 {
-    return func.translateToCpp();
+    return func.translateToCpp() + ";";
 }
 
 std::string FuncDeclStmt::translateToCppClass(const std::wstring& className) const
