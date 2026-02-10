@@ -141,7 +141,6 @@ std::string Parser::translateToCpp(const std::filesystem::path& hPath, const boo
     if (isMain) oss << translateToH(isMain);
     else oss << "#include \"" << hPath.string() << "\"" << std::endl;
 
-
     for (const auto& stmt : stmts)
     {
         oss << std::endl << stmt->translateToCpp();
@@ -153,9 +152,11 @@ std::string Parser::translateToCpp(const std::filesystem::path& hPath, const boo
 std::string Parser::translateToH(const bool isMain) const
 {
     std::ostringstream oss;
+    const std::filesystem::path outArrPath = File::getOutDir() / "includes" / "Array.h";
     if (!isMain) oss << "#pragma once" << std::endl;
 
     oss << "#include <string>" << std::endl;
+    if (isMain) oss << "#include \"" << outArrPath.string() << "\"" << std::endl;
 
     if (!includes.empty()) oss << std::endl;
 

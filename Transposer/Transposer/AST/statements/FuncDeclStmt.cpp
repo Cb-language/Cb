@@ -77,6 +77,8 @@ std::string FuncDeclStmt::translateToCpp() const
 
 std::string FuncDeclStmt::translateToH() const
 {
+    if (func.getFuncName() == L"prelude") return "";
+
     return func.translateToCpp() + ";";
 }
 

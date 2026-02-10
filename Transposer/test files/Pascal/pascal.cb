@@ -1,0 +1,53 @@
+song prelude() -> degree
+∮
+    sharp degree size║
+
+    playBar("Enter pascal triangle level")║
+    hear(size)║
+
+    pascal(size)║
+
+    B\0║
+☉
+
+song pascal(sharp degree size)
+∮
+    riff riff sharp degree arr[size][size]║
+
+    arr[0][0] = 1║
+
+    Fmaj1#size\i
+    ∮
+        Fmaj0#size\j
+        ∮
+            D |j == 0|
+            ∮
+                arr[i][j] = arr[i - 1][j]║
+            ☉
+            E
+            ∮
+                arr[i][j] = arr[i - 1][j - 1] + arr[i - 1][j]║
+            ☉
+        ☉
+    ☉
+
+    Fmaj0#size\i
+    ∮
+        play("[")║
+        Fmaj0#size\j
+        ∮
+            play("[", arr[i][j], "]")║
+
+            D | j != size - 1|
+            ∮
+                play(", ")║
+            ☉
+        ☉
+        bar b = "]"║
+        D | i != size - 1|
+        ∮
+            b += ", "║
+        ☉
+        playBar(b)║
+    ☉
+☉
