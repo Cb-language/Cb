@@ -132,7 +132,7 @@ public partial class MainViewModel : ViewModelBase
             Debug.WriteLine($"Folder opened: {CurrentFolderPath}");
 
             FolderFiles.Clear();
-            var files = Directory.GetFiles(CurrentFolderPath, "*.cb", SearchOption.AllDirectories);
+            var files = Directory.GetFiles(CurrentFolderPath, "*.cb", SearchOption.TopDirectoryOnly);
             foreach (var file in files)
             {
                 FolderFiles.Add(Path.GetFileName(file));
@@ -147,13 +147,13 @@ public partial class MainViewModel : ViewModelBase
         var found = 0;
         string? mainFile = null;
         
-        var files = Directory.GetFiles(folderPath, "*.cb", SearchOption.AllDirectories);
+        var files = Directory.GetFiles(folderPath, "*.cb", SearchOption.TopDirectoryOnly);
         foreach (var file in files)
         {
             try
             {
                 var content = File.ReadAllText(file);
-                if (!content.Contains("prelude")) continue;
+                if (!content.Contains("prelude", StringComparison.OrdinalIgnoreCase)) continue;
                 found++;
                 mainFile = file;
             }
@@ -166,6 +166,7 @@ public partial class MainViewModel : ViewModelBase
         if (found == 1)
         {
             Debug.WriteLine($"Found prelude file: {mainFile}");
+            MainFilePath = mainFile;
             return mainFile;
         }
         else if (found == 0)
@@ -262,6 +263,61 @@ public partial class MainViewModel : ViewModelBase
             FindPreludeFile(CurrentFolderPath);
     }
 
+    private async Task<bool> SaveTab(FileTabViewModel tab)
+    {
+        if (StorageProvider == null) return false;
+
+        if (string.IsNullOrEmpty(tab.FilePath))
+        {
+            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                Title = $"Save Source File: {tab.Header}",
+                DefaultExtension = "cb",
+                FileTypeChoices = [new FilePickerFileType("Composer File") { Patterns = ["*.cb"] }]
+            });
+
+            if (file != null)
+            {
+                tab.FilePath = file.Path.LocalPath;
+                tab.Header = file.Name;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        try
+        {
+            await File.WriteAllTextAsync(tab.FilePath!, tab.Content);
+            tab.IsModified = false;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error saving file: {ex.Message}");
+            return false;
+        }
+        return true;
+    }
+
+    private async Task<bool> SaveAllModifiedFiles()
+    {
+        foreach (var tab in Files.Where(t => t.IsModified).ToList())
+        {
+            if (!await SaveTab(tab))
+            {
+                return false;
+            }
+        }
+
+        if (CurrentFolderPath != null)
+        {
+            FindPreludeFile(CurrentFolderPath);
+        }
+
+        return true;
+    }
+
     [RelayCommand]
     private async Task ChangeDestPath()
     {
@@ -304,27 +360,45 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task Translate()
     {
-        if (SelectedTab == null) return;
-        
-        if (SelectedTab.IsModified || string.IsNullOrEmpty(SelectedTab.FilePath))
+        if (!string.IsNullOrEmpty(CurrentFolderPath))
         {
-            await SaveSource();
-            if (SelectedTab.IsModified) return;
+            if (!await SaveAllModifiedFiles()) return;
+        }
+        else if (SelectedTab != null)
+        {
+            if (SelectedTab.IsModified || string.IsNullOrEmpty(SelectedTab.FilePath))
+            {
+                await SaveSource();
+                if (SelectedTab.IsModified) return;
+            }
+        }
+        else
+        {
+            return;
         }
 
-        Debug.WriteLine($"Translating {SelectedTab.FilePath}...");
+        Debug.WriteLine($"Translating {SelectedTab?.FilePath}...");
         await RunExternalTool("T");
     }
 
     [RelayCommand]
     private async Task Compile()
     {
-        if (SelectedTab == null) return;
-        
-        if (SelectedTab.IsModified || string.IsNullOrEmpty(SelectedTab.FilePath))
+        if (!string.IsNullOrEmpty(CurrentFolderPath))
         {
-            await SaveSource();
-            if (SelectedTab.IsModified) return;
+            if (!await SaveAllModifiedFiles()) return;
+        }
+        else if (SelectedTab != null)
+        {
+            if (SelectedTab.IsModified || string.IsNullOrEmpty(SelectedTab.FilePath))
+            {
+                await SaveSource();
+                if (SelectedTab.IsModified) return;
+            }
+        }
+        else
+        {
+            return;
         }
         Debug.WriteLine("Compiling...");
         await RunExternalTool("C");
@@ -333,12 +407,21 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task Run()
     {
-        if (SelectedTab == null) return;
-        
-        if (SelectedTab.IsModified || string.IsNullOrEmpty(SelectedTab.FilePath))
+        if (!string.IsNullOrEmpty(CurrentFolderPath))
         {
-            await SaveSource();
-            if (SelectedTab.IsModified) return;
+            if (!await SaveAllModifiedFiles()) return;
+        }
+        else if (SelectedTab != null)
+        {
+            if (SelectedTab.IsModified || string.IsNullOrEmpty(SelectedTab.FilePath))
+            {
+                await SaveSource();
+                if (SelectedTab.IsModified) return;
+            }
+        }
+        else
+        {
+            return;
         }
         Debug.WriteLine("Running...");
         await RunExternalTool("R");
@@ -346,10 +429,10 @@ public partial class MainViewModel : ViewModelBase
     
     private async Task RunExternalTool(string mode)
     {
-        if (CurrentFolderPath == null)
+        if (SelectedTab == null)
         {
-            await OpenFolder();
-            if (CurrentFolderPath == null) return;
+            await OpenSourceFile();
+            if (SelectedTab == null) return;
         }
         
         if (!File.Exists(TranspilerExePath))
@@ -362,32 +445,39 @@ public partial class MainViewModel : ViewModelBase
             }
         }
 
-        if (SelectedTab != null && string.IsNullOrEmpty(SelectedTab.OutFilePath))
+        string? sourceFile = null;
+        if (!string.IsNullOrEmpty(CurrentFolderPath))
         {
-            SelectedTab.OutFilePath =
-                Path.ChangeExtension(SelectedTab.FilePath, ".cpp");
+            sourceFile = FindPreludeFile(CurrentFolderPath);
         }
 
-        if (SelectedTab is { IsModified: true })
-        {
-            await SaveSource();
-        }
-
-        var sourceFile = MainFilePath ?? SelectedTab?.FilePath;
         if (string.IsNullOrEmpty(sourceFile))
         {
-            Terminal.Append("> Error: No file to process. Open a folder with a prelude file or a single file.\n");
-            return;
+            sourceFile = SelectedTab?.FilePath;
         }
 
-        var outFilePath = SelectedTab?.OutFilePath;
-        if (string.IsNullOrEmpty(outFilePath))
+        if (string.IsNullOrEmpty(sourceFile))
+        {
+            Terminal.Append("> Error: No file to process. Save the current tab or open a file.\n");
+            return;
+        }
+        
+        string outFilePath;
+        if (!string.IsNullOrEmpty(CurrentFolderPath))
+        {
+            outFilePath = Path.ChangeExtension(sourceFile, ".cpp");
+        }
+        else if (SelectedTab != null && !string.IsNullOrEmpty(SelectedTab.OutFilePath))
+        {
+            outFilePath = SelectedTab.OutFilePath;
+        }
+        else
         {
             outFilePath = Path.ChangeExtension(sourceFile, ".cpp");
         }
 
 
-        string arguments =
+        var arguments =
             $"\"{sourceFile}\" {mode} \"{outFilePath}\"";
 
         Terminal.Append(
@@ -451,7 +541,7 @@ public partial class MainViewModel : ViewModelBase
         if (string.IsNullOrEmpty(CurrentFolderPath)) return;
 
         // this is a hack to get the full path, since the file list only has the file name
-        var fullPath = Directory.GetFiles(CurrentFolderPath, fileName, SearchOption.AllDirectories).FirstOrDefault();
+        var fullPath = Directory.GetFiles(CurrentFolderPath, fileName, SearchOption.TopDirectoryOnly).FirstOrDefault();
 
         if (string.IsNullOrEmpty(fullPath)) return;
         
