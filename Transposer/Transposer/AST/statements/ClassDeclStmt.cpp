@@ -4,7 +4,7 @@
 
 #include "FuncDeclStmt.h"
 
-ClassDeclStmt::ClassDeclStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, const std::wstring& name, std::vector<Field>& fields,
+ClassDeclStmt::ClassDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const std::wstring& name, std::vector<Field>& fields,
                              std::vector<Method>& methods, std::vector<Ctor>& ctors) : Stmt(token, scope, funcDecl), name(name)
 {
     for (auto& [isPublic, func] : fields) this->fields.emplace_back(isPublic, std::move(func));

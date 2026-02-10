@@ -3,7 +3,7 @@
 #include "errorHandling/how/HowDidYouGetHere.h"
 
 ConstractorDeclStmt::ConstractorDeclStmt(const Token& token, Scope* scope, const std::wstring& className,
-                                         const std::vector<Var>& args) : Stmt(token, scope), constractor(Constractor(args,  className))
+                                         const std::vector<Var>& args) : IFuncDeclStmt(token, scope), constractor(Constractor(args,  className))
 {
 }
 
@@ -26,6 +26,16 @@ std::string ConstractorDeclStmt::translateToCpp() const
 std::string ConstractorDeclStmt::translateToH() const
 {
     return constractor.translateToCpp();
+}
+
+std::wstring ConstractorDeclStmt::getName() const
+{
+    return constractor.getClassName();
+}
+
+std::unique_ptr<IType> ConstractorDeclStmt::getReturnType() const
+{
+    return std::make_unique<Type>(constractor.getClassName()); // TODO: replace this with class type
 }
 
 const Constractor& ConstractorDeclStmt::getConstractor() const

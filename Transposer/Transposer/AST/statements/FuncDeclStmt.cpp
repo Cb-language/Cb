@@ -4,7 +4,7 @@
 #include "errorHandling/semanticErrors/NoReturn.h"
 
 FuncDeclStmt::FuncDeclStmt(const Token& token, Scope* scope, const std::wstring& funcName, std::unique_ptr<IType> returnType,
-                           const std::vector<Var>& args, std::vector<std::unique_ptr<FuncCreditStmt>>& credited) : Stmt(token, scope),
+                           const std::vector<Var>& args, std::vector<std::unique_ptr<FuncCreditStmt>>& credited) : IFuncDeclStmt(token, scope),
                                                                                                                    func(Func(std::move(returnType), funcName, args)), body(nullptr),
                                                                                                                    hasReturned(false)
 {

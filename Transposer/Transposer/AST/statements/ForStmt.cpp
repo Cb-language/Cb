@@ -2,7 +2,7 @@
 
 #include "errorHandling/how/HowDidYouGetHere.h"
 
-ForStmt::ForStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl,
+ForStmt::ForStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl,
                  std::unique_ptr<BodyStmt> body, const bool isIncreasing, std::unique_ptr<Expr> startExpr, std::unique_ptr<Expr> stepExpr, std::unique_ptr<Expr> stopExpr,
                  const std::wstring& varName)
     : Stmt(token, scope, funcDecl), body(std::move(body)), isIncreasing(isIncreasing),

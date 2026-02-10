@@ -1,5 +1,6 @@
 #pragma once
 #include "ConstractorDeclStmt.h"
+#include "FuncDeclStmt.h"
 #include "VarDeclStmt.h"
 #include "AST/abstract/Statement.h"
 
@@ -16,7 +17,7 @@ private:
     std::vector<Ctor> ctors;
 
 public:
-    ClassDeclStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, const std::wstring& name, std::vector<Field>& fields,
+    ClassDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const std::wstring& name, std::vector<Field>& fields,
         std::vector<Method>& methods, std::vector<Ctor>& ctors);
     void analyze() const override;
     std::string translateToCpp() const override;

@@ -199,6 +199,7 @@ add_executable(Transposer
         Transposer/symbols/Class.h
         Transposer/symbols/Constractor.cpp
         Transposer/symbols/Constractor.h
+        Transposer/AST/abstract/IFuncDeclStmt.h
 )
 
 # In order to call the exe from the cmd

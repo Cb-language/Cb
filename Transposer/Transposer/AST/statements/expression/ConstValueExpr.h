@@ -8,7 +8,7 @@ private:
     std::unique_ptr<IType> type;
     std::wstring value;
 public:
-    ConstValueExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<IType> type, const std::wstring &value);
+    ConstValueExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, std::unique_ptr<IType> type, const std::wstring &value);
     void analyze() const override;
     std::string translateToCpp() const override;
     std::unique_ptr<IType> getType() const override;

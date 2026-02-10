@@ -6,17 +6,17 @@
 #include "other/Scope.h"
 #include "other/Utils.h"
 
-class FuncDeclStmt;
+class IFuncDeclStmt;
 
 class Stmt
 {
 protected:
     const Token token;
     Scope* scope;
-    FuncDeclStmt* funcDecl;
+    IFuncDeclStmt* funcDecl;
 
     Stmt(const Token& token, Scope* scope);
-    Stmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl);
+    Stmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl);
     std::string getTabs(const int offset = 0) const;
 public:
     virtual ~Stmt();
@@ -24,7 +24,7 @@ public:
     virtual std::string translateToCpp() const = 0;
     virtual std::string translateToH() const;
 
-    void setFuncDecl(FuncDeclStmt *funcDecl);
+    void setFuncDecl(IFuncDeclStmt *funcDecl);
 };
 
 inline Stmt::Stmt(const Token& token, Scope* scope) : token(token), scope(scope)
@@ -32,7 +32,7 @@ inline Stmt::Stmt(const Token& token, Scope* scope) : token(token), scope(scope)
     funcDecl = nullptr;
 }
 
-inline Stmt::Stmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl) : token(token), scope(scope), funcDecl(funcDecl)
+inline Stmt::Stmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl) : token(token), scope(scope), funcDecl(funcDecl)
 {
 }
 
@@ -60,7 +60,7 @@ inline std::string Stmt::translateToH() const
     return ""; // not a lot of thing need it
 }
 
-inline void Stmt::setFuncDecl(FuncDeclStmt* funcDecl)
+inline void Stmt::setFuncDecl(IFuncDeclStmt* funcDecl)
 {
     this->funcDecl = funcDecl;
 }

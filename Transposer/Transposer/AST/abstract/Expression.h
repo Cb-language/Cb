@@ -6,9 +6,9 @@ class Expr : public Stmt
 {
 protected:
     bool hasParens;
-    explicit Expr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, const bool hasParens) : Stmt(token, scope, funcDecl), hasParens(hasParens) {}
+    explicit Expr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const bool hasParens) : Stmt(token, scope, funcDecl), hasParens(hasParens) {}
 public:
-    Expr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl);
+    Expr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl);
     ~Expr() override = default;
     virtual std::unique_ptr<IType> getType() const = 0;
     void analyze() const override = 0;
@@ -17,7 +17,7 @@ public:
     virtual void setHasParens(const bool hasParens);
 };
 
-inline Expr::Expr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl) : Expr(token, scope, funcDecl, false)
+inline Expr::Expr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl) : Expr(token, scope, funcDecl, false)
 {
 }
 

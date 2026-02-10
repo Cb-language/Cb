@@ -121,7 +121,7 @@ int SymbolTable::getLevel() const
     return currScope->getLevel();
 }
 
-void SymbolTable::changeFunc(FuncDeclStmt* funcDecl)
+void SymbolTable::changeFunc(IFuncDeclStmt* funcDecl)
 {
     currFunc = funcDecl;
 }
@@ -131,7 +131,7 @@ Scope* SymbolTable::getCurrScope() const
     return currScope;
 }
 
-FuncDeclStmt* SymbolTable::getCurrFunc() const
+IFuncDeclStmt* SymbolTable::getCurrFunc() const
 {
     return currFunc;
 }

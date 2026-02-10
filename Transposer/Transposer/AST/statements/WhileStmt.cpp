@@ -1,6 +1,6 @@
 #include "WhileStmt.h"
 
-WhileStmt::WhileStmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Expr>& condition, std::unique_ptr<Stmt>& body)
+WhileStmt::WhileStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, std::unique_ptr<Expr>& condition, std::unique_ptr<Stmt>& body)
     : Stmt(token, scope, funcDecl), condition(std::move(condition)), body(std::move(body))
 {
 }

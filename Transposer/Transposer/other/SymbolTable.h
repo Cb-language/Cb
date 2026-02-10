@@ -7,7 +7,7 @@
 #include "symbols/Func.h"
 #include "symbols/FuncCredit.h"
 
-class FuncDeclStmt;
+class IFuncDeclStmt;
 class FuncCallExpr;
 
 class SymbolTable
@@ -15,7 +15,7 @@ class SymbolTable
 private:
     std::unique_ptr<Scope> head;
     Scope* currScope;
-    FuncDeclStmt* currFunc;
+    IFuncDeclStmt* currFunc;
     std::set<std::pair<Func, bool>> funcs; // the bool means is it included to this file
     std::map<std::wstring, Class> classes;
 
@@ -42,10 +42,10 @@ public:
 
     int getLevel() const;
 
-    void changeFunc(FuncDeclStmt* funcDecl);
+    void changeFunc(IFuncDeclStmt* funcDecl);
 
     Scope* getCurrScope() const;
-    FuncDeclStmt* getCurrFunc() const;
+    IFuncDeclStmt* getCurrFunc() const;
     std::unique_ptr<Func> getFunc(const std::wstring& name) const;
 
     std::string getFuncsHeaders() const;

@@ -645,7 +645,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
 {
     std::vector<std::pair<Var, const Token>> args;
     std::vector<std::unique_ptr<FuncCreditStmt>> credited;
-    FuncDeclStmt* currFunc = symTable.getCurrFunc();
+    IFuncDeclStmt* currFunc = symTable.getCurrFunc();
     const Token& t = current();
 
     expect(Token::KEYWORD, L"song", HowDidYouGetHere(current()));
@@ -758,7 +758,7 @@ std::unique_ptr<ReturnStmt> Parser::parseReturnStmt()
     const Token& t = current();
     expect(Token::KEYWORD, L"B", HowDidYouGetHere(current()));
 
-    FuncDeclStmt* currFunc = symTable.getCurrFunc();
+    IFuncDeclStmt* currFunc = symTable.getCurrFunc();
     std::unique_ptr<Expr> expr = nullptr;
 
     if (currFunc->getReturnType()->getType() != L"fermata")
@@ -1047,7 +1047,7 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
     const Token& t = current();
     std::vector<std::pair<Var, const Token>> args;
     std::vector<std::unique_ptr<FuncCreditStmt>> credited;
-    FuncDeclStmt* currFunc = symTable.getCurrFunc();
+    IFuncDeclStmt* currFunc = symTable.getCurrFunc();
 
     expect(Token::IDENTIFIER_CALL, MissingIdentifier(t));
 
