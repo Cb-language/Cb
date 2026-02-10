@@ -1037,6 +1037,8 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
     parseCtors(ctors);
     expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
 
+    symTable.addClass(c);
+
     return std::make_unique<ClassDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), name, fields, methods, ctors);
 }
 
@@ -1051,10 +1053,9 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
 
     const std::wstring funcName = t.value;
 
-    if (symTable.doesFuncExist(funcName)) // TODO: replace with ctor check
-    {
-        throw IdentifierTaken(current());
-    }
+    std::optional<Class> currClass = symTable.getCurrScope()->getCurrClass();
+
+    if (!currClass.has_value()) throw HowDidYouGetHere(t);
 
     expect(Token::PUNCTUATION, L"(", MissingParenthesis(current()));
     while (!match(Token::PUNCTUATION, L")"))
@@ -1079,6 +1080,11 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
         {
             varArgs.emplace_back(key.copy());
         }
+    }
+
+    if (currClass->hasConstractor(Constractor(varArgs, funcName)))
+    {
+        throw Error(t, "Redefinition of a constractor");
     }
 
     Scope* s = symTable.getCurrScope();

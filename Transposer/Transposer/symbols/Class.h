@@ -29,5 +29,9 @@ public:
     void addField(const bool isPublic, const Var& field);
     void addConstractor(const bool isPublic, const Constractor& constractor);
 
+    bool hasMethod(const Func& method) const;
+    bool hasField(const Var& field) const;
+    bool hasConstractor(const Constractor& constractor) const;
+
     Class copy() const;
 };

@@ -1,4 +1,5 @@
 #pragma once
+#include <map>
 #include <set>
 #include <stack>
 
@@ -16,6 +17,7 @@ private:
     Scope* currScope;
     FuncDeclStmt* currFunc;
     std::set<std::pair<Func, bool>> funcs; // the bool means is it included to this file
+    std::map<std::wstring, Class> classes;
 
 public:
     SymbolTable();
@@ -25,6 +27,9 @@ public:
     std::optional<Var> getVar(const std::wstring& name) const;
     void addVar(std::unique_ptr<IType> type, const Token& token) const;
     void addVar(const Var& var, const Token& token) const;
+
+    std::optional<Class> getClass(const std::wstring& name) const;
+    void addClass(const Class& cls);
 
     bool doesFuncExist(const Func& f) const;
     bool doesFuncExist(const std::wstring& name) const;
