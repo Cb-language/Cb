@@ -3,7 +3,7 @@
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
 
-ArraySlicingExpr::ArraySlicingExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, std::unique_ptr<Call> call, std::unique_ptr<Expr> start, std::unique_ptr<Expr> stop, std::unique_ptr<Expr> step)
+ArraySlicingExpr::ArraySlicingExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, std::unique_ptr<Call> call, std::unique_ptr<Expr> start, std::unique_ptr<Expr> stop, std::unique_ptr<Expr> step)
     : Call(token, scope, funcDecl), call(std::move(call)), start(std::move(start)), stop(std::move(stop)), step(std::move(step))
 {
 }

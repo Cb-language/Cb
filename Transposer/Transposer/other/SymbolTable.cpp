@@ -36,6 +36,20 @@ void SymbolTable::addVar(const Var& var, const Token& token) const
     currScope->addVar(var, token);
 }
 
+std::optional<Class> SymbolTable::getClass(const std::wstring& name) const
+{
+    const auto it = classes.find(name);
+
+    if (it == classes.end()) return std::nullopt;
+
+    return it->second.copy();
+}
+
+void SymbolTable::addClass(const Class& cls)
+{
+    classes.emplace(cls.getClassName(), cls.copy());
+}
+
 bool SymbolTable::doesFuncExist(const Func& f) const
 {
     for (const auto& func : funcs | std::views::keys)
@@ -107,7 +121,7 @@ int SymbolTable::getLevel() const
     return currScope->getLevel();
 }
 
-void SymbolTable::changeFunc(FuncDeclStmt* funcDecl)
+void SymbolTable::changeFunc(IFuncDeclStmt* funcDecl)
 {
     currFunc = funcDecl;
 }
@@ -117,7 +131,7 @@ Scope* SymbolTable::getCurrScope() const
     return currScope;
 }
 
-FuncDeclStmt* SymbolTable::getCurrFunc() const
+IFuncDeclStmt* SymbolTable::getCurrFunc() const
 {
     return currFunc;
 }
@@ -155,11 +169,12 @@ std::string SymbolTable::getFuncsHeaders() const
 
 SymbolTable& SymbolTable::operator+=(const SymbolTable& other)
 {
-
     for (const auto& func : other.funcs | std::views::keys)
     {
         addFunc(func, true);
     }
+
+
 
     if (other.head == nullptr) return *this;
 

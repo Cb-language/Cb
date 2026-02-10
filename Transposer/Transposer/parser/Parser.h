@@ -8,6 +8,7 @@
 #include "AST/statements/BodyStmt.h"
 #include "AST/statements/BreakStmt.h"
 #include "AST/statements/CaseStmt.h"
+#include "AST/statements/ClassDeclStmt.h"
 #include "AST/statements/ContinueStmt.h"
 #include "AST/statements/ForStmt.h"
 #include "AST/statements/FuncCreditStmt.h"
@@ -72,12 +73,12 @@ private:
 
     // General Statements
 
-    std::unique_ptr<VarDeclStmt> parseVarDecStmt();
+    std::unique_ptr<VarDeclStmt> parseVarDecStmt(const bool isField = false);
     std::unique_ptr<AssignmentStmt> parseAssignmentStmt();
     std::unique_ptr<HearStmt> parseHearStmt();
     std::unique_ptr<PlayStmt> parsePlayStmt();
     std::unique_ptr<BodyStmt> parseBodyStmt(const std::vector<std::pair<Var, const Token>>& args, const bool isGlobal = false, const bool isBreakable = false, const bool isContinueAble = false, const bool hasBrace = true);
-    std::unique_ptr<FuncDeclStmt> parseFuncDeclStmt();
+    std::unique_ptr<FuncDeclStmt> parseFuncDeclStmt(const bool isMethod = false);
     std::unique_ptr<ReturnStmt> parseReturnStmt();
     std::unique_ptr<FuncCreditStmt> parseFuncCreditStmt();
     std::unique_ptr<IfStmt> parseIfStmt();
@@ -88,6 +89,11 @@ private:
     std::unique_ptr<SwitchStmt> parseSwitchStmt();
     std::unique_ptr<ContinueStmt> parseContinueStmt();
     std::unique_ptr<ForStmt> parseForStmt();
+    std::unique_ptr<ClassDeclStmt> parseClassDeclStmt();
+    std::unique_ptr<ConstractorDeclStmt> parseCtor();
+    void parseFields(std::vector<Field>& fields);
+    void parseMethods(std::vector<Method>& methods);
+    void parseCtors(std::vector<Ctor>& ctors);
 
     // Expressions
 

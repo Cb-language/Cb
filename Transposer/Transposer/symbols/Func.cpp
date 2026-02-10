@@ -10,6 +10,10 @@ Func::Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std
     }
 }
 
+Func::Func(const Func& other) : Func(other.rType->copy(), other.funcName, other.args)
+{
+}
+
 const std::vector<Var>& Func::getArgs() const
 {
     return args;
@@ -25,7 +29,7 @@ std::unique_ptr<IType> Func::getType() const
     return rType->copy();
 }
 
-std::string Func::translateToCpp() const
+std::string Func::translateToCpp(const std::wstring& className) const
 {
     std::string funcNameStr = Utils::wstrToStr(funcName);
 
@@ -34,7 +38,14 @@ std::string Func::translateToCpp() const
         funcNameStr = "main";
     }
 
-    std::string header = rType->translateTypeToCpp() + " " +  funcNameStr + "(";
+    std::string header = rType->translateTypeToCpp() + " ";
+
+    if (!className.empty())
+    {
+        header += Utils::wstrToStr(className) + "::";
+    }
+
+    header += funcNameStr + "(";
 
     bool first = true;
     for (const auto& arg : args)
@@ -91,7 +102,7 @@ bool Func::isLegalCall(const Func& other) const
 
 Func Func::copy() const
 {
-    return Func(rType->copy(), funcName, args);
+    return Func(*this);
 }
 
 bool Func::operator<(const Func& other) const

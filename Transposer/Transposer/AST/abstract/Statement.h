@@ -6,24 +6,25 @@
 #include "other/Scope.h"
 #include "other/Utils.h"
 
-class FuncDeclStmt;
+class IFuncDeclStmt;
 
 class Stmt
 {
 protected:
     const Token token;
     Scope* scope;
-    FuncDeclStmt* funcDecl;
+    IFuncDeclStmt* funcDecl;
 
     Stmt(const Token& token, Scope* scope);
-    Stmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl);
-    std::string getTabs() const;
+    Stmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl);
+    std::string getTabs(const int offset = 0) const;
 public:
     virtual ~Stmt();
     virtual void analyze() const = 0;
     virtual std::string translateToCpp() const = 0;
+    virtual std::string translateToH() const;
 
-    void setFuncDecl(FuncDeclStmt *funcDecl);
+    void setFuncDecl(IFuncDeclStmt *funcDecl);
 };
 
 inline Stmt::Stmt(const Token& token, Scope* scope) : token(token), scope(scope)
@@ -31,16 +32,16 @@ inline Stmt::Stmt(const Token& token, Scope* scope) : token(token), scope(scope)
     funcDecl = nullptr;
 }
 
-inline Stmt::Stmt(const Token& token, Scope* scope, FuncDeclStmt* funcDecl) : token(token), scope(scope), funcDecl(funcDecl)
+inline Stmt::Stmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl) : token(token), scope(scope), funcDecl(funcDecl)
 {
 }
 
-inline std::string Stmt::getTabs() const
+inline std::string Stmt::getTabs(const int offset) const
 {
     const int level = scope->getLevel();
     std::string res;
 
-    for (auto i = 0; i < level; i++)
+    for (auto i = 0; i < level + offset; i++)
     {
         res += "\t";
     }
@@ -54,7 +55,12 @@ inline Stmt::~Stmt()
     funcDecl = nullptr;
 }
 
-inline void Stmt::setFuncDecl(FuncDeclStmt* funcDecl)
+inline std::string Stmt::translateToH() const
+{
+    return ""; // not a lot of thing need it
+}
+
+inline void Stmt::setFuncDecl(IFuncDeclStmt* funcDecl)
 {
     this->funcDecl = funcDecl;
 }

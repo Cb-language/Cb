@@ -11,7 +11,8 @@ private:
 
 public:
     Var(std::unique_ptr<IType> type, const std::wstring& name);
-   std::unique_ptr<IType> getType() const;
+    Var(const Var& other);
+    std::unique_ptr<IType> getType() const;
     std::wstring getName() const;
 
     bool operator==(const Var& other) const;

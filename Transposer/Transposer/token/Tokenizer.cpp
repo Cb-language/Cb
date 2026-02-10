@@ -11,14 +11,15 @@ const std::vector<std::wstring> Tokenizer::capture_blocks = {
     LR"((?<ConstChar>'(\\.|[^\\'\n])'))",
     LR"((?<ConstStr>"(\\.|[\s\S])*?"))",
     LR"((?<Type>\b((flat|sharp)[\s\r\n]*(degree|freq|note))\b)|(?<Type>\b(degree|freq|note)\b)|(?<Type>\b(mute|bar|riff|fermata)\b))",
-    LR"((?<Keyword>(pause|resume|break|playBar|play|hear|F(?:maj|min)|[A-EG]|song|feat)(?![A-Za-z])))",
+    LR"((?<Keyword>(instrument|playerScore|conductorScore|pause|resume|break|playBar|play|hear|F(?:maj|min)|[A-EG]|song|feat)(?![A-Za-z])))",
     LR"((?<Punctuation>->))",
     LR"((?<UnaryOp>♯|♭|♮))",
     LR"((?<AssignmentOp>\+=|-=|//=|/=|\*=|%=))",
     LR"((?<BinaryOp>==|!=|>=|<=|<|>|\+|-|//|/|\*|%|\b(divis|chord)\b))",
     LR"((?<AssignmentOp>=))",
     LR"((?<UnaryOp>!))",
-    LR"((?<Punctuation>(#|,|∮|☉|©|\[|\]|║\:|\:║|║|\:|\\|\(|\)|\|)))",
+    LR"((?<Punctuation>(\||#|,|∮|☉|©|\[|\]|║\:|\:║|║|\:|\\|\(|\)|\|)))",
+    LR"((?<IdentifierCall>[a-zA-Z_][a-zA-Z_0-9]*_call))",
     LR"((?<Identifier>[a-zA-Z_][a-zA-Z_0-9]*))",
     LR"((?<Newline>\n))"
 };
@@ -146,6 +147,7 @@ std::vector<Token> Tokenizer::tokenize(const std::wstring& code, const std::file
         else if (match[L"AssignmentOp"].matched) { tokens.push_back(Token(Token::OP_ASSIGNMENT, match.str(), current_line, current_col, path)); }
         else if (match[L"BinaryOp"].matched) { tokens.push_back(Token(Token::OP_BINARY, match.str(), current_line, current_col, path)); }
         else if (match[L"Punctuation"].matched) { tokens.push_back(Token(Token::PUNCTUATION, match.str(), current_line, current_col, path)); }
+        else if (match[L"IdentifierCall"].matched) { tokens.push_back(Token(Token::IDENTIFIER_CALL, match.str(), current_line, current_col, path)); }
         else if (match[L"Identifier"].matched) { tokens.push_back(Token(Token::IDENTIFIER, match.str(), current_line, current_col, path)); }
 
         current_col++;

@@ -50,6 +50,7 @@
 
 // ---------- just how ----------
 #include "../errorHandling/how/HowDidYouGetHere.h"
+#include "errorHandling/classErrors/MissingClassPipe.h"
 #include "files/FileGraph.h"
 
 
@@ -140,7 +141,6 @@ std::string Parser::translateToCpp(const std::filesystem::path& hPath, const boo
     if (isMain) oss << translateToH(isMain);
     else oss << "#include \"" << hPath.string() << "\"" << std::endl;
 
-
     for (const auto& stmt : stmts)
     {
         oss << std::endl << stmt->translateToCpp();
@@ -152,9 +152,11 @@ std::string Parser::translateToCpp(const std::filesystem::path& hPath, const boo
 std::string Parser::translateToH(const bool isMain) const
 {
     std::ostringstream oss;
+    const std::filesystem::path outArrPath = File::getOutDir() / "includes" / "Array.h";
     if (!isMain) oss << "#pragma once" << std::endl;
 
     oss << "#include <string>" << std::endl;
+    if (isMain) oss << "#include \"" << outArrPath.string() << "\"" << std::endl;
 
     if (!includes.empty()) oss << std::endl;
 
@@ -163,8 +165,7 @@ std::string Parser::translateToH(const bool isMain) const
         oss << i->translateToCpp() << std::endl;
     }
 
-    const std::string funcHeaders = symTable.getFuncsHeaders();
-    if (!funcHeaders.empty()) oss << std::endl << funcHeaders;
+    for (const auto& stmt : stmts) oss << stmt->translateToH();
 
     return oss.str();
 }
@@ -378,7 +379,7 @@ bool Parser::isUnaryOpStmtAhead()
     return result;
 }
 
-std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt()
+std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt(const bool isField)
 {
     if (match(Token::TYPE, L"riff"))
     {
@@ -395,6 +396,12 @@ std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt()
     const Var var(varType->copy(), varName);
     const Token identifierToken = prev();
 
+    if (isField && !match(Token::OP_ASSIGNMENT, L"="))
+    {
+        symTable.addVar(varType->copy(), identifierToken);
+        return std::make_unique<VarDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), false, nullptr, var);
+    }
+
     if (match(Token::PUNCTUATION, L"║"))
     {
         symTable.addVar(varType->copy(), identifierToken);
@@ -405,8 +412,13 @@ std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt()
     expect(Token::OP_ASSIGNMENT, L"=" , NoPlacementOperator(current()));
 
     auto expr = parseExpr();
-    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
-    symTable.addVar(varType->copy(), identifierToken); // to avoid degree x = x + 1║ ...
+
+    if (!isField)
+    {
+        expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+        symTable.addVar(varType->copy(), identifierToken); // to avoid degree x = x + 1║ ...
+    }
+
     return std::make_unique<VarDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), true, std::move(expr), var);
 }
 
@@ -589,6 +601,10 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             bodyStmts.push_back(parseForStmt());
         }
+        else if (match(Token::KEYWORD, L"instrument"))
+        {
+            bodyStmts.push_back(parseClassDeclStmt());
+        }
         else if (match(Token::COMMENT_MULTI) || match(Token::COMMENT_SINGLE))
         {
             advance();
@@ -616,7 +632,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             throw MissingBrace(current());
         }
-        if (isAtEnd())
+        if (!isAtEnd())
         {
             advance();
         }
@@ -626,11 +642,11 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
     return std::make_unique<BodyStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), bodyStmts, isGlobal);
 }
 
-std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
+std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
 {
     std::vector<std::pair<Var, const Token>> args;
     std::vector<std::unique_ptr<FuncCreditStmt>> credited;
-    FuncDeclStmt* currFunc = symTable.getCurrFunc();
+    IFuncDeclStmt* currFunc = symTable.getCurrFunc();
     const Token& t = current();
 
     expect(Token::KEYWORD, L"song", HowDidYouGetHere(current()));
@@ -724,7 +740,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt()
 
     auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), funcName, rType->copy(), varArgs, credited);
 
-    symTable.addFunc(funcDeclStmt->getFunc());
+    if (!isMethod) symTable.addFunc(funcDeclStmt->getFunc());
     symTable.changeFunc(funcDeclStmt.get());
 
     funcDeclStmt->setBody(std::move(parseBodyStmt(args)));
@@ -743,7 +759,7 @@ std::unique_ptr<ReturnStmt> Parser::parseReturnStmt()
     const Token& t = current();
     expect(Token::KEYWORD, L"B", HowDidYouGetHere(current()));
 
-    FuncDeclStmt* currFunc = symTable.getCurrFunc();
+    IFuncDeclStmt* currFunc = symTable.getCurrFunc();
     std::unique_ptr<Expr> expr = nullptr;
 
     if (currFunc->getReturnType()->getType() != L"fermata")
@@ -989,6 +1005,361 @@ std::unique_ptr<ForStmt> Parser::parseForStmt()
 
     return std::make_unique<ForStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(),
         std::move(body), isIncreasing, std::move(startExpr), std::move(stepExpr), std::move(stopExpr), varName);
+}
+
+std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
+{
+    Token t = current();
+    expect(Token::KEYWORD, L"instrument", HowDidYouGetHere(t));
+
+    const std::wstring name = expectAndGet(Token::IDENTIFIER, MissingIdentifier(current())).value;
+    std::vector<Field> fields;
+    std::vector<Method> methods;
+    std::vector<Ctor> ctors;
+
+    Class c(name);
+    symTable.getCurrScope()->setCurrClass(c);
+
+    const size_t tempPos = pos;
+
+    expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+    parseFields(fields);
+    expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+
+    pos = tempPos;
+
+    expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+    parseMethods(methods);
+    expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+
+    pos = tempPos;
+
+    expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+    parseCtors(ctors);
+    expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+
+    symTable.addClass(c);
+
+    return std::make_unique<ClassDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), name, fields, methods, ctors);
+}
+
+std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
+{
+    const Token& t = current();
+    std::vector<std::pair<Var, const Token>> args;
+    std::vector<std::unique_ptr<FuncCreditStmt>> credited;
+    IFuncDeclStmt* currFunc = symTable.getCurrFunc();
+
+    expect(Token::IDENTIFIER_CALL, MissingIdentifier(t));
+
+    const std::wstring funcName = t.value;
+
+    std::optional<Class> currClass = symTable.getCurrScope()->getCurrClass();
+
+    if (!currClass.has_value()) throw HowDidYouGetHere(t);
+
+    expect(Token::PUNCTUATION, L"(", MissingParenthesis(current()));
+    while (!match(Token::PUNCTUATION, L")"))
+    {
+        const std::unique_ptr<IType> type = parseIType();
+        std::wstring currName = expectAndGet(Token::IDENTIFIER, MissingBrace(current())).value;
+
+        args.emplace_back(Var(type->copy(), currName), current());
+
+        if (!match(Token::PUNCTUATION, L")"))
+        {
+            expect(Token::PUNCTUATION, L",", UnexpectedToken(current()));
+        }
+    }
+    advance(); // matched the closing brace now moving forward
+
+    std::vector<Var> varArgs;
+
+    if (!args.empty())
+    {
+        for (const auto& key : args | std::views::keys)
+        {
+            varArgs.emplace_back(key.copy());
+        }
+    }
+
+    if (currClass->hasConstractor(Constractor(varArgs, funcName)))
+    {
+        throw Error(t, "Redefinition of a constractor");
+    }
+
+    Scope* s = symTable.getCurrScope();
+    auto ctorDeclStmt = std::make_unique<ConstractorDeclStmt>(t, s, s->getCurrClassName(), varArgs);
+
+    // TODO: figure this out
+    // symTable.addFunc(ctorDeclStmt->getFunc());
+    // symTable.changeFunc(funcDeclStmt.get());
+
+    ctorDeclStmt->setBody(std::move(parseBodyStmt(args)));
+
+    symTable.changeFunc(currFunc);
+    return std::move(ctorDeclStmt);
+}
+
+void Parser::parseFields(std::vector<Field>& fields)
+{
+    while (!match(Token::PUNCTUATION, L"☉"))
+    {
+        if (match(Token::KEYWORD, L"playerScore"))
+        {
+            advance();
+            expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+
+            while (true)
+            {
+                if (match(Token::TYPE))
+                {
+                    auto field = parseVarDecStmt(true);
+
+                    symTable.getCurrScope()->addField(false, field->getVar().copy(), current());
+
+                    fields.emplace_back(false, std::move(field));
+                }
+                else // skip func decl
+                {
+                    unsigned int level = 0;
+                    while (true)
+                    {
+                        if (level == 0 && (match(Token::PUNCTUATION, L"|") || match(Token::PUNCTUATION, L"║"))) break;
+
+                        if (match(Token::PUNCTUATION, L"∮")) level++;
+                        else if (match(Token::PUNCTUATION, L"☉")) level--;
+                        advance();
+                    }
+                }
+
+                if (match(Token::PUNCTUATION, L"║"))
+                {
+                    break;
+                }
+
+                expect(Token::PUNCTUATION, L"|", MissingClassPipe(current()));
+            }
+            advance(); // consume the ║
+            expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+        }
+        else if (match(Token::KEYWORD, L"conductorScore"))
+        {
+            advance();
+            expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+
+            while (true)
+            {
+                if (match(Token::TYPE))
+                {
+                    auto field = parseVarDecStmt(true);
+
+                    symTable.getCurrScope()->addField(true, field->getVar().copy(), current());
+
+                    fields.emplace_back(true, std::move(field));
+                }
+                else // skip func decl
+                {
+                    unsigned int level = 0;
+                    while (true)
+                    {
+                        if (level == 0 && (match(Token::PUNCTUATION, L"|") || match(Token::PUNCTUATION, L"║"))) break;
+
+                        if (match(Token::PUNCTUATION, L"∮")) level++;
+                        else if (match(Token::PUNCTUATION, L"☉")) level--;
+                        advance();
+                    }
+                }
+
+                if (match(Token::PUNCTUATION, L"║"))
+                {
+                    break;
+                }
+
+                expect(Token::PUNCTUATION, L"|", MissingClassPipe(current()));
+            }
+            advance(); // consume the ║
+            expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+        }
+        else
+        {
+            throw UnrecognizedIdentifier(current());
+        }
+    }
+}
+
+void Parser::parseMethods(std::vector<Method>& methods)
+{
+    while (!match(Token::PUNCTUATION, L"☉"))
+    {
+        if (match(Token::KEYWORD, L"playerScore"))
+        {
+            advance();
+            expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+
+            while (true)
+            {
+                if (match(Token::KEYWORD, L"song"))
+                {
+                    auto method = parseFuncDeclStmt();
+
+                    symTable.getCurrScope()->addMethod(false, method->getFunc().copy(), current());
+
+                    methods.emplace_back(false, std::move(method));
+                }
+                else
+                {
+                    unsigned int level = 0;
+                    while (true)
+                    {
+                        if (level == 0 && (match(Token::PUNCTUATION, L"|") || match(Token::PUNCTUATION, L"║"))) break;
+
+                        if (match(Token::PUNCTUATION, L"∮")) level++;
+                        else if (match(Token::PUNCTUATION, L"☉")) level--;
+                        advance();
+                    }
+                }
+
+                if (match(Token::PUNCTUATION, L"║"))
+                {
+                    break;
+                }
+
+                expect(Token::PUNCTUATION, L"|", MissingClassPipe(current()));
+            }
+            advance(); // consume the ║
+            expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+        }
+        else if (match(Token::KEYWORD, L"conductorScore"))
+        {
+            advance();
+            expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+
+            while (true)
+            {
+                if (match(Token::KEYWORD, L"song"))
+                {
+                    auto method = parseFuncDeclStmt();
+
+                    symTable.getCurrScope()->addMethod(false, method->getFunc().copy(), current());
+
+                    methods.emplace_back(true, std::move(method));
+                }
+                else
+                {
+                    unsigned int level = 0;
+                    while (true)
+                    {
+                        if (level == 0 && (match(Token::PUNCTUATION, L"|") || match(Token::PUNCTUATION, L"║"))) break;
+
+                        if (match(Token::PUNCTUATION, L"∮")) level++;
+                        else if (match(Token::PUNCTUATION, L"☉")) level--;
+                        advance();
+                    }
+                }
+
+                if (match(Token::PUNCTUATION, L"║"))
+                {
+                    break;
+                }
+
+                expect(Token::PUNCTUATION, L"|", MissingClassPipe(current()));
+            }
+            advance(); // consume the ║
+            expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+        }
+        else
+        {
+            throw UnrecognizedIdentifier(current());
+        }
+    }
+}
+
+void Parser::parseCtors(std::vector<Ctor>& ctors)
+{
+    while (!match(Token::PUNCTUATION, L"☉"))
+    {
+        if (match(Token::KEYWORD, L"playerScore"))
+        {
+            advance();
+            expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+
+            while (true)
+            {
+                if (match(Token::IDENTIFIER_CALL))
+                {
+                    auto ctor = parseCtor();
+
+                    symTable.getCurrScope()->addConstractor(false, ctor->getConstractor().copy(), current());
+
+                    ctors.emplace_back(false, std::move(ctor));
+                }
+                else // skip func decl
+                {
+                    unsigned int level = 0;
+                    while (true)
+                    {
+                        if (level == 0 && (match(Token::PUNCTUATION, L"|") || match(Token::PUNCTUATION, L"║"))) break;
+
+                        if (match(Token::PUNCTUATION, L"∮")) level++;
+                        else if (match(Token::PUNCTUATION, L"☉")) level--;
+                        advance();
+                    }
+                }
+
+                if (match(Token::PUNCTUATION, L"║"))
+                {
+                    break;
+                }
+
+                expect(Token::PUNCTUATION, L"|", MissingClassPipe(current()));
+            }
+            advance(); // consume the ║
+            expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+        }
+        else if (match(Token::KEYWORD, L"conductorScore"))
+        {
+            advance();
+            expect(Token::PUNCTUATION, L"∮", MissingBrace(current()));
+
+            while (true)
+            {
+                if (match(Token::IDENTIFIER_CALL))
+                {
+                    auto ctor = parseCtor();
+
+                    symTable.getCurrScope()->addConstractor(true, ctor->getConstractor().copy(), current());
+
+                    ctors.emplace_back(true, std::move(ctor));
+                }
+                else // skip func decl
+                {
+                    unsigned int level = 0;
+                    while (true)
+                    {
+                        if (level == 0 && (match(Token::PUNCTUATION, L"|") || match(Token::PUNCTUATION, L"║"))) break;
+
+                        if (match(Token::PUNCTUATION, L"∮")) level++;
+                        else if (match(Token::PUNCTUATION, L"☉")) level--;
+                        advance();
+                    }
+                }
+
+                if (match(Token::PUNCTUATION, L"║"))
+                {
+                    break;
+                }
+
+                expect(Token::PUNCTUATION, L"|", MissingClassPipe(current()));
+            }
+            advance(); // consume the ║
+            expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
+        }
+        else
+        {
+            throw UnrecognizedIdentifier(current());
+        }
+    }
 }
 
 std::unique_ptr<Call> Parser::parseFuncCallExpr(const bool isStmt)

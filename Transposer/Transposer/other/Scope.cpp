@@ -6,6 +6,16 @@
 #include "../errorHandling/semanticErrors/IdentifierTaken.h"
 #include "../errorHandling/syntaxErrors/UnexpectedToken.h"
 
+Class* Scope::getCurrClassPtr()
+{
+    if (!currClass.has_value())
+    {
+        return parent ? parent->getCurrClassPtr() : nullptr;
+    }
+
+    return &currClass.value();
+}
+
 Scope::Scope(Scope* parent) : parent(parent)
 {
 }
@@ -35,6 +45,19 @@ std::optional<Var> Scope::getVar(const std::wstring& name) const
         if (name == var.getName())
         {
             return var.copy();
+        }
+    }
+
+    if (currClass.has_value())
+    {
+        for (const auto& [isPublic, field] : currClass->getFields())
+        {
+            if (!isPublic) continue;
+
+            if (name == field.getName())
+            {
+                return field.copy();
+            }
         }
     }
 
@@ -132,6 +155,53 @@ bool Scope::getIsContinueAble() const
         return getParent()->getIsContinueAble();
     }
     return false;
+}
+
+std::optional<Class> Scope::getCurrClass() const
+{
+    if (!currClass.has_value())
+    {
+        if (parent == nullptr) return std::nullopt;
+        return parent->getCurrClass();
+    }
+
+    return currClass;
+}
+
+void Scope::addMethod(const bool isPublic, const Func& method, const Token& token)
+{
+    Class* c = getCurrClassPtr();
+    if (c == nullptr) throw Error(token, "Not in class");
+
+    c->addMethod(isPublic, method);
+}
+
+void Scope::addField(const bool isPublic, const Var& field, const Token& token)
+{
+    Class* c = getCurrClassPtr();
+    if (c == nullptr) throw Error(token, "Not in class");
+
+    c->addField(isPublic, field);
+}
+
+void Scope::addConstractor(const bool isPublic, const Constractor& constractor, const Token& token)
+{
+    Class* c = getCurrClassPtr();
+    if (c == nullptr) throw Error(token, "Not in class");
+
+    c->addConstractor(isPublic, constractor);
+}
+
+std::wstring Scope::getCurrClassName() const
+{
+    auto c = getCurrClass();
+    if (c.has_value()) return c->getClassName();
+    return L"";
+}
+
+void Scope::setCurrClass(Class& currClass)
+{
+    this->currClass.emplace(currClass.copy());
 }
 
 const std::vector<std::pair<Var, Token>>& Scope::getCurrVars() const

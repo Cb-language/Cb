@@ -1,4 +1,4 @@
-song some() -> degree
+song prelude() -> degree
 ∮
     sharp degree size║
 

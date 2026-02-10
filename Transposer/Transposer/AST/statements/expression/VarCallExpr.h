@@ -8,7 +8,7 @@ protected:
     const Var var;
 
 public:
-    VarCallExpr(const Token& token, Scope* scope, FuncDeclStmt* funcDecl, const Var& var);
+    VarCallExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const Var& var);
     void analyze() const override;
     std::string translateToCpp() const override;
     std::unique_ptr<IType> getType() const override;
