@@ -3,7 +3,7 @@
 #include "AST/abstract/IFuncDeclStmt.h"
 
 ObjInstanceStmt::ObjInstanceStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl,
-    const Class& _class, const std::wstring& name) : Stmt(token, scope, funcDecl), hasCtor(!(_class.getConstractors().empty())), _class(_class), name(name)
+    const std::optional<Class>& _class, const std::wstring& name) : Stmt(token, scope, funcDecl), hasCtor(!(_class->getConstractors().empty())), _class(_class.value), name(name)
 {
 }
 

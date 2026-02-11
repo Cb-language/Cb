@@ -28,6 +28,7 @@
 #include "symbols/FuncCredit.h"
 #include "symbols/Type/ArrayType.h"
 #include "AST/statements/IncludeStmt.h"
+#include "AST/statements/ObjInstanceStmt.h"
 
 class Error;
 
@@ -91,6 +92,7 @@ private:
     std::unique_ptr<ForStmt> parseForStmt();
     std::unique_ptr<ClassDeclStmt> parseClassDeclStmt();
     std::unique_ptr<ConstractorDeclStmt> parseCtor();
+    std::unique_ptr<ObjInstanceStmt> parseObjInstanceStmt();
     void parseFields(std::vector<Field>& fields);
     void parseMethods(std::vector<Method>& methods);
     void parseCtors(std::vector<Ctor>& ctors);

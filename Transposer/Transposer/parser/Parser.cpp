@@ -1101,6 +1101,27 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
     return std::move(ctorDeclStmt);
 }
 
+std::unique_ptr<ObjInstanceStmt> Parser::parseObjInstanceStmt()
+{
+    const Token& classToken = current();
+
+    const std::optional<Class> classInfo = symTable.getClass(classToken.value);
+    const auto objectType = std::make_unique<Type>(classInfo->getClassName());
+
+    advance();
+
+    const Token& instanceToken = expectAndGet(Token::IDENTIFIER, MissingIdentifier(current()));
+    const std::wstring instanceName = instanceToken.value;
+
+    const Var newObjectVar(objectType->copy(), instanceName);
+
+    symTable.addVar(newObjectVar, instanceToken);
+
+    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+
+    return std::make_unique<ObjInstanceStmt>(classToken, symTable.getCurrScope(), symTable.getCurrFunc(), classInfo, instanceName);
+}
+
 void Parser::parseFields(std::vector<Field>& fields)
 {
     while (!match(Token::PUNCTUATION, L"☉"))

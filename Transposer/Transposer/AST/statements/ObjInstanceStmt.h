@@ -10,7 +10,7 @@ private:
     Class _class;
     const std::wstring name;
 public:
-    ObjInstanceStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const Class& _class, const std::wstring& name);
+    ObjInstanceStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const std::optional<Class>& _class, const std::wstring& name);
 
     void analyze() const override;
     std::string translateToCpp() const override;
