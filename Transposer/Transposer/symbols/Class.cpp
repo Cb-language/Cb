@@ -80,6 +80,24 @@ bool Class::hasConstractor(const Constractor& constractor) const
     return false;
 }
 
+bool Class::hasMethod(const std::wstring& name)
+{
+    for (const auto& m : methods | std::views::values)
+    {
+        if (m.getFuncName() == name) return true;
+    }
+    return false;
+}
+
+bool Class::hasField(const std::wstring& name)
+{
+    for (const auto& f : fields | std::views::values)
+    {
+        if (f.getName() == name) return true;
+    }
+    return false;
+}
+
 Class Class::copy() const
 {
     return Class(*this);

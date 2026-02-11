@@ -1,6 +1,4 @@
-#include "ObjInstanceStmt.h"
-
-#include "AST/abstract/IFuncDeclStmt.h"
+#include "ObjCreationStmt.h"
 
 ObjCreationStmt::ObjCreationStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl,
     const std::optional<Class>& _class, const std::wstring& name) : Stmt(token, scope, funcDecl), hasCtor(!(_class->getConstractors().empty())), _class(_class.value), name(name)

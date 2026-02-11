@@ -537,7 +537,14 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         }
         else if (match(Token::IDENTIFIER) && isAssignmentStmtAhead())
         {
-            bodyStmts.push_back(parseAssignmentStmt());
+            if (symTable.getVar(current().value).value().isPrimitive())
+            {
+                bodyStmts.push_back(parseAssignmentStmt());
+            }
+            else
+            {
+                // TODO add ObjInstance parsing
+            }
         }
         else if (match(Token::KEYWORD, L"hear"))
         {
