@@ -50,6 +50,11 @@ void SymbolTable::addClass(const Class& cls)
     classes.emplace(cls.getClassName(), cls.copy());
 }
 
+bool SymbolTable::isClass(const std::wstring& name) const
+{
+     return getClass(name) != std::nullopt;
+}
+
 bool SymbolTable::doesFuncExist(const Func& f) const
 {
     for (const auto& func : funcs | std::views::keys)

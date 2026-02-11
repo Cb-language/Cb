@@ -50,7 +50,10 @@
 
 // ---------- just how ----------
 #include "../errorHandling/how/HowDidYouGetHere.h"
+
 #include "errorHandling/classErrors/MissingClassPipe.h"
+#include "errorHandling/classErrors/NoCtor.h"
+
 #include "files/FileGraph.h"
 
 
@@ -609,6 +612,10 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             advance();
         }
+        else if (symTable.isClass(current().value))
+        {
+            bodyStmts.push_back(parseObjCreationStmt());
+        }
         else if (match(Token::KEYWORD, L"feat"))
         {
             throw IncludeNotInTop(current());
@@ -1101,11 +1108,16 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
     return std::move(ctorDeclStmt);
 }
 
-std::unique_ptr<ObjInstanceStmt> Parser::parseObjInstanceStmt()
+std::unique_ptr<ObjCreationStmt> Parser::parseObjCreationStmt()
 {
     const Token& classToken = current();
 
     const std::optional<Class> classInfo = symTable.getClass(classToken.value);
+    if (!classInfo)
+    {
+        throw HowDidYouGetHere(classToken);
+    }
+
     const auto objectType = std::make_unique<Type>(classInfo->getClassName());
 
     advance();
@@ -1117,9 +1129,64 @@ std::unique_ptr<ObjInstanceStmt> Parser::parseObjInstanceStmt()
 
     symTable.addVar(newObjectVar, instanceToken);
 
+    if (match (Token::OP_ASSIGNMENT, L"="))
+    {
+        if (classInfo->getConstractors().empty())
+        {
+            throw NoCtor(current());
+        }
+        if (!parseCrtorCall(classInfo))
+        {
+            throw Error(current(), "Invalid constructor or parameters");
+        }
+    }
+
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-    return std::make_unique<ObjInstanceStmt>(classToken, symTable.getCurrScope(), symTable.getCurrFunc(), classInfo, instanceName);
+    return std::make_unique<ObjCreationStmt>(classToken, symTable.getCurrScope(), symTable.getCurrFunc(), classInfo, instanceName);
+}
+
+bool Parser::parseCrtorCall(const std::optional<Class>& _class)
+{
+    const Token& t = current();
+    std::vector<std::pair<Var, const Token>> args;
+    IFuncDeclStmt* currFunc = symTable.getCurrFunc();
+
+    expect(Token::IDENTIFIER_CALL, MissingIdentifier(t));
+    const std::wstring funcName = t.value;
+
+    if (!_class.has_value()) throw HowDidYouGetHere(t);
+
+    expect(Token::PUNCTUATION, L"(", MissingParenthesis(current()));
+    while (!match(Token::PUNCTUATION, L")"))
+    {
+        const std::unique_ptr<IType> type = parseIType();
+        std::wstring currName = expectAndGet(Token::IDENTIFIER, MissingBrace(current())).value;
+
+        args.emplace_back(Var(type->copy(), currName), current());
+
+        if (!match(Token::PUNCTUATION, L")"))
+        {
+            expect(Token::PUNCTUATION, L",", UnexpectedToken(current()));
+        }
+    }
+    advance(); // matched the closing brace now moving forward
+
+    std::vector<Var> varArgs;
+
+    if (!args.empty())
+    {
+        for (const auto& key : args | std::views::keys)
+        {
+            varArgs.emplace_back(key.copy());
+        }
+    }
+
+    if (_class->hasConstractor(Constractor(varArgs, funcName)))
+    {
+        return true;
+    }
+    return false;
 }
 
 void Parser::parseFields(std::vector<Field>& fields)

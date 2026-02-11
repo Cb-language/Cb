@@ -30,6 +30,7 @@ public:
 
     std::optional<Class> getClass(const std::wstring& name) const;
     void addClass(const Class& cls);
+    bool isClass(const std::wstring& name) const;
 
     bool doesFuncExist(const Func& f) const;
     bool doesFuncExist(const std::wstring& name) const;

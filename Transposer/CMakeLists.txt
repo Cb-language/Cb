@@ -200,8 +200,10 @@ add_executable(Transposer
         Transposer/symbols/Constractor.cpp
         Transposer/symbols/Constractor.h
         Transposer/AST/abstract/IFuncDeclStmt.h
-        Transposer/AST/statements/ObjInstanceStmt.cpp
-        Transposer/AST/statements/ObjInstanceStmt.h
+        Transposer/AST/statements/ObjCreationStmt.cpp
+        Transposer/AST/statements/ObjCreationStmt.h
+        Transposer/errorHandling/classErrors/NoCtor.cpp
+        Transposer/errorHandling/classErrors/NoCtor.h
 )
 
 # In order to call the exe from the cmd
