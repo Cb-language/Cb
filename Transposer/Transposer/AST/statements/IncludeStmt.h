@@ -9,7 +9,7 @@ private:
     std::filesystem::path inPath;
     std::filesystem::path outPath;
 public:
-    IncludeStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const std::filesystem::path& inPath);
+    IncludeStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, ClassNode* currClass, const std::filesystem::path& inPath);
 
     void analyze() const override;
     std::string translateToCpp() const override;

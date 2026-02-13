@@ -13,7 +13,8 @@ private:
     const std::unique_ptr<Expr> right;
 
 public:
-    BinaryOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const std::wstring& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, const bool hasParens = false);
+    BinaryOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, ClassNode* currClass,
+        const std::wstring& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, const bool hasParens = false);
 
     std::unique_ptr<IType> getType() const override;
     void analyze() const override;

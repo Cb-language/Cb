@@ -932,7 +932,7 @@ std::unique_ptr<SwitchStmt> Parser::parseSwitchStmt()
     const Token& t = current();
     expect(Token::KEYWORD, L"A", HowDidYouGetHere(current()));
     expect(Token::PUNCTUATION, L"\\");
-    const std::optional<Var> v = symTable.getCurrScope()->getVar(current().value)->copy();
+    const std::optional<Var> v = symTable.getCurrScope()->getVar(current().value, symTable.getClassNode())->copy();
 
     if (v == std::nullopt)
     {

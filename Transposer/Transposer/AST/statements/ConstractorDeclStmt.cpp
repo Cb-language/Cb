@@ -2,8 +2,8 @@
 
 #include "errorHandling/how/HowDidYouGetHere.h"
 
-ConstractorDeclStmt::ConstractorDeclStmt(const Token& token, Scope* scope, const std::wstring& className,
-                                         const std::vector<Var>& args) : IFuncDeclStmt(token, scope), constractor(Constractor(args,  className))
+ConstractorDeclStmt::ConstractorDeclStmt(const Token& token, Scope* scope, ClassNode* currClass, const std::wstring& className,
+                                         const std::vector<Var>& args) : IFuncDeclStmt(token, scope, currClass), constractor(Constractor(args,  className))
 {
 }
 

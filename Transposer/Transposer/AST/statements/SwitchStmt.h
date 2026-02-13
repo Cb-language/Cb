@@ -12,7 +12,7 @@ private:
     const Var var;
     std::vector<std::unique_ptr<CaseStmt>> cases;
 public:
-    SwitchStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, Var var, std::vector<std::unique_ptr<CaseStmt>>& cases);
+    SwitchStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, ClassNode* currClass, Var var, std::vector<std::unique_ptr<CaseStmt>>& cases);
     void analyze() const override;
     std::string translateToCpp() const override;
 };
