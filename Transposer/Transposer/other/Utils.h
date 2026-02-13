@@ -12,4 +12,6 @@ public:
     static std::string removeFirstTabs(std::string& str);
 
     static std::string normalizePath(const std::filesystem::path& path);
+
+    static bool startsWithNote(const std::wstring& wstr);
 };

@@ -44,3 +44,10 @@ std::string Utils::normalizePath(const std::filesystem::path& path)
     }
     return res;
 }
+
+bool Utils::startsWithNote(const std::wstring& wstr)
+{
+    return wstr.starts_with(L"do_") || wstr.starts_with(L"re_") || wstr.starts_with(L"mi_") ||
+            wstr.starts_with(L"fa_") || wstr.starts_with(L"sol_") || wstr.starts_with(L"la_") ||
+            wstr.starts_with(L"si_") || wstr.starts_with(L"ti_");
+}

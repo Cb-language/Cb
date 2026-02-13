@@ -212,6 +212,8 @@ add_executable(Transposer
         Transposer/symbols/Type/ClassType.h
         Transposer/AST/statements/expression/ConstractorCallStmt.cpp
         Transposer/AST/statements/expression/ConstractorCallStmt.h
+        Transposer/errorHandling/syntaxErrors/IllegalVarName.cpp
+        Transposer/errorHandling/syntaxErrors/IllegalVarName.h
 )
 
 # In order to call the exe from the cmd

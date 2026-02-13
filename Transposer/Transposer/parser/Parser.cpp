@@ -49,9 +49,11 @@
 
 // ---------- just how ----------
 #include "../errorHandling/how/HowDidYouGetHere.h"
+#include "errorHandling/classErrors/IllegalFieldName.h"
 
 #include "errorHandling/classErrors/MissingClassPipe.h"
 #include "errorHandling/classErrors/NoCtor.h"
+#include "errorHandling/syntaxErrors/IllegalVarName.h"
 
 #include "files/FileGraph.h"
 #include "symbols/Type/ClassType.h"
@@ -398,6 +400,18 @@ std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt(const bool isField)
 
     const Var var(varType->copy(), varName);
     const Token identifierToken = prev();
+
+    const bool startsMusical = Utils::startsWithNote(varName);
+
+    if (isField && !startsMusical)
+    {
+        throw IllegalFieldName(identifierToken);
+    }
+
+    if (!isField && startsMusical)
+    {
+        throw IllegalVarName(identifierToken);
+    }
 
     if (isField && !match(Token::OP_ASSIGNMENT, L"="))
     {
