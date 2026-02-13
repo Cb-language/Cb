@@ -135,13 +135,7 @@ CMakeUserPresets.json
 *-prefix/
 
 # Ignore all .exe and .cpp files in "Transposer/test files" folder
-/Transposer/test files/**/*.{exe,cpp,tpp,hpp,h}
-
-!/Transposer/Transposer/*.h
-!/Transposer/Transposer/*.cpp
-
-!/Transposer/Transposer/**/*.h
-!/Transposer/Transposer/**/*.cpp
+/test files/**/*.{exe,cpp,tpp,hpp,h}
 
 
 ### Rider ###
