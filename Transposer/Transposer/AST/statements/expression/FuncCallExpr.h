@@ -28,4 +28,6 @@ public:
 
     const Token& getToken() const;
     const std::wstring& getName() const;
+
+    std::wstring toString() const override;
 };

@@ -112,3 +112,8 @@ const std::wstring& FuncCallExpr::getName() const
 {
     return name;
 }
+
+std::wstring FuncCallExpr::toString() const
+{
+    return name;
+}

@@ -204,12 +204,10 @@ add_executable(Transposer
         Transposer/AST/statements/ObjCreationStmt.h
         Transposer/errorHandling/classErrors/NoCtor.cpp
         Transposer/errorHandling/classErrors/NoCtor.h
-        Transposer/AST/statements/ObjInstanceStmt.cpp
-        Transposer/AST/statements/ObjInstanceStmt.h
         Transposer/class/ClassNode.cpp
         Transposer/class/ClassNode.h
-        Transposer/AST/statements/expression/ObjectCall.cpp
-        Transposer/AST/statements/expression/ObjectCall.h
+        Transposer/AST/statements/expression/DotOpExpr.cpp
+        Transposer/AST/statements/expression/DotOpExpr.h
 )
 
 # In order to call the exe from the cmd

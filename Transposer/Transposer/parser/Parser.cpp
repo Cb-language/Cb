@@ -1726,14 +1726,13 @@ std::unique_ptr<Expr> Parser::parsePrimary()
 
 std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<Expr> left)
 {
-
-    const Token& t = current();
     while (true)
     {
-        if (!match(Token::OP_BINARY))
+        if (!(match(Token::OP_BINARY) || match(Token::PUNCTUATION, L"\\")))
             return left;
 
-        std::wstring op = current().value;
+        const Token& t = current();
+        std::wstring op = t.value;
         int prec = BinaryOpExpr::getPrecedence(op);
 
         if (prec < exprPrec)
@@ -1741,10 +1740,11 @@ std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<E
 
         advance();
 
+        // Parse the right-hand expression
         auto right = parsePrimary();
 
-        // Lookahead for next operator to handle higher precedence
-        if (match(Token::OP_BINARY))
+        // Lookahead for higher-precedence operator
+        if (match(Token::OP_BINARY) || match(Token::PUNCTUATION, L"\\"))
         {
             int nextPrec = BinaryOpExpr::getPrecedence(current().value);
             if (nextPrec > prec)
@@ -1753,9 +1753,51 @@ std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<E
             }
         }
 
-        left = std::make_unique<BinaryOpExpr>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), op, std::move(left), std::move(right));
+        // Construct the correct expression type
+        if (op == L"\\")
+        {
+            // Cast right to CallExpr (DotOpExpr expects Call on the right)
+            auto callLeft = dynamic_cast<Call*>(left.get());
+            if (!callLeft)
+            {
+                throw Error(current(), "Left-hand side of '\\' must be a Call expression");
+            }
+
+            auto callRight = dynamic_cast<Call*>(right.get());
+            if (!callRight)
+            {
+                throw Error(current(), "Right-hand side of '\\' must be a Call expression");
+            }
+
+            left = std::make_unique<DotOpExpr>(
+                t,
+                symTable.getCurrScope(),
+                symTable.getCurrFunc(),
+                symTable.getCurrClass(),
+                op,
+                std::unique_ptr<Call>(callLeft),
+                std::unique_ptr<Call>(callRight) // transfer ownership
+            );
+
+            // Prevent double delete since we moved callRight
+            left.release();
+            right.release();
+        }
+        else
+        {
+            left = std::make_unique<BinaryOpExpr>(
+                t,
+                symTable.getCurrScope(),
+                symTable.getCurrFunc(),
+                symTable.getCurrClass(),
+                op,
+                std::move(left),
+                std::move(right)
+            );
+        }
     }
 }
+
 
 std::unique_ptr<ConstValueExpr> Parser::parseConstValueExpr()
 {

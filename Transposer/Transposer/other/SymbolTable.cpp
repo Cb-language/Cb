@@ -6,6 +6,8 @@
 #include "AST/statements/expression/FuncCallExpr.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 
+std::vector<ClassNode*> SymbolTable::classes;
+
 SymbolTable::SymbolTable()
 {
     head = std::make_unique<Scope>(nullptr, false);
@@ -224,4 +226,22 @@ void SymbolTable::clearClasses()
 {
     for (const auto* cls : classes) delete cls;
     classes.clear();
+}
+
+bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token)
+{
+    const ClassNode* res = nullptr;
+
+    for (const auto* cls : classes)
+    {
+        if (cls->getClass().getClassName() == type->getType()) // TEMP fix
+        {
+            res = cls;
+            break;
+        }
+    }
+
+    if (res == nullptr) throw HowDidYouGetHere(token);
+
+    return res->getClass().hasField(name) || res->getClass().hasMethod(name);
 }

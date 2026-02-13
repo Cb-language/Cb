@@ -15,4 +15,5 @@ public:
     void analyze() const override;
     std::string translateToCpp() const override;
     std::unique_ptr<IType> getType() const override;
+    std::wstring toString() const override;
 };

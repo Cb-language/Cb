@@ -62,4 +62,5 @@ public:
     SymbolTable& operator+=(const SymbolTable& other);
 
     static void clearClasses();
+    static bool isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token);
 };

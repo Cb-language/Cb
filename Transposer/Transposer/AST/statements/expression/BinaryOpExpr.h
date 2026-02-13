@@ -7,7 +7,7 @@
 
 class BinaryOpExpr : public Expr
 {
-private:
+protected:
     const std::wstring op;
     const std::unique_ptr<Expr> left;
     const std::unique_ptr<Expr> right;
@@ -20,5 +20,5 @@ public:
     void analyze() const override;
     std::string translateToCpp() const override;
 
-    static int getPrecedence(const std::wstring &op) ;
+    static int getPrecedence(const std::wstring &op);
 };

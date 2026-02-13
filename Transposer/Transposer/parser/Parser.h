@@ -29,6 +29,7 @@
 #include "symbols/Type/ArrayType.h"
 #include "AST/statements/IncludeStmt.h"
 #include "AST/statements/ObjCreationStmt.h"
+#include "AST/statements/expression/DotOpExpr.h"
 
 class Error;
 

@@ -23,3 +23,8 @@ std::wstring VarCallExpr::getName() const
 {
     return var.getName();
 }
+
+std::wstring VarCallExpr::toString() const
+{
+    return var.getName();
+}

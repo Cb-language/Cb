@@ -54,3 +54,8 @@ std::unique_ptr<IType> ArraySlicingExpr::getType() const
 {
     return call->getType()->copy();
 }
+
+std::wstring ArraySlicingExpr::toString() const
+{
+    return call->toString();
+}

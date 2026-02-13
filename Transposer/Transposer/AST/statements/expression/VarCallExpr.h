@@ -13,4 +13,5 @@ public:
     std::string translateToCpp() const override;
     std::unique_ptr<IType> getType() const override;
     std::wstring getName() const;
+    std::wstring toString() const override;
 };

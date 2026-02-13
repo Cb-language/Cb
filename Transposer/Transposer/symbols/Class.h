@@ -33,8 +33,8 @@ public:
     bool hasField(const Var& field) const;
     bool hasConstractor(const Constractor& constractor) const;
 
-    bool hasMethod(const std::wstring& name);
-    bool hasField(const std::wstring& name);
+    bool hasMethod(const std::wstring& name) const;
+    bool hasField(const std::wstring& name) const;
 
     Class copy() const;
 };
