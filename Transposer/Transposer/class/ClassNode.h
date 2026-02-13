@@ -22,4 +22,6 @@ public:
     void add(const bool isPublic, const Constractor& ctor);
 
     void addChild(const Class& cl);
+
+    const Class& getClass() const;
 };

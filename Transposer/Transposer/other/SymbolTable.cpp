@@ -18,12 +18,12 @@ SymbolTable::~SymbolTable()
     head.reset();
     head = nullptr;
     currScope = nullptr;
-    currScope = nullptr;
+    currClass = nullptr;
 }
 
 std::optional<Var> SymbolTable::getVar(const std::wstring &name) const
 {
-    return currScope->getVar(name);
+    return currScope->getVar(name, currClass);
 }
 
 void SymbolTable::addVar(std::unique_ptr<IType> type, const Token& token) const
@@ -36,21 +36,19 @@ void SymbolTable::addVar(const Var& var, const Token& token) const
     currScope->addVar(var, token);
 }
 
-std::optional<Class> SymbolTable::getClass(const std::wstring& name) const
+std::optional<Class> SymbolTable::getClass(const std::wstring& name)
 {
-    const auto it = classes.find(name);
+    // TODO: replace it with tree search
 
-    if (it == classes.end()) return std::nullopt;
+    for (const auto* c : classes)
+    {
+        if (c->getClass().getClassName() == name) return c->getClass().copy();
+    }
 
-    return it->second.copy();
+    return std::nullopt;
 }
 
-void SymbolTable::addClass(const Class& cls)
-{
-    classes.emplace(cls.getClassName(), cls.copy());
-}
-
-bool SymbolTable::isClass(const std::wstring& name) const
+bool SymbolTable::isClass(const std::wstring& name)
 {
      return getClass(name) != std::nullopt;
 }
@@ -172,14 +170,23 @@ std::string SymbolTable::getFuncsHeaders() const
     return oss.str();
 }
 
+void SymbolTable::setClass(const Class& cls)
+{
+    currClass = new ClassNode(cls);
+    classes.emplace_back(currClass);
+}
+
+const ClassNode* SymbolTable::getClassNode() const
+{
+    return currClass;
+}
+
 SymbolTable& SymbolTable::operator+=(const SymbolTable& other)
 {
     for (const auto& func : other.funcs | std::views::keys)
     {
         addFunc(func, true);
     }
-
-
 
     if (other.head == nullptr) return *this;
 
@@ -189,4 +196,10 @@ SymbolTable& SymbolTable::operator+=(const SymbolTable& other)
     }
 
     return *this;
+}
+
+void SymbolTable::clearClasses()
+{
+    for (const auto* cls : classes) delete cls;
+    classes.clear();
 }

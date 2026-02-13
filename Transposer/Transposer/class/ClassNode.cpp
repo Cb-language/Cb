@@ -70,3 +70,8 @@ void ClassNode::addChild(const Class& cl)
 {
     children.emplace_back(new ClassNode(cl, this));
 }
+
+const Class& ClassNode::getClass() const
+{
+    return c;
+}
