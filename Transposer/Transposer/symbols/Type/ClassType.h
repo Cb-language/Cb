@@ -9,7 +9,7 @@ private:
 
 public:
     explicit ClassType(ClassNode* c);
-    ~ClassType();
+    ~ClassType() override;
 
     bool operator==(const IType& other) const override;
     bool operator!=(const IType& other) const override;
