@@ -14,10 +14,11 @@ private:
     const std::wstring name;
     std::vector<std::unique_ptr<Expr>> args;
     std::unique_ptr<IType> type;
-    const bool isStmt;
+    bool isStmt;
 
 public:
-    FuncCallExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const std::wstring& name, std::vector<std::unique_ptr<Expr>> args, const bool isStmt);
+    FuncCallExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
+        const std::wstring& name, std::vector<std::unique_ptr<Expr>> args, const bool isStmt);
 
     std::unique_ptr<IType> getType() const override;
     void analyze() const override;
@@ -30,4 +31,5 @@ public:
     const std::wstring& getName() const;
 
     std::wstring toString() const override;
+    void setIsStmt(const bool isStmt) override;
 };

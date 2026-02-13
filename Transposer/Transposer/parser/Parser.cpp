@@ -49,11 +49,14 @@
 
 // ---------- just how ----------
 #include "../errorHandling/how/HowDidYouGetHere.h"
+#include "errorHandling/classErrors/IllegalFieldName.h"
 
 #include "errorHandling/classErrors/MissingClassPipe.h"
 #include "errorHandling/classErrors/NoCtor.h"
+#include "errorHandling/syntaxErrors/IllegalVarName.h"
 
 #include "files/FileGraph.h"
+#include "symbols/Type/ClassType.h"
 
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), hasMain(false), symTable(SymbolTable())
@@ -398,6 +401,18 @@ std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt(const bool isField)
     const Var var(varType->copy(), varName);
     const Token identifierToken = prev();
 
+    const bool startsMusical = Utils::startsWithNote(varName);
+
+    if (isField && !startsMusical)
+    {
+        throw IllegalFieldName(identifierToken);
+    }
+
+    if (!isField && startsMusical)
+    {
+        throw IllegalVarName(identifierToken);
+    }
+
     if (isField && !match(Token::OP_ASSIGNMENT, L"="))
     {
         symTable.addVar(varType->copy(), identifierToken);
@@ -534,16 +549,13 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             bodyStmts.push_back(parseVarDecStmt());
         }
+        else if (match(Token::IDENTIFIER) && SymbolTable::isClass(current().value))
+        {
+            bodyStmts.push_back(parseObjCreationStmt());
+        }
         else if (match(Token::IDENTIFIER) && isAssignmentStmtAhead())
         {
-            if (symTable.getVar(current().value).value().isPrimitive())
-            {
-                bodyStmts.push_back(parseAssignmentStmt());
-            }
-            else
-            {
-                // TODO add ObjInstance parsing
-            }
+            bodyStmts.push_back(parseAssignmentStmt());
         }
         else if (match(Token::KEYWORD, L"hear"))
         {
@@ -618,9 +630,9 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             advance();
         }
-        else if (symTable.isClass(current().value))
+        else if (match(Token::IDENTIFIER) && peek().type == Token::PUNCTUATION && peek().value == L"\\")
         {
-            bodyStmts.push_back(parseObjCreationStmt());
+            bodyStmts.push_back(parseExpr(false, true));
         }
         else if (match(Token::KEYWORD, L"feat"))
         {
@@ -1110,42 +1122,79 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
     return std::move(ctorDeclStmt);
 }
 
-std::unique_ptr<ObjCreationStmt> Parser::parseObjCreationStmt()
+std::unique_ptr<ConstractorCallStmt> Parser::parseConstractorCallStmt()
 {
-    const Token& classToken = current();
+    const Token& t = current();
+    std::vector<std::unique_ptr<Expr>> args;
 
-    const ClassNode* classInfo = symTable.getClass(classToken.value);
-    if (classInfo == nullptr)
+    const std::wstring call = expectAndGet(Token::IDENTIFIER_CALL, NoCtor(current())).value.substr();
+    const std::wstring className = call.substr(0, call.length() - 5); // remove "_call"
+    auto c = SymbolTable::getClass(className);
+
+    if (c == nullptr) throw Error(t, "Type: " + Utils::wstrToStr(className) + " doesn't exists");
+
+    expect(Token::PUNCTUATION, L"(", MissingParenthesis(current()));
+
+    bool first = true;
+    while (!match(Token::PUNCTUATION, L")"))
     {
-        throw HowDidYouGetHere(classToken);
+        args.emplace_back(parseExpr());
+
+        if (!first)
+        {
+            expect(Token::PUNCTUATION, L",");
+        }
+        first = false;
     }
-
-    const auto objectType = std::make_unique<Type>(classInfo->getClass().getClassName());
-
     advance();
 
-    const Token& instanceToken = expectAndGet(Token::IDENTIFIER, MissingIdentifier(current()));
-    const std::wstring instanceName = instanceToken.value;
+    return std::make_unique<ConstractorCallStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), c, std::move(args));
+}
 
-    const Var newObjectVar(objectType->copy(), instanceName);
+std::unique_ptr<ObjCreationStmt> Parser::parseObjCreationStmt()
+{
+    const Token& t = current();
+    const std::wstring className = expectAndGet(Token::IDENTIFIER, MissingIdentifier(t)).value;
 
-    symTable.addVar(newObjectVar, instanceToken);
+    auto c = SymbolTable::getClass(className);
 
-    if (match (Token::OP_ASSIGNMENT, L"="))
+    if (c == nullptr) throw Error(t, "Type: " + Utils::wstrToStr(className) + " doesn't exists");
+
+    const std::wstring name = expectAndGet(Token::IDENTIFIER, MissingIdentifier(t)).value;
+
+    const Var v = Var(std::make_unique<ClassType>(c),name);
+
+    if (match(Token::OP_ASSIGNMENT, L"="))
     {
-        if (classInfo->getClass().getConstractors().empty())
-        {
-            throw NoCtor(current());
-        }
-        if (!parseCtorCall(classInfo))
-        {
-            throw Error(current(), "Invalid constructor or parameters");
-        }
+        advance();
+        auto res = std::make_unique<ObjCreationStmt>(
+            t,
+            symTable.getCurrScope(),
+            symTable.getCurrFunc(),
+            symTable.getCurrClass(),
+            c,
+            true,
+            parseConstractorCallStmt(),
+            v.copy()
+            );
+
+        symTable.addVar(v.copy(), t);
+        expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+        return std::move(res);
     }
 
+    symTable.addVar(v.copy(), t);
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
-
-    return std::make_unique<ObjCreationStmt>(classToken, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), classInfo, instanceName);
+    return std::make_unique<ObjCreationStmt>(
+            t,
+            symTable.getCurrScope(),
+            symTable.getCurrFunc(),
+            symTable.getCurrClass(),
+            c,
+            false,
+            nullptr,
+            v.copy()
+        );
 }
 
 bool Parser::parseCtorCall(const ClassNode* c)
@@ -1330,7 +1379,7 @@ void Parser::parseMethods(std::vector<Method>& methods)
                 {
                     auto method = parseFuncDeclStmt();
 
-                    symTable.addMethod(false, method->getFunc().copy(), current());
+                    symTable.addMethod(true, method->getFunc().copy(), current());
 
                     methods.emplace_back(true, std::move(method));
                 }
@@ -1654,16 +1703,16 @@ std::unique_ptr<ArrayType> Parser::parseArrayType()
 }
 
 
-std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens)
+std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens, const bool isStmt)
 {
     if (match(Token::IDENTIFIER) && peek().type == Token::OP_UNARY)
     {
         return parseUnaryOpExpr();
     }
 
-    auto left = parsePrimary();
+    auto left = parsePrimary(isStmt);
 
-    auto expr = parseBinaryOpRight(0, std::move(left));
+    auto expr = parseBinaryOpRight(0, std::move(left), isStmt);
 
     if (hasParens)
     {
@@ -1673,7 +1722,7 @@ std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens)
     return expr;
 }
 
-std::unique_ptr<Expr> Parser::parsePrimary()
+std::unique_ptr<Expr> Parser::parsePrimary(const bool isStmt)
 {
     const Token& t = current();
     // Handle "unary" operators: +, -, *, /, //
@@ -1690,7 +1739,7 @@ std::unique_ptr<Expr> Parser::parsePrimary()
             t,
             symTable.getCurrScope(),
             symTable.getCurrFunc(),
-        symTable.getCurrClass(),
+            symTable.getCurrClass(),
             op,
             nullptr,          // left = nullptr signals unary
             std::move(right)
@@ -1707,7 +1756,7 @@ std::unique_ptr<Expr> Parser::parsePrimary()
     {
         if (peek().type == Token::PUNCTUATION && peek().value == L"(")
         {
-            return parseFuncCallExpr();
+            return parseFuncCallExpr(isStmt);
         }
         return parseCallExpr();
     }
@@ -1724,7 +1773,7 @@ std::unique_ptr<Expr> Parser::parsePrimary()
     throw UnexpectedToken(current());
 }
 
-std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<Expr> left)
+std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<Expr> left, const bool isStmt)
 {
     while (true)
     {
@@ -1741,7 +1790,7 @@ std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<E
         advance();
 
         // Parse the right-hand expression
-        auto right = parsePrimary();
+        auto right = parsePrimary(isStmt);
 
         // Lookahead for higher-precedence operator
         if (match(Token::OP_BINARY) || match(Token::PUNCTUATION, L"\\"))
@@ -1749,7 +1798,8 @@ std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<E
             int nextPrec = BinaryOpExpr::getPrecedence(current().value);
             if (nextPrec > prec)
             {
-                right = parseBinaryOpRight(prec + 1, std::move(right));
+                right->setIsStmt(false);
+                right = parseBinaryOpRight(prec + 1, std::move(right), isStmt);
             }
         }
 
@@ -1757,17 +1807,17 @@ std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<E
         if (op == L"\\")
         {
             // Cast right to CallExpr (DotOpExpr expects Call on the right)
-            auto callLeft = dynamic_cast<Call*>(left.get());
-            if (!callLeft)
-            {
-                throw Error(current(), "Left-hand side of '\\' must be a Call expression");
-            }
+            auto callLeft = std::unique_ptr<Call>(
+                static_cast<Call*>(left.release())
+            );
 
-            auto callRight = dynamic_cast<Call*>(right.get());
-            if (!callRight)
-            {
-                throw Error(current(), "Right-hand side of '\\' must be a Call expression");
-            }
+            auto callRight = std::unique_ptr<Call>(
+                static_cast<Call*>(right.release())
+            );
+
+            if (callLeft == nullptr || callRight == nullptr) HowDidYouGetHere(current());
+
+            callRight->setIsClassItem(true);
 
             left = std::make_unique<DotOpExpr>(
                 t,
@@ -1775,13 +1825,9 @@ std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<E
                 symTable.getCurrFunc(),
                 symTable.getCurrClass(),
                 op,
-                std::unique_ptr<Call>(callLeft),
-                std::unique_ptr<Call>(callRight) // transfer ownership
+                std::move(callLeft),
+                std::move(callRight) // transfer ownership
             );
-
-            // Prevent double delete since we moved callRight
-            left.release();
-            right.release();
         }
         else
         {

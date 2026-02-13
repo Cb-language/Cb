@@ -53,7 +53,7 @@ std::string FuncCallExpr::translateToCpp() const
     std::ostringstream oss;
     bool first = true;
 
-    if (isStmt)
+    if (isStmt && !isClassItem)
     {
         oss << getTabs();
     }
@@ -116,4 +116,9 @@ const std::wstring& FuncCallExpr::getName() const
 std::wstring FuncCallExpr::toString() const
 {
     return name;
+}
+
+void FuncCallExpr::setIsStmt(const bool isStmt)
+{
+    this->isStmt = isStmt;
 }

@@ -16,6 +16,7 @@ public:
     std::string translateToCpp() const override = 0;
 
     virtual void setHasParens(const bool hasParens);
+    virtual void setIsStmt(const bool isStmt);
 };
 
 inline Expr::Expr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass) : Expr(token, scope, funcDecl, currClass, false)
@@ -24,3 +25,7 @@ inline Expr::Expr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, con
 
 inline void Expr::setHasParens(const bool hasParens)
 {this->hasParens = hasParens;}
+
+inline void Expr::setIsStmt(const bool isStmt)
+{
+}

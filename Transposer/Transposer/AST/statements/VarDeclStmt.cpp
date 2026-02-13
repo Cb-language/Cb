@@ -13,6 +13,8 @@ void VarDeclStmt::analyze() const
     {
         throw IllegalTypeCast(token, var.getType()->toString(), startingValue->getType()->toString());
     }
+
+    if (startingValue != nullptr) startingValue->analyze();
 }
 
 std::string VarDeclStmt::translateToCpp() const

@@ -2,25 +2,30 @@ instrument Test
 ∮
     playerScore
     ∮
-        degree x |
+        degree do_x |
         song f()
         ∮
             playBar("Hello World!")║
         ☉ |
-        bar b = "sdadasd"║
+        bar re_b = "sdadasd"║
     ☉
     conductorScore
     ∮
-        mute m = cres |
+        mute mi_m = cres |
         song ©(f) g(degree z) -> degree
         ∮
             f()║
             B\z*z║
         ☉ |
-        note n |
+        freq fa_n |
+        Test_call(degree x)
+        ∮
+            do_x = x║
+            fa_n = x*x + .01║
+        ☉ |
         Test_call()
         ∮
-            x=1║
+            do_x=1║
         ☉║
     ☉
 ☉
