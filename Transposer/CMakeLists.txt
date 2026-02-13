@@ -208,6 +208,8 @@ add_executable(Transposer
         Transposer/class/ClassNode.h
         Transposer/AST/statements/expression/DotOpExpr.cpp
         Transposer/AST/statements/expression/DotOpExpr.h
+        Transposer/symbols/Type/ClassType.cpp
+        Transposer/symbols/Type/ClassType.h
 )
 
 # In order to call the exe from the cmd

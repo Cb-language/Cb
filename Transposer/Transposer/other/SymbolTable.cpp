@@ -175,8 +175,11 @@ std::string SymbolTable::getFuncsHeaders() const
 
 void SymbolTable::setClass(const Class& cls)
 {
-    currClass = new ClassNode(cls);
-    classes.emplace_back(currClass);
+    auto c = std::make_unique<ClassNode>(cls);
+
+    currClass = c.get();
+
+    classes.push_back(std::move(c));
 }
 
 const ClassNode* SymbolTable::getCurrClass() const
