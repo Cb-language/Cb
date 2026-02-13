@@ -3,7 +3,7 @@
 #include "errorHandling/semanticErrors/FuncInsideFunc.h"
 #include "errorHandling/semanticErrors/NoReturn.h"
 
-FuncDeclStmt::FuncDeclStmt(const Token& token, Scope* scope, ClassNode* currClass, const std::wstring& funcName, std::unique_ptr<IType> returnType,
+FuncDeclStmt::FuncDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass, const std::wstring& funcName, std::unique_ptr<IType> returnType,
                            const std::vector<Var>& args, std::vector<std::unique_ptr<FuncCreditStmt>>& credited) : IFuncDeclStmt(token, scope, currClass),
                                                                                                                    func(Func(std::move(returnType), funcName, args)), body(nullptr),
                                                                                                                    hasReturned(false)

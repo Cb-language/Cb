@@ -4,7 +4,7 @@
 #include "errorHandling/classErrors/IllegalFieldName.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 
-ObjInstanceStmt::ObjInstanceStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, ClassNode* currClass,
+ObjInstanceStmt::ObjInstanceStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
                                  const ClassNode* classNode, const bool& isFuncCall, const std::wstring& fieldName)
     : Stmt(token, scope, funcDecl, currClass), classNode(classNode), isFuncCall(isFuncCall), fieldName(fieldName)
 {
@@ -14,7 +14,10 @@ void ObjInstanceStmt::analyze() const
 {
     if (classNode == nullptr) throw HowDidYouGetHere(token);
 
-    if (classNode->isLegal(fieldName, ))
+    const Class& c = classNode->getClass();
+    auto abc = c.h
+
+    if (classNode->isLegal(fieldName, currClass))
 
     throw IllegalFieldName(token);
 }

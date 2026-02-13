@@ -2,7 +2,7 @@
 
 #include "errorHandling/semanticErrors/WrongReturnType.h"
 
-ReturnStmt::ReturnStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, ClassNode* currClass, std::unique_ptr<Expr>& rExpr)
+ReturnStmt::ReturnStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::unique_ptr<Expr>& rExpr)
         : Stmt(token, scope, funcDecl, currClass), rType(rExpr == nullptr ? std::make_unique<Type>(L"fermata") : rExpr->getType()),
         rExpr(rExpr == nullptr ? nullptr : std::move(rExpr))
 {

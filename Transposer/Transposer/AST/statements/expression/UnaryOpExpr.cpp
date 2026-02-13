@@ -3,7 +3,7 @@
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
 
-UnaryOpExpr::UnaryOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, ClassNode* currClass,
+UnaryOpExpr::UnaryOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
     std::unique_ptr<Call> call, const UnaryOp op, const bool isStmt)
         : Expr(token, scope, funcDecl, currClass), call(std::move(call)), op(op), isStmt(isStmt)
 {

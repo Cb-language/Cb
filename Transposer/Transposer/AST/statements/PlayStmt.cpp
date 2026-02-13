@@ -1,6 +1,6 @@
 #include "PlayStmt.h"
 
-PlayStmt::PlayStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, ClassNode* currClass, std::vector<std::unique_ptr<Expr>> exprs, const bool printLine)
+PlayStmt::PlayStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::vector<std::unique_ptr<Expr>> exprs, const bool printLine)
     : Stmt(token, scope, funcDecl, currClass), exprs(std::move(exprs)) ,printLine(printLine)
 {
 }

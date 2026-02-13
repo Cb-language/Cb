@@ -176,7 +176,7 @@ void SymbolTable::setClass(const Class& cls)
     classes.emplace_back(currClass);
 }
 
-const ClassNode* SymbolTable::getClassNode() const
+const ClassNode* SymbolTable::getCurrClass() const
 {
     return currClass;
 }

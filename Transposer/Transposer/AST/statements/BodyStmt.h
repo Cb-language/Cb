@@ -8,7 +8,7 @@ private:
     const bool isGlobal;
     bool hasBrace = true;
 public:
-    BodyStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, ClassNode* currClass, std::vector<std::unique_ptr<Stmt>>& stmts, const bool isGlobal = false);
+    BodyStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::vector<std::unique_ptr<Stmt>>& stmts, const bool isGlobal = false);
     std::vector<std::unique_ptr<Stmt>>& getStmts();
 
     void analyze() const override;

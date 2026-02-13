@@ -7,10 +7,10 @@ class ObjCreationStmt : public Stmt
 {
 private:
     bool hasCtor = false;
-    Class _class;
+    const ClassNode* classNode;
     const std::wstring name;
 public:
-    ObjCreationStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, ClassNode* currClass, const std::optional<Class>& _class, const std::wstring& name);
+    ObjCreationStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const ClassNode* classNode, const std::wstring& name);
 
     void analyze() const override;
     std::string translateToCpp() const override;

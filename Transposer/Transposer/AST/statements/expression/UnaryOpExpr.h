@@ -17,7 +17,7 @@ private:
     const UnaryOp op;
     const bool isStmt;
 public:
-    UnaryOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, ClassNode* currClass,
+    UnaryOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
         std::unique_ptr<Call> call, const UnaryOp op, const bool isStmt = false);
     void analyze() const override;
     std::string translateToCpp() const override;

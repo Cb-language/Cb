@@ -1,6 +1,6 @@
 #include "IfStmt.h"
 
-IfStmt::IfStmt(const Token& token, Scope *scope, IFuncDeclStmt* funcDecl, ClassNode* currClass, std::unique_ptr<Expr> expr, std::unique_ptr<Stmt> body,
+IfStmt::IfStmt(const Token& token, Scope *scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::unique_ptr<Expr> expr, std::unique_ptr<Stmt> body,
                std::unique_ptr<Stmt> elseIfStmt, const bool isElseIf)
                : Stmt(token, scope, funcDecl, currClass), expr(std::move(expr)), body(std::move(body)), elseIfStmt(std::move(elseIfStmt)), isElseIf(isElseIf)
 {

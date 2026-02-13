@@ -4,7 +4,7 @@
 
 #include "FuncDeclStmt.h"
 
-ClassDeclStmt::ClassDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, ClassNode* currClass,
+ClassDeclStmt::ClassDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
     const std::wstring& name, std::vector<Field>& fields, std::vector<Method>& methods, std::vector<Ctor>& ctors)
         : Stmt(token, scope, funcDecl, currClass), name(name)
 {

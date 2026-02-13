@@ -5,7 +5,7 @@
 #include "errorHandling/how/HowDidYouGetHere.h"
 
 
-ConstValueExpr::ConstValueExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, ClassNode* currClass, std::unique_ptr<IType> type, const std::wstring &value)
+ConstValueExpr::ConstValueExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::unique_ptr<IType> type, const std::wstring &value)
     : Expr(token, scope, funcDecl, currClass), type(std::move(type)), value(value)
 {
 }

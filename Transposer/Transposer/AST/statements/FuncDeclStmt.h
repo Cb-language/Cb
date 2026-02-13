@@ -18,7 +18,7 @@ private:
     bool hasReturned;
 
 public:
-    FuncDeclStmt(const Token& token, Scope* scope, ClassNode* currClass,
+    FuncDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass,
         const std::wstring &funcName, std::unique_ptr<IType> returnType, const std::vector<Var> &args, std::vector<std::unique_ptr<FuncCreditStmt>>& credited);
 
     const std::vector<Var>& getArgs() const;

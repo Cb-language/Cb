@@ -10,7 +10,7 @@ class ArrayDeclStmt : public VarDeclStmt
     void analyzeSizes() const;
     std::string createConstructor(IType* type, const size_t dim) const;
 public:
-    ArrayDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, ClassNode* currClass,
+    ArrayDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
         bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var &var, std::vector<std::unique_ptr<Expr>> sizes);
 
     void analyze() const override;

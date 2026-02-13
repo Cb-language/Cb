@@ -4,7 +4,7 @@
 
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 
-BinaryOpExpr::BinaryOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, ClassNode* currClass,
+BinaryOpExpr::BinaryOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
     const std::wstring& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, const bool hasParens)
         : Expr(token, scope, funcDecl, currClass, hasParens), op(op), left(std::move(left)), right(std::move(right))
 {

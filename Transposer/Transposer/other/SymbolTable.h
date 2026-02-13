@@ -53,7 +53,7 @@ public:
     std::string getFuncsHeaders() const;
 
     void setClass(const Class& cls);
-    const ClassNode* getClassNode() const;
+    const ClassNode* getCurrClass() const;
 
     SymbolTable& operator+=(const SymbolTable& other);
 

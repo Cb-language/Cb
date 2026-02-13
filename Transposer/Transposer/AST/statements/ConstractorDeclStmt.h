@@ -11,7 +11,7 @@ private:
     Constractor constractor;
 
 public:
-    ConstractorDeclStmt(const Token& token, Scope* scope, ClassNode* currClass, const std::wstring& className, const std::vector<Var>& args);
+    ConstractorDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass, const std::wstring& className, const std::vector<Var>& args);
 
     void setBody(std::unique_ptr<BodyStmt> body);
 
