@@ -208,6 +208,8 @@ add_executable(Transposer
         Transposer/AST/statements/ObjInstanceStmt.h
         Transposer/class/ClassNode.cpp
         Transposer/class/ClassNode.h
+        Transposer/AST/statements/expression/ObjectCall.cpp
+        Transposer/AST/statements/expression/ObjectCall.h
 )
 
 # In order to call the exe from the cmd

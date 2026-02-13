@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "AST/statements/expression/FuncCallExpr.h"
+#include "errorHandling/how/HowDidYouGetHere.h"
 
 SymbolTable::SymbolTable()
 {
@@ -36,21 +37,21 @@ void SymbolTable::addVar(const Var& var, const Token& token) const
     currScope->addVar(var, token);
 }
 
-std::optional<Class> SymbolTable::getClass(const std::wstring& name)
+ClassNode* SymbolTable::getClass(const std::wstring& name)
 {
     // TODO: replace it with tree search
 
-    for (const auto* c : classes)
+    for (auto* c : classes)
     {
-        if (c->getClass().getClassName() == name) return c->getClass().copy();
+        if (c->getClass().getClassName() == name) return c;
     }
 
-    return std::nullopt;
+    return nullptr;
 }
 
 bool SymbolTable::isClass(const std::wstring& name)
 {
-     return getClass(name) != std::nullopt;
+     return getClass(name) != nullptr;
 }
 
 bool SymbolTable::doesFuncExist(const Func& f) const
@@ -179,6 +180,27 @@ void SymbolTable::setClass(const Class& cls)
 const ClassNode* SymbolTable::getCurrClass() const
 {
     return currClass;
+}
+
+void SymbolTable::addField(const bool isPublic, const Var& field, const Token& token) const
+{
+    if (currClass == nullptr) throw HowDidYouGetHere(token);
+
+    currClass->add(isPublic, field);
+}
+
+void SymbolTable::addMethod(const bool isPublic, const Func& method, const Token& token) const
+{
+    if (currClass == nullptr) throw HowDidYouGetHere(token);
+
+    currClass->add(isPublic, method);
+}
+
+void SymbolTable::addCtor(const bool isPublic, const Constractor& ctor, const Token& token) const
+{
+    if (currClass == nullptr) throw HowDidYouGetHere(token);
+
+    currClass->add(isPublic, ctor);
 }
 
 SymbolTable& SymbolTable::operator+=(const SymbolTable& other)

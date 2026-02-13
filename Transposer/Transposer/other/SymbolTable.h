@@ -30,7 +30,7 @@ public:
     void addVar(std::unique_ptr<IType> type, const Token& token) const;
     void addVar(const Var& var, const Token& token) const;
 
-    static std::optional<Class> getClass(const std::wstring& name);
+    static ClassNode* getClass(const std::wstring& name);
     static bool isClass(const std::wstring& name);
 
     bool doesFuncExist(const Func& f) const;
@@ -54,6 +54,10 @@ public:
 
     void setClass(const Class& cls);
     const ClassNode* getCurrClass() const;
+
+    void addField(const bool isPublic, const Var& field, const Token& token) const;
+    void addMethod(const bool isPublic, const Func& method, const Token& token) const;
+    void addCtor(const bool isPublic, const Constractor& ctor, const Token& token) const;
 
     SymbolTable& operator+=(const SymbolTable& other);
 
