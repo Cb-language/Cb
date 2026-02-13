@@ -4,5 +4,8 @@ song prelude() -> degree
 ∮
     Test t1 = Test_call(3)║
     Test t2║
+
+    playBar(t1\g(5))║
+    playBar(t1\fa_n)║
     B\0║
 ☉

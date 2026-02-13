@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "AST/statements/expression/FuncCallExpr.h"
+#include "errorHandling/classErrors/AccessError.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 
 std::vector<std::unique_ptr<ClassNode>> SymbolTable::classes;
@@ -245,5 +246,25 @@ bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const
 
     if (res == nullptr) throw HowDidYouGetHere(token);
 
-    return res->getClass().hasField(name) || res->getClass().hasMethod(name);
+    for (const auto& [isPublic, field] : res->getClass().getFields())
+    {
+        if (field.getName() == name)
+        {
+            if (isPublic) return true;
+
+            throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
+        }
+    }
+
+    for (const auto& [isPublic, method] : res->getClass().getMethods())
+    {
+        if (method.getFuncName() == name)
+        {
+            if (isPublic) return true;
+
+            throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
+        }
+    }
+
+    return false;
 }

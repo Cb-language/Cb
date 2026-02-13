@@ -17,10 +17,11 @@ instrument Test
             f()║
             B\z*z║
         ☉ |
-        note fa_n |
+        freq fa_n |
         Test_call(degree x)
         ∮
             do_x = x║
+            fa_n = x*x + .01║
         ☉ |
         Test_call()
         ∮
