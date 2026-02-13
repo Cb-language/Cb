@@ -30,7 +30,7 @@ void ConstractorCallStmt::analyze() const
 
         for (int i = 0; i < args.size() && !differ; i++)
         {
-            if (args[i]->getType() != ctorArgs[i].getType()) differ = true;
+            if (*args[i]->getType() != *ctorArgs[i].getType()) differ = true;
         }
 
         if (!differ) return;

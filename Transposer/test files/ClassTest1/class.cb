@@ -18,6 +18,10 @@ instrument Test
             B\z*z║
         ☉ |
         note n |
+        Test_call(degree z)
+        ∮
+            x = z║
+        ☉ |
         Test_call()
         ∮
             x=1║
