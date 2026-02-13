@@ -4,17 +4,6 @@ ClassNode::ClassNode(const Class& c, ClassNode* parent) : parent(parent), c(c.co
 {
 }
 
-ClassNode::~ClassNode()
-{
-    for (const auto& child : children)
-    {
-        delete child;
-    }
-
-    children.clear();
-    parent = nullptr;
-}
-
 bool ClassNode::isLegal(const Var& field, const ClassNode* curr) const
 {
     if (parent != nullptr && parent->isLegal(field, curr)) return true;
@@ -68,7 +57,7 @@ void ClassNode::add(const bool isPublic, const Constractor& ctor)
 
 void ClassNode::addChild(const Class& cl)
 {
-    children.emplace_back(new ClassNode(cl, this));
+    children.emplace_back(std::make_unique<ClassNode>(cl, this));
 }
 
 const Class& ClassNode::getClass() const

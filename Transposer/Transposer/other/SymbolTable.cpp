@@ -6,7 +6,7 @@
 #include "AST/statements/expression/FuncCallExpr.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 
-std::vector<ClassNode*> SymbolTable::classes;
+std::vector<std::unique_ptr<ClassNode>> SymbolTable::classes;
 
 SymbolTable::SymbolTable()
 {
@@ -43,9 +43,9 @@ ClassNode* SymbolTable::getClass(const std::wstring& name)
 {
     // TODO: replace it with tree search
 
-    for (auto* c : classes)
+    for (const auto& c : classes)
     {
-        if (c->getClass().getClassName() == name) return c;
+        if (c->getClass().getClassName() == name) return c.get();
     }
 
     return nullptr;
@@ -224,7 +224,6 @@ SymbolTable& SymbolTable::operator+=(const SymbolTable& other)
 
 void SymbolTable::clearClasses()
 {
-    for (const auto* cls : classes) delete cls;
     classes.clear();
 }
 
@@ -232,11 +231,11 @@ bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const
 {
     const ClassNode* res = nullptr;
 
-    for (const auto* cls : classes)
+    for (const auto& cls : classes)
     {
         if (cls->getClass().getClassName() == type->getType()) // TEMP fix
         {
-            res = cls;
+            res = cls.get();
             break;
         }
     }

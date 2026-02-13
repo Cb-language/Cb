@@ -7,11 +7,11 @@ class ClassNode
 private:
     ClassNode* parent;
     Class c;
-    std::vector<ClassNode*> children;
+    std::vector<std::unique_ptr<ClassNode>> children;
 
 public:
     explicit ClassNode(const Class& c, ClassNode* parent = nullptr);
-    ~ClassNode();
+    ~ClassNode() = default;
 
     bool isLegal(const Var& field, const ClassNode* curr) const;
     bool isLegal(const Func& method, const ClassNode* curr) const;

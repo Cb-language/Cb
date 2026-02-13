@@ -19,7 +19,7 @@ private:
     std::set<std::pair<Func, bool>> funcs; // the bool means is it included to this file
     ClassNode* currClass = nullptr;
 
-    static std::vector<ClassNode*> classes; // TODO: change it to a tree when Obj is incorporated
+    static std::vector<std::unique_ptr<ClassNode>> classes; // TODO: change it to a tree when Obj is incorporated
 
 public:
     SymbolTable();
