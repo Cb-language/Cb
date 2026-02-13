@@ -30,8 +30,6 @@ public:
     void addVar(std::unique_ptr<IType> type, const Token& token) const;
     void addVar(const Var& var, const Token& token) const;
 
-    static bool isClass(const std::wstring& name);
-
     bool doesFuncExist(const Func& f) const;
     bool doesFuncExist(const std::wstring& name) const;
     bool isLegalCredit(const FuncCredit& credit) const;
@@ -61,6 +59,7 @@ public:
     SymbolTable& operator+=(const SymbolTable& other);
 
     static void clearClasses();
+    static bool isClass(const std::wstring& name);
     static ClassNode* getClass(const std::wstring& name);
     static bool isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token);
 };

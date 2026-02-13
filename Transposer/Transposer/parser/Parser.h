@@ -93,6 +93,7 @@ private:
     std::unique_ptr<ForStmt> parseForStmt();
     std::unique_ptr<ClassDeclStmt> parseClassDeclStmt();
     std::unique_ptr<ConstractorDeclStmt> parseCtor();
+    std::unique_ptr<ConstractorCallStmt> parseConstractorCallStmt();
     std::unique_ptr<ObjCreationStmt> parseObjCreationStmt();
     bool parseCtorCall(const ClassNode* c);
     void parseFields(std::vector<Field>& fields);

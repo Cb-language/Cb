@@ -2,7 +2,7 @@
 
 #include "errorHandling/how/HowDidYouGetHere.h"
 
-ClassType::ClassType(ClassNode* c) : IType(c != nullptr ? c->getClass().getClassName() : L""), c(c)
+ClassType::ClassType(const ClassNode* c) : IType(c != nullptr ? c->getClass().getClassName() : L""), c(c)
 {
     if (c == nullptr) throw HowDidYouGetHere(Token());
 }

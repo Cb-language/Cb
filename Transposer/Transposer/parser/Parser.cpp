@@ -54,6 +54,7 @@
 #include "errorHandling/classErrors/NoCtor.h"
 
 #include "files/FileGraph.h"
+#include "symbols/Type/ClassType.h"
 
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), hasMain(false), symTable(SymbolTable())
@@ -534,16 +535,13 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             bodyStmts.push_back(parseVarDecStmt());
         }
+        else if (match(Token::IDENTIFIER) && SymbolTable::isClass(current().value))
+        {
+            bodyStmts.push_back(parseObjCreationStmt());
+        }
         else if (match(Token::IDENTIFIER) && isAssignmentStmtAhead())
         {
-            if (symTable.getVar(current().value).value().isPrimitive())
-            {
-                bodyStmts.push_back(parseAssignmentStmt());
-            }
-            else
-            {
-                // TODO add ObjInstance parsing
-            }
+            bodyStmts.push_back(parseAssignmentStmt());
         }
         else if (match(Token::KEYWORD, L"hear"))
         {
@@ -1110,42 +1108,81 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
     return std::move(ctorDeclStmt);
 }
 
-std::unique_ptr<ObjCreationStmt> Parser::parseObjCreationStmt()
+std::unique_ptr<ConstractorCallStmt> Parser::parseConstractorCallStmt()
 {
-    const Token& classToken = current();
+    const Token& t = current();
+    std::vector<std::unique_ptr<Expr>> args;
 
-    const ClassNode* classInfo = symTable.getClass(classToken.value);
-    if (classInfo == nullptr)
+    const std::wstring call = expectAndGet(Token::IDENTIFIER_CALL, NoCtor(current())).value.substr();
+    const std::wstring className = call.substr(0, call.length() - 5); // remove "_call"
+    auto c = SymbolTable::getClass(className);
+
+    if (c == nullptr) throw Error(t, "Type: " + Utils::wstrToStr(className) + " doesn't exists");
+
+    expect(Token::PUNCTUATION, L"(", MissingParenthesis(current()));
+
+    bool first = true;
+    while (!match(Token::PUNCTUATION, L")"))
     {
-        throw HowDidYouGetHere(classToken);
+        args.emplace_back(parseExpr());
+
+        if (!first)
+        {
+            expect(Token::PUNCTUATION, L",");
+        }
+        first = false;
     }
-
-    const auto objectType = std::make_unique<Type>(classInfo->getClass().getClassName());
-
     advance();
 
-    const Token& instanceToken = expectAndGet(Token::IDENTIFIER, MissingIdentifier(current()));
-    const std::wstring instanceName = instanceToken.value;
+    return std::make_unique<ConstractorCallStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), c, std::move(args));
+}
 
-    const Var newObjectVar(objectType->copy(), instanceName);
+std::unique_ptr<ObjCreationStmt> Parser::parseObjCreationStmt()
+{
+    const Token& t = current();
+    const std::wstring className = expectAndGet(Token::IDENTIFIER, MissingIdentifier(t)).value;
 
-    symTable.addVar(newObjectVar, instanceToken);
+    auto c = SymbolTable::getClass(className);
 
-    if (match (Token::OP_ASSIGNMENT, L"="))
+    if (c == nullptr) throw Error(t, "Type: " + Utils::wstrToStr(className) + " doesn't exists");
+
+    const std::wstring name = expectAndGet(Token::IDENTIFIER, MissingIdentifier(t)).value;
+
+    if (match(Token::OP_ASSIGNMENT, L"="))
     {
-        if (classInfo->getClass().getConstractors().empty())
-        {
-            throw NoCtor(current());
-        }
-        if (!parseCtorCall(classInfo))
-        {
-            throw Error(current(), "Invalid constructor or parameters");
-        }
+        advance();
+        auto res = std::make_unique<ObjCreationStmt>(
+            t,
+            symTable.getCurrScope(),
+            symTable.getCurrFunc(),
+            symTable.getCurrClass(),
+            c,
+            true,
+            parseConstractorCallStmt(),
+            Var(
+                std::make_unique<ClassType>(c),
+                name
+            )
+            );
+
+        expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+        return std::move(res);
     }
 
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
-
-    return std::make_unique<ObjCreationStmt>(classToken, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), classInfo, instanceName);
+    return std::make_unique<ObjCreationStmt>(
+        t,
+        symTable.getCurrScope(),
+        symTable.getCurrFunc(),
+        symTable.getCurrClass(),
+        c,
+        false,
+        nullptr,
+        Var(
+            std::make_unique<ClassType>(c),
+            name
+        )
+        );
 }
 
 bool Parser::parseCtorCall(const ClassNode* c)

@@ -1,17 +1,16 @@
 #pragma once
 
-#include "AST/abstract/Statement.h"
+#include "VarDeclStmt.h"
 #include "../Transposer/symbols/Class.h"
+#include "expression/ConstractorCallStmt.h"
 
-class ObjCreationStmt : public Stmt
+class ObjCreationStmt : public VarDeclStmt
 {
 private:
-    bool hasCtor = false;
     const ClassNode* classNode;
-    const std::wstring name;
 public:
-    ObjCreationStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const ClassNode* classNode, const std::wstring& name);
+    ObjCreationStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const ClassNode* classNode,
+        bool hasStartingValue, std::unique_ptr<ConstractorCallStmt> startingValue, const Var &var);
 
-    void analyze() const override;
     std::string translateToCpp() const override;
 };

@@ -5,10 +5,10 @@
 class ClassType : public IType
 {
 private:
-    ClassNode* c;
+    const ClassNode* c;
 
 public:
-    explicit ClassType(ClassNode* c);
+    explicit ClassType(const ClassNode* c);
     ~ClassType() override;
 
     bool operator==(const IType& other) const override;
