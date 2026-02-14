@@ -80,7 +80,7 @@ bool Class::hasConstractor(const Constractor& constractor) const
     return false;
 }
 
-bool Class::hasMethod(const std::wstring& name)
+bool Class::hasMethod(const std::wstring& name) const
 {
     for (const auto& m : methods | std::views::values)
     {
@@ -89,7 +89,7 @@ bool Class::hasMethod(const std::wstring& name)
     return false;
 }
 
-bool Class::hasField(const std::wstring& name)
+bool Class::hasField(const std::wstring& name) const
 {
     for (const auto& f : fields | std::views::values)
     {

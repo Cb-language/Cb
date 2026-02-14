@@ -176,12 +176,18 @@ bool FileNode::hasMain() const
     return file.parser.getHasMain();
 }
 
-void FileNode::clear(FileNode* main)
+void FileNode::clear(const FileNode* main)
 {
     if (main == nullptr) return;
-    deleteNode(main);
 
-    nodes.clear();
+    // clear all internal raw pointers
+    for (const auto& node : nodes | std::views::values)
+    {
+        node->children.clear();
+        node->parents.clear();
+    }
+
+    nodes.clear(); // deletes all FileNode objects safely
 }
 
 std::vector<std::filesystem::path> FileNode::getAllCppPath()
@@ -193,15 +199,4 @@ std::vector<std::filesystem::path> FileNode::getAllCppPath()
     }
 
     return v;
-}
-
-void FileNode::deleteNode(FileNode* node)
-{
-    for (auto& child : node->children)
-    {
-        deleteNode(child);
-    }
-
-    node->children.clear();
-    node->parents.clear();
 }

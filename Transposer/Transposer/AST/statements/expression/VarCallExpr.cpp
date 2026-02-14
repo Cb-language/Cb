@@ -1,6 +1,7 @@
 #include "VarCallExpr.h"
 
-VarCallExpr::VarCallExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const Var& var) : Call(token, scope, funcDecl), var(var.copy())
+VarCallExpr::VarCallExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const Var& var)
+    : Call(token, scope, funcDecl, currClass), var(var.copy())
 {
 }
 
@@ -19,6 +20,11 @@ std::unique_ptr<IType> VarCallExpr::getType() const
 }
 
 std::wstring VarCallExpr::getName() const
+{
+    return var.getName();
+}
+
+std::wstring VarCallExpr::toString() const
 {
     return var.getName();
 }

@@ -3,8 +3,8 @@
 #include "errorHandling/semanticErrors/FuncInsideFunc.h"
 #include "errorHandling/semanticErrors/NoReturn.h"
 
-FuncDeclStmt::FuncDeclStmt(const Token& token, Scope* scope, const std::wstring& funcName, std::unique_ptr<IType> returnType,
-                           const std::vector<Var>& args, std::vector<std::unique_ptr<FuncCreditStmt>>& credited) : IFuncDeclStmt(token, scope),
+FuncDeclStmt::FuncDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass, const std::wstring& funcName, std::unique_ptr<IType> returnType,
+                           const std::vector<Var>& args, std::vector<std::unique_ptr<FuncCreditStmt>>& credited) : IFuncDeclStmt(token, scope, currClass),
                                                                                                                    func(Func(std::move(returnType), funcName, args)), body(nullptr),
                                                                                                                    hasReturned(false)
 {
@@ -79,7 +79,7 @@ std::string FuncDeclStmt::translateToH() const
 {
     if (func.getFuncName() == L"prelude") return "";
 
-    return func.translateToCpp() + ";";
+    return func.translateToCpp();
 }
 
 std::string FuncDeclStmt::translateToCppClass(const std::wstring& className) const

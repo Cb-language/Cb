@@ -41,7 +41,6 @@
 #include "../errorHandling/entryPointErrors/InvalidMainReturnType.h"
 #include "../errorHandling/entryPointErrors/InvalidMainArgs.h"
 #include "../errorHandling/entryPointErrors/MainOverride.h"
-#include "../errorHandling/entryPointErrors/NoMain.h"
 
 // ---------- lexical errors ----------
 #include "../errorHandling/lexicalErrors/InvalidNumberLiteral.h"
@@ -50,11 +49,14 @@
 
 // ---------- just how ----------
 #include "../errorHandling/how/HowDidYouGetHere.h"
+#include "errorHandling/classErrors/IllegalFieldName.h"
 
 #include "errorHandling/classErrors/MissingClassPipe.h"
 #include "errorHandling/classErrors/NoCtor.h"
+#include "errorHandling/syntaxErrors/IllegalVarName.h"
 
 #include "files/FileGraph.h"
+#include "symbols/Type/ClassType.h"
 
 
 Parser::Parser(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), hasMain(false), symTable(SymbolTable())
@@ -85,7 +87,7 @@ std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
                 throw InvalidPathExtension(current());
             }
 
-            includes.emplace_back(std::make_unique<IncludeStmt>(pathToken, symTable.getCurrScope(), symTable.getCurrFunc(), path));
+            includes.emplace_back(std::make_unique<IncludeStmt>(pathToken, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), path));
             v.emplace_back(path, pathToken);
         }
     }
@@ -399,17 +401,29 @@ std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt(const bool isField)
     const Var var(varType->copy(), varName);
     const Token identifierToken = prev();
 
+    const bool startsMusical = Utils::startsWithNote(varName);
+
+    if (isField && !startsMusical)
+    {
+        throw IllegalFieldName(identifierToken);
+    }
+
+    if (!isField && startsMusical)
+    {
+        throw IllegalVarName(identifierToken);
+    }
+
     if (isField && !match(Token::OP_ASSIGNMENT, L"="))
     {
         symTable.addVar(varType->copy(), identifierToken);
-        return std::make_unique<VarDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), false, nullptr, var);
+        return std::make_unique<VarDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), false, nullptr, var);
     }
 
     if (match(Token::PUNCTUATION, L"║"))
     {
         symTable.addVar(varType->copy(), identifierToken);
         advance();
-        return std::make_unique<VarDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), false, nullptr, var);
+        return std::make_unique<VarDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), false, nullptr, var);
     }
 
     expect(Token::OP_ASSIGNMENT, L"=" , NoPlacementOperator(current()));
@@ -422,7 +436,7 @@ std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt(const bool isField)
         symTable.addVar(varType->copy(), identifierToken); // to avoid degree x = x + 1║ ...
     }
 
-    return std::make_unique<VarDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), true, std::move(expr), var);
+    return std::make_unique<VarDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), true, std::move(expr), var);
 }
 
 std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
@@ -436,7 +450,7 @@ std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
     auto expr = parseExpr();
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-    return std::make_unique<AssignmentStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), std::move(call), op, std::move(expr));
+    return std::make_unique<AssignmentStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), std::move(call), op, std::move(expr));
 }
 
 std::unique_ptr<HearStmt> Parser::parseHearStmt()
@@ -465,7 +479,7 @@ std::unique_ptr<HearStmt> Parser::parseHearStmt()
 
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-    return std::make_unique<HearStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), calls);
+    return std::make_unique<HearStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), calls);
 }
 
 std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
@@ -505,7 +519,7 @@ std::unique_ptr<PlayStmt> Parser::parsePlayStmt()
 
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-    return std::make_unique<PlayStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), std::move(args), newline);
+    return std::make_unique<PlayStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), std::move(args), newline);
 }
 
 std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var, const Token>>& args, const bool isGlobal, const bool isBreakable, const bool isContinueAble, const bool hasBrace)
@@ -535,16 +549,13 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             bodyStmts.push_back(parseVarDecStmt());
         }
+        else if (match(Token::IDENTIFIER) && SymbolTable::isClass(current().value))
+        {
+            bodyStmts.push_back(parseObjCreationStmt());
+        }
         else if (match(Token::IDENTIFIER) && isAssignmentStmtAhead())
         {
-            if (symTable.getVar(current().value).value().isPrimitive())
-            {
-                bodyStmts.push_back(parseAssignmentStmt());
-            }
-            else
-            {
-                // TODO add ObjInstance parsing
-            }
+            bodyStmts.push_back(parseAssignmentStmt());
         }
         else if (match(Token::KEYWORD, L"hear"))
         {
@@ -619,9 +630,9 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             advance();
         }
-        else if (symTable.isClass(current().value))
+        else if (match(Token::IDENTIFIER) && peek().type == Token::PUNCTUATION && peek().value == L"\\")
         {
-            bodyStmts.push_back(parseObjCreationStmt());
+            bodyStmts.push_back(parseExpr(false, true));
         }
         else if (match(Token::KEYWORD, L"feat"))
         {
@@ -653,7 +664,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         symTable.exitScope();
     }
 
-    return std::make_unique<BodyStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), bodyStmts, isGlobal);
+    return std::make_unique<BodyStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), bodyStmts, isGlobal);
 }
 
 std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
@@ -725,7 +736,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
             throw(InvalidMainReturnType(current())); // if it gets in here, main is void -> err
         }
 
-        auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), funcName, std::make_unique<Type>(L"fermata"), varArgs, credited);
+        auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, std::make_unique<Type>(L"fermata"), varArgs, credited);
         symTable.addFunc(funcDeclStmt->getFunc());
         symTable.changeFunc(funcDeclStmt.get());
         funcDeclStmt->setBody(parseBodyStmt(args));
@@ -752,7 +763,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
     }
 
 
-    auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), funcName, rType->copy(), varArgs, credited);
+    auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, rType->copy(), varArgs, credited);
 
     if (!isMethod) symTable.addFunc(funcDeclStmt->getFunc());
     symTable.changeFunc(funcDeclStmt.get());
@@ -790,7 +801,7 @@ std::unique_ptr<ReturnStmt> Parser::parseReturnStmt()
 
     currFunc->setHasReturned(true);
 
-    return std::make_unique<ReturnStmt>(t, symTable.getCurrScope(), currFunc, expr);
+    return std::make_unique<ReturnStmt>(t, symTable.getCurrScope(), currFunc, symTable.getCurrClass(), expr);
 }
 
 std::unique_ptr<FuncCreditStmt> Parser::parseFuncCreditStmt()
@@ -802,7 +813,7 @@ std::unique_ptr<FuncCreditStmt> Parser::parseFuncCreditStmt()
 
     creditsQ.push(credit);
 
-    return std::make_unique<FuncCreditStmt>(t, symTable.getCurrScope(),symTable.getCurrFunc(), credit);
+    return std::make_unique<FuncCreditStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), credit);
 }
 
 std::unique_ptr<IfStmt> Parser::parseIfStmt()
@@ -821,11 +832,11 @@ std::unique_ptr<IfStmt> Parser::parseIfStmt()
         if (match(Token::PUNCTUATION, L"\\"))
         {
             advance();
-            return std::make_unique<IfStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), std::move(expr), std::move(body), parseIfStmt(), true);
+            return std::make_unique<IfStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), std::move(expr), std::move(body), parseIfStmt(), true);
         }
-        return std::make_unique<IfStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), std::move(expr), std::move(body), parseBodyStmt(args, false), false);
+        return std::make_unique<IfStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), std::move(expr), std::move(body), parseBodyStmt(args, false), false);
     }
-    return std::make_unique<IfStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), std::move(expr), std::move(body), nullptr, false);
+    return std::make_unique<IfStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), std::move(expr), std::move(body), nullptr, false);
 }
 
 std::unique_ptr<ArrayDeclStmt> Parser::parseArrayDeclStmt()
@@ -849,7 +860,7 @@ std::unique_ptr<ArrayDeclStmt> Parser::parseArrayDeclStmt()
         {
             advance();
             sizes.push_back(
-                std::make_unique<ConstValueExpr>(t, symTable.getCurrScope(), symTable.getCurrFunc(), std::make_unique<Type>(L"degree"), L"1") // default 1
+                std::make_unique<ConstValueExpr>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), std::make_unique<Type>(L"degree"), L"1") // default 1
                 );
         }
         else
@@ -870,6 +881,7 @@ std::unique_ptr<ArrayDeclStmt> Parser::parseArrayDeclStmt()
         t,
         symTable.getCurrScope(),
         symTable.getCurrFunc(),
+        symTable.getCurrClass(),
         startExpr != nullptr,
         std::move(startExpr),
         var,
@@ -887,7 +899,7 @@ std::unique_ptr<WhileStmt> Parser::parseWhileStmt()
     constexpr std::vector<std::pair<Var, const Token>> args; // args is empty
     std::unique_ptr<Stmt> body = parseBodyStmt(args, false, true, true, true);
 
-    return std::make_unique<WhileStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), expr, body);
+    return std::make_unique<WhileStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), expr, body);
 }
 
 std::unique_ptr<BreakStmt> Parser::parseBreakStmt()
@@ -896,7 +908,7 @@ std::unique_ptr<BreakStmt> Parser::parseBreakStmt()
     expect(Token::KEYWORD, L"pause", HowDidYouGetHere(current()));
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-    return std::make_unique<BreakStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc());
+    return std::make_unique<BreakStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass());
 }
 
 std::unique_ptr<CaseStmt> Parser::parseCaseStmt()
@@ -924,7 +936,7 @@ std::unique_ptr<CaseStmt> Parser::parseCaseStmt()
 
     symTable.exitScope();
 
-    return std::make_unique<CaseStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), std::move(e), std::move(body), isDefault);
+    return std::make_unique<CaseStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), std::move(e), std::move(body), isDefault);
 }
 
 std::unique_ptr<SwitchStmt> Parser::parseSwitchStmt()
@@ -932,7 +944,7 @@ std::unique_ptr<SwitchStmt> Parser::parseSwitchStmt()
     const Token& t = current();
     expect(Token::KEYWORD, L"A", HowDidYouGetHere(current()));
     expect(Token::PUNCTUATION, L"\\");
-    const std::optional<Var> v = symTable.getCurrScope()->getVar(current().value)->copy();
+    const std::optional<Var> v = symTable.getCurrScope()->getVar(current().value, symTable.getCurrClass())->copy();
 
     if (v == std::nullopt)
     {
@@ -957,7 +969,7 @@ std::unique_ptr<SwitchStmt> Parser::parseSwitchStmt()
 
     expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
 
-    return std::make_unique<SwitchStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), v.value().copy(), cases);
+    return std::make_unique<SwitchStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), v.value().copy(), cases);
 }
 
 std::unique_ptr<ContinueStmt> Parser::parseContinueStmt()
@@ -966,7 +978,7 @@ std::unique_ptr<ContinueStmt> Parser::parseContinueStmt()
     expect(Token::KEYWORD, L"resume", MissingBrace(current()));
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-    return std::make_unique<ContinueStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc());
+    return std::make_unique<ContinueStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass());
 }
 
 std::unique_ptr<ForStmt> Parser::parseForStmt()
@@ -1017,7 +1029,7 @@ std::unique_ptr<ForStmt> Parser::parseForStmt()
     args.emplace_back( Var(std::make_unique<Type>(L"degree"), varName), current());
     body = parseBodyStmt(args, false, true, true, true);
 
-    return std::make_unique<ForStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(),
+    return std::make_unique<ForStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(),
         std::move(body), isIncreasing, std::move(startExpr), std::move(stepExpr), std::move(stopExpr), varName);
 }
 
@@ -1031,8 +1043,7 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
     std::vector<Method> methods;
     std::vector<Ctor> ctors;
 
-    Class c(name);
-    symTable.getCurrScope()->setCurrClass(c);
+    symTable.setClass(Class(name));
 
     const size_t tempPos = pos;
 
@@ -1052,9 +1063,7 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
     parseCtors(ctors);
     expect(Token::PUNCTUATION, L"☉", MissingBrace(current()));
 
-    symTable.addClass(c);
-
-    return std::make_unique<ClassDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), name, fields, methods, ctors);
+    return std::make_unique<ClassDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), name, fields, methods, ctors);
 }
 
 std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
@@ -1068,9 +1077,9 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
 
     const std::wstring funcName = t.value;
 
-    std::optional<Class> currClass = symTable.getCurrScope()->getCurrClass();
+    const ClassNode* pClass = symTable.getCurrClass();
 
-    if (!currClass.has_value()) throw HowDidYouGetHere(t);
+    if (pClass == nullptr) throw HowDidYouGetHere(t);
 
     expect(Token::PUNCTUATION, L"(", MissingParenthesis(current()));
     while (!match(Token::PUNCTUATION, L")"))
@@ -1097,13 +1106,11 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
         }
     }
 
-    if (currClass->hasConstractor(Constractor(varArgs, funcName)))
+    if (pClass->getClass().hasConstractor(Constractor(varArgs, funcName)))
     {
         throw Error(t, "Redefinition of a constractor");
     }
-
-    Scope* s = symTable.getCurrScope();
-    auto ctorDeclStmt = std::make_unique<ConstractorDeclStmt>(t, s, s->getCurrClassName(), varArgs);
+    auto ctorDeclStmt = std::make_unique<ConstractorDeclStmt>(t, symTable.getCurrScope(), pClass, pClass->getClass().getClassName(), varArgs);
 
     // TODO: figure this out
     // symTable.addFunc(ctorDeclStmt->getFunc());
@@ -1115,54 +1122,90 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
     return std::move(ctorDeclStmt);
 }
 
-std::unique_ptr<ObjCreationStmt> Parser::parseObjCreationStmt()
+std::unique_ptr<ConstractorCallStmt> Parser::parseConstractorCallStmt()
 {
-    const Token& classToken = current();
+    const Token& t = current();
+    std::vector<std::unique_ptr<Expr>> args;
 
-    const std::optional<Class> classInfo = symTable.getClass(classToken.value);
-    if (!classInfo)
+    const std::wstring call = expectAndGet(Token::IDENTIFIER_CALL, NoCtor(current())).value.substr();
+    const std::wstring className = call.substr(0, call.length() - 5); // remove "_call"
+    auto c = SymbolTable::getClass(className);
+
+    if (c == nullptr) throw Error(t, "Type: " + Utils::wstrToStr(className) + " doesn't exists");
+
+    expect(Token::PUNCTUATION, L"(", MissingParenthesis(current()));
+
+    bool first = true;
+    while (!match(Token::PUNCTUATION, L")"))
     {
-        throw HowDidYouGetHere(classToken);
+        args.emplace_back(parseExpr());
+
+        if (!first)
+        {
+            expect(Token::PUNCTUATION, L",");
+        }
+        first = false;
     }
-
-    const auto objectType = std::make_unique<Type>(classInfo->getClassName());
-
     advance();
 
-    const Token& instanceToken = expectAndGet(Token::IDENTIFIER, MissingIdentifier(current()));
-    const std::wstring instanceName = instanceToken.value;
-
-    const Var newObjectVar(objectType->copy(), instanceName);
-
-    symTable.addVar(newObjectVar, instanceToken);
-
-    if (match (Token::OP_ASSIGNMENT, L"="))
-    {
-        if (classInfo->getConstractors().empty())
-        {
-            throw NoCtor(current());
-        }
-        if (!parseCrtorCall(classInfo))
-        {
-            throw Error(current(), "Invalid constructor or parameters");
-        }
-    }
-
-    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
-
-    return std::make_unique<ObjCreationStmt>(classToken, symTable.getCurrScope(), symTable.getCurrFunc(), classInfo, instanceName);
+    return std::make_unique<ConstractorCallStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), c, std::move(args));
 }
 
-bool Parser::parseCrtorCall(const std::optional<Class>& _class)
+std::unique_ptr<ObjCreationStmt> Parser::parseObjCreationStmt()
+{
+    const Token& t = current();
+    const std::wstring className = expectAndGet(Token::IDENTIFIER, MissingIdentifier(t)).value;
+
+    auto c = SymbolTable::getClass(className);
+
+    if (c == nullptr) throw Error(t, "Type: " + Utils::wstrToStr(className) + " doesn't exists");
+
+    const std::wstring name = expectAndGet(Token::IDENTIFIER, MissingIdentifier(t)).value;
+
+    const Var v = Var(std::make_unique<ClassType>(c),name);
+
+    if (match(Token::OP_ASSIGNMENT, L"="))
+    {
+        advance();
+        auto res = std::make_unique<ObjCreationStmt>(
+            t,
+            symTable.getCurrScope(),
+            symTable.getCurrFunc(),
+            symTable.getCurrClass(),
+            c,
+            true,
+            parseConstractorCallStmt(),
+            v.copy()
+            );
+
+        symTable.addVar(v.copy(), t);
+        expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+        return std::move(res);
+    }
+
+    symTable.addVar(v.copy(), t);
+    expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
+    return std::make_unique<ObjCreationStmt>(
+            t,
+            symTable.getCurrScope(),
+            symTable.getCurrFunc(),
+            symTable.getCurrClass(),
+            c,
+            false,
+            nullptr,
+            v.copy()
+        );
+}
+
+bool Parser::parseCtorCall(const ClassNode* c)
 {
     const Token& t = current();
     std::vector<std::pair<Var, const Token>> args;
-    IFuncDeclStmt* currFunc = symTable.getCurrFunc();
 
     expect(Token::IDENTIFIER_CALL, MissingIdentifier(t));
     const std::wstring funcName = t.value;
 
-    if (!_class.has_value()) throw HowDidYouGetHere(t);
+    if (c == nullptr) throw HowDidYouGetHere(t);
 
     expect(Token::PUNCTUATION, L"(", MissingParenthesis(current()));
     while (!match(Token::PUNCTUATION, L")"))
@@ -1189,7 +1232,7 @@ bool Parser::parseCrtorCall(const std::optional<Class>& _class)
         }
     }
 
-    if (_class->hasConstractor(Constractor(varArgs, funcName)))
+    if (c->getClass().hasConstractor(Constractor(varArgs, funcName)))
     {
         return true;
     }
@@ -1211,7 +1254,7 @@ void Parser::parseFields(std::vector<Field>& fields)
                 {
                     auto field = parseVarDecStmt(true);
 
-                    symTable.getCurrScope()->addField(false, field->getVar().copy(), current());
+                    symTable.addField(false, field->getVar().copy(), current());
 
                     fields.emplace_back(false, std::move(field));
                 }
@@ -1249,7 +1292,7 @@ void Parser::parseFields(std::vector<Field>& fields)
                 {
                     auto field = parseVarDecStmt(true);
 
-                    symTable.getCurrScope()->addField(true, field->getVar().copy(), current());
+                    symTable.addField(true, field->getVar().copy(), current());
 
                     fields.emplace_back(true, std::move(field));
                 }
@@ -1298,7 +1341,7 @@ void Parser::parseMethods(std::vector<Method>& methods)
                 {
                     auto method = parseFuncDeclStmt();
 
-                    symTable.getCurrScope()->addMethod(false, method->getFunc().copy(), current());
+                    symTable.addMethod(false, method->getFunc().copy(), current());
 
                     methods.emplace_back(false, std::move(method));
                 }
@@ -1336,7 +1379,7 @@ void Parser::parseMethods(std::vector<Method>& methods)
                 {
                     auto method = parseFuncDeclStmt();
 
-                    symTable.getCurrScope()->addMethod(false, method->getFunc().copy(), current());
+                    symTable.addMethod(true, method->getFunc().copy(), current());
 
                     methods.emplace_back(true, std::move(method));
                 }
@@ -1385,7 +1428,7 @@ void Parser::parseCtors(std::vector<Ctor>& ctors)
                 {
                     auto ctor = parseCtor();
 
-                    symTable.getCurrScope()->addConstractor(false, ctor->getConstractor().copy(), current());
+                    symTable.addCtor(false, ctor->getConstractor().copy(), current());
 
                     ctors.emplace_back(false, std::move(ctor));
                 }
@@ -1423,7 +1466,7 @@ void Parser::parseCtors(std::vector<Ctor>& ctors)
                 {
                     auto ctor = parseCtor();
 
-                    symTable.getCurrScope()->addConstractor(true, ctor->getConstractor().copy(), current());
+                    symTable.addCtor(true, ctor->getConstractor().copy(), current());
 
                     ctors.emplace_back(true, std::move(ctor));
                 }
@@ -1482,7 +1525,7 @@ std::unique_ptr<Call> Parser::parseFuncCallExpr(const bool isStmt)
         expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
     }
 
-    auto expr = std::make_unique<FuncCallExpr>(t, symTable.getCurrScope(), symTable.getCurrFunc(), name, std::move(args), isStmt);
+    auto expr = std::make_unique<FuncCallExpr>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), name, std::move(args), isStmt);
 
     callsQ.push(expr.get());
 
@@ -1501,7 +1544,7 @@ std::unique_ptr<Call> Parser::parseCallExpr()
         throw UnrecognizedIdentifier(prev());
     }
 
-    std::unique_ptr<Call> call = std::make_unique<VarCallExpr>(t, symTable.getCurrScope(), symTable.getCurrFunc(), var.value().copy());
+    std::unique_ptr<Call> call = std::make_unique<VarCallExpr>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), var.value().copy());
 
     if (match(Token::PUNCTUATION, L"["))
     {
@@ -1554,6 +1597,7 @@ std::unique_ptr<Call> Parser::parseArraySlicingExpr(std::unique_ptr<Call> call)
         t,
         symTable.getCurrScope(),
         symTable.getCurrFunc(),
+        symTable.getCurrClass(),
         std::make_unique<Type>(L"degree"),
         L"0"
     );
@@ -1561,6 +1605,7 @@ std::unique_ptr<Call> Parser::parseArraySlicingExpr(std::unique_ptr<Call> call)
         t,
         symTable.getCurrScope(),
         symTable.getCurrFunc(),
+        symTable.getCurrClass(),
         std::make_unique<Type>(L"degree"),
         L"-1"
     );
@@ -1568,6 +1613,7 @@ std::unique_ptr<Call> Parser::parseArraySlicingExpr(std::unique_ptr<Call> call)
         t,
         symTable.getCurrScope(),
         symTable.getCurrFunc(),
+        symTable.getCurrClass(),
         std::make_unique<Type>(L"degree"),
         L"1"
     );
@@ -1606,6 +1652,7 @@ std::unique_ptr<Call> Parser::parseArraySlicingExpr(std::unique_ptr<Call> call)
         t,
         symTable.getCurrScope(),
         symTable.getCurrFunc(),
+        symTable.getCurrClass(),
         std::move(call),
         std::move(start),
         std::move(stop),
@@ -1624,6 +1671,7 @@ std::unique_ptr<Call> Parser::parseArrayIndexingExpr(std::unique_ptr<Call> call)
         t,
         symTable.getCurrScope(),
         symTable.getCurrFunc(),
+        symTable.getCurrClass(),
         std::move(call),
         std::move(index)
     );
@@ -1655,16 +1703,16 @@ std::unique_ptr<ArrayType> Parser::parseArrayType()
 }
 
 
-std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens)
+std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens, const bool isStmt)
 {
     if (match(Token::IDENTIFIER) && peek().type == Token::OP_UNARY)
     {
         return parseUnaryOpExpr();
     }
 
-    auto left = parsePrimary();
+    auto left = parsePrimary(isStmt);
 
-    auto expr = parseBinaryOpRight(0, std::move(left));
+    auto expr = parseBinaryOpRight(0, std::move(left), isStmt);
 
     if (hasParens)
     {
@@ -1674,7 +1722,7 @@ std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens)
     return expr;
 }
 
-std::unique_ptr<Expr> Parser::parsePrimary()
+std::unique_ptr<Expr> Parser::parsePrimary(const bool isStmt)
 {
     const Token& t = current();
     // Handle "unary" operators: +, -, *, /, //
@@ -1691,6 +1739,7 @@ std::unique_ptr<Expr> Parser::parsePrimary()
             t,
             symTable.getCurrScope(),
             symTable.getCurrFunc(),
+            symTable.getCurrClass(),
             op,
             nullptr,          // left = nullptr signals unary
             std::move(right)
@@ -1707,7 +1756,7 @@ std::unique_ptr<Expr> Parser::parsePrimary()
     {
         if (peek().type == Token::PUNCTUATION && peek().value == L"(")
         {
-            return parseFuncCallExpr();
+            return parseFuncCallExpr(isStmt);
         }
         return parseCallExpr();
     }
@@ -1724,16 +1773,15 @@ std::unique_ptr<Expr> Parser::parsePrimary()
     throw UnexpectedToken(current());
 }
 
-std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<Expr> left)
+std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<Expr> left, const bool isStmt)
 {
-
-    const Token& t = current();
     while (true)
     {
-        if (!match(Token::OP_BINARY))
+        if (!(match(Token::OP_BINARY) || match(Token::PUNCTUATION, L"\\")))
             return left;
 
-        std::wstring op = current().value;
+        const Token& t = current();
+        std::wstring op = t.value;
         int prec = BinaryOpExpr::getPrecedence(op);
 
         if (prec < exprPrec)
@@ -1741,21 +1789,61 @@ std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<E
 
         advance();
 
-        auto right = parsePrimary();
+        // Parse the right-hand expression
+        auto right = parsePrimary(isStmt);
 
-        // Lookahead for next operator to handle higher precedence
-        if (match(Token::OP_BINARY))
+        // Lookahead for higher-precedence operator
+        if (match(Token::OP_BINARY) || match(Token::PUNCTUATION, L"\\"))
         {
             int nextPrec = BinaryOpExpr::getPrecedence(current().value);
             if (nextPrec > prec)
             {
-                right = parseBinaryOpRight(prec + 1, std::move(right));
+                right->setIsStmt(false);
+                right = parseBinaryOpRight(prec + 1, std::move(right), isStmt);
             }
         }
 
-        left = std::make_unique<BinaryOpExpr>(t, symTable.getCurrScope(), symTable.getCurrFunc(), op, std::move(left), std::move(right));
+        // Construct the correct expression type
+        if (op == L"\\")
+        {
+            // Cast right to CallExpr (DotOpExpr expects Call on the right)
+            auto callLeft = std::unique_ptr<Call>(
+                dynamic_cast<Call*>(left.release())
+            );
+
+            auto callRight = std::unique_ptr<Call>(
+                dynamic_cast<Call*>(right.release())
+            );
+
+            if (callLeft == nullptr || callRight == nullptr) HowDidYouGetHere(current());
+
+            callRight->setIsClassItem(true);
+
+            left = std::make_unique<DotOpExpr>(
+                t,
+                symTable.getCurrScope(),
+                symTable.getCurrFunc(),
+                symTable.getCurrClass(),
+                op,
+                std::move(callLeft),
+                std::move(callRight) // transfer ownership
+            );
+        }
+        else
+        {
+            left = std::make_unique<BinaryOpExpr>(
+                t,
+                symTable.getCurrScope(),
+                symTable.getCurrFunc(),
+                symTable.getCurrClass(),
+                op,
+                std::move(left),
+                std::move(right)
+            );
+        }
     }
 }
+
 
 std::unique_ptr<ConstValueExpr> Parser::parseConstValueExpr()
 {
@@ -1785,7 +1873,7 @@ std::unique_ptr<ConstValueExpr> Parser::parseConstValueExpr()
     }
 
     advance();
-    return std::make_unique<ConstValueExpr>(t, symTable.getCurrScope(), symTable.getCurrFunc(), std::make_unique<Type>(type), t.value);
+    return std::make_unique<ConstValueExpr>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), std::make_unique<Type>(type), t.value);
 }
 
 std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOpExpr(const bool isStmt)
@@ -1819,5 +1907,5 @@ std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOpExpr(const bool isStmt)
 
     expect(Token::PUNCTUATION, L"║", MissingSemicolon(current()));
 
-    return std::make_unique<UnaryOpExpr>(t, symTable.getCurrScope(), symTable.getCurrFunc(), std::move(call), op, isStmt);
+    return std::make_unique<UnaryOpExpr>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), std::move(call), op, isStmt);
 }

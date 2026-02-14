@@ -75,6 +75,7 @@ int main(int argc, char* argv[])
     {
         std::cerr << err.what() << std::endl;
         graph.reset();
+        SymbolTable::clearClasses();
         return -1;
     }
 
@@ -110,11 +111,13 @@ int main(int argc, char* argv[])
         {
             std::cerr << "Error with g++ : command: " << cmdBuild.str() << std::endl;
             graph.reset();
+        SymbolTable::clearClasses();
             return -4;
         }
     }
 
     graph.reset();
+    SymbolTable::clearClasses();
 
     if (mode == RUN)
     {

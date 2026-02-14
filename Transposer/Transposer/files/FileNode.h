@@ -39,7 +39,7 @@ private:
 
     bool hasMain() const;
 
-    static void clear(FileNode* main);
+    static void clear(const FileNode* main);
 
     static std::vector<std::filesystem::path> getAllCppPath();
 };

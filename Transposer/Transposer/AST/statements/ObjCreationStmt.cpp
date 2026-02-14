@@ -1,24 +1,35 @@
 #include "ObjCreationStmt.h"
 
-ObjCreationStmt::ObjCreationStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl,
-    const std::optional<Class>& _class, const std::wstring& name) : Stmt(token, scope, funcDecl), hasCtor(!(_class->getConstractors().empty())), _class(_class.value), name(name)
-{
-}
+#include "class/ClassNode.h"
+#include "errorHandling/how/HowDidYouGetHere.h"
+#include "symbols/Type/ClassType.h"
 
-void ObjCreationStmt::analyze() const
+ObjCreationStmt::ObjCreationStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
+    const ClassNode* classNode, const bool hasStartingValue, std::unique_ptr<ConstractorCallStmt> startingValue,
+    const Var& var)
+: VarDeclStmt(token, scope, funcDecl, currClass, hasStartingValue, std::move(startingValue), var),
+      classNode(classNode)
 {
-
+    if (classNode == nullptr) throw HowDidYouGetHere(token);
 }
 
 std::string ObjCreationStmt::translateToCpp() const
 {
     std::ostringstream oss;
-    oss << getTabs() + Utils::wstrToStr(_class.getClassName()) + " " + Utils::wstrToStr(name);
-    if (hasCtor)
+    if (classNode == nullptr) throw HowDidYouGetHere(token);
+
+    const std::string className = Utils::wstrToStr(classNode->getClass().getClassName());
+
+    oss << getTabs() << className << " " << Utils::wstrToStr(var.getName());
+
+    if (hasStartingValue && startingValue != nullptr)
     {
-        oss << "()";
+        oss << " = " << startingValue->translateToCpp() << ";";
     }
-    oss << ";";
+    else
+    {
+        oss << " = " << className << "();";
+    }
+
     return oss.str();
 }
-

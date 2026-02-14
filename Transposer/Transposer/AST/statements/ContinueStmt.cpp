@@ -2,7 +2,7 @@
 
 #include "errorHandling/semanticErrors/StmtNotContinueAble.h"
 
-ContinueStmt::ContinueStmt(const Token& token, Scope *scope, IFuncDeclStmt* funcDecl) : Stmt(token, scope, funcDecl)
+ContinueStmt::ContinueStmt(const Token& token, Scope *scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass) : Stmt(token, scope, funcDecl, currClass)
 {
 }
 
