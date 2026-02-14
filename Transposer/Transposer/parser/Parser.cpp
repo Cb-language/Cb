@@ -49,10 +49,12 @@
 
 // ---------- just how ----------
 #include "../errorHandling/how/HowDidYouGetHere.h"
+#include "errorHandling/classErrors/ClassDosentExisit.h"
 #include "errorHandling/classErrors/IllegalFieldName.h"
 
 #include "errorHandling/classErrors/MissingClassPipe.h"
 #include "errorHandling/classErrors/NoCtor.h"
+#include "errorHandling/classErrors/RedefOfCtor.h"
 #include "errorHandling/syntaxErrors/IllegalVarName.h"
 
 #include "files/FileGraph.h"
@@ -1108,7 +1110,7 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
 
     if (pClass->getClass().hasConstractor(Constractor(varArgs, funcName)))
     {
-        throw Error(t, "Redefinition of a constractor");
+        throw RedefOfCtor(t);
     }
     auto ctorDeclStmt = std::make_unique<ConstractorDeclStmt>(t, symTable.getCurrScope(), pClass, pClass->getClass().getClassName(), varArgs);
 
@@ -1131,7 +1133,7 @@ std::unique_ptr<ConstractorCallStmt> Parser::parseConstractorCallStmt()
     const std::wstring className = call.substr(0, call.length() - 5); // remove "_call"
     auto c = SymbolTable::getClass(className);
 
-    if (c == nullptr) throw Error(t, "Type: " + Utils::wstrToStr(className) + " doesn't exists");
+    if (c == nullptr) throw ClassDosentExisit(t, Utils::wstrToStr(className));
 
     expect(Token::PUNCTUATION, L"(", MissingParenthesis(current()));
 
@@ -1158,7 +1160,7 @@ std::unique_ptr<ObjCreationStmt> Parser::parseObjCreationStmt()
 
     auto c = SymbolTable::getClass(className);
 
-    if (c == nullptr) throw Error(t, "Type: " + Utils::wstrToStr(className) + " doesn't exists");
+    if (c == nullptr) throw ClassDosentExisit(t, Utils::wstrToStr(className));
 
     const std::wstring name = expectAndGet(Token::IDENTIFIER, MissingIdentifier(t)).value;
 

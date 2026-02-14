@@ -1,5 +1,6 @@
 #include "ConstractorCallStmt.h"
 
+#include "errorHandling/classErrors/InvalidCtorArgs.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "symbols/Type/ClassType.h"
 
@@ -36,7 +37,7 @@ void ConstractorCallStmt::analyze() const
         if (!differ) return;
     }
 
-    throw Error(token, "No constructor found with those arguments");
+    throw InvalidCtorArgs(token);
 }
 
 std::string ConstractorCallStmt::translateToCpp() const
