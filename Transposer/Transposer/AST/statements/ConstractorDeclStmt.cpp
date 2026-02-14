@@ -1,9 +1,11 @@
 #include "ConstractorDeclStmt.h"
 
 #include "errorHandling/how/HowDidYouGetHere.h"
+#include "other/SymbolTable.h"
+#include "symbols/Type/ClassType.h"
 
-ConstractorDeclStmt::ConstractorDeclStmt(const Token& token, Scope* scope, const std::wstring& className,
-                                         const std::vector<Var>& args) : IFuncDeclStmt(token, scope), constractor(Constractor(args,  className))
+ConstractorDeclStmt::ConstractorDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass, const std::wstring& className,
+                                         const std::vector<Var>& args) : IFuncDeclStmt(token, scope, currClass), constractor(Constractor(args,  className))
 {
 }
 
@@ -35,7 +37,7 @@ std::wstring ConstractorDeclStmt::getName() const
 
 std::unique_ptr<IType> ConstractorDeclStmt::getReturnType() const
 {
-    return std::make_unique<Type>(constractor.getClassName()); // TODO: replace this with class type
+    return std::make_unique<ClassType>(SymbolTable::getClass(constractor.getClassName()));
 }
 
 const Constractor& ConstractorDeclStmt::getConstractor() const

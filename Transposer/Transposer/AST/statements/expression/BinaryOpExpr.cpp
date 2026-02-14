@@ -3,9 +3,11 @@
 #include <sstream>
 
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
+#include "other/SymbolTable.h"
 
-BinaryOpExpr::BinaryOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const std::wstring& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, const bool hasParens)
-: Expr(token, scope, funcDecl, hasParens), op(op), left(std::move(left)), right(std::move(right))
+BinaryOpExpr::BinaryOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
+                           const std::wstring& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, const bool hasParens)
+        : Expr(token, scope, funcDecl, currClass, hasParens), op(op), left(std::move(left)), right(std::move(right))
 {
 }
 
@@ -28,7 +30,7 @@ std::unique_ptr<IType> BinaryOpExpr::getType() const
     }
 
     // Logical operators
-    if (op == L"&&" || op == L"||")
+    if (op == L"chord" || op == L"divis")
     {
         return std::make_unique<Type>(L"mute");
     }
@@ -88,7 +90,7 @@ void BinaryOpExpr::analyze() const
     }
 
     // Logical operators
-    if (op == L"&&" || op == L"||")
+    if (op == L"chord" || op == L"divis")
     {
         if (*leftType != *rightType)
         {
@@ -192,6 +194,10 @@ std::string BinaryOpExpr::translateToCpp() const
 
 int BinaryOpExpr::getPrecedence(const std::wstring& op)
 {
+    // Dot op
+    if (op == L"\\")
+        return 4;
+
     // Multiplicative
     if (op == L"*" || op == L"/" || op == L"%" || op == L"//")
         return 3;
@@ -200,9 +206,10 @@ int BinaryOpExpr::getPrecedence(const std::wstring& op)
     if (op == L"+" || op == L"-")
         return 2;
 
-    // Relational
+    // Relational & Boolean
     if (op == L"<"  || op == L">" ||
-        op == L"<=" || op == L">=")
+        op == L"<=" || op == L">=" ||
+        op == L"chord" || op == L"divis")
         return 1;
 
     // Equality

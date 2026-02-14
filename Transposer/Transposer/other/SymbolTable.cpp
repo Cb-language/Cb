@@ -4,6 +4,10 @@
 #include <sstream>
 
 #include "AST/statements/expression/FuncCallExpr.h"
+#include "errorHandling/classErrors/AccessError.h"
+#include "errorHandling/how/HowDidYouGetHere.h"
+
+std::vector<std::unique_ptr<ClassNode>> SymbolTable::classes;
 
 SymbolTable::SymbolTable()
 {
@@ -18,12 +22,12 @@ SymbolTable::~SymbolTable()
     head.reset();
     head = nullptr;
     currScope = nullptr;
-    currScope = nullptr;
+    currClass = nullptr;
 }
 
 std::optional<Var> SymbolTable::getVar(const std::wstring &name) const
 {
-    return currScope->getVar(name);
+    return currScope->getVar(name, currClass);
 }
 
 void SymbolTable::addVar(std::unique_ptr<IType> type, const Token& token) const
@@ -36,18 +40,21 @@ void SymbolTable::addVar(const Var& var, const Token& token) const
     currScope->addVar(var, token);
 }
 
-std::optional<Class> SymbolTable::getClass(const std::wstring& name) const
+ClassNode* SymbolTable::getClass(const std::wstring& name)
 {
-    const auto it = classes.find(name);
+    // TODO: replace it with tree search
 
-    if (it == classes.end()) return std::nullopt;
+    for (const auto& c : classes)
+    {
+        if (c->getClass().getClassName() == name) return c.get();
+    }
 
-    return it->second.copy();
+    return nullptr;
 }
 
-void SymbolTable::addClass(const Class& cls)
+bool SymbolTable::isClass(const std::wstring& name)
 {
-    classes.emplace(cls.getClassName(), cls.copy());
+     return getClass(name) != nullptr;
 }
 
 bool SymbolTable::doesFuncExist(const Func& f) const
@@ -167,14 +174,47 @@ std::string SymbolTable::getFuncsHeaders() const
     return oss.str();
 }
 
+void SymbolTable::setClass(const Class& cls)
+{
+    auto c = std::make_unique<ClassNode>(cls);
+
+    currClass = c.get();
+
+    classes.push_back(std::move(c));
+}
+
+const ClassNode* SymbolTable::getCurrClass() const
+{
+    return currClass;
+}
+
+void SymbolTable::addField(const bool isPublic, const Var& field, const Token& token) const
+{
+    if (currClass == nullptr) throw HowDidYouGetHere(token);
+
+    currClass->add(isPublic, field);
+}
+
+void SymbolTable::addMethod(const bool isPublic, const Func& method, const Token& token) const
+{
+    if (currClass == nullptr) throw HowDidYouGetHere(token);
+
+    currClass->add(isPublic, method);
+}
+
+void SymbolTable::addCtor(const bool isPublic, const Constractor& ctor, const Token& token) const
+{
+    if (currClass == nullptr) throw HowDidYouGetHere(token);
+
+    currClass->add(isPublic, ctor);
+}
+
 SymbolTable& SymbolTable::operator+=(const SymbolTable& other)
 {
     for (const auto& func : other.funcs | std::views::keys)
     {
         addFunc(func, true);
     }
-
-
 
     if (other.head == nullptr) return *this;
 
@@ -184,4 +224,47 @@ SymbolTable& SymbolTable::operator+=(const SymbolTable& other)
     }
 
     return *this;
+}
+
+void SymbolTable::clearClasses()
+{
+    classes.clear();
+}
+
+bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token)
+{
+    const ClassNode* res = nullptr;
+
+    for (const auto& cls : classes)
+    {
+        if (cls->getClass().getClassName() == type->getType()) // TEMP fix
+        {
+            res = cls.get();
+            break;
+        }
+    }
+
+    if (res == nullptr) throw HowDidYouGetHere(token);
+
+    for (const auto& [isPublic, field] : res->getClass().getFields())
+    {
+        if (field.getName() == name)
+        {
+            if (isPublic) return true;
+
+            throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
+        }
+    }
+
+    for (const auto& [isPublic, method] : res->getClass().getMethods())
+    {
+        if (method.getFuncName() == name)
+        {
+            if (isPublic) return true;
+
+            throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
+        }
+    }
+
+    return false;
 }

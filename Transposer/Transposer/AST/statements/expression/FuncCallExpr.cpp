@@ -6,8 +6,9 @@
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/semanticErrors/CallWithoutCopyright.h"
 
-FuncCallExpr::FuncCallExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const std::wstring& name,std::vector<std::unique_ptr<Expr>> args, const bool isStmt)
-    : Call(token, scope, funcDecl), name(name), type(std::make_unique<Type>(L"fermata")), isStmt(isStmt)
+FuncCallExpr::FuncCallExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
+    const std::wstring& name,std::vector<std::unique_ptr<Expr>> args, const bool isStmt)
+    : Call(token, scope, funcDecl, currClass), name(name), type(std::make_unique<Type>(L"fermata")), isStmt(isStmt)
 {
     for (auto& arg : args)
     {
@@ -52,7 +53,7 @@ std::string FuncCallExpr::translateToCpp() const
     std::ostringstream oss;
     bool first = true;
 
-    if (isStmt)
+    if (isStmt && !isClassItem)
     {
         oss << getTabs();
     }
@@ -110,4 +111,14 @@ const Token& FuncCallExpr::getToken() const
 const std::wstring& FuncCallExpr::getName() const
 {
     return name;
+}
+
+std::wstring FuncCallExpr::toString() const
+{
+    return name;
+}
+
+void FuncCallExpr::setIsStmt(const bool isStmt)
+{
+    this->isStmt = isStmt;
 }

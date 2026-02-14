@@ -2,8 +2,8 @@
 
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
 
-VarDeclStmt::VarDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var& var) :
-    Stmt(token, scope, funcDecl), hasStartingValue(hasStartingValue), startingValue(std::move(startingValue)) , var(var.copy())
+VarDeclStmt::VarDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var& var) :
+    Stmt(token, scope, funcDecl, currClass), hasStartingValue(hasStartingValue), startingValue(std::move(startingValue)) , var(var.copy())
 {
 }
 
@@ -13,6 +13,8 @@ void VarDeclStmt::analyze() const
     {
         throw IllegalTypeCast(token, var.getType()->toString(), startingValue->getType()->toString());
     }
+
+    if (startingValue != nullptr) startingValue->analyze();
 }
 
 std::string VarDeclStmt::translateToCpp() const

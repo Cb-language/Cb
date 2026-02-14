@@ -14,9 +14,10 @@ protected:
     const Token token;
     Scope* scope;
     IFuncDeclStmt* funcDecl;
+    const ClassNode* currClass;
 
-    Stmt(const Token& token, Scope* scope);
-    Stmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl);
+    Stmt(const Token& token, Scope* scope, const ClassNode* currClass);
+    Stmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass);
     std::string getTabs(const int offset = 0) const;
 public:
     virtual ~Stmt();
@@ -27,12 +28,12 @@ public:
     void setFuncDecl(IFuncDeclStmt *funcDecl);
 };
 
-inline Stmt::Stmt(const Token& token, Scope* scope) : token(token), scope(scope)
+inline Stmt::Stmt(const Token& token, Scope* scope, const ClassNode* currClass) : token(token), scope(scope), currClass(currClass)
 {
     funcDecl = nullptr;
 }
 
-inline Stmt::Stmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl) : token(token), scope(scope), funcDecl(funcDecl)
+inline Stmt::Stmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass) : token(token), scope(scope), funcDecl(funcDecl), currClass(currClass)
 {
 }
 

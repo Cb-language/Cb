@@ -2,19 +2,9 @@
 
 #include <ranges>
 
-#include "Utils.h"
+#include "class/ClassNode.h"
 #include "../errorHandling/semanticErrors/IdentifierTaken.h"
 #include "../errorHandling/syntaxErrors/UnexpectedToken.h"
-
-Class* Scope::getCurrClassPtr()
-{
-    if (!currClass.has_value())
-    {
-        return parent ? parent->getCurrClassPtr() : nullptr;
-    }
-
-    return &currClass.value();
-}
 
 Scope::Scope(Scope* parent) : parent(parent)
 {
@@ -38,7 +28,7 @@ Scope::~Scope()
     children.clear();
 }
 
-std::optional<Var> Scope::getVar(const std::wstring& name) const
+std::optional<Var> Scope::getVar(const std::wstring& name, const ClassNode* c) const
 {
     for (const auto& var : vars | std::views::keys)
     {
@@ -48,9 +38,9 @@ std::optional<Var> Scope::getVar(const std::wstring& name) const
         }
     }
 
-    if (currClass.has_value())
+    if (c != nullptr)
     {
-        for (const auto& [isPublic, field] : currClass->getFields())
+        for (const auto& [isPublic, field] : c->getClass().getFields())
         {
             if (!isPublic) continue;
 
@@ -63,7 +53,7 @@ std::optional<Var> Scope::getVar(const std::wstring& name) const
 
     if (parent != nullptr)
     {
-        return parent->getVar(name);
+        return parent->getVar(name, c);
     }
 
     return std::nullopt;
@@ -155,53 +145,6 @@ bool Scope::getIsContinueAble() const
         return getParent()->getIsContinueAble();
     }
     return false;
-}
-
-std::optional<Class> Scope::getCurrClass() const
-{
-    if (!currClass.has_value())
-    {
-        if (parent == nullptr) return std::nullopt;
-        return parent->getCurrClass();
-    }
-
-    return currClass;
-}
-
-void Scope::addMethod(const bool isPublic, const Func& method, const Token& token)
-{
-    Class* c = getCurrClassPtr();
-    if (c == nullptr) throw Error(token, "Not in class");
-
-    c->addMethod(isPublic, method);
-}
-
-void Scope::addField(const bool isPublic, const Var& field, const Token& token)
-{
-    Class* c = getCurrClassPtr();
-    if (c == nullptr) throw Error(token, "Not in class");
-
-    c->addField(isPublic, field);
-}
-
-void Scope::addConstractor(const bool isPublic, const Constractor& constractor, const Token& token)
-{
-    Class* c = getCurrClassPtr();
-    if (c == nullptr) throw Error(token, "Not in class");
-
-    c->addConstractor(isPublic, constractor);
-}
-
-std::wstring Scope::getCurrClassName() const
-{
-    auto c = getCurrClass();
-    if (c.has_value()) return c->getClassName();
-    return L"";
-}
-
-void Scope::setCurrClass(Class& currClass)
-{
-    this->currClass.emplace(currClass.copy());
 }
 
 const std::vector<std::pair<Var, Token>>& Scope::getCurrVars() const

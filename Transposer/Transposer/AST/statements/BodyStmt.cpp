@@ -3,8 +3,8 @@
 #include "BreakStmt.h"
 #include "ReturnStmt.h"
 
-BodyStmt::BodyStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Stmt>>& stmts, const bool isGlobal) :
-    Stmt(token, scope, funcDecl), stmts(std::move(stmts)), isGlobal(isGlobal)
+BodyStmt::BodyStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::vector<std::unique_ptr<Stmt>>& stmts, const bool isGlobal) :
+    Stmt(token, scope, funcDecl, currClass), stmts(std::move(stmts)), isGlobal(isGlobal)
 {
 }
 

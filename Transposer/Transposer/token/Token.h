@@ -37,6 +37,8 @@ struct Token
 
 	const std::filesystem::path path;
 
+	Token();
+
 	Token(TokenType type, const std::wstring &value, size_t line, size_t column, const std::filesystem::path& path);
 
 	bool isConst() const;

@@ -200,6 +200,22 @@ add_executable(Transposer
         Transposer/symbols/Constractor.cpp
         Transposer/symbols/Constractor.h
         Transposer/AST/abstract/IFuncDeclStmt.h
+        Transposer/AST/statements/ObjCreationStmt.cpp
+        Transposer/AST/statements/ObjCreationStmt.h
+        Transposer/errorHandling/classErrors/NoCtor.cpp
+        Transposer/errorHandling/classErrors/NoCtor.h
+        Transposer/class/ClassNode.cpp
+        Transposer/class/ClassNode.h
+        Transposer/AST/statements/expression/DotOpExpr.cpp
+        Transposer/AST/statements/expression/DotOpExpr.h
+        Transposer/symbols/Type/ClassType.cpp
+        Transposer/symbols/Type/ClassType.h
+        Transposer/AST/statements/expression/ConstractorCallStmt.cpp
+        Transposer/AST/statements/expression/ConstractorCallStmt.h
+        Transposer/errorHandling/syntaxErrors/IllegalVarName.cpp
+        Transposer/errorHandling/syntaxErrors/IllegalVarName.h
+        Transposer/errorHandling/classErrors/AccessError.cpp
+        Transposer/errorHandling/classErrors/AccessError.h
 )
 
 # In order to call the exe from the cmd

@@ -3,8 +3,9 @@
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
 
 
-AssignmentStmt::AssignmentStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, std::unique_ptr<Call> call, const std::wstring& assignmentOp,
-                               std::unique_ptr<Expr> expr) : Stmt(token, scope, funcDecl), call(std::move(call)), assignmentOp(assignmentOp), expr(std::move(expr))
+AssignmentStmt::AssignmentStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
+    std::unique_ptr<Call> call, const std::wstring& assignmentOp, std::unique_ptr<Expr> expr)
+        : Stmt(token, scope, funcDecl, currClass), call(std::move(call)), assignmentOp(assignmentOp), expr(std::move(expr))
 {
 }
 

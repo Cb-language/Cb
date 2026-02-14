@@ -28,6 +28,8 @@
 #include "symbols/FuncCredit.h"
 #include "symbols/Type/ArrayType.h"
 #include "AST/statements/IncludeStmt.h"
+#include "AST/statements/ObjCreationStmt.h"
+#include "AST/statements/expression/DotOpExpr.h"
 
 class Error;
 
@@ -91,15 +93,18 @@ private:
     std::unique_ptr<ForStmt> parseForStmt();
     std::unique_ptr<ClassDeclStmt> parseClassDeclStmt();
     std::unique_ptr<ConstractorDeclStmt> parseCtor();
+    std::unique_ptr<ConstractorCallStmt> parseConstractorCallStmt();
+    std::unique_ptr<ObjCreationStmt> parseObjCreationStmt();
+    bool parseCtorCall(const ClassNode* c);
     void parseFields(std::vector<Field>& fields);
     void parseMethods(std::vector<Method>& methods);
     void parseCtors(std::vector<Ctor>& ctors);
 
     // Expressions
 
-    std::unique_ptr<Expr> parseExpr(const bool hasParens = false);
-    std::unique_ptr<Expr> parsePrimary();
-    std::unique_ptr<Expr> parseBinaryOpRight(int exprPrec,  std::unique_ptr<Expr> left);
+    std::unique_ptr<Expr> parseExpr(const bool hasParens = false, const bool isStmt = false);
+    std::unique_ptr<Expr> parsePrimary(const bool isStmt = false);
+    std::unique_ptr<Expr> parseBinaryOpRight(int exprPrec,  std::unique_ptr<Expr> left, const bool isStmt = false);
     std::unique_ptr<ConstValueExpr> parseConstValueExpr();
     std::unique_ptr<UnaryOpExpr> parseUnaryOpExpr(const bool isStmt = false);
     std::unique_ptr<Call> parseFuncCallExpr(const bool isStmt = false);
