@@ -1808,11 +1808,11 @@ std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<E
         {
             // Cast right to CallExpr (DotOpExpr expects Call on the right)
             auto callLeft = std::unique_ptr<Call>(
-                static_cast<Call*>(left.release())
+                dynamic_cast<Call*>(left.release())
             );
 
             auto callRight = std::unique_ptr<Call>(
-                static_cast<Call*>(right.release())
+                dynamic_cast<Call*>(right.release())
             );
 
             if (callLeft == nullptr || callRight == nullptr) HowDidYouGetHere(current());

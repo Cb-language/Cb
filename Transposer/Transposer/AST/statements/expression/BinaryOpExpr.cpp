@@ -206,9 +206,10 @@ int BinaryOpExpr::getPrecedence(const std::wstring& op)
     if (op == L"+" || op == L"-")
         return 2;
 
-    // Relational
+    // Relational & Boolean
     if (op == L"<"  || op == L">" ||
-        op == L"<=" || op == L">=")
+        op == L"<=" || op == L">=" ||
+        op == L"chord" || op == L"divis")
         return 1;
 
     // Equality
