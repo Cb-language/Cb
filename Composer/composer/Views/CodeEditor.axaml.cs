@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Xml;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input; // [Added] Needed for KeyEventArgs and Key modifiers
 using Avalonia.Platform;
 using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Highlighting.Xshd;
@@ -35,9 +36,10 @@ public partial class CodeEditor : UserControl
         Editor.Options.IndentationSize = 4;
 
         _textMarkerService = new TextMarkerService(Editor);
-        
         Editor.TextArea.TextView.BackgroundRenderers.Add(_textMarkerService);
 
+        // [Added] Hook up the KeyDown event to handle shortcuts
+        Editor.TextArea.KeyDown += OnEditorKeyDown;
 
         Editor.TextChanged += (sender, args) =>
         {
@@ -47,28 +49,67 @@ public partial class CodeEditor : UserControl
             _isBinding = false;
         };
     }
+
+    // [Added] Key Handler
+    private void OnEditorKeyDown(object? sender, KeyEventArgs e)
+    {
+        // Check for Ctrl + / (OemQuestion is usually the / key)
+        if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.OemQuestion)
+        {
+            ToggleComment();
+            e.Handled = true; // Mark as handled so it doesn't type '/'
+        }
+    }
+
+    // [Added] Toggle Comment Logic
+    private void ToggleComment()
+    {
+        var document = Editor.Document;
+        var offset = Editor.CaretOffset;
+        // Get the line where the cursor currently is
+        var line = document.GetLineByOffset(offset);
+        var lineText = document.GetText(line);
+        
+        // Based on your MusicSyntax.xshd, '?' is the single-line comment
+        const string commentPrefix = "?"; 
+
+        // Find where the code actually starts (skip indentation)
+        var trimmed = lineText.TrimStart();
+        var leadingSpaceCount = lineText.Length - trimmed.Length;
+
+        if (trimmed.StartsWith(commentPrefix))
+        {
+            // UNCOMMENT: Remove the '?'
+            // We calculate the exact position of the '?'
+            var commentIndex = line.Offset + leadingSpaceCount;
+            document.Remove(commentIndex, commentPrefix.Length);
+        }
+        else
+        {
+            // COMMENT: Insert '?' at the indentation level
+            var insertOffset = line.Offset + leadingSpaceCount;
+            document.Insert(insertOffset, commentPrefix);
+        }
+    }
+
     public void HighlightErrors(string json)
     {
         if (string.IsNullOrEmpty(json)) return;
 
         try 
         {
-            // 1. Parse the root array
             var root = JsonSerializer.Deserialize<JsonElement>(json);
             if (root.ValueKind != JsonValueKind.Array) return;
 
             var allDiagnostics = new System.Collections.Generic.List<Diagnostic>();
 
-            // 2. Iterate through LSP messages
             foreach (var message in root.EnumerateArray())
             {
-                // We only care about publishDiagnostics methods
                 if (message.TryGetProperty("method", out var method) && 
                     method.GetString() == "textDocument/publishDiagnostics")
                 {
                     if (message.TryGetProperty("params", out var paramsElement))
                     {
-                        // 3. Deserialize the inner params
                         var diagnosticParams = JsonSerializer.Deserialize<DiagnosticParams>(paramsElement.GetRawText());
                         if (diagnosticParams?.Diagnostics != null)
                         {
@@ -78,7 +119,6 @@ public partial class CodeEditor : UserControl
                 }
             }
         
-            // 4. Update the service
             _textMarkerService.UpdateMarkers(allDiagnostics);
         }
         catch (Exception ex) 
@@ -86,7 +126,6 @@ public partial class CodeEditor : UserControl
             System.Diagnostics.Debug.WriteLine($"LSP Parse Error: {ex.Message}"); 
         }
     }
-
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
