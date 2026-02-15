@@ -1119,21 +1119,21 @@ std::unique_ptr<ForStmt> Parser::parseForStmt()
         if (!expect(Token::KEYWORD, L"Fmin", new HowDidYouGetHere(current()))) return nullptr;
     }
 
-    startExpr = parseExpr();
+    startExpr = parseExpr(false, false, false);
     if (!startExpr) return nullptr;
 
 
     if ((isIncreasing && match(Token::OP_UNARY, L"♯"))|| (!isIncreasing && match(Token::OP_UNARY, L"♭")))
     {
         advance();
-        stepExpr = parseExpr();
+        stepExpr = parseExpr(false, false, false);
         if (!stepExpr) return nullptr;
     }
 
     if (match(Token::PUNCTUATION, L"#"))
     {
         advance();
-        stopExpr = parseExpr();
+        stopExpr = parseExpr(false, false, false);
         if (!stopExpr) return nullptr;
     }
 
@@ -1888,17 +1888,17 @@ std::unique_ptr<ArrayType> Parser::parseArrayType()
 }
 
 
-std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens, const bool isStmt)
+std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens, const bool isStmt, const bool allowBackslash)
 {
     if (match(Token::IDENTIFIER) && peek().type == Token::OP_UNARY)
     {
         return parseUnaryOpExpr();
     }
 
-    auto left = parsePrimary(isStmt);
+    auto left = parsePrimary(isStmt, allowBackslash);
     if (!left) return nullptr;
 
-    auto expr = parseBinaryOpRight(0, std::move(left), isStmt);
+    auto expr = parseBinaryOpRight(0, std::move(left), isStmt, allowBackslash);
     if (!expr) return nullptr;
 
     if (hasParens)
@@ -1909,7 +1909,7 @@ std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens, const bool isStmt)
     return expr;
 }
 
-std::unique_ptr<Expr> Parser::parsePrimary(const bool isStmt)
+std::unique_ptr<Expr> Parser::parsePrimary(const bool isStmt, const bool allowBackslash)
 {
     const Token& t = current();
 
@@ -1920,7 +1920,7 @@ std::unique_ptr<Expr> Parser::parsePrimary(const bool isStmt)
         std::wstring op = t.value;
         advance(); 
 
-        auto right = parseExpr();
+        auto right = parseExpr(false, false, allowBackslash);
         if (!right) return nullptr;
 
         return std::make_unique<BinaryOpExpr>(
@@ -1953,7 +1953,7 @@ std::unique_ptr<Expr> Parser::parsePrimary(const bool isStmt)
     if (match(Token::PUNCTUATION, L"("))
     {
         advance();
-        auto expr = parseExpr(true);
+        auto expr = parseExpr(true, false, allowBackslash);
         if (!expr) return nullptr;
         if (!expect(Token::PUNCTUATION, L")", new MissingParenthesis(current()))) return nullptr;
         return expr;
@@ -1963,11 +1963,11 @@ std::unique_ptr<Expr> Parser::parsePrimary(const bool isStmt)
     return nullptr;
 }
 
-std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<Expr> left, const bool isStmt)
+std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<Expr> left, const bool isStmt, const bool allowBackslash)
 {
     while (true)
     {
-        if (!(match(Token::OP_BINARY) || match(Token::PUNCTUATION, L"\\")))
+        if (!(match(Token::OP_BINARY) || (allowBackslash && match(Token::PUNCTUATION, L"\\"))))
             return left;
 
         const Token& t = current();
@@ -1979,16 +1979,16 @@ std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<E
 
         advance();
 
-        auto right = parsePrimary(isStmt);
+        auto right = parsePrimary(isStmt, allowBackslash);
         if (!right) return nullptr;
 
-        if (match(Token::OP_BINARY) || match(Token::PUNCTUATION, L"\\"))
+        if (match(Token::OP_BINARY) || (allowBackslash && match(Token::PUNCTUATION, L"\\")))
         {
             int nextPrec = BinaryOpExpr::getPrecedence(current().value);
             if (nextPrec > prec)
             {
                 right->setIsStmt(false);
-                right = parseBinaryOpRight(prec + 1, std::move(right), isStmt);
+                right = parseBinaryOpRight(prec + 1, std::move(right), isStmt, allowBackslash);
                 if (!right) return nullptr;
             }
         }
