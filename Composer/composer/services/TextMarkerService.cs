@@ -23,7 +23,7 @@ namespace composer.services
 
         public KnownLayer Layer => KnownLayer.Selection;
 
-        // --- 1. Draw Red Squiggly Line (Under the whole line) ---
+        // --- 1. Draw Red Squiggly Line (Under whole line) ---
         public void Draw(TextView textView, DrawingContext drawingContext)
         {
             if (_markers == null || !_markers.Any() || textView.VisualLines.Count == 0) return;
@@ -65,7 +65,7 @@ namespace composer.services
             }
         }
 
-        // --- 2. Colorize Text Red (The whole line) ---
+        // --- 2. Colorize Text Red (Whole line) ---
         protected override void ColorizeLine(DocumentLine line)
         {
             if (_markers == null || !_markers.Any()) return;
@@ -85,12 +85,13 @@ namespace composer.services
             }
         }
 
-        // --- 3. Update Logic (Selects WHOLE LINE now) ---
+        // --- 3. Update Logic ---
         public void UpdateMarkers(IEnumerable<Diagnostic> diagnostics)
         {
             if (_editor.Document == null) return;
             
             _markers.Clear();
+
             foreach (var diagnostic in diagnostics)
             {
                 if (diagnostic.Range.Start.Line >= _editor.Document.LineCount) continue;
@@ -99,32 +100,42 @@ namespace composer.services
                 {
                     // 1-based indexing for AvaloniaEdit
                     int lineNum = diagnostic.Range.Start.Line + 1;
-                    
                     if (lineNum < 1 || lineNum > _editor.Document.LineCount) continue;
 
-                    // Get the line object
                     var line = _editor.Document.GetLineByNumber(lineNum);
                     
-                    // Create a marker for the ENTIRE line content
+                    // Create marker for WHOLE LINE content
                     if (line.Length > 0)
                     {
-                        _markers.Add(new TextMarker(line.Offset, line.Length));
+                        _markers.Add(new TextMarker(line.Offset, line.Length, diagnostic.Message));
                     }
                 }
                 catch (Exception) { /* Ignore */ }
             }
             
-            // Force Redraw
+            // Force Redraw to ensure removed errors disappear
             _editor.TextArea.TextView.Redraw();
+            _editor.TextArea.TextView.InvalidateVisual();
+        }
+
+        public string? GetErrorAtOffset(int offset)
+        {
+            if (_markers == null) return null;
+            // FindSegmentsContaining returns segments where Start <= offset < End
+            var marker = _markers.FindSegmentsContaining(offset).FirstOrDefault();
+            return marker?.Message;
         }
     }
 
     public class TextMarker : TextSegment
     {
-        public TextMarker(int startOffset, int length)
+        public string Message { get; }
+
+        public TextMarker(int startOffset, int length, string message)
         {
             StartOffset = startOffset;
             Length = length;
+            Message = message;
         }
     }
 }

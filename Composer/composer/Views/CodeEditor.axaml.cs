@@ -49,7 +49,9 @@ public partial class CodeEditor : UserControl
         Editor.TextArea.TextView.BackgroundRenderers.Add(_textMarkerService);
         Editor.TextArea.TextView.LineTransformers.Add(_textMarkerService);
 
+        // Shortcuts & Tooltips
         Editor.TextArea.KeyDown += OnEditorKeyDown;
+        Editor.TextArea.PointerMoved += OnEditorPointerMoved;
 
         Editor.TextChanged += (sender, args) =>
         {
@@ -58,6 +60,33 @@ public partial class CodeEditor : UserControl
             CodeContent = Editor.Text;
             _isBinding = false;
         };
+    }
+
+    private void OnEditorPointerMoved(object? sender, PointerEventArgs e)
+    {
+        var textView = Editor.TextArea.TextView;
+        var pos = e.GetPosition(textView);
+        var position = textView.GetPosition(pos);
+        
+        if (position.HasValue)
+        {
+            var offset = Editor.Document.GetOffset(position.Value.Line, position.Value.Column);
+            var errorMsg = _textMarkerService.GetErrorAtOffset(offset);
+
+            if (!string.IsNullOrEmpty(errorMsg))
+            {
+                ToolTip.SetTip(Editor, errorMsg);
+                ToolTip.SetIsOpen(Editor, true);
+            }
+            else
+            {
+                ToolTip.SetIsOpen(Editor, false);
+            }
+        }
+        else
+        {
+            ToolTip.SetIsOpen(Editor, false);
+        }
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -82,7 +111,6 @@ public partial class CodeEditor : UserControl
 
     public void HighlightErrors(string json)
     {
-        // Even if empty, we MUST call UpdateMarkers to clear old red lines
         if (string.IsNullOrEmpty(json) || json == "[]") 
         {
             _textMarkerService.UpdateMarkers(new List<Diagnostic>());
@@ -120,7 +148,6 @@ public partial class CodeEditor : UserControl
         }
         catch 
         { 
-            // On error, clear markers to avoid stuck graphics
             _textMarkerService.UpdateMarkers(new List<Diagnostic>());
         }
     }
