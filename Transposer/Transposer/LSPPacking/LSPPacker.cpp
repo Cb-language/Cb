@@ -37,8 +37,8 @@ std::string LSPPacker::pack(const std::vector<Error*>& errors)
             first = false;
 
             const Token& token = error->getToken();
-            int line = token.line > 0 ? token.line - 1 : 0; // LSP is 0-indexed
-            int col = token.column > 0 ? token.column - 1 : 0; // LSP is 0-indexed
+            const int line = token.line > 0 ? token.line - 1 : 0; // LSP is 0-indexed
+            const int col = token.column > 0 ? token.column - 1 : 0; // LSP is 0-indexed
 
             oss << "        {\n";
             oss << "          \"range\": {\n";

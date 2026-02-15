@@ -32,6 +32,7 @@ public partial class FileTabViewModel : ViewModelBase
         if (!string.IsNullOrEmpty(value)) OutFilePath = Path.ChangeExtension(value, ".cpp");
     }
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnContentChanged(string value)
     {
         IsModified = true; 

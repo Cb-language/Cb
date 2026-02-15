@@ -26,6 +26,7 @@ public partial class MainView : Window
         vm.PropertyChanged += OnVmPropertyChanged;
         
         UpdateSidebarState(vm);
+        // ReSharper disable once UnusedParameter.Local
         PropertyChanged += (s, a) => {
             if (a.Property == WindowStateProperty) UpdateSidebarState(vm);
         };

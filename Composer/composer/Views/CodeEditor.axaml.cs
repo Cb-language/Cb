@@ -65,6 +65,7 @@ public partial class CodeEditor : UserControl
         Editor.TextArea.TextEntered += OnTextEntered;
         Editor.TextArea.TextEntering += OnTextEntering;
 
+        // ReSharper disable once UnusedParameter.Local
         Editor.TextChanged += (sender, args) =>
         {
             if (_isBinding) return;
@@ -97,7 +98,7 @@ public partial class CodeEditor : UserControl
 
     private void OnTextEntered(object? sender, TextInputEventArgs e)
     {
-        HandleAutoCompletion(e.Text);
+        if (e.Text != null) HandleAutoCompletion(e.Text);
     }
 
     private void HandleAutoCompletion(string text)
@@ -203,11 +204,9 @@ public partial class CodeEditor : UserControl
 
     private void OnEditorKeyDown(object? sender, KeyEventArgs e)
     {
-        if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.OemQuestion)
-        {
-            ToggleComment();
-            e.Handled = true;
-        }
+        if (e is not { KeyModifiers: KeyModifiers.Control, Key: Key.OemQuestion }) return;
+        ToggleComment();
+        e.Handled = true;
     }
 
     private void ToggleComment()

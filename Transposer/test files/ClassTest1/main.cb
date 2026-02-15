@@ -6,6 +6,6 @@ song prelude() -> degree
     Test t2║
 
     playBar(t1\g(5))║
-    playBar(t1\fa_n)║
-    B\0║
+    playBar(t1\fa_n)
+    B\0
 ☉
