@@ -30,76 +30,77 @@
     <Design.DataContext><vm:MainViewModel/></Design.DataContext>
 
     <Grid Background="{DynamicResource PrimaryBackground}" ColumnDefinitions="Auto, *">
-        
         <Border Grid.Column="0" Padding="10" Background="{DynamicResource PrimaryBackgroundGradientBrush}" 
                 Width="{Binding BorderWidth}">
             <Grid RowDefinitions="*, Auto">
-                <StackPanel Spacing="15">
-                    <Image PointerPressed="InputElement_OnPointerPressed__SvgImage__Assets_Images_logo_svg_" 
-                           Source="{SvgImage /Assets/Images/logo.svg}" Width="200" IsVisible="{Binding Expanded}"/>
-                    <Image PointerPressed="InputElement_OnPointerPressed__SvgImage__Assets_Images_logo_svg_" 
-                           Source="{SvgImage /Assets/Images/logo.svg}" Width="50" IsVisible="{Binding !Expanded}"/>
+                
+                <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="15">
+                        <Image PointerPressed="InputElement_OnPointerPressed__SvgImage__Assets_Images_logo_svg_" 
+                               Source="{SvgImage /Assets/Images/logo.svg}" Width="200" IsVisible="{Binding Expanded}"/>
+                        <Image PointerPressed="InputElement_OnPointerPressed__SvgImage__Assets_Images_logo_svg_" 
+                               Source="{SvgImage /Assets/Images/logo.svg}" Width="50" IsVisible="{Binding !Expanded}"/>
 
-                    <TextBlock Text="File Operations" HorizontalAlignment="Center" FontFamily="{DynamicResource PrimaryFontFamily}" IsVisible="{Binding Expanded}" Foreground="{DynamicResource PrimaryForeground}"/>
+                        <TextBlock Text="File Operations" HorizontalAlignment="Center" FontFamily="{DynamicResource PrimaryFontFamily}" IsVisible="{Binding Expanded}" Foreground="{DynamicResource PrimaryForeground}"/>
 
-                    <Button HorizontalAlignment="Stretch" Command="{Binding OpenFolderCommand}">
-                        <StackPanel Orientation="Horizontal">
-                             <Label Content="📁" Padding="0 2 0 0"/>
-                             <Label Content="Open Folder" IsVisible="{Binding Expanded}"/>
-                        </StackPanel>
-                    </Button>
-                    
-                    <Button HorizontalAlignment="Stretch" Command="{Binding OpenSourceFileCommand}">
-                        <StackPanel Orientation="Horizontal">
-                             <Label Content="📂" Padding="0 2 0 0"/>
-                             <Label Content="Open File" IsVisible="{Binding Expanded}"/>
-                        </StackPanel>
-                    </Button>
-                    
-                    <Button HorizontalAlignment="Stretch" Command="{Binding ChangeDestPathCommand}">
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="📤" Padding="0 2 0 0"/>
-                            <Label Content="Destination" IsVisible="{Binding Expanded}"/>
-                        </StackPanel>
-                    </Button>
+                        <Button HorizontalAlignment="Stretch" Command="{Binding OpenFolderCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                 <Label Content="📁" Padding="0 2 0 0"/>
+                                 <Label Content="Open Folder" IsVisible="{Binding Expanded}"/>
+                            </StackPanel>
+                        </Button>
+                        
+                        <Button HorizontalAlignment="Stretch" Command="{Binding OpenSourceFileCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                 <Label Content="📂" Padding="0 2 0 0"/>
+                                 <Label Content="Open File" IsVisible="{Binding Expanded}"/>
+                            </StackPanel>
+                        </Button>
+                     
+                        <Button HorizontalAlignment="Stretch" Command="{Binding ChangeDestPathCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="📤" Padding="0 2 0 0"/>
+                               <Label Content="Destination" IsVisible="{Binding Expanded}"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Separator IsVisible="{Binding Expanded}" Margin="0,10" Opacity="0.5"/>
-                    
-                    <TextBlock Text="Actions" HorizontalAlignment="Center" FontFamily="{DynamicResource PrimaryFontFamily}" IsVisible="{Binding Expanded}" Foreground="{DynamicResource PrimaryForeground}"/>
+                        <Separator IsVisible="{Binding Expanded}" Margin="0,10" Opacity="0.5"/>
+                     
+                        <TextBlock Text="Actions" HorizontalAlignment="Center" FontFamily="{DynamicResource PrimaryFontFamily}" IsVisible="{Binding Expanded}" Foreground="{DynamicResource PrimaryForeground}"/>
 
-                    <Button HorizontalAlignment="Stretch" Command="{Binding SaveSourceCommand}">
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="💾" Padding="0 4 0 0"/>
-                            <Label Content="Save" IsVisible="{Binding Expanded}"/>
-                        </StackPanel>
-                    </Button>
+                        <Button HorizontalAlignment="Stretch" Command="{Binding SaveSourceCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                 <Label Content="💾" Padding="0 4 0 0"/>
+                                <Label Content="Save" IsVisible="{Binding Expanded}"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Button HorizontalAlignment="Stretch" Command="{Binding TranslateCommand}">
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="🔄" Padding="0 4 0 0"/>
-                            <Label Content="Translate" IsVisible="{Binding Expanded}"/>
-                        </StackPanel>
-                    </Button>
+                         <Button HorizontalAlignment="Stretch" Command="{Binding TranslateCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="🔄" Padding="0 4 0 0"/>
+                               <Label Content="Translate" IsVisible="{Binding Expanded}"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Button HorizontalAlignment="Stretch" Command="{Binding CompileCommand}">
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="🛠️" Padding="0 4 0 0"/>
-                            <Label Content="Compile" IsVisible="{Binding Expanded}"/>
-                        </StackPanel>
-                    </Button>
+                        <Button HorizontalAlignment="Stretch" Command="{Binding CompileCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                 <Label Content="🛠️" Padding="0 4 0 0"/>
+                                <Label Content="Compile" IsVisible="{Binding Expanded}"/>
+                            </StackPanel>
+                         </Button>
 
-                    <Button HorizontalAlignment="Stretch" Command="{Binding RunCommand}">
-                        <StackPanel Orientation="Horizontal">
-                            <Label Content="▶️" Padding="0 0 0 5"/>
-                            <Label Content="Run" Padding="5 4 0 0" IsVisible="{Binding Expanded}"/>
-                        </StackPanel>
-                    </Button>
-                    
-                    <Separator IsVisible="{Binding Expanded}" Margin="0,10" Opacity="0.5"/>
-                    <TextBlock Text="Project Files" HorizontalAlignment="Center" FontFamily="{DynamicResource PrimaryFontFamily}" IsVisible="{Binding Expanded}" Foreground="{DynamicResource PrimaryForeground}"/>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="200">
+                        <Button HorizontalAlignment="Stretch" Command="{Binding RunCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="▶️" Padding="0 0 0 5"/>
+                               <Label Content="Run" Padding="5 4 0 0" IsVisible="{Binding Expanded}"/>
+                            </StackPanel>
+                        </Button>
+                        
+                        <Separator IsVisible="{Binding Expanded}" Margin="0,10" Opacity="0.5"/>
+                        <TextBlock Text="Project Files" HorizontalAlignment="Center" FontFamily="{DynamicResource PrimaryFontFamily}" IsVisible="{Binding Expanded}" Foreground="{DynamicResource PrimaryForeground}"/>
+                        
                         <ItemsControl ItemsSource="{Binding FolderFiles}" IsVisible="{Binding Expanded}">
-                            <ItemsControl.ItemTemplate>
+                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Button Content="{Binding}" 
                                             Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).OpenFileFromListCommand}" 
@@ -110,12 +111,12 @@
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                    </ScrollViewer>
-                </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
                 
-                <StackPanel Grid.Row="1" VerticalAlignment="Bottom" IsVisible="{Binding Expanded}">
+                <StackPanel Grid.Row="1" VerticalAlignment="Bottom" IsVisible="{Binding Expanded}" Margin="0,10,0,0">
                     <TextBlock Text="Current Output Path:" FontSize="10" Foreground="#AAAAAA"/>
-                    <TextBlock Text="{Binding SelectedTab.OutFilePath}" TextWrapping="Wrap" FontSize="10" Foreground="#AAAAAA" Margin="0,2"/>
+                     <TextBlock Text="{Binding SelectedTab.OutFilePath}" TextWrapping="Wrap" FontSize="10" Foreground="#AAAAAA" Margin="0,2"/>
                 </StackPanel>
             </Grid>
         </Border>
