@@ -15,7 +15,7 @@ instrument Test
         song ©(f) g(degree z) -> degree
         ∮
             f()║
-            B\z*z
+            B\z*z║
         ☉ |
         freq fa_n |
         Test_call(degree x)

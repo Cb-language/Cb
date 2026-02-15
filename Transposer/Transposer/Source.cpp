@@ -75,8 +75,41 @@ int main(int argc, char* argv[])
     FileGraph& graph = FileGraph::Instance();
     graph.reset();
     if (mode != LSP) Utils::logMsg("Translating...");
-    graph.build(inPath, outPath);
-    graph.start();
+
+    try
+    {
+        graph.build(inPath, outPath);
+        graph.start();
+    }
+    catch (Error& e) // Catch known semantic/syntax errors (like NoReturn)
+    {
+        std::vector<Error*> errors = FileGraph::getAllErrors();
+        errors.push_back(&e); // Add the fatal error to the list
+
+        if (mode == LSP)
+        {
+            // Output JSON even if we crashed
+            std::cout << LSPPacker::pack(errors) << std::endl;
+        }
+        else
+        {
+            for (const auto& err : errors)
+            {
+                std::cerr << err->what() << std::endl;
+            }
+        }
+
+        graph.reset();
+        SymbolTable::clearClasses();
+        return -1;
+    }
+    catch (const std::exception& e) // Catch unexpected C++ errors
+    {
+        std::cerr << "Internal Transpiler Error: " << e.what() << std::endl;
+        graph.reset();
+        SymbolTable::clearClasses();
+        return -1;
+    }
     
     std::vector<Error*> errors = FileGraph::getAllErrors();
 

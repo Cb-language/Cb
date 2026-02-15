@@ -12,6 +12,10 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using composer.ANSIHelper;
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
+// ReSharper disable UnusedParameter.Local
+// ReSharper disable UnusedParameterInPartialMethod
+// ReSharper disable InconsistentNaming
 
 namespace composer.ViewModels;
 
@@ -27,7 +31,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly string _settingsFilePath = Path.Combine(AppContext.BaseDirectory, "composer.settings.json");
 
     private readonly Timer _debounceTimer;
-    private bool _isLspRunning = false;
+    private bool _isLspRunning;
 
     [ObservableProperty] private bool _expanded = true;
     [ObservableProperty] private double _borderWidth = 250;
@@ -65,28 +69,22 @@ public partial class MainViewModel : ViewModelBase
     {
         base.OnPropertyChanged(e);
 
-        if (e.PropertyName == nameof(SelectedTab))
-        {
-            if (SelectedTab != null)
-            {
-                SelectedTab.PropertyChanged -= OnTabPropertyChanged; 
-                SelectedTab.PropertyChanged += OnTabPropertyChanged;
+        if (e.PropertyName != nameof(SelectedTab)) return;
+        if (SelectedTab == null) return;
+        SelectedTab.PropertyChanged -= OnTabPropertyChanged; 
+        SelectedTab.PropertyChanged += OnTabPropertyChanged;
                 
-                // Trigger check immediately on tab switch
-                _debounceTimer.Stop();
-                _debounceTimer.Start();
-            }
-        }
+        // Trigger check immediately on tab switch
+        _debounceTimer.Stop();
+        _debounceTimer.Start();
     }
 
     private void OnTabPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         // Reset timer on typing
-        if (e.PropertyName == nameof(FileTabViewModel.Content))
-        {
-            _debounceTimer.Stop();
-            _debounceTimer.Start();
-        }
+        if (e.PropertyName != nameof(FileTabViewModel.Content)) return;
+        _debounceTimer.Stop();
+        _debounceTimer.Start();
     }
 
     partial void OnTranspilerExePathChanged(string value)
@@ -107,7 +105,10 @@ public partial class MainViewModel : ViewModelBase
                 TranspilerExePath = settings.TranspilerPath;
             }
         }
-        catch { }
+        catch
+        {
+            // ignored
+        }
     }
 
     private void SaveSettings()
@@ -118,7 +119,10 @@ public partial class MainViewModel : ViewModelBase
             var json = JsonSerializer.Serialize(settings);
             File.WriteAllText(_settingsFilePath, json);
         }
-        catch { }
+        catch
+        {
+            // ignored
+        }
     }
     partial void OnExpandedChanged(bool value) => BorderWidth = value ? 250 : 70;
     
@@ -189,7 +193,10 @@ public partial class MainViewModel : ViewModelBase
                 found++;
                 mainFile = file;
             }
-            catch { }
+            catch
+            {
+                // ignored
+            }
         }
 
         if (found == 1)
@@ -444,82 +451,97 @@ public partial class MainViewModel : ViewModelBase
     }
     
     private async Task RunLSP()
+{
+    if (_isLspRunning) return; 
+    if (SelectedTab == null) return;
+    if (!File.Exists(TranspilerExePath)) return;
+
+    _isLspRunning = true;
+    
+    var targetPath = Path.GetTempFileName();
+    var isTemp = true;
+
+    if (!string.IsNullOrEmpty(SelectedTab.FilePath))
     {
-        if (_isLspRunning) return; 
-        if (SelectedTab == null) return;
-        if (!File.Exists(TranspilerExePath)) return;
+        targetPath = SelectedTab.FilePath;
+        isTemp = false;
+    }
 
-        _isLspRunning = true;
-        string tempPath = "";
-        bool isTemp = false;
+    try
+    {
+        await File.WriteAllTextAsync(targetPath, SelectedTab.Content);
 
-        try
+        const string mode = "LSP";
+        var outFilePath = Path.ChangeExtension(targetPath, ".cpp");
+
+        var arguments = $"\"{targetPath}\" {mode} \"{outFilePath}\"";
+
+        var psi = new ProcessStartInfo
         {
-            tempPath = Path.GetTempFileName(); 
-            isTemp = true;
-            await File.WriteAllTextAsync(tempPath, SelectedTab.Content);
+            FileName = TranspilerExePath,
+            Arguments = arguments,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
 
-            const string mode = "LSP";
-            string outFilePath = Path.ChangeExtension(tempPath, ".cpp");
-
-            var arguments = $"\"{tempPath}\" {mode} \"{outFilePath}\"";
-
-            var psi = new ProcessStartInfo
-            {
-                FileName = TranspilerExePath,
-                Arguments = arguments,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            using var process = new Process();
-            process.StartInfo = psi;
-
-            var jsonOutput = new System.Text.StringBuilder();
-
-            process.OutputDataReceived += (_, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data))
-                {
-                    jsonOutput.Append(e.Data);
-                }
-            };
-            process.ErrorDataReceived += (_, e) => { };
-
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-
-            await process.WaitForExitAsync();
-
-            var resultJson = jsonOutput.ToString();
-            
-            // Validate: If output is valid JSON, update. Otherwise clear errors.
-            if (!string.IsNullOrWhiteSpace(resultJson) && resultJson.Trim().StartsWith("["))
-            {
-                SelectedTab.DiagnosticsJson = resultJson;
-            }
-            else
-            {
-                // Force clear errors by sending empty JSON
-                SelectedTab.DiagnosticsJson = "[]";
-            }
+        if (!isTemp)
+        {
+            psi.WorkingDirectory = Path.GetDirectoryName(targetPath);
         }
-        catch (Exception ex)
+
+        using var process = new Process();
+        process.StartInfo = psi;
+
+        var jsonOutput = new System.Text.StringBuilder();
+
+        process.OutputDataReceived += (_, e) =>
         {
-            Debug.WriteLine($"LSP Error: {ex.Message}");
-        }
-        finally
-        {
-            if (isTemp && File.Exists(tempPath))
+            if (!string.IsNullOrEmpty(e.Data))
             {
-                try { File.Delete(tempPath); } catch { }
+                jsonOutput.Append(e.Data);
             }
-            _isLspRunning = false;
+        };
+        process.ErrorDataReceived += (_, e) => { };
+
+        process.Start();
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+
+        await process.WaitForExitAsync();
+
+        var resultJson = jsonOutput.ToString();
+        
+        if (!string.IsNullOrWhiteSpace(resultJson) && resultJson.Trim().StartsWith($"["))
+        {
+            SelectedTab.DiagnosticsJson = resultJson;
+        }
+        else
+        {
+            SelectedTab.DiagnosticsJson = "[]";
         }
     }
+    catch (Exception ex)
+    {
+        Debug.WriteLine($"LSP Error: {ex.Message}");
+    }
+    finally
+    {
+        if (isTemp && File.Exists(targetPath))
+        {
+            try
+            {
+                File.Delete(targetPath);
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+        _isLspRunning = false;
+    }
+}
     
     private async Task RunExternalTool(string mode)
     {
