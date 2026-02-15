@@ -14,4 +14,5 @@ public:
     static std::string normalizePath(const std::filesystem::path& path);
 
     static bool startsWithNote(const std::wstring& wstr);
+    static std::string escapeJson(const std::string& str);
 };

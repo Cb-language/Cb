@@ -1,7 +1,7 @@
 #include "Utils.h"
-
-#include <codecvt>
 #include <iostream>
+#include <iomanip>
+#include <codecvt>
 #include <locale>
 
 std::string Utils::wstrToStr(const std::wstring& wstr)
@@ -50,4 +50,24 @@ bool Utils::startsWithNote(const std::wstring& wstr)
     return wstr.starts_with(L"do_") || wstr.starts_with(L"re_") || wstr.starts_with(L"mi_") ||
             wstr.starts_with(L"fa_") || wstr.starts_with(L"sol_") || wstr.starts_with(L"la_") ||
             wstr.starts_with(L"si_") || wstr.starts_with(L"ti_");
+}
+
+std::string Utils::escapeJson(const std::string& str)
+{
+    std::string res;
+    for (const char c : str)
+    {
+        switch (c)
+        {
+            case '"':
+                res += "\\\"";
+                break;
+            case '\\':
+                res += "\\\\";
+                break;
+            default:
+                res += c;
+        }
+    }
+    return res;
 }

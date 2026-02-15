@@ -1,12 +1,19 @@
 ﻿#include <iostream>
 #include <sstream>
 #include <filesystem>
+#include <vector>
+#include <map>
+#include <iomanip>
+
 #include "token/Tokenizer.h"
 #include "errorHandling/Error.h"
 #include "files/ArrayHelper.h"
 #include "files/FileGraph.h"
 #include "parser/Parser.h"
 #include "multyOSSupport/CMDFactory.h"
+#include "other/Utils.h"
+
+#include "LSPPacking/LSPPacker.h"
 
 enum Mode
 {
@@ -52,7 +59,7 @@ int main(int argc, char* argv[])
             break;
 
         case LSP:
-            Utils::logMsg("LSP Mode");
+            break;
 
         default:
             std::cout << "Invalid mode. Use T, C, or R." << std::endl;
@@ -67,7 +74,7 @@ int main(int argc, char* argv[])
 
     FileGraph& graph = FileGraph::Instance();
     graph.reset();
-    Utils::logMsg("Translating...");
+    if (mode != LSP) Utils::logMsg("Translating...");
     graph.build(inPath, outPath);
     graph.start();
     
@@ -75,9 +82,16 @@ int main(int argc, char* argv[])
 
     if (!errors.empty())
     {
-        for (const auto& err : errors)
+        if (mode == LSP)
         {
-            std::cerr << err->what() << std::endl;
+            std::cout << LSPPacker::pack(errors) << std::endl;
+        }
+        else
+        {
+            for (const auto& err : errors)
+            {
+                std::cerr << err->what() << std::endl;
+            }
         }
         graph.reset();
         SymbolTable::clearClasses();
