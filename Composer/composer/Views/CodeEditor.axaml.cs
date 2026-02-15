@@ -37,6 +37,17 @@ public partial class CodeEditor : UserControl
     private bool _isBinding;
     private readonly TextMarkerService _textMarkerService;
 
+    // Auto-Complete Pairs
+    private readonly Dictionary<string, string> _bracketPairs = new()
+    {
+        { "(", ")" },
+        { "[", "]" },
+        { "{", "}" },
+        { "\"", "\"" },
+        { "'", "'" },
+        { "∮", "☉" } // ∮ triggers ☉
+    };
+
     public CodeEditor()
     {
         InitializeComponent();
@@ -49,9 +60,13 @@ public partial class CodeEditor : UserControl
         Editor.TextArea.TextView.BackgroundRenderers.Add(_textMarkerService);
         Editor.TextArea.TextView.LineTransformers.Add(_textMarkerService);
 
-        // Shortcuts & Tooltips
+        // Events
         Editor.TextArea.KeyDown += OnEditorKeyDown;
         Editor.TextArea.PointerMoved += OnEditorPointerMoved;
+        Editor.TextArea.TextEntered += OnTextEntered;
+        
+        // NEW: Intercept text before it is written
+        Editor.TextArea.TextEntering += OnTextEntering;
 
         Editor.TextChanged += (sender, args) =>
         {
@@ -60,6 +75,58 @@ public partial class CodeEditor : UserControl
             CodeContent = Editor.Text;
             _isBinding = false;
         };
+    }
+
+    // --- 1. Intercept and Replace Symbols ---
+    private void OnTextEntering(object? sender, TextInputEventArgs e)
+    {
+        if (string.IsNullOrEmpty(e.Text)) return;
+
+        string? replacement = null;
+
+        switch (e.Text)
+        {
+            case "{":
+                replacement = "∮";
+                break;
+            case "}":
+                replacement = "☉";
+                break;
+            case ";":
+                replacement = "║";
+                break;
+        }
+
+        if (replacement != null)
+        {
+            // Stop the original character from appearing
+            e.Handled = true;
+            
+            // Insert our custom symbol
+            Editor.TextArea.Selection.ReplaceSelectionWithText(replacement);
+            
+            // Trigger auto-complete logic for the NEW symbol (e.g. ∮)
+            HandleAutoCompletion(replacement);
+        }
+    }
+
+    // --- 2. Handle Normal Auto-Complete ---
+    private void OnTextEntered(object? sender, TextInputEventArgs e)
+    {
+        HandleAutoCompletion(e.Text);
+    }
+
+    // --- 3. Shared Logic ---
+    private void HandleAutoCompletion(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return;
+
+        // Check if the character (typed or replaced) needs a closing partner
+        if (_bracketPairs.TryGetValue(text, out var closingChar))
+        {
+            Editor.Document.Insert(Editor.CaretOffset, closingChar);
+            Editor.CaretOffset--; // Move cursor inside
+        }
     }
 
     private void OnEditorPointerMoved(object? sender, PointerEventArgs e)
