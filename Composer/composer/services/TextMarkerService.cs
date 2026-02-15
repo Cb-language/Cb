@@ -23,6 +23,7 @@ namespace composer.services
 
         public KnownLayer Layer => KnownLayer.Selection;
 
+        // --- 1. Draw Red Squiggly Line (Under the whole line) ---
         public void Draw(TextView textView, DrawingContext drawingContext)
         {
             if (_markers == null || !_markers.Any() || textView.VisualLines.Count == 0) return;
@@ -64,6 +65,7 @@ namespace composer.services
             }
         }
 
+        // --- 2. Colorize Text Red (The whole line) ---
         protected override void ColorizeLine(DocumentLine line)
         {
             if (_markers == null || !_markers.Any()) return;
@@ -83,6 +85,7 @@ namespace composer.services
             }
         }
 
+        // --- 3. Update Logic (Selects WHOLE LINE now) ---
         public void UpdateMarkers(IEnumerable<Diagnostic> diagnostics)
         {
             if (_editor.Document == null) return;
@@ -90,33 +93,28 @@ namespace composer.services
             _markers.Clear();
             foreach (var diagnostic in diagnostics)
             {
-                // LSP lines are 0-based, Avalonia is 1-based. So Line + 1 is correct.
                 if (diagnostic.Range.Start.Line >= _editor.Document.LineCount) continue;
 
                 try 
                 {
-                    var lineObj = _editor.Document.GetLineByNumber(diagnostic.Range.Start.Line + 1);
+                    // 1-based indexing for AvaloniaEdit
+                    int lineNum = diagnostic.Range.Start.Line + 1;
                     
-                    // FIX: Treat Character as 1-based column (removing the previous +1).
-                    // Also clamp to line length to prevent crashes.
-                    int startCol = Math.Max(1, Math.Min(lineObj.Length + 1, diagnostic.Range.Start.Character));
-                    int endCol = Math.Max(1, Math.Min(lineObj.Length + 1, diagnostic.Range.End.Character));
-                    
-                    // If length is 0 (e.g. insert point), give it at least 1 char width so we can see it
-                    if (startCol == endCol && startCol <= lineObj.Length) 
-                        endCol++;
+                    if (lineNum < 1 || lineNum > _editor.Document.LineCount) continue;
 
-                    var startOffset = _editor.Document.GetOffset(diagnostic.Range.Start.Line + 1, startCol);
-                    var endOffset = _editor.Document.GetOffset(diagnostic.Range.End.Line + 1, endCol);
+                    // Get the line object
+                    var line = _editor.Document.GetLineByNumber(lineNum);
                     
-                    if (startOffset < endOffset)
+                    // Create a marker for the ENTIRE line content
+                    if (line.Length > 0)
                     {
-                         _markers.Add(new TextMarker(startOffset, endOffset - startOffset));
+                        _markers.Add(new TextMarker(line.Offset, line.Length));
                     }
                 }
-                catch (Exception) { /* Safely ignore invalid ranges */ }
+                catch (Exception) { /* Ignore */ }
             }
             
+            // Force Redraw
             _editor.TextArea.TextView.Redraw();
         }
     }
