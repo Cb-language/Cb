@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Xml;
 using Avalonia;
@@ -188,7 +189,8 @@ public partial class CodeEditor : UserControl
                         var diagnosticParams = JsonSerializer.Deserialize<DiagnosticParams>(paramsElement.GetRawText());
                         if (diagnosticParams?.Diagnostics != null)
                         {
-                            allDiagnostics.AddRange(diagnosticParams.Diagnostics);
+                            // Filter out "no prelude" errors as they are often irrelevant in multi-file contexts
+                            allDiagnostics.AddRange(diagnosticParams.Diagnostics.Where(d => d.Message != "no prelude"));
                         }
                     }
                 }
