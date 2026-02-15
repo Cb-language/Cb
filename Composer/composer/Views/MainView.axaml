@@ -124,7 +124,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <RowDefinition Height="*"/>    <RowDefinition Height="5"/>    <RowDefinition Height="150"/>  </Grid.RowDefinitions>
             
-            <TabControl Grid.Row="0" Grid.RowSpan="2" ItemsSource="{Binding Files}" SelectedItem="{Binding SelectedTab}">
+            <TabControl x:Name="TabControl" Grid.Row="0" Grid.RowSpan="2" ItemsSource="{Binding Files}" SelectedItem="{Binding SelectedTab}">
                 <TabControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:FileTabViewModel"> 
                         <StackPanel Orientation="Horizontal" Spacing="5">

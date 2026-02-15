@@ -14,6 +14,8 @@ public partial class FileTabViewModel : ViewModelBase
     
     // Ensure two-way binding works nicely with the editor
     [ObservableProperty] private string _content = "";
+    
+    [ObservableProperty] private string _diagnosticsJson = "";
 
     public IRelayCommand CloseTabCommand { get; }
 

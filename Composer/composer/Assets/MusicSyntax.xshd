@@ -20,7 +20,7 @@
         </Span>
 
         <Rule color="Method">
-            \b(song©|prelude)\b
+            \b(song|prelude)\b
         </Rule>
 
         <Rule color="MusicalSymbols">

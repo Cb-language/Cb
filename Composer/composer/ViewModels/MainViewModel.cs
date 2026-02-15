@@ -4,14 +4,17 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text.Json; // Added for JSON serialization
+using System.Text.Json;
 using System.Threading.Tasks;
+using System.Timers; // Added for Debounce Timer
 using Avalonia.Platform.Storage;
+using Avalonia.Threading; // Added for UI Thread updates
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using composer.ANSIHelper;
 
 namespace composer.ViewModels;
+
 public class AppSettings
 {
     public string? TranspilerPath { get; set; }
@@ -22,6 +25,10 @@ public partial class MainViewModel : ViewModelBase
     public IStorageProvider? StorageProvider { get; set; }
     
     private readonly string _settingsFilePath = Path.Combine(AppContext.BaseDirectory, "composer.settings.json");
+
+    // LSP Debounce Timer
+    private readonly Timer _debounceTimer;
+    private bool _isLspRunning = false;
 
     [ObservableProperty] private bool _expanded = true;
     [ObservableProperty] private double _borderWidth = 250;
@@ -44,7 +51,45 @@ public partial class MainViewModel : ViewModelBase
     {
         LoadSettings();
         
+        // Initialize Debounce Timer (500ms delay)
+        _debounceTimer = new Timer(500);
+        _debounceTimer.AutoReset = false; // Only fire once per trigger
+        _debounceTimer.Elapsed += async (s, e) => 
+        {
+            await Dispatcher.UIThread.InvokeAsync(async () => await RunLSP());
+        };
+
         AddNewTab();
+    }
+
+    // Hook into property changes to track the SelectedTab
+    protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+
+        if (e.PropertyName == nameof(SelectedTab))
+        {
+            if (SelectedTab != null)
+            {
+                // Subscribe to the new tab's changes
+                SelectedTab.PropertyChanged -= OnTabPropertyChanged; // Safety remove
+                SelectedTab.PropertyChanged += OnTabPropertyChanged;
+                
+                // Trigger an immediate check when switching tabs
+                _debounceTimer.Stop();
+                _debounceTimer.Start();
+            }
+        }
+    }
+
+    private void OnTabPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        // If the content of the file changes (typing), reset the timer
+        if (e.PropertyName == nameof(FileTabViewModel.Content))
+        {
+            _debounceTimer.Stop();
+            _debounceTimer.Start();
+        }
     }
 
     partial void OnTranspilerExePathChanged(string value)
@@ -167,7 +212,7 @@ public partial class MainViewModel : ViewModelBase
         {
             Debug.WriteLine($"Found prelude file: {mainFile}");
             MainFilePath = mainFile;
-            _ = RunLSP();
+            // Removed direct call to RunLSP here, let the timer handle it or user interaction
             return mainFile;
         }
         else if (found == 0)
@@ -428,89 +473,100 @@ public partial class MainViewModel : ViewModelBase
         await RunExternalTool("R");
     }
     
+    // --- NEW LSP IMPLEMENTATION ---
     private async Task RunLSP()
     {
-        const string mode = "LSP";
+        if (_isLspRunning) return; // Prevent overlapping runs
+        if (SelectedTab == null) return;
         
         if (!File.Exists(TranspilerExePath))
         {
-            Terminal.Append("> Error: Transpiler path not set.\n");
-            await SelectTranspiler();
-            if (!File.Exists(TranspilerExePath))
-            {
-                return;
-            }
-        }
-
-        string? sourceFile = null;
-        if (!string.IsNullOrEmpty(CurrentFolderPath))
-        {
-            sourceFile = FindPreludeFile(CurrentFolderPath);
-        }
-
-        if (string.IsNullOrEmpty(sourceFile))
-        {
-            sourceFile = SelectedTab?.FilePath;
-        }
-
-        if (string.IsNullOrEmpty(sourceFile))
-        {
+            // Do not spam terminal with errors if path isn't set yet during typing
             return;
         }
-        
-        string outFilePath;
-        if (!string.IsNullOrEmpty(CurrentFolderPath))
-        {
-            outFilePath = Path.ChangeExtension(sourceFile, ".cpp");
-        }
-        else if (SelectedTab != null && !string.IsNullOrEmpty(SelectedTab.OutFilePath))
-        {
-            outFilePath = SelectedTab.OutFilePath;
-        }
-        else
-        {
-            outFilePath = Path.ChangeExtension(sourceFile, ".cpp");
-        }
 
+        _isLspRunning = true;
 
-        var arguments =
-            $"\"{sourceFile}\" {mode} \"{outFilePath}\"";
+        string tempPath = "";
+        bool isTemp = false;
 
-        var psi = new ProcessStartInfo
+        try
         {
-            FileName = TranspilerExePath,
-            Arguments = arguments,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-
-        using var process = new Process();
-        process.StartInfo = psi;
-
-        process.OutputDataReceived += (_, e) =>
-        {
-            if (e.Data != null)
+            // Create a temp file with the current content to check live syntax
+            if (string.IsNullOrEmpty(SelectedTab.FilePath))
             {
-                //TODO add LSP support back of front
+                tempPath = Path.GetTempFileName();
+                isTemp = true;
+                await File.WriteAllTextAsync(tempPath, SelectedTab.Content);
             }
-        };
-
-        process.ErrorDataReceived += (_, e) =>
-        {
-            if (e.Data != null)
+            else
             {
-                //TODO same as above
+                // Even if we have a file path, we want to check the *unsaved* content in the editor
+                // So we write to a temp file, but maybe we can use the original path name for context?
+                // For safety, let's use a temp file to avoid overwriting the user's actual file on disk.
+                tempPath = Path.GetTempFileName(); 
+                isTemp = true;
+                await File.WriteAllTextAsync(tempPath, SelectedTab.Content);
             }
-        };
 
-        process.Start();
+            const string mode = "LSP";
+            // Dummy output path
+            string outFilePath = Path.ChangeExtension(tempPath, ".cpp");
 
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
+            var arguments = $"\"{tempPath}\" {mode} \"{outFilePath}\"";
 
-        await process.WaitForExitAsync();
+            var psi = new ProcessStartInfo
+            {
+                FileName = TranspilerExePath,
+                Arguments = arguments,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using var process = new Process();
+            process.StartInfo = psi;
+
+            var jsonOutput = new System.Text.StringBuilder();
+
+            process.OutputDataReceived += (_, e) =>
+            {
+                if (!string.IsNullOrEmpty(e.Data))
+                {
+                    jsonOutput.Append(e.Data);
+                }
+            };
+
+            // We discard stderr for LSP to avoid clutter, or log to debug
+            process.ErrorDataReceived += (_, e) => { };
+
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            await process.WaitForExitAsync();
+
+            var resultJson = jsonOutput.ToString();
+            
+            // Validate JSON roughly before updating
+            if (!string.IsNullOrWhiteSpace(resultJson) && resultJson.Trim().StartsWith("["))
+            {
+                SelectedTab.DiagnosticsJson = resultJson;
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"LSP Error: {ex.Message}");
+        }
+        finally
+        {
+            if (isTemp && File.Exists(tempPath))
+            {
+                try { File.Delete(tempPath); } catch { /* Ignore cleanup errors */ }
+            }
+            _isLspRunning = false;
+        }
     }
     
     private async Task RunExternalTool(string mode)
