@@ -47,6 +47,6 @@ song pascal(sharp degree size)
         ∮
             b += ", "║
         ☉
-        playBar(b)║
+        playBar(b)
     ☉
 ☉

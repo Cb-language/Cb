@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 using System.Xml;
 using Avalonia;
@@ -45,7 +44,7 @@ public partial class CodeEditor : UserControl
         { "{", "}" },
         { "\"", "\"" },
         { "'", "'" },
-        { "∮", "☉" } // ∮ triggers ☉
+        { "∮", "☉" }
     };
 
     public CodeEditor()
@@ -64,8 +63,6 @@ public partial class CodeEditor : UserControl
         Editor.TextArea.KeyDown += OnEditorKeyDown;
         Editor.TextArea.PointerMoved += OnEditorPointerMoved;
         Editor.TextArea.TextEntered += OnTextEntered;
-        
-        // NEW: Intercept text before it is written
         Editor.TextArea.TextEntering += OnTextEntering;
 
         Editor.TextChanged += (sender, args) =>
@@ -77,7 +74,6 @@ public partial class CodeEditor : UserControl
         };
     }
 
-    // --- 1. Intercept and Replace Symbols ---
     private void OnTextEntering(object? sender, TextInputEventArgs e)
     {
         if (string.IsNullOrEmpty(e.Text)) return;
@@ -86,46 +82,32 @@ public partial class CodeEditor : UserControl
 
         switch (e.Text)
         {
-            case "{":
-                replacement = "∮";
-                break;
-            case "}":
-                replacement = "☉";
-                break;
-            case ";":
-                replacement = "║";
-                break;
+            case "{": replacement = "∮"; break;
+            case "}": replacement = "☉"; break;
+            case ";": replacement = "║"; break;
         }
 
         if (replacement != null)
         {
-            // Stop the original character from appearing
             e.Handled = true;
-            
-            // Insert our custom symbol
             Editor.TextArea.Selection.ReplaceSelectionWithText(replacement);
-            
-            // Trigger auto-complete logic for the NEW symbol (e.g. ∮)
             HandleAutoCompletion(replacement);
         }
     }
 
-    // --- 2. Handle Normal Auto-Complete ---
     private void OnTextEntered(object? sender, TextInputEventArgs e)
     {
         HandleAutoCompletion(e.Text);
     }
 
-    // --- 3. Shared Logic ---
     private void HandleAutoCompletion(string text)
     {
         if (string.IsNullOrEmpty(text)) return;
 
-        // Check if the character (typed or replaced) needs a closing partner
         if (_bracketPairs.TryGetValue(text, out var closingChar))
         {
             Editor.Document.Insert(Editor.CaretOffset, closingChar);
-            Editor.CaretOffset--; // Move cursor inside
+            Editor.CaretOffset--; 
         }
     }
 
@@ -231,29 +213,92 @@ public partial class CodeEditor : UserControl
     private void ToggleComment()
     {
         var document = Editor.Document;
-        var offset = Editor.CaretOffset;
-        var line = document.GetLineByOffset(offset);
-        var lineText = document.GetText(line);
-        const string commentPrefix = "?"; 
+        const string commentPrefix = "?";
 
-        var trimmed = lineText.TrimStart();
-        var leadingSpaceCount = lineText.Length - trimmed.Length;
-
-        if (trimmed.StartsWith(commentPrefix))
+        // 1. Single Line Logic (No Selection)
+        if (Editor.SelectionLength == 0)
         {
-            var commentIndex = line.Offset + leadingSpaceCount;
-            document.Remove(commentIndex, commentPrefix.Length);
+            var offset = Editor.CaretOffset;
+            var line = document.GetLineByOffset(offset);
+            var lineText = document.GetText(line);
+            var trimmed = lineText.TrimStart();
+            var leadingSpaceCount = lineText.Length - trimmed.Length;
+
+            if (trimmed.StartsWith(commentPrefix))
+            {
+                var commentIndex = line.Offset + leadingSpaceCount;
+                document.Remove(commentIndex, commentPrefix.Length);
+            }
+            else
+            {
+                var insertOffset = line.Offset + leadingSpaceCount;
+                document.Insert(insertOffset, commentPrefix);
+            }
+            return;
         }
-        else
+
+        // 2. Multi-Line Logic
+        var selectionStart = Editor.SelectionStart;
+        var selectionEnd = Editor.SelectionStart + Editor.SelectionLength;
+
+        var startLine = document.GetLineByOffset(selectionStart);
+        var endLine = document.GetLineByOffset(selectionEnd);
+
+        // If selection ends at the very start of a line (e.g. user selected full lines), 
+        // exclude that last empty line from operation
+        if (endLine.Offset == selectionEnd && endLine.LineNumber > startLine.LineNumber)
         {
-            var insertOffset = line.Offset + leadingSpaceCount;
-            document.Insert(insertOffset, commentPrefix);
+            endLine = document.GetLineByNumber(endLine.LineNumber - 1);
+        }
+
+        // Check if ALL lines are already commented
+        bool allCommented = true;
+        for (int i = startLine.LineNumber; i <= endLine.LineNumber; i++)
+        {
+            var line = document.GetLineByNumber(i);
+            var text = document.GetText(line).TrimStart();
+            if (text.Length > 0 && !text.StartsWith(commentPrefix))
+            {
+                allCommented = false;
+                break;
+            }
+        }
+
+        document.BeginUpdate();
+        try
+        {
+            for (int i = startLine.LineNumber; i <= endLine.LineNumber; i++)
+            {
+                var line = document.GetLineByNumber(i);
+                var text = document.GetText(line);
+                var trimmed = text.TrimStart();
+                var leadingSpaces = text.Length - trimmed.Length;
+
+                if (allCommented)
+                {
+                    // Uncomment: Remove '?' if it exists
+                    if (trimmed.StartsWith(commentPrefix))
+                    {
+                        document.Remove(line.Offset + leadingSpaces, commentPrefix.Length);
+                    }
+                }
+                else
+                {
+                    // Comment: Add '?' (only if line is not empty, or forces it)
+                    // Usually we comment empty lines too for visual block consistency
+                    document.Insert(line.Offset + leadingSpaces, commentPrefix);
+                }
+            }
+        }
+        finally
+        {
+            document.EndUpdate();
         }
     }
 
     private void LoadSyntax()
     {
-        var resourceUri = "avares://composer/Assets/MusicSyntax.xshd";
+        const string resourceUri = "avares://composer/Assets/MusicSyntax.xshd";
         try 
         {
             var uri = new Uri(resourceUri);
@@ -262,6 +307,9 @@ public partial class CodeEditor : UserControl
             using var reader = new XmlTextReader(stream);
             Editor.SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
         }
-        catch { }
+        catch
+        {
+            // ignored
+        }
     }
 }
