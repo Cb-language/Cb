@@ -14,7 +14,7 @@ song pascal(sharp degree size)
 ∮
     riff riff sharp degree arr[size][size]║
 
-    arr[0][0] = 1║
+    arr[0][0] = 1
     Fmaj1#size\i
     ∮
         Fmaj0#size\j

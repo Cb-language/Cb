@@ -6,9 +6,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading.Tasks;
-using System.Timers; // Added for Debounce Timer
+using System.Timers; 
 using Avalonia.Platform.Storage;
-using Avalonia.Threading; // Added for UI Thread updates
+using Avalonia.Threading; 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using composer.ANSIHelper;
@@ -53,7 +53,7 @@ public partial class MainViewModel : ViewModelBase
         
         // Initialize Debounce Timer (500ms delay)
         _debounceTimer = new Timer(500);
-        _debounceTimer.AutoReset = false; // Only fire once per trigger
+        _debounceTimer.AutoReset = false; 
         _debounceTimer.Elapsed += async (s, e) => 
         {
             await Dispatcher.UIThread.InvokeAsync(async () => await RunLSP());
@@ -62,7 +62,6 @@ public partial class MainViewModel : ViewModelBase
         AddNewTab();
     }
 
-    // Hook into property changes to track the SelectedTab
     protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs e)
     {
         base.OnPropertyChanged(e);
@@ -71,11 +70,10 @@ public partial class MainViewModel : ViewModelBase
         {
             if (SelectedTab != null)
             {
-                // Subscribe to the new tab's changes
-                SelectedTab.PropertyChanged -= OnTabPropertyChanged; // Safety remove
+                SelectedTab.PropertyChanged -= OnTabPropertyChanged; 
                 SelectedTab.PropertyChanged += OnTabPropertyChanged;
                 
-                // Trigger an immediate check when switching tabs
+                // Check immediately on tab switch
                 _debounceTimer.Stop();
                 _debounceTimer.Start();
             }
@@ -84,7 +82,6 @@ public partial class MainViewModel : ViewModelBase
 
     private void OnTabPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        // If the content of the file changes (typing), reset the timer
         if (e.PropertyName == nameof(FileTabViewModel.Content))
         {
             _debounceTimer.Stop();
@@ -100,7 +97,6 @@ public partial class MainViewModel : ViewModelBase
     private void LoadSettings()
     {
         if (!File.Exists(_settingsFilePath)) return;
-
         try
         {
             var json = File.ReadAllText(_settingsFilePath);
@@ -154,7 +150,6 @@ public partial class MainViewModel : ViewModelBase
     private void NextTab()
     {
         if (Files.Count < 2 || SelectedTab == null) return;
-
         var index = Files.IndexOf(SelectedTab);
         var nextIndex = (index + 1) % Files.Count;
         SelectedTab = Files[nextIndex];
@@ -164,7 +159,6 @@ public partial class MainViewModel : ViewModelBase
     private async Task OpenFolder()
     {
         if (StorageProvider == null) return;
-
         var result = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
             Title = "Open Folder",
@@ -174,8 +168,6 @@ public partial class MainViewModel : ViewModelBase
         if (result.Count == 1)
         {
             CurrentFolderPath = result[0].Path.LocalPath;
-            Debug.WriteLine($"Folder opened: {CurrentFolderPath}");
-
             FolderFiles.Clear();
             var files = Directory.GetFiles(CurrentFolderPath, "*.cb", SearchOption.TopDirectoryOnly);
             foreach (var file in files)
@@ -183,7 +175,6 @@ public partial class MainViewModel : ViewModelBase
                 FolderFiles.Add(Path.GetFileName(file));
             }
         }
-
         if (CurrentFolderPath != null) FindPreludeFile(CurrentFolderPath);
     }
 
@@ -191,7 +182,6 @@ public partial class MainViewModel : ViewModelBase
     {
         var found = 0;
         string? mainFile = null;
-        
         var files = Directory.GetFiles(folderPath, "*.cb", SearchOption.TopDirectoryOnly);
         foreach (var file in files)
         {
@@ -202,31 +192,14 @@ public partial class MainViewModel : ViewModelBase
                 found++;
                 mainFile = file;
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error reading file {file}: {ex.Message}");
-            }
+            catch (Exception ex) { Debug.WriteLine($"Error reading file {file}: {ex.Message}"); }
         }
 
         if (found == 1)
         {
-            Debug.WriteLine($"Found prelude file: {mainFile}");
             MainFilePath = mainFile;
-            // Removed direct call to RunLSP here, let the timer handle it or user interaction
             return mainFile;
         }
-        else if (found == 0)
-        {
-            Debug.WriteLine("No prelude file found");
-            Terminal.Append("> No prelude file found\n");
-        }
-
-        else if (found > 1)
-        {
-            Debug.WriteLine("More than one prelude in folder");
-            Terminal.Append("> More than one prelude in folder\n");
-        }
-
         MainFilePath = null;
         return null;
     }
@@ -235,7 +208,6 @@ public partial class MainViewModel : ViewModelBase
     private async Task OpenSourceFile()
     {
         if (StorageProvider == null) return;
-        
         var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             Title = "Open Source File",
@@ -247,7 +219,6 @@ public partial class MainViewModel : ViewModelBase
         {
             var file = result[0];
             var path = file.Path.LocalPath;
-
             await using var stream = await file.OpenReadAsync();
             using var reader = new StreamReader(stream);
             var text = await reader.ReadToEndAsync();
@@ -286,19 +257,18 @@ public partial class MainViewModel : ViewModelBase
             });
 
             if (file != null)
-            {
                 SelectedTab.FilePath = file.Path.LocalPath;
-            }
             else
-            {
                 return;
-            }
         }
 
         try 
         {
             await File.WriteAllTextAsync(SelectedTab.FilePath!, SelectedTab.Content);
             SelectedTab.IsModified = false;
+            
+            // --- FIX: Run LSP Immediately on Save ---
+            await RunLSP();
         }
         catch (Exception ex)
         {
@@ -312,7 +282,6 @@ public partial class MainViewModel : ViewModelBase
     private async Task<bool> SaveTab(FileTabViewModel tab)
     {
         if (StorageProvider == null) return false;
-
         if (string.IsNullOrEmpty(tab.FilePath))
         {
             var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
@@ -327,10 +296,7 @@ public partial class MainViewModel : ViewModelBase
                 tab.FilePath = file.Path.LocalPath;
                 tab.Header = file.Name;
             }
-            else
-            {
-                return false;
-            }
+            else return false;
         }
 
         try
@@ -338,11 +304,7 @@ public partial class MainViewModel : ViewModelBase
             await File.WriteAllTextAsync(tab.FilePath!, tab.Content);
             tab.IsModified = false;
         }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Error saving file: {ex.Message}");
-            return false;
-        }
+        catch { return false; }
         return true;
     }
 
@@ -350,17 +312,9 @@ public partial class MainViewModel : ViewModelBase
     {
         foreach (var tab in Files.Where(t => t.IsModified).ToList())
         {
-            if (!await SaveTab(tab))
-            {
-                return false;
-            }
+            if (!await SaveTab(tab)) return false;
         }
-
-        if (CurrentFolderPath != null)
-        {
-            FindPreludeFile(CurrentFolderPath);
-        }
-
+        if (CurrentFolderPath != null) FindPreludeFile(CurrentFolderPath);
         return true;
     }
 
@@ -368,25 +322,19 @@ public partial class MainViewModel : ViewModelBase
     private async Task ChangeDestPath()
     {
         if (SelectedTab == null || StorageProvider == null) return;
-
         var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             Title = "Set Destination Output",
             DefaultExtension = "cpp",
             FileTypeChoices = [new FilePickerFileType("C++ Source") { Patterns = ["*.cpp"] }]
         });
-
-        if (file != null)
-        {
-            SelectedTab.OutFilePath = file.Path.LocalPath;
-        }
+        if (file != null) SelectedTab.OutFilePath = file.Path.LocalPath;
     }
 
     [RelayCommand]
     private async Task SelectTranspiler()
     {
         if (StorageProvider == null) return;
-
         var result = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             Title = "Select Transpiler Executable",
@@ -396,32 +344,16 @@ public partial class MainViewModel : ViewModelBase
                 Patterns = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ["*.exe"] : ["*"]
             }]
         });
-
-        if (result.Count >= 1)
-        {
-            TranspilerExePath = result[0].Path.LocalPath;
-        }
+        if (result.Count >= 1) TranspilerExePath = result[0].Path.LocalPath;
     }
 
     [RelayCommand]
     private async Task Translate()
     {
-        if (!string.IsNullOrEmpty(CurrentFolderPath))
-        {
-            if (!await SaveAllModifiedFiles()) return;
-        }
-        else if (SelectedTab != null)
-        {
-            if (SelectedTab.IsModified || string.IsNullOrEmpty(SelectedTab.FilePath))
-            {
-                await SaveSource();
-                if (SelectedTab.IsModified) return;
-            }
-        }
-        else
-        {
-            return;
-        }
+        if (!string.IsNullOrEmpty(CurrentFolderPath)) { if (!await SaveAllModifiedFiles()) return; }
+        else if (SelectedTab != null) {
+            if (SelectedTab.IsModified || string.IsNullOrEmpty(SelectedTab.FilePath)) { await SaveSource(); if (SelectedTab.IsModified) return; }
+        } else return;
 
         Debug.WriteLine($"Translating {SelectedTab?.FilePath}...");
         await RunExternalTool("T");
@@ -430,22 +362,10 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task Compile()
     {
-        if (!string.IsNullOrEmpty(CurrentFolderPath))
-        {
-            if (!await SaveAllModifiedFiles()) return;
-        }
-        else if (SelectedTab != null)
-        {
-            if (SelectedTab.IsModified || string.IsNullOrEmpty(SelectedTab.FilePath))
-            {
-                await SaveSource();
-                if (SelectedTab.IsModified) return;
-            }
-        }
-        else
-        {
-            return;
-        }
+        if (!string.IsNullOrEmpty(CurrentFolderPath)) { if (!await SaveAllModifiedFiles()) return; }
+        else if (SelectedTab != null) {
+            if (SelectedTab.IsModified || string.IsNullOrEmpty(SelectedTab.FilePath)) { await SaveSource(); if (SelectedTab.IsModified) return; }
+        } else return;
         Debug.WriteLine("Compiling...");
         await RunExternalTool("C");
     }
@@ -453,64 +373,32 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     private async Task Run()
     {
-        if (!string.IsNullOrEmpty(CurrentFolderPath))
-        {
-            if (!await SaveAllModifiedFiles()) return;
-        }
-        else if (SelectedTab != null)
-        {
-            if (SelectedTab.IsModified || string.IsNullOrEmpty(SelectedTab.FilePath))
-            {
-                await SaveSource();
-                if (SelectedTab.IsModified) return;
-            }
-        }
-        else
-        {
-            return;
-        }
+        if (!string.IsNullOrEmpty(CurrentFolderPath)) { if (!await SaveAllModifiedFiles()) return; }
+        else if (SelectedTab != null) {
+            if (SelectedTab.IsModified || string.IsNullOrEmpty(SelectedTab.FilePath)) { await SaveSource(); if (SelectedTab.IsModified) return; }
+        } else return;
         Debug.WriteLine("Running...");
         await RunExternalTool("R");
     }
     
-    // --- NEW LSP IMPLEMENTATION ---
     private async Task RunLSP()
     {
-        if (_isLspRunning) return; // Prevent overlapping runs
+        if (_isLspRunning) return; 
         if (SelectedTab == null) return;
-        
-        if (!File.Exists(TranspilerExePath))
-        {
-            // Do not spam terminal with errors if path isn't set yet during typing
-            return;
-        }
+        if (!File.Exists(TranspilerExePath)) return;
 
         _isLspRunning = true;
-
         string tempPath = "";
         bool isTemp = false;
 
         try
         {
-            // Create a temp file with the current content to check live syntax
-            if (string.IsNullOrEmpty(SelectedTab.FilePath))
-            {
-                tempPath = Path.GetTempFileName();
-                isTemp = true;
-                await File.WriteAllTextAsync(tempPath, SelectedTab.Content);
-            }
-            else
-            {
-                // Even if we have a file path, we want to check the *unsaved* content in the editor
-                // So we write to a temp file, but maybe we can use the original path name for context?
-                // For safety, let's use a temp file to avoid overwriting the user's actual file on disk.
-                tempPath = Path.GetTempFileName(); 
-                isTemp = true;
-                await File.WriteAllTextAsync(tempPath, SelectedTab.Content);
-            }
+            // Always write to temp file so we get realtime updates even if not saved
+            tempPath = Path.GetTempFileName(); 
+            isTemp = true;
+            await File.WriteAllTextAsync(tempPath, SelectedTab.Content);
 
             const string mode = "LSP";
-            // Dummy output path
             string outFilePath = Path.ChangeExtension(tempPath, ".cpp");
 
             var arguments = $"\"{tempPath}\" {mode} \"{outFilePath}\"";
@@ -532,13 +420,9 @@ public partial class MainViewModel : ViewModelBase
 
             process.OutputDataReceived += (_, e) =>
             {
-                if (!string.IsNullOrEmpty(e.Data))
-                {
-                    jsonOutput.Append(e.Data);
-                }
+                if (!string.IsNullOrEmpty(e.Data)) jsonOutput.Append(e.Data);
             };
 
-            // We discard stderr for LSP to avoid clutter, or log to debug
             process.ErrorDataReceived += (_, e) => { };
 
             process.Start();
@@ -549,7 +433,6 @@ public partial class MainViewModel : ViewModelBase
 
             var resultJson = jsonOutput.ToString();
             
-            // Validate JSON roughly before updating
             if (!string.IsNullOrWhiteSpace(resultJson) && resultJson.Trim().StartsWith("["))
             {
                 SelectedTab.DiagnosticsJson = resultJson;
@@ -563,7 +446,7 @@ public partial class MainViewModel : ViewModelBase
         {
             if (isTemp && File.Exists(tempPath))
             {
-                try { File.Delete(tempPath); } catch { /* Ignore cleanup errors */ }
+                try { File.Delete(tempPath); } catch { }
             }
             _isLspRunning = false;
         }
@@ -571,59 +454,21 @@ public partial class MainViewModel : ViewModelBase
     
     private async Task RunExternalTool(string mode)
     {
-        if (SelectedTab == null)
-        {
-            await OpenSourceFile();
-            if (SelectedTab == null) return;
-        }
-        
-        if (!File.Exists(TranspilerExePath))
-        {
-            Terminal.Append("> Error: Transpiler path not set.\n");
-            await SelectTranspiler();
-            if (!File.Exists(TranspilerExePath))
-            {
-                return;
-            }
-        }
+        if (SelectedTab == null) { await OpenSourceFile(); if (SelectedTab == null) return; }
+        if (!File.Exists(TranspilerExePath)) { await SelectTranspiler(); if (!File.Exists(TranspilerExePath)) return; }
 
         string? sourceFile = null;
-        if (!string.IsNullOrEmpty(CurrentFolderPath))
-        {
-            sourceFile = FindPreludeFile(CurrentFolderPath);
-        }
-
-        if (string.IsNullOrEmpty(sourceFile))
-        {
-            sourceFile = SelectedTab?.FilePath;
-        }
-
-        if (string.IsNullOrEmpty(sourceFile))
-        {
-            Terminal.Append("> Error: No file to process. Save the current tab or open a file.\n");
-            return;
-        }
+        if (!string.IsNullOrEmpty(CurrentFolderPath)) sourceFile = FindPreludeFile(CurrentFolderPath);
+        if (string.IsNullOrEmpty(sourceFile)) sourceFile = SelectedTab?.FilePath;
+        if (string.IsNullOrEmpty(sourceFile)) { Terminal.Append("> Error: No file to process.\n"); return; }
         
         string outFilePath;
-        if (!string.IsNullOrEmpty(CurrentFolderPath))
-        {
-            outFilePath = Path.ChangeExtension(sourceFile, ".cpp");
-        }
-        else if (SelectedTab != null && !string.IsNullOrEmpty(SelectedTab.OutFilePath))
-        {
-            outFilePath = SelectedTab.OutFilePath;
-        }
-        else
-        {
-            outFilePath = Path.ChangeExtension(sourceFile, ".cpp");
-        }
+        if (!string.IsNullOrEmpty(CurrentFolderPath)) outFilePath = Path.ChangeExtension(sourceFile, ".cpp");
+        else if (SelectedTab != null && !string.IsNullOrEmpty(SelectedTab.OutFilePath)) outFilePath = SelectedTab.OutFilePath;
+        else outFilePath = Path.ChangeExtension(sourceFile, ".cpp");
 
-
-        var arguments =
-            $"\"{sourceFile}\" {mode} \"{outFilePath}\"";
-
-        Terminal.Append(
-            $"\n> {Path.GetFileName(TranspilerExePath)} {arguments}\n");
+        var arguments = $"\"{sourceFile}\" {mode} \"{outFilePath}\"";
+        Terminal.Append($"\n> {Path.GetFileName(TranspilerExePath)} {arguments}\n");
 
         var psi = new ProcessStartInfo
         {
@@ -637,42 +482,16 @@ public partial class MainViewModel : ViewModelBase
 
         using var process = new Process();
         process.StartInfo = psi;
-
-        process.OutputDataReceived += (_, e) =>
-        {
-            if (e.Data != null)
-            {
-                Terminal.Append(e.Data + "\n");
-            }
-        };
-
-        process.ErrorDataReceived += (_, e) =>
-        {
-            if (e.Data != null)
-            {
-                Terminal.Append("\x1b[31m" + e.Data + "\x1b[0m\n");
-            }
-        };
-
+        process.OutputDataReceived += (_, e) => { if (e.Data != null) Terminal.Append(e.Data + "\n"); };
+        process.ErrorDataReceived += (_, e) => { if (e.Data != null) Terminal.Append("\x1b[31m" + e.Data + "\x1b[0m\n"); };
         process.Start();
-
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
-
         await process.WaitForExitAsync();
-
-        Terminal.Append(
-            $"> Process exited with code {process.ExitCode}\n");
+        Terminal.Append($"> Process exited with code {process.ExitCode}\n");
     }
     
-
-    [RelayCommand]
-    private void ClearTerminalOutput()
-    {
-        Terminal.Clear();
-        Terminal.Append("Composer Terminal Ready...\n");
-    }
-
+    [RelayCommand] private void ClearTerminalOutput() => Terminal.Clear();
     [ObservableProperty] private double _editorFontSize = 14;
     [RelayCommand] private void ZoomIn() { if (EditorFontSize < 100) EditorFontSize += 2; }
     [RelayCommand] private void ZoomOut() { if (EditorFontSize > 2) EditorFontSize -= 2; }
@@ -681,33 +500,14 @@ public partial class MainViewModel : ViewModelBase
     private async Task OpenFileFromList(string fileName)
     {
         if (string.IsNullOrEmpty(CurrentFolderPath)) return;
-
-        // this is a hack to get the full path, since the file list only has the file name
         var fullPath = Directory.GetFiles(CurrentFolderPath, fileName, SearchOption.TopDirectoryOnly).FirstOrDefault();
-
-        if (string.IsNullOrEmpty(fullPath)) return;
+        if (string.IsNullOrEmpty(fullPath) || !File.Exists(fullPath)) return;
         
-        var filePath = fullPath;
+        var existingTab = Files.FirstOrDefault(f => f.FilePath == fullPath);
+        if (existingTab != null) { SelectedTab = existingTab; return; }
 
-        if (!File.Exists(filePath)) return;
-        
-        // Check if the file is already open
-        var existingTab = Files.FirstOrDefault(f => f.FilePath == filePath);
-        if (existingTab != null)
-        {
-            SelectedTab = existingTab;
-            return;
-        }
-
-        try
-        {
-            var content = await File.ReadAllTextAsync(filePath);
-            AddTab(fileName, content, filePath);
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Error opening file: {ex.Message}");
-        }
+        try { var content = await File.ReadAllTextAsync(fullPath); AddTab(fileName, content, fullPath); }
+        catch (Exception ex) { Debug.WriteLine($"Error opening file: {ex.Message}"); }
     }
 
     private void AddTab(string header, string content)
@@ -719,11 +519,7 @@ public partial class MainViewModel : ViewModelBase
 
     private void AddTab(string header, string content, string filePath)
     {
-        var newTab = new FileTabViewModel(header, content, CloseTab)
-        {
-            FilePath = filePath,
-            IsModified = false
-        };
+        var newTab = new FileTabViewModel(header, content, CloseTab) { FilePath = filePath, IsModified = false };
         Files.Add(newTab);
         SelectedTab = newTab;
     }
@@ -732,10 +528,6 @@ public partial class MainViewModel : ViewModelBase
     {
         if (!Files.Contains(tab)) return;
         Files.Remove(tab);
-            
-        if (SelectedTab == tab || SelectedTab == null)
-        {
-            SelectedTab = Files.LastOrDefault();
-        }
+        if (SelectedTab == tab || SelectedTab == null) SelectedTab = Files.LastOrDefault();
     }
 }

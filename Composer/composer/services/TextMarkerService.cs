@@ -10,8 +10,7 @@ using composer.LSP;
 
 namespace composer.services
 {
-    // Removed ITextViewConnect to prevent StackOverflow
-    public class TextMarkerService : IBackgroundRenderer
+    public class TextMarkerService : DocumentColorizingTransformer, IBackgroundRenderer
     {
         private readonly TextEditor _editor;
         private readonly TextSegmentCollection<TextMarker> _markers;
@@ -32,8 +31,6 @@ namespace composer.services
             if (visualLines.Count == 0) return;
 
             var viewStart = visualLines.First().StartOffset;
-            
-            // Safe way to get the end offset
             var lastLine = visualLines.Last();
             var viewEnd = lastLine.LastDocumentLine.EndOffset;
 
@@ -67,6 +64,25 @@ namespace composer.services
             }
         }
 
+        protected override void ColorizeLine(DocumentLine line)
+        {
+            if (_markers == null || !_markers.Any()) return;
+
+            var markers = _markers.FindOverlappingSegments(line.Offset, line.Length);
+            
+            foreach (var marker in markers)
+            {
+                ChangeLinePart(
+                    Math.Max(marker.StartOffset, line.Offset),
+                    Math.Min(marker.EndOffset, line.EndOffset),
+                    element => 
+                    {
+                        element.TextRunProperties.SetForegroundBrush(Brushes.Red);
+                    }
+                );
+            }
+        }
+
         public void UpdateMarkers(IEnumerable<Diagnostic> diagnostics)
         {
             if (_editor.Document == null) return;
@@ -74,28 +90,34 @@ namespace composer.services
             _markers.Clear();
             foreach (var diagnostic in diagnostics)
             {
+                // LSP lines are 0-based, Avalonia is 1-based. So Line + 1 is correct.
                 if (diagnostic.Range.Start.Line >= _editor.Document.LineCount) continue;
 
                 try 
                 {
-                    var startOffset = _editor.Document.GetOffset(
-                        diagnostic.Range.Start.Line + 1, 
-                        diagnostic.Range.Start.Character + 1
-                    );
+                    var lineObj = _editor.Document.GetLineByNumber(diagnostic.Range.Start.Line + 1);
+                    
+                    // FIX: Treat Character as 1-based column (removing the previous +1).
+                    // Also clamp to line length to prevent crashes.
+                    int startCol = Math.Max(1, Math.Min(lineObj.Length + 1, diagnostic.Range.Start.Character));
+                    int endCol = Math.Max(1, Math.Min(lineObj.Length + 1, diagnostic.Range.End.Character));
+                    
+                    // If length is 0 (e.g. insert point), give it at least 1 char width so we can see it
+                    if (startCol == endCol && startCol <= lineObj.Length) 
+                        endCol++;
 
-                    var endOffset = _editor.Document.GetOffset(
-                        diagnostic.Range.End.Line + 1, 
-                        diagnostic.Range.End.Character + 1
-                    );
+                    var startOffset = _editor.Document.GetOffset(diagnostic.Range.Start.Line + 1, startCol);
+                    var endOffset = _editor.Document.GetOffset(diagnostic.Range.End.Line + 1, endCol);
                     
                     if (startOffset < endOffset)
                     {
                          _markers.Add(new TextMarker(startOffset, endOffset - startOffset));
                     }
                 }
-                catch (ArgumentOutOfRangeException) { /* Ignore out of bounds */ }
+                catch (Exception) { /* Safely ignore invalid ranges */ }
             }
-            _editor.TextArea.TextView.InvalidateLayer(KnownLayer.Selection);
+            
+            _editor.TextArea.TextView.Redraw();
         }
     }
 

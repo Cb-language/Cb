@@ -136,7 +136,8 @@
                 </TabControl.ItemTemplate>
                 <TabControl.ContentTemplate>
                     <DataTemplate x:DataType="vm:FileTabViewModel">
-                        <views:CodeEditor CodeContent="{Binding Content, Mode=TwoWay}" />
+                        <views:CodeEditor CodeContent="{Binding Content, Mode=TwoWay}" 
+                                          DiagnosticsJson="{Binding DiagnosticsJson}" />
                     </DataTemplate>
                 </TabControl.ContentTemplate>
             </TabControl>

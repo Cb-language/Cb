@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Xml;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input; // [Added] Needed for KeyEventArgs and Key modifiers
+using Avalonia.Input;
 using Avalonia.Platform;
 using AvaloniaEdit.Highlighting;
 using AvaloniaEdit.Highlighting.Xshd;
@@ -24,6 +25,15 @@ public partial class CodeEditor : UserControl
         set => SetValue(CodeContentProperty, value);
     }
 
+    public static readonly StyledProperty<string> DiagnosticsJsonProperty =
+        AvaloniaProperty.Register<CodeEditor, string>(nameof(DiagnosticsJson));
+
+    public string DiagnosticsJson
+    {
+        get => GetValue(DiagnosticsJsonProperty);
+        set => SetValue(DiagnosticsJsonProperty, value);
+    }
+
     private bool _isBinding;
     private readonly TextMarkerService _textMarkerService;
 
@@ -37,8 +47,8 @@ public partial class CodeEditor : UserControl
 
         _textMarkerService = new TextMarkerService(Editor);
         Editor.TextArea.TextView.BackgroundRenderers.Add(_textMarkerService);
+        Editor.TextArea.TextView.LineTransformers.Add(_textMarkerService);
 
-        // [Added] Hook up the KeyDown event to handle shortcuts
         Editor.TextArea.KeyDown += OnEditorKeyDown;
 
         Editor.TextChanged += (sender, args) =>
@@ -50,58 +60,45 @@ public partial class CodeEditor : UserControl
         };
     }
 
-    // [Added] Key Handler
-    private void OnEditorKeyDown(object? sender, KeyEventArgs e)
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        // Check for Ctrl + / (OemQuestion is usually the / key)
-        if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.OemQuestion)
+        base.OnPropertyChanged(change);
+
+        if (change.Property == CodeContentProperty)
         {
-            ToggleComment();
-            e.Handled = true; // Mark as handled so it doesn't type '/'
+            if (_isBinding) return;
+            var newVal = change.GetNewValue<string>();
+            if (Editor.Text == newVal) return;
+            _isBinding = true;
+            Editor.Text = newVal;
+            _isBinding = false;
         }
-    }
-
-    // [Added] Toggle Comment Logic
-    private void ToggleComment()
-    {
-        var document = Editor.Document;
-        var offset = Editor.CaretOffset;
-        // Get the line where the cursor currently is
-        var line = document.GetLineByOffset(offset);
-        var lineText = document.GetText(line);
-        
-        // Based on your MusicSyntax.xshd, '?' is the single-line comment
-        const string commentPrefix = "?"; 
-
-        // Find where the code actually starts (skip indentation)
-        var trimmed = lineText.TrimStart();
-        var leadingSpaceCount = lineText.Length - trimmed.Length;
-
-        if (trimmed.StartsWith(commentPrefix))
+        else if (change.Property == DiagnosticsJsonProperty)
         {
-            // UNCOMMENT: Remove the '?'
-            // We calculate the exact position of the '?'
-            var commentIndex = line.Offset + leadingSpaceCount;
-            document.Remove(commentIndex, commentPrefix.Length);
-        }
-        else
-        {
-            // COMMENT: Insert '?' at the indentation level
-            var insertOffset = line.Offset + leadingSpaceCount;
-            document.Insert(insertOffset, commentPrefix);
+            var json = change.GetNewValue<string>();
+            HighlightErrors(json);
         }
     }
 
     public void HighlightErrors(string json)
     {
-        if (string.IsNullOrEmpty(json)) return;
+        // Even if empty, we MUST call UpdateMarkers to clear old red lines
+        if (string.IsNullOrEmpty(json) || json == "[]") 
+        {
+            _textMarkerService.UpdateMarkers(new List<Diagnostic>());
+            return;
+        }
 
         try 
         {
             var root = JsonSerializer.Deserialize<JsonElement>(json);
-            if (root.ValueKind != JsonValueKind.Array) return;
+            if (root.ValueKind != JsonValueKind.Array) 
+            {
+                 _textMarkerService.UpdateMarkers(new List<Diagnostic>());
+                 return;
+            }
 
-            var allDiagnostics = new System.Collections.Generic.List<Diagnostic>();
+            var allDiagnostics = new List<Diagnostic>();
 
             foreach (var message in root.EnumerateArray())
             {
@@ -121,25 +118,43 @@ public partial class CodeEditor : UserControl
         
             _textMarkerService.UpdateMarkers(allDiagnostics);
         }
-        catch (Exception ex) 
+        catch 
         { 
-            System.Diagnostics.Debug.WriteLine($"LSP Parse Error: {ex.Message}"); 
+            // On error, clear markers to avoid stuck graphics
+            _textMarkerService.UpdateMarkers(new List<Diagnostic>());
         }
     }
 
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    private void OnEditorKeyDown(object? sender, KeyEventArgs e)
     {
-        base.OnPropertyChanged(change);
+        if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.OemQuestion)
+        {
+            ToggleComment();
+            e.Handled = true;
+        }
+    }
 
-        if (change.Property != CodeContentProperty) return;
-        if (_isBinding) return;
-            
-        var newVal = change.GetNewValue<string>();
+    private void ToggleComment()
+    {
+        var document = Editor.Document;
+        var offset = Editor.CaretOffset;
+        var line = document.GetLineByOffset(offset);
+        var lineText = document.GetText(line);
+        const string commentPrefix = "?"; 
 
-        if (Editor.Text == newVal) return;
-        _isBinding = true;
-        Editor.Text = newVal;
-        _isBinding = false;
+        var trimmed = lineText.TrimStart();
+        var leadingSpaceCount = lineText.Length - trimmed.Length;
+
+        if (trimmed.StartsWith(commentPrefix))
+        {
+            var commentIndex = line.Offset + leadingSpaceCount;
+            document.Remove(commentIndex, commentPrefix.Length);
+        }
+        else
+        {
+            var insertOffset = line.Offset + leadingSpaceCount;
+            document.Insert(insertOffset, commentPrefix);
+        }
     }
 
     private void LoadSyntax()
@@ -153,6 +168,6 @@ public partial class CodeEditor : UserControl
             using var reader = new XmlTextReader(stream);
             Editor.SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
         }
-        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"Syntax Load Error: {ex.Message}"); }
+        catch { }
     }
 }
