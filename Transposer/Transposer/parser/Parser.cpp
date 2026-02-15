@@ -214,6 +214,10 @@ void Parser::synchronize()
 {
     advance();
 
+    // Clear callsQ and creditsQ to prevent dangling pointers from incomplete statements/expressions
+    while (!callsQ.empty()) callsQ.pop();
+    while (!creditsQ.empty()) creditsQ.pop();
+
     while (!isAtEnd())
     {
         if (prev().type == Token::PUNCTUATION && prev().value == L"║") return;
