@@ -167,6 +167,7 @@ public partial class MainViewModel : ViewModelBase
         {
             Debug.WriteLine($"Found prelude file: {mainFile}");
             MainFilePath = mainFile;
+            _ = RunLSP();
             return mainFile;
         }
         else if (found == 0)
@@ -427,6 +428,91 @@ public partial class MainViewModel : ViewModelBase
         await RunExternalTool("R");
     }
     
+    private async Task RunLSP()
+    {
+        const string mode = "LSP";
+        
+        if (!File.Exists(TranspilerExePath))
+        {
+            Terminal.Append("> Error: Transpiler path not set.\n");
+            await SelectTranspiler();
+            if (!File.Exists(TranspilerExePath))
+            {
+                return;
+            }
+        }
+
+        string? sourceFile = null;
+        if (!string.IsNullOrEmpty(CurrentFolderPath))
+        {
+            sourceFile = FindPreludeFile(CurrentFolderPath);
+        }
+
+        if (string.IsNullOrEmpty(sourceFile))
+        {
+            sourceFile = SelectedTab?.FilePath;
+        }
+
+        if (string.IsNullOrEmpty(sourceFile))
+        {
+            return;
+        }
+        
+        string outFilePath;
+        if (!string.IsNullOrEmpty(CurrentFolderPath))
+        {
+            outFilePath = Path.ChangeExtension(sourceFile, ".cpp");
+        }
+        else if (SelectedTab != null && !string.IsNullOrEmpty(SelectedTab.OutFilePath))
+        {
+            outFilePath = SelectedTab.OutFilePath;
+        }
+        else
+        {
+            outFilePath = Path.ChangeExtension(sourceFile, ".cpp");
+        }
+
+
+        var arguments =
+            $"\"{sourceFile}\" {mode} \"{outFilePath}\"";
+
+        var psi = new ProcessStartInfo
+        {
+            FileName = TranspilerExePath,
+            Arguments = arguments,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        using var process = new Process();
+        process.StartInfo = psi;
+
+        process.OutputDataReceived += (_, e) =>
+        {
+            if (e.Data != null)
+            {
+                //TODO add LSP support back of front
+            }
+        };
+
+        process.ErrorDataReceived += (_, e) =>
+        {
+            if (e.Data != null)
+            {
+                //TODO same as above
+            }
+        };
+
+        process.Start();
+
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+
+        await process.WaitForExitAsync();
+    }
+    
     private async Task RunExternalTool(string mode)
     {
         if (SelectedTab == null)
@@ -522,7 +608,7 @@ public partial class MainViewModel : ViewModelBase
         Terminal.Append(
             $"> Process exited with code {process.ExitCode}\n");
     }
-
+    
 
     [RelayCommand]
     private void ClearTerminalOutput()
