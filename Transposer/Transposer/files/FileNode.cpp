@@ -200,3 +200,21 @@ std::vector<std::filesystem::path> FileNode::getAllCppPath()
 
     return v;
 }
+
+const std::vector<std::unique_ptr<Error>>& FileNode::getErrors() const
+{
+    return file.getErrors();
+}
+
+std::vector<Error*> FileNode::getAllErrors()
+{
+    std::vector<Error*> errors;
+    for (const auto& node : nodes | std::views::values)
+    {
+        for (const auto& err : node->getErrors())
+        {
+            errors.push_back(err.get());
+        }
+    }
+    return errors;
+}

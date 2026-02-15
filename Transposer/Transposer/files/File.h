@@ -35,6 +35,7 @@ private:
     void parse();
     void analyze();
     void write(const bool isMain = false);
+    const std::vector<std::unique_ptr<Error>>& getErrors() const;
 
 public:
     static void setMainPath(const std::filesystem::path& mainPath);

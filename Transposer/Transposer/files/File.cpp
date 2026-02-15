@@ -94,6 +94,11 @@ void File::write(const bool isMain)
     fileCpp.close();
 }
 
+const std::vector<std::unique_ptr<Error>>& File::getErrors() const
+{
+    return parser.getErrors();
+}
+
 std::vector<Token> File::tokenize() const
 {
     std::wifstream file(inPath, std::ios::binary);
