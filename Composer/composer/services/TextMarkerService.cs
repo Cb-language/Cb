@@ -10,7 +10,8 @@ using composer.LSP;
 
 namespace composer.services
 {
-    public class TextMarkerService : IBackgroundRenderer, ITextViewConnect
+    // Removed ITextViewConnect to prevent StackOverflow
+    public class TextMarkerService : IBackgroundRenderer
     {
         private readonly TextEditor _editor;
         private readonly TextSegmentCollection<TextMarker> _markers;
@@ -19,17 +20,6 @@ namespace composer.services
         {
             _editor = editor;
             _markers = new TextSegmentCollection<TextMarker>(_editor.Document);
-        }
-
-        public void AddToTextView(TextView textView)
-        {
-            if (!textView.BackgroundRenderers.Contains(this))
-                textView.BackgroundRenderers.Add(this);
-        }
-
-        public void RemoveFromTextView(TextView textView)
-        {
-            textView.BackgroundRenderers.Remove(this);
         }
 
         public KnownLayer Layer => KnownLayer.Selection;
@@ -42,7 +32,10 @@ namespace composer.services
             if (visualLines.Count == 0) return;
 
             var viewStart = visualLines.First().StartOffset;
-            var viewEnd = visualLines.Last().StartOffset + visualLines.Last().TextLength;
+            
+            // Safe way to get the end offset
+            var lastLine = visualLines.Last();
+            var viewEnd = lastLine.LastDocumentLine.EndOffset;
 
             foreach (var marker in _markers.FindOverlappingSegments(viewStart, viewEnd))
             {
@@ -51,15 +44,14 @@ namespace composer.services
                     var startPoint = r.BottomLeft;
                     var endPoint = r.BottomRight;
 
-                    // Draw Squiggly Line
                     var pen = new Pen(Brushes.Red, 1);
                     var geometry = new StreamGeometry();
                     
                     using (var ctx = geometry.Open())
                     {
-                        var x = startPoint.X;
-                        var y = startPoint.Y - 2; // Lift slightly
-                        const double waveSize = 3.0; 
+                        double x = startPoint.X;
+                        double y = startPoint.Y - 2; 
+                        double waveSize = 3.0; 
                         
                         ctx.BeginFigure(new Point(x, y), false);
                         
@@ -86,8 +78,6 @@ namespace composer.services
 
                 try 
                 {
-                    // LSP uses 0-based indexing. AvaloniaEdit uses 1-based indexing for GetOffset(line, col).
-                    // We add 1 to line and character to match AvaloniaEdit's expectation.
                     var startOffset = _editor.Document.GetOffset(
                         diagnostic.Range.Start.Line + 1, 
                         diagnostic.Range.Start.Character + 1
