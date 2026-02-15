@@ -10,7 +10,7 @@
 
 enum Mode
 {
-    TRANSLATE, COMPILE, RUN
+    TRANSLATE, COMPILE, RUN, LSP
 };
 
 int main(int argc, char* argv[])
@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 
     Tokenizer::init();
 
-    if (argc < 3 || argc > 4)
+    if (argc != 4)
     {
         std::cout << "Usage: <main_path> <mode> [save_path]" << std::endl;
         return 1;
@@ -34,7 +34,8 @@ int main(int argc, char* argv[])
     std::string arg = argv[2];
     int mode = arg == "T" ? TRANSLATE :
                arg == "R" ? RUN :
-               arg == "C" ? COMPILE : -1;
+               arg == "C" ? COMPILE :
+               arg == "LSP" ? LSP : -1;
 
     switch (mode)
     {
@@ -50,6 +51,9 @@ int main(int argc, char* argv[])
             Utils::logMsg("Compiling Mode");
             break;
 
+        case LSP:
+            Utils::logMsg("LSP Mode");
+
         default:
             std::cout << "Invalid mode. Use T, C, or R." << std::endl;
             return 1;
@@ -63,21 +67,25 @@ int main(int argc, char* argv[])
 
     FileGraph& graph = FileGraph::Instance();
     graph.reset();
-    try
+    Utils::logMsg("Translating...");
+    graph.build(inPath, outPath);
+    graph.start();
+    
+    std::vector<Error*> errors = FileGraph::getAllErrors();
+
+    if (!errors.empty())
     {
-        Utils::logMsg("Translating...");
-        graph.build(inPath, outPath);
-        graph.start();
-        graph.write();
-        ArrayHelper::write(File::getOutDir());
-    }
-    catch (const Error& err)
-    {
-        std::cerr << err.what() << std::endl;
+        for (const auto& err : errors)
+        {
+            std::cerr << err->what() << std::endl;
+        }
         graph.reset();
         SymbolTable::clearClasses();
         return -1;
     }
+
+    if (mode != LSP) graph.write();
+    ArrayHelper::write(File::getOutDir());
 
     std::filesystem::path exePath = outPath;
     std::string ext = cmd->getExeExtension();
