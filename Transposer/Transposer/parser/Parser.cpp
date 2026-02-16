@@ -1396,7 +1396,7 @@ bool Parser::parseCtorCall(const ClassNode* c)
 
 bool Parser::parseFields(std::vector<Field>& fields)
 {
-    while (!match(Token::PUNCTUATION, L"☉"))
+    while (!isAtEnd() && !match(Token::PUNCTUATION, L"☉"))
     {
         if (match(Token::KEYWORD, L"playerScore"))
         {
@@ -1488,12 +1488,18 @@ bool Parser::parseFields(std::vector<Field>& fields)
             synchronize();
         }
     }
+
+    if (isAtEnd())
+    {
+        addError(new UnexpectedEOF(tokens[len-1]));
+        return false;
+    }
     return true;
 }
 
 bool Parser::parseMethods(std::vector<Method>& methods)
 {
-    while (!match(Token::PUNCTUATION, L"☉"))
+    while (!isAtEnd() && !match(Token::PUNCTUATION, L"☉"))
     {
         if (match(Token::KEYWORD, L"playerScore"))
         {
@@ -1581,12 +1587,18 @@ bool Parser::parseMethods(std::vector<Method>& methods)
             synchronize();
         }
     }
+
+    if (isAtEnd())
+    {
+        addError(new UnexpectedEOF(tokens[len-1]));
+        return false;
+    }
     return true;
 }
 
 bool Parser::parseCtors(std::vector<Ctor>& ctors)
 {
-    while (!match(Token::PUNCTUATION, L"☉"))
+    while (!isAtEnd() && !match(Token::PUNCTUATION, L"☉"))
     {
         if (match(Token::KEYWORD, L"playerScore"))
         {
@@ -1673,6 +1685,12 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
             addError(new UnrecognizedIdentifier(current()));
             synchronize();
         }
+    }
+
+    if (isAtEnd())
+    {
+        addError(new UnexpectedEOF(tokens[len-1]));
+        return false;
     }
     return true;
 }
