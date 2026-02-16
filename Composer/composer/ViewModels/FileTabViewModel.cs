@@ -14,6 +14,8 @@ public partial class FileTabViewModel : ViewModelBase
     
     // Ensure two-way binding works nicely with the editor
     [ObservableProperty] private string _content = "";
+    
+    [ObservableProperty] private string _diagnosticsJson = "";
 
     public IRelayCommand CloseTabCommand { get; }
 
@@ -30,6 +32,7 @@ public partial class FileTabViewModel : ViewModelBase
         if (!string.IsNullOrEmpty(value)) OutFilePath = Path.ChangeExtension(value, ".cpp");
     }
 
+    // ReSharper disable once UnusedParameterInPartialMethod
     partial void OnContentChanged(string value)
     {
         IsModified = true; 

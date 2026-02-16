@@ -21,3 +21,13 @@ const char* Error::what() const noexcept
 {
     return fullMessage.c_str();
 }
+
+const Token& Error::getToken() const
+{
+    return token;
+}
+
+const std::string& Error::getErrorMessage() const
+{
+    return errorMessage;
+}

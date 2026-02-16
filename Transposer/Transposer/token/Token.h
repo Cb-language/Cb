@@ -29,13 +29,13 @@ struct Token
 		COMMENT_MULTI
 	};
 
-	const TokenType type;
-	const std::wstring value;
+	TokenType type;
+	std::wstring value;
 
-	const size_t line;
-	const size_t column;
+	size_t line;
+	size_t column;
 
-	const std::filesystem::path path;
+	std::filesystem::path path;
 
 	Token();
 

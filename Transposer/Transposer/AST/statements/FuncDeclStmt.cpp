@@ -79,7 +79,7 @@ std::string FuncDeclStmt::translateToH() const
 {
     if (func.getFuncName() == L"prelude") return "";
 
-    return func.translateToCpp();
+    return func.translateToCpp() + ";";
 }
 
 std::string FuncDeclStmt::translateToCppClass(const std::wstring& className) const

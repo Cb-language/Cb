@@ -216,6 +216,14 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/IllegalVarName.h
         Transposer/errorHandling/classErrors/AccessError.cpp
         Transposer/errorHandling/classErrors/AccessError.h
+        Transposer/errorHandling/classErrors/InvalidCtorArgs.cpp
+        Transposer/errorHandling/classErrors/InvalidCtorArgs.h
+        Transposer/errorHandling/classErrors/RedefOfCtor.cpp
+        Transposer/errorHandling/classErrors/RedefOfCtor.h
+        Transposer/errorHandling/classErrors/ClassDosentExisit.cpp
+        Transposer/errorHandling/classErrors/ClassDosentExisit.h
+        Transposer/LSPPacking/LSPPacker.cpp
+        Transposer/LSPPacking/LSPPacker.h
 )
 
 # In order to call the exe from the cmd

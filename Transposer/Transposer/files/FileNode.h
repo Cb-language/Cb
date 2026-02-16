@@ -39,7 +39,10 @@ private:
 
     bool hasMain() const;
 
+    const std::vector<std::unique_ptr<Error>>& getErrors() const;
+
     static void clear(const FileNode* main);
 
     static std::vector<std::filesystem::path> getAllCppPath();
+    static std::vector<Error*> getAllErrors();
 };

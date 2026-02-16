@@ -4,14 +4,21 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text.Json; // Added for JSON serialization
+using System.Text.Json;
 using System.Threading.Tasks;
+using System.Timers; 
 using Avalonia.Platform.Storage;
+using Avalonia.Threading; 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using composer.ANSIHelper;
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
+// ReSharper disable UnusedParameter.Local
+// ReSharper disable UnusedParameterInPartialMethod
+// ReSharper disable InconsistentNaming
 
 namespace composer.ViewModels;
+
 public class AppSettings
 {
     public string? TranspilerPath { get; set; }
@@ -22,6 +29,9 @@ public partial class MainViewModel : ViewModelBase
     public IStorageProvider? StorageProvider { get; set; }
     
     private readonly string _settingsFilePath = Path.Combine(AppContext.BaseDirectory, "composer.settings.json");
+
+    private readonly Timer _debounceTimer;
+    private bool _isLspRunning;
 
     [ObservableProperty] private bool _expanded = true;
     [ObservableProperty] private double _borderWidth = 250;
@@ -44,7 +54,37 @@ public partial class MainViewModel : ViewModelBase
     {
         LoadSettings();
         
+        // 500ms delay before running LSP
+        _debounceTimer = new Timer(500);
+        _debounceTimer.AutoReset = false; 
+        _debounceTimer.Elapsed += async (s, e) => 
+        {
+            await Dispatcher.UIThread.InvokeAsync(async () => await RunLSP());
+        };
+
         AddNewTab();
+    }
+
+    protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+
+        if (e.PropertyName != nameof(SelectedTab)) return;
+        if (SelectedTab == null) return;
+        SelectedTab.PropertyChanged -= OnTabPropertyChanged; 
+        SelectedTab.PropertyChanged += OnTabPropertyChanged;
+                
+        // Trigger check immediately on tab switch
+        _debounceTimer.Stop();
+        _debounceTimer.Start();
+    }
+
+    private void OnTabPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        // Reset timer on typing
+        if (e.PropertyName != nameof(FileTabViewModel.Content)) return;
+        _debounceTimer.Stop();
+        _debounceTimer.Start();
     }
 
     partial void OnTranspilerExePathChanged(string value)
@@ -55,7 +95,6 @@ public partial class MainViewModel : ViewModelBase
     private void LoadSettings()
     {
         if (!File.Exists(_settingsFilePath)) return;
-
         try
         {
             var json = File.ReadAllText(_settingsFilePath);
@@ -66,9 +105,9 @@ public partial class MainViewModel : ViewModelBase
                 TranspilerExePath = settings.TranspilerPath;
             }
         }
-        catch (Exception ex)
+        catch
         {
-            Debug.WriteLine($"Error loading settings: {ex.Message}");
+            // ignored
         }
     }
 
@@ -80,9 +119,9 @@ public partial class MainViewModel : ViewModelBase
             var json = JsonSerializer.Serialize(settings);
             File.WriteAllText(_settingsFilePath, json);
         }
-        catch (Exception ex)
+        catch
         {
-            Debug.WriteLine($"Error saving settings: {ex.Message}");
+            // ignored
         }
     }
     partial void OnExpandedChanged(bool value) => BorderWidth = value ? 250 : 70;
@@ -109,7 +148,6 @@ public partial class MainViewModel : ViewModelBase
     private void NextTab()
     {
         if (Files.Count < 2 || SelectedTab == null) return;
-
         var index = Files.IndexOf(SelectedTab);
         var nextIndex = (index + 1) % Files.Count;
         SelectedTab = Files[nextIndex];
@@ -129,8 +167,6 @@ public partial class MainViewModel : ViewModelBase
         if (result.Count == 1)
         {
             CurrentFolderPath = result[0].Path.LocalPath;
-            Debug.WriteLine($"Folder opened: {CurrentFolderPath}");
-
             FolderFiles.Clear();
             var files = Directory.GetFiles(CurrentFolderPath, "*.cb", SearchOption.TopDirectoryOnly);
             foreach (var file in files)
@@ -157,28 +193,16 @@ public partial class MainViewModel : ViewModelBase
                 found++;
                 mainFile = file;
             }
-            catch (Exception ex)
+            catch
             {
-                Debug.WriteLine($"Error reading file {file}: {ex.Message}");
+                // ignored
             }
         }
 
         if (found == 1)
         {
-            Debug.WriteLine($"Found prelude file: {mainFile}");
             MainFilePath = mainFile;
             return mainFile;
-        }
-        else if (found == 0)
-        {
-            Debug.WriteLine("No prelude file found");
-            Terminal.Append("> No prelude file found\n");
-        }
-
-        else if (found > 1)
-        {
-            Debug.WriteLine("More than one prelude in folder");
-            Terminal.Append("> More than one prelude in folder\n");
         }
 
         MainFilePath = null;
@@ -253,6 +277,9 @@ public partial class MainViewModel : ViewModelBase
         {
             await File.WriteAllTextAsync(SelectedTab.FilePath!, SelectedTab.Content);
             SelectedTab.IsModified = false;
+            
+            // Run LSP check immediately after saving
+            await RunLSP();
         }
         catch (Exception ex)
         {
@@ -292,11 +319,7 @@ public partial class MainViewModel : ViewModelBase
             await File.WriteAllTextAsync(tab.FilePath!, tab.Content);
             tab.IsModified = false;
         }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Error saving file: {ex.Message}");
-            return false;
-        }
+        catch { return false; }
         return true;
     }
 
@@ -427,6 +450,99 @@ public partial class MainViewModel : ViewModelBase
         await RunExternalTool("R");
     }
     
+    private async Task RunLSP()
+{
+    if (_isLspRunning) return; 
+    if (SelectedTab == null) return;
+    if (!File.Exists(TranspilerExePath)) return;
+
+    _isLspRunning = true;
+    
+    var targetPath = Path.GetTempFileName();
+    var isTemp = true;
+
+    if (!string.IsNullOrEmpty(SelectedTab.FilePath))
+    {
+        targetPath = SelectedTab.FilePath;
+        isTemp = false;
+    }
+
+    try
+    {
+        await File.WriteAllTextAsync(targetPath, SelectedTab.Content);
+
+        const string mode = "LSP";
+        var outFilePath = Path.ChangeExtension(targetPath, ".cpp");
+
+        var arguments = $"\"{targetPath}\" {mode} \"{outFilePath}\"";
+
+        var psi = new ProcessStartInfo
+        {
+            FileName = TranspilerExePath,
+            Arguments = arguments,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        if (!isTemp)
+        {
+            psi.WorkingDirectory = Path.GetDirectoryName(targetPath);
+        }
+
+        using var process = new Process();
+        process.StartInfo = psi;
+
+        var jsonOutput = new System.Text.StringBuilder();
+
+        process.OutputDataReceived += (_, e) =>
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                jsonOutput.Append(e.Data);
+            }
+        };
+        process.ErrorDataReceived += (_, e) => { };
+
+        process.Start();
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+
+        await process.WaitForExitAsync();
+
+        var resultJson = jsonOutput.ToString();
+        
+        if (!string.IsNullOrWhiteSpace(resultJson) && resultJson.Trim().StartsWith($"["))
+        {
+            SelectedTab.DiagnosticsJson = resultJson;
+        }
+        else
+        {
+            SelectedTab.DiagnosticsJson = "[]";
+        }
+    }
+    catch (Exception ex)
+    {
+        Debug.WriteLine($"LSP Error: {ex.Message}");
+    }
+    finally
+    {
+        if (isTemp && File.Exists(targetPath))
+        {
+            try
+            {
+                File.Delete(targetPath);
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+        _isLspRunning = false;
+    }
+}
+    
     private async Task RunExternalTool(string mode)
     {
         if (SelectedTab == null)
@@ -458,7 +574,7 @@ public partial class MainViewModel : ViewModelBase
 
         if (string.IsNullOrEmpty(sourceFile))
         {
-            Terminal.Append("> Error: No file to process. Save the current tab or open a file.\n");
+            Terminal.Append("> Error: No file to process.\n");
             return;
         }
         
@@ -522,13 +638,12 @@ public partial class MainViewModel : ViewModelBase
         Terminal.Append(
             $"> Process exited with code {process.ExitCode}\n");
     }
-
+    
 
     [RelayCommand]
     private void ClearTerminalOutput()
     {
         Terminal.Clear();
-        Terminal.Append("Composer Terminal Ready...\n");
     }
 
     [ObservableProperty] private double _editorFontSize = 14;
@@ -540,17 +655,11 @@ public partial class MainViewModel : ViewModelBase
     {
         if (string.IsNullOrEmpty(CurrentFolderPath)) return;
 
-        // this is a hack to get the full path, since the file list only has the file name
         var fullPath = Directory.GetFiles(CurrentFolderPath, fileName, SearchOption.TopDirectoryOnly).FirstOrDefault();
 
-        if (string.IsNullOrEmpty(fullPath)) return;
+        if (string.IsNullOrEmpty(fullPath) || !File.Exists(fullPath)) return;
         
-        var filePath = fullPath;
-
-        if (!File.Exists(filePath)) return;
-        
-        // Check if the file is already open
-        var existingTab = Files.FirstOrDefault(f => f.FilePath == filePath);
+        var existingTab = Files.FirstOrDefault(f => f.FilePath == fullPath);
         if (existingTab != null)
         {
             SelectedTab = existingTab;
@@ -559,8 +668,8 @@ public partial class MainViewModel : ViewModelBase
 
         try
         {
-            var content = await File.ReadAllTextAsync(filePath);
-            AddTab(fileName, content, filePath);
+            var content = await File.ReadAllTextAsync(fullPath);
+            AddTab(fileName, content, fullPath);
         }
         catch (Exception ex)
         {

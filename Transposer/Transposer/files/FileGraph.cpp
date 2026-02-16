@@ -51,6 +51,11 @@ std::vector<std::filesystem::path> FileGraph::getAllCppPaths()
     return FileNode::getAllCppPath();
 }
 
+std::vector<Error*> FileGraph::getAllErrors()
+{
+    return FileNode::getAllErrors();
+}
+
 FileGraph::~FileGraph()
 {
     reset();

@@ -16,4 +16,6 @@ public:
     ~Error() override = default;
     void print() const;
     const char* what() const noexcept override;
+    const Token& getToken() const;
+    const std::string& getErrorMessage() const;
 };

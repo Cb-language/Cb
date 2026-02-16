@@ -1,16 +1,23 @@
 ﻿#include <iostream>
 #include <sstream>
 #include <filesystem>
+#include <vector>
+#include <map>
+#include <iomanip>
+
 #include "token/Tokenizer.h"
 #include "errorHandling/Error.h"
 #include "files/ArrayHelper.h"
 #include "files/FileGraph.h"
 #include "parser/Parser.h"
 #include "multyOSSupport/CMDFactory.h"
+#include "other/Utils.h"
+
+#include "LSPPacking/LSPPacker.h"
 
 enum Mode
 {
-    TRANSLATE, COMPILE, RUN
+    TRANSLATE, COMPILE, RUN, LSP
 };
 
 int main(int argc, char* argv[])
@@ -21,7 +28,7 @@ int main(int argc, char* argv[])
 
     Tokenizer::init();
 
-    if (argc < 3 || argc > 4)
+    if (argc != 4)
     {
         std::cout << "Usage: <main_path> <mode> [save_path]" << std::endl;
         return 1;
@@ -34,7 +41,8 @@ int main(int argc, char* argv[])
     std::string arg = argv[2];
     int mode = arg == "T" ? TRANSLATE :
                arg == "R" ? RUN :
-               arg == "C" ? COMPILE : -1;
+               arg == "C" ? COMPILE :
+               arg == "LSP" ? LSP : -1;
 
     switch (mode)
     {
@@ -50,6 +58,9 @@ int main(int argc, char* argv[])
             Utils::logMsg("Compiling Mode");
             break;
 
+        case LSP:
+            break;
+
         default:
             std::cout << "Invalid mode. Use T, C, or R." << std::endl;
             return 1;
@@ -63,21 +74,67 @@ int main(int argc, char* argv[])
 
     FileGraph& graph = FileGraph::Instance();
     graph.reset();
+    if (mode != LSP) Utils::logMsg("Translating...");
+
     try
     {
-        Utils::logMsg("Translating...");
         graph.build(inPath, outPath);
         graph.start();
-        graph.write();
-        ArrayHelper::write(File::getOutDir());
     }
-    catch (const Error& err)
+    catch (Error& e) // Catch known semantic/syntax errors (like NoReturn)
     {
-        std::cerr << err.what() << std::endl;
+        std::vector<Error*> errors = FileGraph::getAllErrors();
+        errors.push_back(&e); // Add the fatal error to the list
+
+        if (mode == LSP)
+        {
+            // Output JSON even if we crashed
+            std::cout << LSPPacker::pack(errors) << std::endl;
+        }
+        else
+        {
+            for (const auto& err : errors)
+            {
+                std::cerr << err->what() << std::endl;
+            }
+        }
+
+        graph.reset();
+        SymbolTable::clearClasses();
+        LSPPacker::deleteErrors(errors);
+        return -1;
+    }
+    catch (const std::exception& e) // Catch unexpected C++ errors
+    {
+        std::cerr << "Internal Transpiler Error: " << e.what() << std::endl;
         graph.reset();
         SymbolTable::clearClasses();
         return -1;
     }
+    
+    std::vector<Error*> errors = FileGraph::getAllErrors();
+
+    if (!errors.empty())
+    {
+        if (mode == LSP)
+        {
+            std::cout << LSPPacker::pack(errors) << std::endl;
+        }
+        else
+        {
+            for (const auto& err : errors)
+            {
+                std::cerr << err->what() << std::endl;
+            }
+        }
+        graph.reset();
+        SymbolTable::clearClasses();
+        LSPPacker::deleteErrors(errors);
+        return -1;
+    }
+
+    if (mode != LSP) graph.write();
+    ArrayHelper::write(File::getOutDir());
 
     std::filesystem::path exePath = outPath;
     std::string ext = cmd->getExeExtension();

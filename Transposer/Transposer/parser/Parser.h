@@ -1,7 +1,8 @@
 #pragma once
 #include <vector>
 #include <queue>
-
+#include <memory>
+#include "errorHandling/Error.h"
 #include "AST/abstract/Statement.h"
 #include "AST/statements/ArrayDeclStmt.h"
 #include "AST/statements/AssignmentStmt.h"
@@ -31,8 +32,6 @@
 #include "AST/statements/ObjCreationStmt.h"
 #include "AST/statements/expression/DotOpExpr.h"
 
-class Error;
-
 class Parser
 {
 private:
@@ -43,13 +42,17 @@ private:
     std::queue<FuncCredit> creditsQ;
     std::queue<FuncCallExpr*> callsQ;
     std::vector<std::unique_ptr<IncludeStmt>> includes;
+    std::vector<std::unique_ptr<Error>> errors;
 
     bool hasMain;
 
     SymbolTable symTable;
 
+    void addError(Error* err);
+    void synchronize();
+
     const Token& current() const;
-    const Token& advance();
+    Token advance();
     const Token& peek() const;
     const Token& prev() const;
     bool isAtEnd() const;
@@ -57,17 +60,17 @@ private:
     bool match(Token::TokenType type) const;
     bool match(Token::TokenType type, const std::wstring& value) const;
 
-    void expect(Token::TokenType type);
-    void expect(Token::TokenType type, const std::wstring& value);
+    bool expect(Token::TokenType type);
+    bool expect(Token::TokenType type, const std::wstring& value);
 
-    void expect(Token::TokenType type, const Error& err);
-    void expect(Token::TokenType type, const std::wstring& value, const Error& err);
+    bool expect(Token::TokenType type, Error* err);
+    bool expect(Token::TokenType type, const std::wstring& value, Error* err);
 
-    const Token& expectAndGet(Token::TokenType type);
-    const Token& expectAndGet(Token::TokenType type, const std::wstring& value);
+    bool expectAndGet(Token::TokenType type, Token& out);
+    bool expectAndGet(Token::TokenType type, const std::wstring& value, Token& out);
 
-    const Token& expectAndGet(Token::TokenType type, const Error& err);
-    const Token& expectAndGet(Token::TokenType type, const std::wstring& value, const Error& err);
+    bool expectAndGet(Token::TokenType type, Error* err, Token& out);
+    bool expectAndGet(Token::TokenType type, const std::wstring& value, Error* err, Token& out);
 
     bool isAssignmentStmtAhead();
     bool isUnaryOpStmtAhead();
@@ -96,15 +99,15 @@ private:
     std::unique_ptr<ConstractorCallStmt> parseConstractorCallStmt();
     std::unique_ptr<ObjCreationStmt> parseObjCreationStmt();
     bool parseCtorCall(const ClassNode* c);
-    void parseFields(std::vector<Field>& fields);
-    void parseMethods(std::vector<Method>& methods);
-    void parseCtors(std::vector<Ctor>& ctors);
+    bool parseFields(std::vector<Field>& fields);
+    bool parseMethods(std::vector<Method>& methods);
+    bool parseCtors(std::vector<Ctor>& ctors);
 
     // Expressions
 
-    std::unique_ptr<Expr> parseExpr(const bool hasParens = false, const bool isStmt = false);
-    std::unique_ptr<Expr> parsePrimary(const bool isStmt = false);
-    std::unique_ptr<Expr> parseBinaryOpRight(int exprPrec,  std::unique_ptr<Expr> left, const bool isStmt = false);
+    std::unique_ptr<Expr> parseExpr(const bool hasParens = false, const bool isStmt = false, const bool allowBackslash = true);
+    std::unique_ptr<Expr> parsePrimary(const bool isStmt = false, const bool allowBackslash = true);
+    std::unique_ptr<Expr> parseBinaryOpRight(int exprPrec,  std::unique_ptr<Expr> left, const bool isStmt = false, const bool allowBackslash = true);
     std::unique_ptr<ConstValueExpr> parseConstValueExpr();
     std::unique_ptr<UnaryOpExpr> parseUnaryOpExpr(const bool isStmt = false);
     std::unique_ptr<Call> parseFuncCallExpr(const bool isStmt = false);
@@ -131,5 +134,6 @@ public:
     const SymbolTable& getSymTable() const;
     bool getHasMain() const;
     const Token& getLast() const;
+    const std::vector<std::unique_ptr<Error>>& getErrors() const;
 };
 
