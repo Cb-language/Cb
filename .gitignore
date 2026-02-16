@@ -161,6 +161,9 @@ CMakeUserPresets.json
 # *.iml
 # *.ipr
 
+# Ignore all output files in "Transposer/test files" folder
+Transposer/test files/**/*.{exe,cpp,tpp,hpp,h}
+
 # CMake
 
 # Mongo Explorer plugin
