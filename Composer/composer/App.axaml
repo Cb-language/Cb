@@ -1,0 +1,27 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="composer.App"
+             RequestedThemeVariant="Default">
+
+    <Application.Styles>
+        <FluentTheme />
+        
+        <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
+        
+        <StyleInclude Source="Styles/DefaultStyle.axaml"></StyleInclude>
+    </Application.Styles>
+             
+    <Application.Resources>
+        <SolidColorBrush x:Key="PrimaryForeground">#C4C4C4</SolidColorBrush>
+        <SolidColorBrush x:Key="PrimaryBackground">#14172d</SolidColorBrush>
+        <LinearGradientBrush x:Key="PrimaryBackgroundGradientBrush" StartPoint="0%, 0%" EndPoint="100%, 0%">
+            <GradientStop Offset="0" Color="#111214"></GradientStop>
+            <GradientStop Offset="1" Color="#151E3E"></GradientStop>
+        </LinearGradientBrush>
+        
+        <SolidColorBrush x:Key="PrimaryHoverForeground">White</SolidColorBrush>
+        <SolidColorBrush x:Key="PrimaryHoverBackground">#333B5A</SolidColorBrush>
+        
+        <FontFamily x:Key="PrimaryFontFamily">/Assets/Fonts/Akko Pro Regular.ttf#Akko Pro</FontFamily>
+    </Application.Resources>
+</Application>
