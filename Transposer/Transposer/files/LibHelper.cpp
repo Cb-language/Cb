@@ -6,6 +6,7 @@ const std::vector<std::pair<std::filesystem::path, std::string>> LibHelper::file
 #include <sstream>
 #include <vector>
 #include "SafePtr.h"
+#include "Primitive.h" // you need this for Primitive<T>
 
 class Object;
 
@@ -13,64 +14,70 @@ template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 class Array : public Object
 {
+private:
+    // If T is arithmetic, wrap it in Primitive<T>, else leave T as-is
+    using SafeType = std::conditional_t<std::is_arithmetic_v<T>, Primitive<T>, T>;
+    using SP = SafePtr<SafeType>;
+
 public:
-	Array(); // default constructor
-	explicit Array(size_t size, SafePtr<T> defaultValue = SafePtr<T>());
-	explicit Array(size_t size, T defaultValue);
-	Array(const Array& other);
-	template <typename U>
-	explicit Array(const Array<U>& other, bool isValArray = false);
-	~Array() override = default;
+    Array(); // default constructor
+    explicit Array(size_t size);
+    explicit Array(size_t size, SP defaultValue);
+    explicit Array(size_t size, T defaultValue);
+    Array(const Array& other);
+    template <typename U>
+    explicit Array(const Array<U>& other, bool isValArray = false);
+    ~Array() override = default;
 
-	Array& operator=(const Array& other);
-	template <typename U>
-	Array& operator=(const Array<U>& other);
-	Array& operator=(const T& defaultValue);
-	template <typename U>
-	Array& operator=(const U& defaultValue);
+    Array& operator=(const Array& other);
+    template <typename U>
+    Array& operator=(const Array<U>& other);
+    Array& operator=(const T& defaultValue);
+    template <typename U>
+    Array& operator=(const U& defaultValue);
 
-	SafePtr<T>& operator[](int index);
-	const SafePtr<T>& operator[](int index) const;
+    SP& operator[](int index);
+    const SP& operator[](int index) const;
 
-	size_t Length() const { return size; }
-	size_t NegLength() const { return static_cast<size_t>(-static_cast<int>(size) - 1); }
+    size_t Length() const { return size; }
+    size_t NegLength() const { return static_cast<size_t>(-static_cast<int>(size) - 1); }
 
-	// Only enable add() if T is Object or derived
-	template <typename U = T>
-	std::enable_if_t<std::is_base_of_v<Object, U>, void>
-	add(const U& obj);
-	void add(T& value, size_t index = -1);
-	void remove(int index);
+    // Only enable add() if SafeType is Object or derived
+    template <typename U = SafeType>
+    std::enable_if_t<std::is_base_of_v<Object, U>, void>
+    add(const U& obj);
 
-	Array slice(int start, int stop = -1, int step = 1) const;
+    void add(SafeType& value, size_t index = -1);
+    void remove(int index);
 
-	friend std::ostream& operator<<(std::ostream& os, const Array& other)
-	{
-		bool first = true;
-		for (size_t i = 0; i < other.size; i++)
-		{
-			os << (first ? "" : ", ") << "[" << other[i] << "]";
-			first = false;
-		}
-		return os;
-	}
+    Array slice(int start, int stop = -1, int step = 1) const;
 
-	std::string toString() const override;
-	std::unique_ptr<Object> clone() const override;
+    friend std::ostream& operator<<(std::ostream& os, const Array& other)
+    {
+        bool first = true;
+        for (size_t i = 0; i < other.size; i++)
+        {
+            os << (first ? "" : ", ") << "[" << other[i] << "]";
+            first = false;
+        }
+        return os;
+    }
+
+    std::string toString() const override;
+    std::unique_ptr<Object> clone() const override;
 
 protected:
-	bool equals(const Object& other) const override;
+    bool equals(const Object& other) const override;
 
 private:
-	size_t size = 0;
-	SafePtr<T> defaultValueSet = SafePtr<T>();
-	std::vector<SafePtr<T>> data;
+    size_t size = 0;
+    SP defaultValueSet = SP();
+    std::vector<SP> data;
 
-	int getNormalIndex(int index) const;
+    int getNormalIndex(int index) const;
 };
 
-#include "Array.tpp"
-)" },
+#include "Array.tpp")" },
     { R"(Array.tpp)", R"(#pragma once
 #include "Array.h"
 #include "Object.h"
@@ -81,13 +88,18 @@ requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 Array<T>::Array()
 {
     size = 1;
-    defaultValueSet(SafePtr<T>());
+    defaultValueSet = SafePtr<SafeType>();
     data.push_back(defaultValueSet.cloneSafePtr());
+}
+
+template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+Array<T>::Array(size_t size) : Array(size, SafePtr<SafeType>())
+{
 }
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-Array<T>::Array(size_t size, SafePtr<T> defaultValue)
+Array<T>::Array(size_t size, SafePtr<SafeType> defaultValue)
     : size(size)
 {
     defaultValueSet = defaultValue;
@@ -101,7 +113,7 @@ Array<T>::Array(size_t size, SafePtr<T> defaultValue)
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-Array<T>::Array(size_t size, T defaultValue) : Array<T>(size, SafePtr<T>(defaultValue))
+Array<T>::Array(size_t size, T defaultValue) : Array<T>(size, SafePtr<SafeType>(SafeType(defaultValue)))
 {
 }
 
@@ -114,7 +126,7 @@ Array<T>::Array(const Array<T>& other)
     data.reserve(size);
     for (size_t i = 0; i < size; ++i)
     {
-        data.push_back(SafePtr<T>(other.data[i].cloneSafePtr()));
+        data.push_back(SafePtr<SafeType>(other.data[i].cloneSafePtr()));
     }
 }
 
@@ -141,10 +153,10 @@ Array<T>::Array(const Array<U>& other, bool isValArray)
     }
     else
     {
-        defaultValueSet = SafePtr<T>();
+        defaultValueSet = SafePtr<SafeType>();
         for (size_t i = 0; i < size; ++i)
         {
-            data.push_back(SafePtr<T>(static_cast<T>(*other[i])));
+            data.push_back(SafePtr<SafeType>(static_cast<T>(*other[i])));
         }
     }
 }
@@ -187,7 +199,7 @@ Array<T>& Array<T>::operator=(const Array<U>& other)
         }
         else
         {
-            data.push_back(SafePtr<T>(static_cast<T>(*other[i])));
+            data.push_back(SafePtr<SafeType>(static_cast<T>(*other[i])));
         }
     }
 
@@ -202,7 +214,7 @@ Array<T>& Array<T>::operator=(const T& defaultValue)
     data.clear();
     data.reserve(size);
 
-    defaultValueSet = SafePtr<T>(defaultValue);
+    defaultValueSet = SafePtr<SafeType>(defaultValue);
     for (size_t i = 0; i < size; ++i)
     {
         data.push_back(defaultValueSet.clone());
@@ -226,7 +238,7 @@ Array<T>& Array<T>::operator=(const U& defaultValue)
     }
     else
     {
-        defaultValueSet = SafePtr<T>(static_cast<T>(defaultValue));
+        defaultValueSet = SafePtr<SafeType>(static_cast<T>(defaultValue));
     }
 
     for (size_t i = 0; i < size; ++i)
@@ -239,7 +251,7 @@ Array<T>& Array<T>::operator=(const U& defaultValue)
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-SafePtr<T>& Array<T>::operator[](int index)
+SafePtr<typename Array<T>::SafeType>& Array<T>::operator[](int index)
 {
     index = getNormalIndex(index);
     return data[index];
@@ -247,7 +259,7 @@ SafePtr<T>& Array<T>::operator[](int index)
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-const SafePtr<T>& Array<T>::operator[](int index) const
+const SafePtr<typename Array<T>::SafeType>& Array<T>::operator[](int index) const
 {
     index = getNormalIndex(index);
     return data[index];
@@ -258,18 +270,18 @@ requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 template <typename U>
 std::enable_if_t<std::is_base_of_v<Object, U>, void> Array<T>::add(const U& obj)
 {
-    data.push_back(SafePtr<T>(obj.clone()));
+    data.push_back(SafePtr<SafeType>(obj.clone()));
     ++size;
 }
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-void Array<T>::add(T& value, size_t index)
+void Array<T>::add(SafeType& value, size_t index)
 {
     if (index == static_cast<size_t>(-1) || index >= size)
         index = size;
 
-    data.insert(data.begin() + index, SafePtr<T>(value));
+    data.insert(data.begin() + index, SafePtr<SafeType>(value));
     ++size;
 }
 

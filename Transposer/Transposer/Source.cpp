@@ -161,8 +161,8 @@ int main(int argc, char* argv[])
             filesStr += " \"" + path.string() + "\" ";
         }
 
-        cmdBuild << "g++ -pthread " << filesStr
-                 << "-Iincludes -o \"" << exePath.string() << "\""
+        cmdBuild << "g++ -pthread -std=c++20" << filesStr
+                 << "-I" << File::getOutDir() <<" -o \"" << exePath.string() << "\""
                  << cmd->getCompileFlags();
 
         Utils::logMsg("Compiling...");
@@ -171,7 +171,7 @@ int main(int argc, char* argv[])
         {
             std::cerr << "Error with g++ : command: " << cmdBuild.str() << std::endl;
             graph.reset();
-        SymbolTable::clearClasses();
+            SymbolTable::clearClasses();
             return -4;
         }
     }
