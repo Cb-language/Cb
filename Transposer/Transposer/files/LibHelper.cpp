@@ -4,18 +4,19 @@ const std::vector<std::pair<std::filesystem::path, std::string>> LibHelper::file
 {
     { R"(Array.h)", R"(#pragma once
 #include <sstream>
-
-#include "SafePtr.h"
 #include <vector>
+#include "SafePtr.h"
 
 class Object;
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 class Array : public Object
 {
 public:
 	Array(); // default constructor
 	explicit Array(size_t size, SafePtr<T> defaultValue = SafePtr<T>());
+	explicit Array(size_t size, T defaultValue);
 	Array(const Array& other);
 	template <typename U>
 	explicit Array(const Array<U>& other, bool isValArray = false);
@@ -76,6 +77,7 @@ private:
 #include "String.h"
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 Array<T>::Array()
 {
     size = 1;
@@ -84,6 +86,7 @@ Array<T>::Array()
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 Array<T>::Array(size_t size, SafePtr<T> defaultValue)
     : size(size)
 {
@@ -97,6 +100,13 @@ Array<T>::Array(size_t size, SafePtr<T> defaultValue)
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+Array<T>::Array(size_t size, T defaultValue) : Array<T>(size, SafePtr<T>(defaultValue))
+{
+}
+
+template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 Array<T>::Array(const Array<T>& other)
 {
     size = other.size;
@@ -109,6 +119,7 @@ Array<T>::Array(const Array<T>& other)
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 template <typename U>
 Array<T>::Array(const Array<U>& other, bool isValArray)
 {
@@ -119,13 +130,13 @@ Array<T>::Array(const Array<U>& other, bool isValArray)
     {
         std::ostringstream oss;
         oss << other[0]; // just for default
-        defaultValueSet = SafePtr(oss.str());
+        defaultValueSet = SafePtr<String>(String(oss.str()));
 
         for (size_t i = 0; i < size; ++i)
         {
             std::ostringstream ossData;
             ossData << other[i];
-            data.push_back(SafePtr(ossData.str()));
+            data.push_back(SafePtr<String>(String(ossData.str())));
         }
     }
     else
@@ -139,6 +150,7 @@ Array<T>::Array(const Array<U>& other, bool isValArray)
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 Array<T>& Array<T>::operator=(const Array<T>& other)
 {
     if (this == &other)
@@ -157,6 +169,7 @@ Array<T>& Array<T>::operator=(const Array<T>& other)
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 template <typename U>
 Array<T>& Array<T>::operator=(const Array<U>& other)
 {
@@ -170,7 +183,7 @@ Array<T>& Array<T>::operator=(const Array<U>& other)
         {
             std::ostringstream oss;
             oss << *other[i];
-            data.push_back(SafePtr<std::string>(oss.str()));
+            data.push_back(SafePtr<String>(String(oss.str())));
         }
         else
         {
@@ -183,6 +196,7 @@ Array<T>& Array<T>::operator=(const Array<U>& other)
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 Array<T>& Array<T>::operator=(const T& defaultValue)
 {
     data.clear();
@@ -197,6 +211,7 @@ Array<T>& Array<T>::operator=(const T& defaultValue)
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 template <typename U>
 Array<T>& Array<T>::operator=(const U& defaultValue)
 {
@@ -207,7 +222,7 @@ Array<T>& Array<T>::operator=(const U& defaultValue)
     {
         std::ostringstream oss;
         oss << defaultValue;
-        defaultValueSet = SafePtr<std::string>(oss.str());
+        data.push_back(SafePtr<String>(String(oss.str())));
     }
     else
     {
@@ -223,6 +238,7 @@ Array<T>& Array<T>::operator=(const U& defaultValue)
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 SafePtr<T>& Array<T>::operator[](int index)
 {
     index = getNormalIndex(index);
@@ -230,6 +246,7 @@ SafePtr<T>& Array<T>::operator[](int index)
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 const SafePtr<T>& Array<T>::operator[](int index) const
 {
     index = getNormalIndex(index);
@@ -237,6 +254,7 @@ const SafePtr<T>& Array<T>::operator[](int index) const
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 template <typename U>
 std::enable_if_t<std::is_base_of_v<Object, U>, void> Array<T>::add(const U& obj)
 {
@@ -245,6 +263,7 @@ std::enable_if_t<std::is_base_of_v<Object, U>, void> Array<T>::add(const U& obj)
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 void Array<T>::add(T& value, size_t index)
 {
     if (index == static_cast<size_t>(-1) || index >= size)
@@ -255,6 +274,7 @@ void Array<T>::add(T& value, size_t index)
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 void Array<T>::remove(int index)
 {
     index = getNormalIndex(index);
@@ -263,6 +283,7 @@ void Array<T>::remove(int index)
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 Array<T> Array<T>::slice(int start, int stop, int step) const
 {
     if (step == 0)
@@ -287,6 +308,7 @@ Array<T> Array<T>::slice(int start, int stop, int step) const
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 std::string Array<T>::toString() const
 {
     std::string str = "[";
@@ -304,12 +326,14 @@ std::string Array<T>::toString() const
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 std::unique_ptr<Object> Array<T>::clone() const
 {
     return std::make_unique<Array<T>>(*this);
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 bool Array<T>::equals(const Object& other) const
 {
     if (this == &other) return true;
@@ -329,6 +353,7 @@ bool Array<T>::equals(const Object& other) const
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 int Array<T>::getNormalIndex(int index) const
 {
     int sz = static_cast<int>(size);
@@ -988,10 +1013,11 @@ Primitive<T>::operator bool() const
 #include "Object.h"
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 class SafePtr : public Object
 {
 private:
-    std::unique_ptr<T> ptr;
+    std::unique_ptr<Object> ptr;
 public:
     SafePtr();
     explicit SafePtr(const std::unique_ptr<T>& ptr);
@@ -999,21 +1025,56 @@ public:
     SafePtr(const SafePtr& other);
 
     template <typename U>
+    requires (
+        std::is_convertible_v<U, T> &&
+        (
+            std::is_arithmetic_v<U> ||
+            std::is_base_of_v<Object, std::remove_cvref_t<U>>
+        )
+    )
     explicit SafePtr(std::unique_ptr<U>& ptr);
 
     template <typename U>
+    requires (
+        std::is_convertible_v<U, T> &&
+        (
+            std::is_arithmetic_v<U> ||
+            std::is_base_of_v<Object, std::remove_cvref_t<U>>
+        )
+    )
     explicit SafePtr(const U& u);
 
     template <typename U>
+    requires (
+        std::is_convertible_v<U, T> &&
+        (
+            std::is_arithmetic_v<U> ||
+            std::is_base_of_v<Object, std::remove_cvref_t<U>>
+        )
+    )
     explicit SafePtr(const SafePtr<U>& other);
 
     SafePtr& operator=(const T& t);
     SafePtr& operator=(const SafePtr& t);
 
     template <typename U>
+    requires (
+        std::is_convertible_v<U, T> &&
+        (
+            std::is_arithmetic_v<U> ||
+            std::is_base_of_v<Object, std::remove_cvref_t<U>>
+        )
+    )
     SafePtr& operator=(const U& u);
 
     template <typename U>
+    requires (
+        std::is_convertible_v<U, T> &&
+        (
+            std::is_arithmetic_v<U> ||
+            std::is_base_of_v<Object, std::remove_cvref_t<U>>
+        )
+    )
     SafePtr& operator=(const SafePtr<U>& u);
 
     SafePtr cloneSafePtr() const;
@@ -1021,11 +1082,11 @@ public:
     T* operator->() const;
     T& operator*() const;
     T* get() const;
-    std::unique_ptr<T> clonePtr() const;
+    std::unique_ptr<Object> clonePtr() const;
 
     friend std::ostream& operator<<(std::ostream& os, const SafePtr<T>& safePtr)
     {
-        os << *(safePtr.ptr.get());
+        os << *(safePtr.ptr);
         return os;
     }
 
@@ -1048,24 +1109,28 @@ protected:
 #include "String.h"
 
 template <typename T>
-std::unique_ptr<T> SafePtr<T>::clonePtr() const
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+std::unique_ptr<Object> SafePtr<T>::clonePtr() const
 {
-    return std::unique_ptr<T>(ptr->clone());
+    return ptr->clone();
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 std::string SafePtr<T>::toString() const
 {
     return ptr->toString();
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 std::unique_ptr<Object> SafePtr<T>::clone() const
 {
-    return std::make_unique<SafePtr<T>>(*ptr);
+    return ptr->clone();
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 bool SafePtr<T>::equals(const Object& other) const
 {
     if (this == &other)
@@ -1084,9 +1149,9 @@ bool SafePtr<T>::equals(const Object& other) const
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 SafePtr<T>::SafePtr()
 {
-    static_assert(std::is_base_of_v<Object, T>, "non-Object-derived type created");
 
     if constexpr (std::is_same_v<T, Object>)
     {
@@ -1099,6 +1164,7 @@ SafePtr<T>::SafePtr()
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 SafePtr<T>::SafePtr(const std::unique_ptr<T>& ptr)
 {
     static_assert(std::is_base_of_v<Object, T>, "non-Object-derived type created");
@@ -1107,9 +1173,10 @@ SafePtr<T>::SafePtr(const std::unique_ptr<T>& ptr)
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 SafePtr<T>::SafePtr(const T& t)
 {
-    static_assert(std::is_base_of_v<Object, T>, "non-Object-derived type created");
+    if constexpr (!std::is_arithmetic_v<T>) static_assert(std::is_base_of_v<Object, T>, "non-Object-derived type created");
 
     if constexpr (std::is_same_v<T, Object>)
     {
@@ -1122,6 +1189,7 @@ SafePtr<T>::SafePtr(const T& t)
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 SafePtr<T>::SafePtr(const SafePtr& other)
 {
     static_assert(std::is_base_of_v<Object, T>, "non-Object-derived type created");
@@ -1129,7 +1197,15 @@ SafePtr<T>::SafePtr(const SafePtr& other)
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 template <typename U>
+requires (
+    std::is_convertible_v<U, T> &&
+    (
+        std::is_arithmetic_v<U> ||
+        std::is_base_of_v<Object, std::remove_cvref_t<U>>
+    )
+)
 SafePtr<T>::SafePtr(std::unique_ptr<U>& ptr)
 {
     static_assert(std::is_base_of_v<Object, T>, "non-Object-derived type created");
@@ -1141,18 +1217,34 @@ SafePtr<T>::SafePtr(std::unique_ptr<U>& ptr)
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 template <typename U>
+requires (
+    std::is_convertible_v<U, T> &&
+    (
+        std::is_arithmetic_v<U> ||
+        std::is_base_of_v<Object, std::remove_cvref_t<U>>
+    )
+)
 SafePtr<T>::SafePtr(const U& u)
 {
     static_assert(std::is_base_of_v<Object, T>, "non-Object-derived type created");
     static_assert(std::is_base_of_v<Object, U>, "non-Object-derived type created");
     static_assert(std::is_convertible_v<U*, T*>, "Cannot cast");
 
-    ptr = std::make_unique<T>(dynamic_cast<T>(u));
+    ptr = std::make_unique<T>(dynamic_cast<T&>(u));
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 template <typename U>
+requires (
+    std::is_convertible_v<U, T> &&
+    (
+        std::is_arithmetic_v<U> ||
+        std::is_base_of_v<Object, std::remove_cvref_t<U>>
+    )
+)
 SafePtr<T>::SafePtr(const SafePtr<U>& other)
 {
     static_assert(std::is_base_of_v<Object, T>, "non-Object-derived type created");
@@ -1163,13 +1255,15 @@ SafePtr<T>::SafePtr(const SafePtr<U>& other)
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 SafePtr<T>& SafePtr<T>::operator=(const T& t)
 {
-    ptr = std::make_unique<T>(t);
+    ptr = t.clone();
     return *this;
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 SafePtr<T>& SafePtr<T>::operator=(const SafePtr& t)
 {
     ptr = std::move(t.clonePtr());
@@ -1177,7 +1271,15 @@ SafePtr<T>& SafePtr<T>::operator=(const SafePtr& t)
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 template <typename U>
+requires (
+    std::is_convertible_v<U, T> &&
+    (
+        std::is_arithmetic_v<U> ||
+        std::is_base_of_v<Object, std::remove_cvref_t<U>>
+    )
+)
 SafePtr<T>& SafePtr<T>::operator=(const U& u)
 {
     static_assert(std::is_convertible_v<U*, T*>, "Cannot cast");
@@ -1195,7 +1297,15 @@ SafePtr<T>& SafePtr<T>::operator=(const U& u)
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 template <typename U>
+requires (
+    std::is_convertible_v<U, T> &&
+    (
+        std::is_arithmetic_v<U> ||
+        std::is_base_of_v<Object, std::remove_cvref_t<U>>
+    )
+)
 SafePtr<T>& SafePtr<T>::operator=(const SafePtr<U>& u)
 {
     static_assert(std::is_convertible_v<U*, T*>, "Cannot cast");
@@ -1205,24 +1315,30 @@ SafePtr<T>& SafePtr<T>::operator=(const SafePtr<U>& u)
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 SafePtr<T> SafePtr<T>::cloneSafePtr() const
 {
     return SafePtr<T>(*this);
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 T* SafePtr<T>::operator->() const
 {
-    return ptr.get();
+    if constexpr (!std::is_convertible_v<Object*, T*>) throw std::logic_error("Cannot cast");
+    return dynamic_cast<T*>(ptr.get());
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 T& SafePtr<T>::operator*() const
 {
-    return *ptr;
+    if constexpr (!std::is_convertible_v<Object&, T&>) throw std::logic_error("Cannot cast");
+    return dynamic_cast<T&>(*ptr);
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 T* SafePtr<T>::get() const
 {
     return ptr.get();
@@ -1450,10 +1566,10 @@ T& Utils::cast(SafePtr<Object>& other)
 
 void LibHelper::write(const std::filesystem::path& dir)
 {
-    std::filesystem::create_directories(dir / "includes");
+    std::filesystem::create_directories(dir / "include");
     for (const auto& [path, content] : files)
     {
-        const std::filesystem::path outPath = dir / "includes" / path;
+        const std::filesystem::path outPath = dir / "include" / path;
         std::ofstream out(outPath, std::ios::binary);
         out << content;
     }
