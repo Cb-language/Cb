@@ -94,8 +94,6 @@ add_executable(Transposer
         Transposer/AST/statements/FuncCreditStmt.h
         Transposer/AST/statements/expression/FuncCallExpr.cpp
         Transposer/AST/statements/expression/FuncCallExpr.h
-        Transposer/files/ArrayHelper.cpp
-        Transposer/files/ArrayHelper.h
         Transposer/symbols/Type/IType.h
         Transposer/AST/statements/IfStmt.cpp
         Transposer/AST/statements/IfStmt.h

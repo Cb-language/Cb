@@ -7,7 +7,7 @@
 
 #include "token/Tokenizer.h"
 #include "errorHandling/Error.h"
-#include "files/ArrayHelper.h"
+#include "files/LibHelper.h"
 #include "files/FileGraph.h"
 #include "parser/Parser.h"
 #include "multyOSSupport/CMDFactory.h"
@@ -133,8 +133,11 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    if (mode != LSP) graph.write();
-    ArrayHelper::write(File::getOutDir());
+    if (mode != LSP)
+    {
+        graph.write();
+        LibHelper::write(File::getOutDir());
+    }
 
     std::filesystem::path exePath = outPath;
     std::string ext = cmd->getExeExtension();

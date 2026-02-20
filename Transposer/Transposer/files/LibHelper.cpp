@@ -6,6 +6,7 @@ const std::vector<std::pair<std::filesystem::path, std::string>> LibHelper::file
 #include <sstream>
 
 #include "SafePtr.h"
+#include <vector>
 
 class Object;
 
@@ -1449,10 +1450,10 @@ T& Utils::cast(SafePtr<Object>& other)
 
 void LibHelper::write(const std::filesystem::path& dir)
 {
-    std::filesystem::create_directories(dir);
+    std::filesystem::create_directories(dir / "includes");
     for (const auto& [path, content] : files)
     {
-        const std::filesystem::path outPath = dir / path;
+        const std::filesystem::path outPath = dir / "includes" / path;
         std::ofstream out(outPath, std::ios::binary);
         out << content;
     }
