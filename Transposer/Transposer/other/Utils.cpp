@@ -71,3 +71,16 @@ std::string Utils::escapeJson(const std::string& str)
     }
     return res;
 }
+
+std::string Utils::getAllObjIncludes()
+{
+    std::ostringstream oss;
+
+    oss << R"(#include "includes\Object.h")" << std::endl <<
+        R"(#include "includes\String.h")" << std::endl <<
+        R"(#include "includes\Array.h")" << std::endl <<
+        R"(#include "includes\Primitive.h")" << std::endl <<
+        R"(#include "includes\SafePtr.h")" << std::endl;
+
+    return oss.str();
+}

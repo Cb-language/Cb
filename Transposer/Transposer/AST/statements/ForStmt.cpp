@@ -40,10 +40,10 @@ std::string ForStmt::translateToCpp() const
 {
     std::ostringstream oss;
     const std::string startStr = startExpr->translateToCpp();
-    const std::string stepStr = stepExpr != nullptr ? stepExpr->translateToCpp() : "1";
-    const std::string stopStr = stopExpr != nullptr ? stopExpr->translateToCpp() : "0";
+    const std::string stepStr = stepExpr != nullptr ? stepExpr->translateToCpp() : "Primitive<int>(1)";
+    const std::string stopStr = stopExpr != nullptr ? stopExpr->translateToCpp() : "Primitive<int>(0)";
     const std::string nameStr = Utils::wstrToStr(varName);
-    std::string stepFullStr = "";
+    std::string stepFullStr;
 
     if (stepStr == "1")
     {
@@ -54,7 +54,7 @@ std::string ForStmt::translateToCpp() const
         stepFullStr = nameStr + (isIncreasing ? " += " : " -= ") + stepStr;
     }
 
-    oss << getTabs() << "for (int " << nameStr << " = " << startStr << "; ";
+    oss << getTabs() << "for (Primitive<int> " << nameStr << " = " << startStr << "; ";
     oss << nameStr << (isIncreasing ? " < " : " >= ") << stopStr << "; ";
     oss << stepFullStr << ")" << std::endl;
     oss << body->translateToCpp();

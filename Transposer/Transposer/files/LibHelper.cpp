@@ -15,8 +15,11 @@ requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 class Array : public Object
 {
 public:
-    // If T is arithmetic, wrap it in Primitive<T>, else leave T as-is
-    using SafeType = std::conditional_t<std::is_arithmetic_v<T>, Primitive<T>, T>;
+    using SafeType = std::conditional_t<
+        std::is_arithmetic_v<T> && !is_primitive<T>::value,
+        Primitive<T>,
+        T
+    >;
     using SP = SafePtr<SafeType>;
     Array(); // default constructor
     explicit Array(Primitive<unsigned int> size);
@@ -451,6 +454,7 @@ std::ostream& operator<<(std::ostream& os, const Object& obj)
 #include <sstream>
 
 template <typename T>
+requires std::is_arithmetic_v<T>
 class Primitive;
 
 class Object
@@ -474,16 +478,33 @@ protected:
 };
 )" },
     { R"(Primitive.h)", R"(#pragma once
+#include <string>
+#include <memory>
+#include <iostream>
+#include <type_traits>
 
 class Object;
 
 class PrimitiveBase : public Object
 {
 public:
+    virtual ~PrimitiveBase() = default;
     virtual double getNumericValue() const = 0;
 };
 
+// Helper to prevent Primitive<Primitive<T>>
 template <typename T>
+struct is_primitive : std::false_type {};
+
+template <typename T>
+requires std::is_arithmetic_v<T>
+class Primitive;
+
+template <typename T>
+struct is_primitive<Primitive<T>> : std::true_type {};
+
+template <typename T>
+requires std::is_arithmetic_v<T>
 class Primitive : public PrimitiveBase
 {
 private:
@@ -493,9 +514,8 @@ public:
     double getNumericValue() const override;
     explicit Primitive(const T& value = T());
     Primitive(const Primitive& other);
-    Primitive& operator=(const Primitive& other);
 
-    // ReSharper disable once CppEnforceOverridingFunctionStyle
+    Primitive& operator=(const Primitive& other);
     Primitive& operator=(const T& other);
 
     template <typename U>
@@ -510,11 +530,19 @@ public:
     std::unique_ptr<Object> clone() const override;
     T getValue() const;
 
+    friend std::istream& operator>>(std::istream& is, Primitive<T>& obj)
+    {
+        is >> obj.value;
+        return is;
+    }
+
+    // Basic Math
     Primitive operator+(const Primitive& other) const;
     Primitive operator-(const Primitive& other) const;
     Primitive operator*(const Primitive& other) const;
     Primitive operator/(const Primitive& other) const;
     Primitive operator%(const Primitive& other) const;
+
     Primitive& operator++();
     Primitive& operator--();
     Primitive operator++(int);
@@ -527,119 +555,28 @@ public:
     Primitive& operator/=(const Primitive& other);
     Primitive& operator%=(const Primitive& other);
 
+    // Template Math vs Raw Types
+    template <typename U> Primitive operator+(const U& other) const;
+    template <typename U> Primitive operator-(const U& other) const;
+    template <typename U> Primitive operator*(const U& other) const;
+    template <typename U> Primitive operator/(const U& other) const;
+    template <typename U> Primitive operator%(const U& other) const;
 
-    Primitive operator+(const T& other) const;
-    Primitive operator-(const T& other) const;
-    Primitive operator*(const T& other) const;
-    Primitive operator/(const T& other) const;
-    Primitive operator%(const T& other) const;
+    template <typename U> Primitive& operator+=(const U& other);
+    template <typename U> Primitive& operator-=(const U& other);
+    template <typename U> Primitive& operator*=(const U& other);
+    template <typename U> Primitive& operator/=(const U& other);
+    template <typename U> Primitive& operator%=(const U& other);
 
-    Primitive& operator+=(const T& other);
-    Primitive& operator-=(const T& other);
-    Primitive& operator*=(const T& other);
-    Primitive& operator/=(const T& other);
-    Primitive& operator%=(const T& other);
+    // Comparison
+    template <typename U> Primitive<bool> operator>(const U& other) const;
+    template <typename U> Primitive<bool> operator>=(const U& other) const;
+    template <typename U> Primitive<bool> operator<(const U& other) const;
+    template <typename U> Primitive<bool> operator<=(const U& other) const;
+    template <typename U> Primitive<bool> operator==(const U& other) const;
+    template <typename U> Primitive<bool> operator!=(const U& other) const;
 
-    template <typename U>
-    Primitive operator+(const Primitive<U>& other) const;
-    template <typename U>
-    Primitive operator-(const Primitive<U>& other) const;
-    template <typename U>
-    Primitive operator*(const Primitive<U>& other) const;
-    template <typename U>
-    Primitive operator/(const Primitive<U>& other) const;
-    template <typename U>
-    Primitive operator%(const Primitive<U>& other) const;
-
-    template <typename U>
-    Primitive& operator+=(const Primitive<U>& other);
-    template <typename U>
-    Primitive& operator-=(const Primitive<U>& other);
-    template <typename U>
-    Primitive& operator*=(const Primitive<U>& other);
-    template <typename U>
-    Primitive& operator/=(const Primitive<U>& other);
-    template <typename U>
-    Primitive& operator%=(const Primitive<U>& other);
-
-
-    template <typename U>
-    Primitive operator+(const U& other) const;
-    template <typename U>
-    Primitive operator-(const U& other) const;
-    template <typename U>
-    Primitive operator*(const U& other) const;
-    template <typename U>
-    Primitive operator/(const U& other) const;
-    template <typename U>
-    Primitive operator%(const U& other) const;
-
-    template <typename U>
-    Primitive& operator+=(const U& other);
-    template <typename U>
-    Primitive& operator-=(const U& other);
-    template <typename U>
-    Primitive& operator*=(const U& other);
-    template <typename U>
-    Primitive& operator/=(const U& other);
-    template <typename U>
-    Primitive& operator%=(const U& other);
-
-    // Comparison operators: Primitive<T> vs Primitive<T>
-    Primitive<bool> operator>(const Primitive<T>& other) const;
-    Primitive<bool> operator>=(const Primitive<T>& other) const;
-    Primitive<bool> operator<(const Primitive<T>& other) const;
-    Primitive<bool> operator<=(const Primitive<T>& other) const;
-
-    // Primitive<T> vs T
-    Primitive<bool> operator>(const T& other) const;
-    Primitive<bool> operator>=(const T& other) const;
-    Primitive<bool> operator<(const T& other) const;
-    Primitive<bool> operator<=(const T& other) const;
-
-    // Primitive<T> vs Primitive<U>
-    template <typename U>
-    Primitive<bool> operator>(const Primitive<U>& other) const;
-
-    template <typename U>
-    Primitive<bool> operator>=(const Primitive<U>& other) const;
-
-    template <typename U>
-    Primitive<bool> operator<(const Primitive<U>& other) const;
-
-    template <typename U>
-    Primitive<bool> operator<=(const Primitive<U>& other) const;
-
-    // Primitive<T> vs U
-    template <typename U>
-    Primitive<bool> operator>(const U& other) const;
-
-    template <typename U>
-    Primitive<bool> operator>=(const U& other) const;
-
-    template <typename U>
-    Primitive<bool> operator<(const U& other) const;
-
-    template <typename U>
-    Primitive<bool> operator<=(const U& other) const;
-
-    template <typename U>
-    Primitive<bool> operator==(const Primitive<U>& other) const;
-
-    template <typename U>
-    Primitive<bool> operator!=(const Primitive<U>& other) const;
-
-    // Raw T
-    Primitive<bool> operator==(const T& other) const;
-    Primitive<bool> operator!=(const T& other) const;
-
-    // Raw U
-    template <typename U>
-    Primitive<bool> operator==(const U& other) const;
-
-    template <typename U>
-    Primitive<bool> operator!=(const U& other) const;
-
+    // Logic
     Primitive<bool> operator||(const Primitive<bool>& other);
     Primitive<bool> operator&&(const Primitive<bool>& other);
     Primitive<bool> operator||(bool other);
@@ -650,699 +587,361 @@ protected:
     Primitive<bool> equals(const Object& other) const override;
 };
 
-#include "Primitive.tpp"
-)" },
+// GLOBAL OPERATORS - CRITICAL FOR AMBIGUITY FIX
+// These use 'requires' to ensure they only work when the Left Hand Side is NOT a Primitive
+template <typename T, typename U>
+requires std::is_arithmetic_v<U> && (!is_primitive<U>::value)
+auto operator+(U left, const Primitive<T>& right) { return Primitive<T>(left + right.getValue()); }
+
+template <typename T, typename U>
+requires std::is_arithmetic_v<U> && (!is_primitive<U>::value)
+auto operator-(U left, const Primitive<T>& right) { return Primitive<T>(left - right.getValue()); }
+
+template <typename T, typename U>
+requires std::is_arithmetic_v<U> && (!is_primitive<U>::value)
+auto operator*(U left, const Primitive<T>& right) { return Primitive<T>(left * right.getValue()); }
+
+template <typename T, typename U>
+requires std::is_arithmetic_v<U> && (!is_primitive<U>::value)
+auto operator/(U left, const Primitive<T>& right) { return Primitive<T>(left / right.getValue()); }
+
+#include "Primitive.tpp")" },
     { R"(Primitive.tpp)", R"(#pragma once
 #include "Primitive.h"
 
-template <typename T>
-double Primitive<T>::getNumericValue() const
-{
-    return static_cast<double>(value);
-}
 
 template <typename T>
-Primitive<T>::Primitive(const T& value) : value(value)
-{
-}
+requires std::is_arithmetic_v<T>
+double Primitive<T>::getNumericValue() const { return static_cast<double>(value); }
 
 template <typename T>
-Primitive<T>::Primitive(const Primitive& other) : value(other.value)
-{
-}
+requires std::is_arithmetic_v<T>
+Primitive<T>::Primitive(const T& value) : value(value) {}
 
 template <typename T>
-Primitive<T>& Primitive<T>::operator=(const Primitive& other)
-{
-    if (this == &other) return *this;
+requires std::is_arithmetic_v<T>
+Primitive<T>::Primitive(const Primitive& other) : value(other.value) {}
 
-    value = other.value;
-
+template <typename T>
+requires std::is_arithmetic_v<T>
+Primitive<T>& Primitive<T>::operator=(const Primitive& other) {
+    if (this != &other) value = other.value;
     return *this;
 }
 
 template <typename T>
-Primitive<T>& Primitive<T>::operator=(const T& other)
-{
+requires std::is_arithmetic_v<T>
+Primitive<T>& Primitive<T>::operator=(const T& other) {
     value = other;
-
     return *this;
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T>
 template <typename U>
-Primitive<T>& Primitive<T>::operator=(const Primitive<U>& other)
-{
+Primitive<T>& Primitive<T>::operator=(const Primitive<U>& other) {
     value = static_cast<T>(other.getValue());
-
     return *this;
 }
 
 template <typename T>
+requires std::is_arithmetic_v<T>
 template <typename U>
-Primitive<T>& Primitive<T>::operator=(const U& other)
-{
-    static_cast<T>(other);
-
+Primitive<T>& Primitive<T>::operator=(const U& other) {
+    value = static_cast<T>(other);
     return *this;
 }
 
 template <typename T>
-Primitive<T>& Primitive<T>::operator=(const Object& other)
-{
+requires std::is_arithmetic_v<T>
+Primitive<T>& Primitive<T>::operator=(const Object& other) {
     if (this == &other) return *this;
-
-    if (const Primitive<T>* p = dynamic_cast<const Primitive<T>*>(&other))
-    {
+    if (const auto* p = dynamic_cast<const Primitive<T>*>(&other)) {
         value = p->value;
+    } else if (const auto* pb = dynamic_cast<const PrimitiveBase*>(&other)) {
+        value = static_cast<T>(pb->getNumericValue());
+    } else {
+        throw std::logic_error("Cannot cast Object to Primitive");
     }
-    else
-    {
-        throw std::logic_error("Cannot cast");
-    }
-
     return *this;
 }
 
 template <typename T>
-Primitive<bool> Primitive<T>::equals(const Object& other) const
-{
-    if (this == &other) return Primitive<bool>(true);
-
-    if (const PrimitiveBase* pBase = dynamic_cast<const PrimitiveBase*>(&other))
-    {
+requires std::is_arithmetic_v<T>
+Primitive<bool> Primitive<T>::equals(const Object& other) const {
+    if (const auto* pBase = dynamic_cast<const PrimitiveBase*>(&other)) {
         return Primitive<bool>(getNumericValue() == pBase->getNumericValue());
     }
-
     return Primitive<bool>(false);
 }
 
-// ------ non-member func for T op Primitive
 template <typename T>
-Primitive<T> operator+(T left, const Primitive<T>& right)
-{
-    return Primitive(left) + right;
-}
-
-template <typename T>
-Primitive<T> operator-(T left, const Primitive<T>& right)
-{
-    return Primitive(left) - right;
-}
-
-template <typename T>
-Primitive<T> operator*(T left, const Primitive<T>& right)
-{
-    return Primitive(left) * right;
-}
-
-template <typename T>
-Primitive<T> operator/(T left, const Primitive<T>& right)
-{
-    return Primitive(left) / right;
-}
-
-template <typename T>
-Primitive<T> operator%(T left, const Primitive<T>& right)
-{
-    return Primitive(left) % right;
-}
-
-template <typename T, typename U>
-Primitive<T> operator+(U left, const Primitive<T>& right)
-{
-    return Primitive<U>(left) + right;
-}
-
-template <typename T, typename U>
-Primitive<T> operator-(U left, const Primitive<T>& right)
-{
-    return Primitive<U>(left) - right;
-}
-
-template <typename T, typename U>
-Primitive<T> operator*(U left, const Primitive<T>& right)
-{
-    return Primitive<U>(left) * right;
-}
-
-template <typename T, typename U>
-Primitive<T> operator/(U left, const Primitive<T>& right)
-{
-    return Primitive<U>(left) / right;
-}
-
-template <typename T, typename U>
-Primitive<T> operator%(U left, const Primitive<T>& right)
-{
-    return Primitive<U>(left) % right;
-}
-
-// -------------
-
-template <typename T>
-std::string Primitive<T>::toString() const
-{
-    if constexpr (std::is_same_v<T,bool>) return value ? "cres" : "demen";
+requires std::is_arithmetic_v<T>
+std::string Primitive<T>::toString() const {
+    if constexpr (std::is_same_v<T, bool>) return value ? "cres" : "demen";
     return std::to_string(value);
 }
 
 template <typename T>
-std::unique_ptr<Object> Primitive<T>::clone() const
-{
+requires std::is_arithmetic_v<T>
+std::unique_ptr<Object> Primitive<T>::clone() const {
     return std::make_unique<Primitive>(value);
 }
 
 template <typename T>
-T Primitive<T>::getValue() const
-{
-    return value;
+requires std::is_arithmetic_v<T>
+T Primitive<T>::getValue() const { return value; }
+
+// Math Implementation
+template <typename T>
+requires std::is_arithmetic_v<T>
+Primitive<T> Primitive<T>::operator+(const Primitive& other) const { return Primitive(value + other.value); }
+
+template <typename T>
+requires std::is_arithmetic_v<T>
+Primitive<T> Primitive<T>::operator-(const Primitive& other) const { return Primitive(value - other.value); }
+
+template <typename T>
+requires std::is_arithmetic_v<T>
+Primitive<T> Primitive<T>::operator*(const Primitive& other) const { return Primitive(value * other.value); }
+
+template <typename T>
+requires std::is_arithmetic_v<T>
+Primitive<T> Primitive<T>::operator/(const Primitive& other) const { return Primitive(value / other.value); }
+
+template <typename T>
+requires std::is_arithmetic_v<T>
+Primitive<T> Primitive<T>::operator%(const Primitive& other) const {
+    if constexpr (std::is_integral_v<T>) return Primitive(value % other.value);
+    return Primitive(T());
 }
 
 template <typename T>
-Primitive<T> Primitive<T>::operator+(const Primitive& other) const
-{
-    return Primitive(value + other.value);
-}
+requires std::is_arithmetic_v<T>
+Primitive<T> Primitive<T>::operator-() const { return Primitive<T>(-value); }
 
-template <typename T>
-Primitive<T> Primitive<T>::operator-(const Primitive& other) const
-{
-    return Primitive(value - other.value);
-}
-
-template <typename T>
-Primitive<T> Primitive<T>::operator*(const Primitive& other) const
-{
-    return Primitive(value * other.value);
-}
-
-template <typename T>
-Primitive<T> Primitive<T>::operator/(const Primitive& other) const
-{
-    return Primitive(value / other.value);
-}
-
-template <typename T>
-Primitive<T> Primitive<T>::operator%(const Primitive& other) const
-{
-    return Primitive(value % other.value);
-}
-
-template <typename T>
-Primitive<T>& Primitive<T>::operator++()
-{
-    value++;
-    return *this;
-}
-
-template <typename T>
-Primitive<T>& Primitive<T>::operator--()
-{
-    value--;
-    return *this;
-}
-
-// Post-increment: return old value
-template <typename T>
-Primitive<T> Primitive<T>::operator++(int)
-{
-    Primitive<T> old(*this); // copy current value
-    ++value;                  // increment this
-    return old;               // return copy
-}
-
-template <typename T>
-Primitive<T> Primitive<T>::operator--(int)
-{
-    Primitive<T> old(*this); // copy current value
-    --value;                  // decrement this
-    return old;               // return copy
-}
-
-template <typename T>
-Primitive<T> Primitive<T>::operator-() const
-{
-    return Primitive<T>(-value);
-}
-
-template <typename T>
+template <typename T> requires std::is_arithmetic_v<T>
 Primitive<T>& Primitive<T>::operator+=(const Primitive& other)
 {
     value += other.value;
     return *this;
 }
 
-template <typename T>
+template <typename T> requires std::is_arithmetic_v<T>
 Primitive<T>& Primitive<T>::operator-=(const Primitive& other)
 {
     value -= other.value;
     return *this;
 }
 
-template <typename T>
+template <typename T> requires std::is_arithmetic_v<T>
 Primitive<T>& Primitive<T>::operator*=(const Primitive& other)
 {
     value *= other.value;
     return *this;
 }
 
-template <typename T>
+template <typename T> requires std::is_arithmetic_v<T>
 Primitive<T>& Primitive<T>::operator/=(const Primitive& other)
 {
     value /= other.value;
     return *this;
 }
 
-template <typename T>
+template <typename T> requires std::is_arithmetic_v<T>
 Primitive<T>& Primitive<T>::operator%=(const Primitive& other)
 {
     value %= other.value;
     return *this;
 }
 
-template <typename T>
-Primitive<T> Primitive<T>::operator+(const T& other) const
-{
-    return Primitive<T>(value + other);
-}
-
-template <typename T>
-Primitive<T> Primitive<T>::operator-(const T& other) const
-{
-    return Primitive<T>(value - other);
-}
-
-template <typename T>
-Primitive<T> Primitive<T>::operator*(const T& other) const
-{
-    return Primitive<T>(value * other);
-}
-
-template <typename T>
-Primitive<T> Primitive<T>::operator/(const T& other) const
-{
-    return Primitive<T>(value / other);
-}
-
-template <typename T>
-Primitive<T> Primitive<T>::operator%(const T& other) const
-{
-    return Primitive<T>(value % other);
-}
-
-template <typename T>
-Primitive<T>& Primitive<T>::operator+=(const T& other)
-{
-    value += other;
-    return *this;
-}
-
-template <typename T>
-Primitive<T>& Primitive<T>::operator-=(const T& other)
-{
-    value -= other;
-    return *this;
-}
-
-template <typename T>
-Primitive<T>& Primitive<T>::operator*=(const T& other)
-{
-    value *= other;
-    return *this;
-}
-
-template <typename T>
-Primitive<T>& Primitive<T>::operator/=(const T& other)
-{
-    value /= other;
-    return *this;
-}
-
-template <typename T>
-Primitive<T>& Primitive<T>::operator%=(const T& other)
-{
-    value %= other;
-    return *this;
-}
-
-template <typename T>
-template <typename U>
-Primitive<T> Primitive<T>::operator+(const Primitive<U>& other) const
-{
-    return Primitive<T>(value + static_cast<T>(other.getValue()));
-}
-
-template <typename T>
-template <typename U>
-Primitive<T> Primitive<T>::operator-(const Primitive<U>& other) const
-{
-    return Primitive<T>(value - static_cast<T>(other.getValue()));
-}
-
-template <typename T>
-template <typename U>
-Primitive<T> Primitive<T>::operator*(const Primitive<U>& other) const
-{
-    return Primitive<T>(value * static_cast<T>(other.getValue()));
-}
-
-template <typename T>
-template <typename U>
-Primitive<T> Primitive<T>::operator/(const Primitive<U>& other) const
-{
-    return Primitive<T>(value / static_cast<T>(other.getValue()));
-}
-
-template <typename T>
-template <typename U>
-Primitive<T> Primitive<T>::operator%(const Primitive<U>& other) const
-{
-    static_assert(std::is_integral_v<T> && std::is_integral_v<U>, "Modulo only allowed for integral types");
-    return Primitive<T>(value % static_cast<T>(other.getValue()));
-}
-
-template <typename T>
-template <typename U>
-Primitive<T> Primitive<T>::operator+(const U& other) const
-{
-    return Primitive<T>(value + static_cast<T>(other));
-}
-
-template <typename T>
-template <typename U>
-Primitive<T> Primitive<T>::operator-(const U& other) const
-{
-    return Primitive<T>(value - static_cast<T>(other));
-}
-
-template <typename T>
-template <typename U>
-Primitive<T> Primitive<T>::operator*(const U& other) const
-{
-    return Primitive<T>(value * static_cast<T>(other));
-}
-
-template <typename T>
-template <typename U>
-Primitive<T> Primitive<T>::operator/(const U& other) const
-{
-    return Primitive<T>(value / static_cast<T>(other));
-}
-
-template <typename T>
+template <typename T> requires std::is_arithmetic_v<T>
 template <typename U>
 Primitive<T> Primitive<T>::operator%(const U& other) const
 {
-    static_assert(std::is_integral_v<T> && std::is_integral_v<U>, "Modulo only allowed for integral types");
-    return Primitive<T>(value % static_cast<T>(other));
+    return Primitive(value % other);
 }
 
-template <typename T>
-template <typename U>
-Primitive<T>& Primitive<T>::operator+=(const Primitive<U>& other)
-{
-    value += static_cast<T>(other.getValue());
-    return *this;
-}
-
-template <typename T>
-template <typename U>
-Primitive<T>& Primitive<T>::operator-=(const Primitive<U>& other)
-{
-    value -= static_cast<T>(other.getValue());
-    return *this;
-}
-
-template <typename T>
-template <typename U>
-Primitive<T>& Primitive<T>::operator*=(const Primitive<U>& other)
-{
-    value *= static_cast<T>(other.getValue());
-    return *this;
-}
-
-template <typename T>
-template <typename U>
-Primitive<T>& Primitive<T>::operator/=(const Primitive<U>& other)
-{
-    value /= static_cast<T>(other.getValue());
-    return *this;
-}
-
-template <typename T>
-template <typename U>
-Primitive<T>& Primitive<T>::operator%=(const Primitive<U>& other)
-{
-    static_assert(std::is_integral_v<T> && std::is_integral_v<U>, "Modulo only allowed for integral types");
-    value %= static_cast<T>(other.getValue());
-    return *this;
-}
-
-template <typename T>
-template <typename U>
-Primitive<T>& Primitive<T>::operator+=(const U& other)
-{
-    value += static_cast<T>(other);
-    return *this;
-}
-
-template <typename T>
+template <typename T> requires std::is_arithmetic_v<T>
 template <typename U>
 Primitive<T>& Primitive<T>::operator-=(const U& other)
 {
-    value -= static_cast<T>(other);
+    value -= other.value;
     return *this;
 }
 
-template <typename T>
+template <typename T> requires std::is_arithmetic_v<T>
 template <typename U>
 Primitive<T>& Primitive<T>::operator*=(const U& other)
 {
-    value *= static_cast<T>(other);
+    value *= other.value;
     return *this;
 }
 
-template <typename T>
+template <typename T> requires std::is_arithmetic_v<T>
 template <typename U>
 Primitive<T>& Primitive<T>::operator/=(const U& other)
 {
-    value /= static_cast<T>(other);
+    value /= other.value;
     return *this;
 }
 
-template <typename T>
+template <typename T> requires std::is_arithmetic_v<T>
 template <typename U>
 Primitive<T>& Primitive<T>::operator%=(const U& other)
 {
-    static_assert(std::is_integral_v<T> && std::is_integral_v<U>, "Modulo only allowed for integral types");
-    value %= static_cast<T>(other);
+    value %= other.value;
     return *this;
 }
 
-// Primitive<T> vs Primitive<T>
-template <typename T>
-Primitive<bool> Primitive<T>::operator>(const Primitive<T>& other) const
-{
-    return Primitive<bool>(value > other.value);
-}
-
-template <typename T>
-Primitive<bool> Primitive<T>::operator>=(const Primitive<T>& other) const
-{
-    return Primitive<bool>(value >= other.value);
-}
-
-template <typename T>
-Primitive<bool> Primitive<T>::operator<(const Primitive<T>& other) const
-{
-    return Primitive<bool>(value < other.value);
-}
-
-template <typename T>
-Primitive<bool> Primitive<T>::operator<=(const Primitive<T>& other) const
-{
-    return Primitive<bool>(value <= other.value);
-}
-
-// Primitive<T> vs T
-template <typename T>
-Primitive<bool> Primitive<T>::operator>(const T& other) const
-{
-    return Primitive<bool>(value > other);
-}
-
-template <typename T>
-Primitive<bool> Primitive<T>::operator>=(const T& other) const
-{
-    return Primitive<bool>(value >= other);
-}
-
-template <typename T>
-Primitive<bool> Primitive<T>::operator<(const T& other) const
-{
-    return Primitive<bool>(value < other);
-}
-
-template <typename T>
-Primitive<bool> Primitive<T>::operator<=(const T& other) const
-{
-    return Primitive<bool>(value <= other);
-}
-
-// Primitive<T> vs Primitive<U>
-template <typename T>
-template <typename U>
-Primitive<bool> Primitive<T>::operator>(const Primitive<U>& other) const
-{
-    return Primitive<bool>(value > other.getValue());
-}
-
-template <typename T>
-template <typename U>
-Primitive<bool> Primitive<T>::operator>=(const Primitive<U>& other) const
-{
-    return Primitive<bool>(value >= other.getValue());
-}
-
-template <typename T>
-template <typename U>
-Primitive<bool> Primitive<T>::operator<(const Primitive<U>& other) const
-{
-    return Primitive<bool>(value < other.getValue());
-}
-
-template <typename T>
-template <typename U>
-Primitive<bool> Primitive<T>::operator<=(const Primitive<U>& other) const
-{
-    return Primitive<bool>(value <= other.getValue());
-}
-
-// Primitive<T> vs U
-template <typename T>
-template <typename U>
-Primitive<bool> Primitive<T>::operator>(const U& other) const
-{
-    return Primitive<bool>(value > other);
-}
-
-template <typename T>
+template <typename T> requires std::is_arithmetic_v<T>
 template <typename U>
 Primitive<bool> Primitive<T>::operator>=(const U& other) const
 {
-    return Primitive<bool>(value >= other);
+    return Primitive(value >= other.value);
 }
 
-template <typename T>
-template <typename U>
-Primitive<bool> Primitive<T>::operator<(const U& other) const
-{
-    return Primitive<bool>(value < other);
-}
-
-template <typename T>
+template <typename T> requires std::is_arithmetic_v<T>
 template <typename U>
 Primitive<bool> Primitive<T>::operator<=(const U& other) const
 {
-    return Primitive<bool>(value <= other);
+    return Primitive(value <= other.value);
 }
 
-template <typename T>
-template <typename U>
-Primitive<bool> Primitive<T>::operator==(const Primitive<U>& other) const
-{
-    return Primitive<bool>(value == static_cast<T>(other.getValue()));
-}
-
-template <typename T>
-template <typename U>
-Primitive<bool> Primitive<T>::operator!=(const Primitive<U>& other) const
-{
-    return Primitive<bool>(value != static_cast<T>(other.getValue()));
-}
-
-template <typename T>
-template <typename U>
-Primitive<bool> Primitive<T>::operator==(const U& other) const
-{
-    return Primitive<bool>(value == static_cast<T>(other));
-}
-
-template <typename T>
-template <typename U>
-Primitive<bool> Primitive<T>::operator!=(const U& other) const
-{
-    return Primitive<bool>(value != static_cast<T>(other));
-}
-
-template <typename T>
-Primitive<bool> Primitive<T>::operator||(const Primitive<bool>& other)
-{
-    return Primitive<bool>(value || other.value);
-}
-
-template <typename T>
-Primitive<bool> Primitive<T>::operator&&(const Primitive<bool>& other)
-{
-    return Primitive<bool>(value && other.value);
-}
-
-template <typename T>
+template <typename T> requires std::is_arithmetic_v<T>
 Primitive<bool> Primitive<T>::operator||(bool other)
 {
-    return Primitive<bool>(value || other);
+    return Primitive(value || other);
 }
 
-template <typename T>
+template <typename T> requires std::is_arithmetic_v<T>
 Primitive<bool> Primitive<T>::operator&&(bool other)
 {
-    return Primitive<bool>(value && other);
+    return Primitive(value && other);
+}
+
+// Generic Template Math (Handles both T and Primitive<U>)
+template <typename T>
+requires std::is_arithmetic_v<T>
+template <typename U>
+Primitive<T> Primitive<T>::operator+(const U& other) const {
+    if constexpr (is_primitive<U>::value) return Primitive<T>(value + static_cast<T>(other.getValue()));
+    else return Primitive<T>(value + static_cast<T>(other));
 }
 
 template <typename T>
-Primitive<T>::operator bool() const
-{
-    if constexpr (std::is_same_v<T, bool>) return value;
+requires std::is_arithmetic_v<T>
+template <typename U>
+Primitive<T> Primitive<T>::operator-(const U& other) const {
+    if constexpr (is_primitive<U>::value) return Primitive<T>(value - static_cast<T>(other.getValue()));
+    else return Primitive<T>(value - static_cast<T>(other));
+}
 
-    return value == T();
+template <typename T>
+requires std::is_arithmetic_v<T>
+template <typename U>
+Primitive<T> Primitive<T>::operator*(const U& other) const {
+    if constexpr (is_primitive<U>::value) return Primitive<T>(value * static_cast<T>(other.getValue()));
+    else return Primitive<T>(value * static_cast<T>(other));
+}
+
+template <typename T>
+requires std::is_arithmetic_v<T>
+template <typename U>
+Primitive<T> Primitive<T>::operator/(const U& other) const {
+    if constexpr (is_primitive<U>::value) return Primitive<T>(value / static_cast<T>(other.getValue()));
+    else return Primitive<T>(value / static_cast<T>(other));
+}
+
+// Increment/Decrement
+template <typename T> requires std::is_arithmetic_v<T>
+Primitive<T>& Primitive<T>::operator++() { ++value; return *this; }
+template <typename T> requires std::is_arithmetic_v<T>
+Primitive<T>& Primitive<T>::operator--() { --value; return *this; }
+template <typename T> requires std::is_arithmetic_v<T>
+Primitive<T> Primitive<T>::operator++(int) { Primitive tmp(*this); ++value; return tmp; }
+template <typename T> requires std::is_arithmetic_v<T>
+Primitive<T> Primitive<T>::operator--(int) { Primitive tmp(*this); --value; return tmp; }
+
+// Compound assignments
+template <typename T>
+requires std::is_arithmetic_v<T>
+template <typename U>
+Primitive<T>& Primitive<T>::operator+=(const U& other) {
+    if constexpr (is_primitive<U>::value) value += static_cast<T>(other.getValue());
+    else value += static_cast<T>(other);
+    return *this;
+}
+
+// Comparison
+template <typename T>
+requires std::is_arithmetic_v<T>
+template <typename U>
+Primitive<bool> Primitive<T>::operator>(const U& other) const {
+    if constexpr (is_primitive<U>::value) return Primitive<bool>(value > other.getValue());
+    else return Primitive<bool>(value > other);
+}
+
+template <typename T>
+requires std::is_arithmetic_v<T>
+template <typename U>
+Primitive<bool> Primitive<T>::operator<(const U& other) const {
+    if constexpr (is_primitive<U>::value) return Primitive<bool>(value < other.getValue());
+    else return Primitive<bool>(value < other);
+}
+
+template <typename T>
+requires std::is_arithmetic_v<T>
+template <typename U>
+Primitive<bool> Primitive<T>::operator==(const U& other) const {
+    if constexpr (is_primitive<U>::value) return Primitive<bool>(value == other.getValue());
+    else return Primitive<bool>(value == other);
+}
+
+template <typename T>
+requires std::is_arithmetic_v<T>
+template <typename U>
+Primitive<bool> Primitive<T>::operator!=(const U& other) const {
+    return Primitive<bool>(!(*this == other).getValue());
+}
+
+// Logic Implementation
+template <typename T>
+requires std::is_arithmetic_v<T>
+Primitive<bool> Primitive<T>::operator||(const Primitive<bool>& other) { return Primitive<bool>(static_cast<bool>(*this) || other.getValue()); }
+
+template <typename T>
+requires std::is_arithmetic_v<T>
+Primitive<bool> Primitive<T>::operator&&(const Primitive<bool>& other) { return Primitive<bool>(static_cast<bool>(*this) && other.getValue()); }
+
+template <typename T>
+requires std::is_arithmetic_v<T>
+Primitive<T>::operator bool() const {
+    if constexpr (std::is_same_v<T, bool>) return value;
+    return value != T(0);
 }
 )" },
     { R"(SafePtr.h)", R"(#pragma once
 #include <memory>
-
 #include "Object.h"
 
-// 1. Forward declare Array
+// Forward declarations and traits...
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 class Array;
 
-// 2. Define the detector
-template <typename T>
-struct is_array_specialization : std::false_type {};
+template <typename T> struct is_array_specialization : std::false_type {};
+template <typename T> struct is_array_specialization<Array<T>> : std::true_type {};
 
-template <typename T>
-struct is_array_specialization<Array<T>> : std::true_type {};
-
-// 3. Define the return type trait
-template <typename T>
-struct get_element_type {
-    using type = T;
-};
-
-template <typename U>
-struct get_element_type<Array<U>> {
-    // Array holds SafePtr<Primitive<U>>, so return the Primitive<U>
-    using type = typename Array<U>::SafeType;
-};
+template <typename T> struct get_element_type { using type = T; };
+template <typename U> struct get_element_type<Array<U>> { using type = typename Array<U>::SafeType; };
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 class SafePtr : public Object
 {
 private:
-    std::unique_ptr<Object> ptr;
+    std::unique_ptr<T> ptr;
 public:
     SafePtr();
     explicit SafePtr(const std::unique_ptr<T>& ptr);
@@ -1350,76 +949,57 @@ public:
     SafePtr(const SafePtr& other);
 
     template <typename U>
-    requires (
-        std::is_convertible_v<U, T> &&
-        (
-            std::is_arithmetic_v<U> ||
-            std::is_base_of_v<Object, std::remove_cvref_t<U>>
-        )
-    )
-    explicit SafePtr(std::unique_ptr<U>& ptr);
+    SafePtr(std::unique_ptr<U>& otherPtr);
 
     template <typename U>
-    requires (
-        std::is_convertible_v<U, T> &&
-        (
-            std::is_arithmetic_v<U> ||
-            std::is_base_of_v<Object, std::remove_cvref_t<U>>
-        )
-    )
-    explicit SafePtr(const U& u);
+    SafePtr(const U& u);
 
     template <typename U>
-    requires (
-        std::is_convertible_v<U, T> &&
-        (
-            std::is_arithmetic_v<U> ||
-            std::is_base_of_v<Object, std::remove_cvref_t<U>>
-        )
-    )
-    explicit SafePtr(const SafePtr<U>& other);
+    SafePtr(const SafePtr<U>& other);
+
+    template <typename U>
+    SafePtr& operator=(const U& u);
+
+    template <typename U>
+    SafePtr& operator=(const SafePtr<U>& u);
+
+    // Existing Template Constructors and Assignment Operators...
+    // (Omitted for brevity, keep your existing implementations)
 
     SafePtr& operator=(const T& t);
     SafePtr& operator=(const SafePtr& t);
 
-    template <typename U>
-    requires (
-        std::is_convertible_v<U, T> &&
-        (
-            std::is_arithmetic_v<U> ||
-            std::is_base_of_v<Object, std::remove_cvref_t<U>>
-        )
-    )
-    SafePtr& operator=(const U& u);
+    // --- Math & Assignment Operators ---
 
-    template <typename U>
-    requires (
-        std::is_convertible_v<U, T> &&
-        (
-            std::is_arithmetic_v<U> ||
-            std::is_base_of_v<Object, std::remove_cvref_t<U>>
-        )
-    )
-    SafePtr& operator=(const SafePtr<U>& u);
+    // Compound Assignments
+    template <typename U> SafePtr& operator+=(const U& other) { **ptr += other; return *this; }
+    template <typename U> SafePtr& operator-=(const U& other) { **ptr -= other; return *this; }
+    template <typename U> SafePtr& operator*=(const U& other) { **ptr *= other; return *this; }
+    template <typename U> SafePtr& operator/=(const U& other) { **ptr /= other; return *this; }
+    template <typename U> SafePtr& operator%=(const U& other) { **ptr %= other; return *this; }
 
+    // Increment / Decrement
+    SafePtr& operator++() { ++(static_cast<T&>(*ptr)); return *this; }
+    SafePtr operator++(int) { SafePtr tmp(*this); ++(static_cast<T&>(*ptr)); return tmp; }
+    SafePtr& operator--() { --(static_cast<T&>(*ptr)); return *this; }
+    SafePtr operator--(int) { SafePtr tmp(*this); --(static_cast<T&>(*ptr)); return tmp; }
+
+    // --- Existing Accessors ---
     SafePtr cloneSafePtr() const;
-
-    get_element_type<T>::type& operator[](int index) override;
-    get_element_type<T>::type& operator[](Primitive<int> index) override;
+    typename get_element_type<T>::type& operator[](int index) override;
+    typename get_element_type<T>::type& operator[](Primitive<int> index) override;
 
     T* operator->() const;
     T& operator*() const;
     T* get() const;
     std::unique_ptr<Object> clonePtr() const;
 
-    friend std::ostream& operator<<(std::ostream& os, const SafePtr<T>& safePtr)
-    {
+    friend std::ostream& operator<<(std::ostream& os, const SafePtr<T>& safePtr) {
         os << *(safePtr.ptr);
         return os;
     }
 
     ~SafePtr() override = default;
-
     std::string toString() const override;
     std::unique_ptr<Object> clone() const override;
 
@@ -1427,11 +1007,36 @@ protected:
     Primitive<bool> equals(const Object& other) const override;
 };
 
-#include "SafePtr.tpp"
-)" },
+// --- Global Binary Operators (The "Bridge") ---
+// These allow expressions like: ptr + ptr, ptr + 5, or 5 + ptr
+
+#define SAFE_PTR_BIN_OP(op) \
+template <typename T, typename U> \
+auto operator op(const SafePtr<T>& lhs, const SafePtr<U>& rhs) { return (*lhs) op (*rhs); } \
+template <typename T, typename U> \
+auto operator op(const SafePtr<T>& lhs, const U& rhs) { return (*lhs) op rhs; } \
+template <typename T, typename U> \
+auto operator op(const U& lhs, const SafePtr<T>& rhs) { return lhs op (*rhs); }
+
+SAFE_PTR_BIN_OP(+)
+SAFE_PTR_BIN_OP(-)
+SAFE_PTR_BIN_OP(*)
+SAFE_PTR_BIN_OP(/)
+SAFE_PTR_BIN_OP(%)
+SAFE_PTR_BIN_OP(==)
+SAFE_PTR_BIN_OP(!=)
+SAFE_PTR_BIN_OP(<)
+SAFE_PTR_BIN_OP(>)
+SAFE_PTR_BIN_OP(<=)
+SAFE_PTR_BIN_OP(>=)
+SAFE_PTR_BIN_OP(&&)
+SAFE_PTR_BIN_OP(||)
+
+#undef SAFE_PTR_BIN_OP
+
+#include "SafePtr.tpp")" },
     { R"(SafePtr.tpp)", R"(#pragma once
 #include <algorithm>
-
 #include "Object.h"
 #include "SafePtr.h"
 #include "String.h"
@@ -1462,17 +1067,10 @@ requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 Primitive<bool> SafePtr<T>::equals(const Object& other) const
 {
     if (this == &other) return Primitive<bool>(true);
-
     if (auto p = dynamic_cast<const SafePtr<T>*>(&other))
     {
-        return *this == *p;
+        return *(*this) == *(*p);
     }
-
-    if (auto p = dynamic_cast<const T*>(&other))
-    {
-        return *ptr == *p;
-    }
-
     return Primitive<bool>(false);
 }
 
@@ -1480,113 +1078,122 @@ template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 SafePtr<T>::SafePtr()
 {
-
     if constexpr (std::is_same_v<T, Object>)
-    {
         ptr = std::make_unique<String>();
-    }
     else
-    {
         ptr = std::make_unique<T>();
-    }
 }
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-SafePtr<T>::SafePtr(const std::unique_ptr<T>& ptr)
+SafePtr<T>::SafePtr(const std::unique_ptr<T>& otherPtr)
 {
-    static_assert(std::is_base_of_v<Object, T>, "non-Object-derived type created");
-
-    this->ptr = std::unique_ptr<T>(ptr.get());
+    this->ptr = otherPtr->clone();
 }
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 SafePtr<T>::SafePtr(const T& t)
 {
-    if constexpr (!std::is_arithmetic_v<T>) static_assert(std::is_base_of_v<Object, T>, "non-Object-derived type created");
-
     if constexpr (std::is_same_v<T, Object>)
-    {
-        ptr = std::move(t.clone());
-    }
+        ptr = t.clone();
     else
-    {
         ptr = std::make_unique<T>(t);
-    }
 }
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 SafePtr<T>::SafePtr(const SafePtr& other)
 {
-    static_assert(std::is_base_of_v<Object, T>, "non-Object-derived type created");
-    ptr = std::move(other.clonePtr());
+    ptr = other.clonePtr();
 }
 
-template <typename T>
-requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 template <typename U>
-requires (
-    std::is_convertible_v<U, T> &&
-    (
-        std::is_arithmetic_v<U> ||
-        std::is_base_of_v<Object, std::remove_cvref_t<U>>
-    )
-)
-SafePtr<T>::SafePtr(std::unique_ptr<U>& ptr)
+SafePtr<T>::SafePtr(std::unique_ptr<U>& otherPtr)
 {
-    static_assert(std::is_base_of_v<Object, T>, "non-Object-derived type created");
-    static_assert(std::is_base_of_v<Object, U>, "non-Object-derived type created");
-    static_assert(std::is_convertible_v<U*, T*>, "Cannot cast");
-
-
-    this->ptr = std::move(ptr.clone());
+    ptr = otherPtr.release();
 }
 
+template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+template <typename U>
+SafePtr<T>::SafePtr(const U& u)
+{
+    ptr = std::make_unique<T>(u);
+}
+
+template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+template <typename U>
+SafePtr<T>::SafePtr(const SafePtr<U>& other)
+{
+    ptr = other.clonePtr();
+}
+
+template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+template <typename U>
+SafePtr<T>& SafePtr<T>::operator=(const U& u)
+{
+    ptr = std::make_unique<T>(u);
+    return *this;
+}
+
+template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+template <typename U>
+SafePtr<T>& SafePtr<T>::operator=(const SafePtr<U>& u)
+{
+    ptr = u.clonePtr();
+    return *this;
+}
+
+// Template Constructor (UniquePtr)
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 template <typename U>
 requires (
     std::is_convertible_v<U, T> &&
-    (
-        std::is_arithmetic_v<U> ||
-        std::is_base_of_v<Object, std::remove_cvref_t<U>>
-    )
+    (std::is_arithmetic_v<U> || std::is_base_of_v<Object, std::remove_cvref_t<U>>)
+)
+SafePtr<T>::SafePtr(std::unique_ptr<U>& otherPtr)
+{
+    this->ptr = std::move(otherPtr);
+}
+
+// Template Constructor (Value)
+template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+template <typename U>
+requires (
+    std::is_convertible_v<U, T> &&
+    (std::is_arithmetic_v<U> || std::is_base_of_v<Object, std::remove_cvref_t<U>>)
 )
 SafePtr<T>::SafePtr(const U& u)
 {
-    static_assert(std::is_base_of_v<Object, T>, "non-Object-derived type created");
-    static_assert(std::is_base_of_v<Object, U>, "non-Object-derived type created");
-    static_assert(std::is_convertible_v<U*, T*>, "Cannot cast");
-
-    ptr = std::make_unique<T>(dynamic_cast<T&>(u));
+    // Use SafeType to ensure we wrap in Primitive if U is arithmetic
+    using InternalType = typename Array<T>::SafeType;
+    ptr = std::make_unique<InternalType>(u);
 }
 
+// Template Constructor (Cross-type SafePtr)
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 template <typename U>
 requires (
     std::is_convertible_v<U, T> &&
-    (
-        std::is_arithmetic_v<U> ||
-        std::is_base_of_v<Object, std::remove_cvref_t<U>>
-    )
+    (std::is_arithmetic_v<U> || std::is_base_of_v<Object, std::remove_cvref_t<U>>)
 )
 SafePtr<T>::SafePtr(const SafePtr<U>& other)
 {
-    static_assert(std::is_base_of_v<Object, T>, "non-Object-derived type created");
-    static_assert(std::is_base_of_v<Object, U>, "non-Object-derived type created");
-    static_assert(std::is_convertible_v<U*, T*>, "Cannot cast");
-
-    ptr = std::unique_ptr<T>(dynamic_cast<T*>(other.ptr->clone()));
+    ptr = other.clonePtr();
 }
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 SafePtr<T>& SafePtr<T>::operator=(const T& t)
 {
-    ptr = std::make_unique<T>(t);
+    if constexpr (std::is_same_v<T, Object>)
+        ptr = t.clone();
+    else
+        ptr = std::make_unique<T>(t);
     return *this;
 }
 
@@ -1594,50 +1201,37 @@ template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 SafePtr<T>& SafePtr<T>::operator=(const SafePtr& t)
 {
-    ptr = std::move(t.clonePtr());
+    if (this != &t) ptr = t.clonePtr();
     return *this;
 }
 
+// Template Assignment (Value)
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 template <typename U>
 requires (
     std::is_convertible_v<U, T> &&
-    (
-        std::is_arithmetic_v<U> ||
-        std::is_base_of_v<Object, std::remove_cvref_t<U>>
-    )
+    (std::is_arithmetic_v<U> || std::is_base_of_v<Object, std::remove_cvref_t<U>>)
 )
 SafePtr<T>& SafePtr<T>::operator=(const U& u)
 {
-    static_assert(std::is_convertible_v<U*, T*>, "Cannot cast");
-
     if constexpr (std::is_same_v<T, Object>)
-    {
         ptr = u.clone();
-    }
     else
-    {
-        ptr = std::make_unique<T>(dynamic_cast<T>(u));
-    }
-
+        ptr = std::make_unique<T>(static_cast<const T&>(u));
     return *this;
 }
 
+// Template Assignment (Cross-type SafePtr)
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 template <typename U>
 requires (
     std::is_convertible_v<U, T> &&
-    (
-        std::is_arithmetic_v<U> ||
-        std::is_base_of_v<Object, std::remove_cvref_t<U>>
-    )
+    (std::is_arithmetic_v<U> || std::is_base_of_v<Object, std::remove_cvref_t<U>>)
 )
 SafePtr<T>& SafePtr<T>::operator=(const SafePtr<U>& u)
 {
-    static_assert(std::is_convertible_v<U*, T*>, "Cannot cast");
-
     ptr = u.clonePtr();
     return *this;
 }
@@ -1653,46 +1247,36 @@ template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 typename get_element_type<T>::type& SafePtr<T>::operator[](int index)
 {
-    T* container = get();
-
-    if constexpr (is_array_specialization<T>::value) {
-        // (*container)[index] gives us the SafePtr<U>& stored in the Array.
-        // We use '*' to dereference that SafePtr and get the actual Primitive<U>&.
-        // This ensures assignment changes the REAL memory inside the array.
-        return *((*container)[index]);
-    } else {
-        using ReturnType = typename get_element_type<T>::type;
-        return static_cast<ReturnType&>((*container)[index]);
-    }
+    T& container = *(*this);
+    return container[index];
 }
 
-template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 typename get_element_type<T>::type& SafePtr<T>::operator[](Primitive<int> index)
 {
-    return operator[](index.getValue());
+    return this->operator[](index.getValue());
 }
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 T* SafePtr<T>::operator->() const
 {
-    //if constexpr (!std::is_convertible_v<Object*, T*>) throw std::logic_error("Cannot cast");
-    return dynamic_cast<T*>(ptr.get());
+    return static_cast<T*>(ptr.get());
 }
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 T& SafePtr<T>::operator*() const
 {
-    //if constexpr (!std::is_convertible_v<Object&, T&>) throw std::logic_error("Cannot cast");
-    return dynamic_cast<T&>(*ptr);
+    return static_cast<T&>(*ptr);
 }
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 T* SafePtr<T>::get() const
 {
-    return reinterpret_cast<T*>(static_cast<void*>(ptr.get()));
+    return static_cast<T*>(ptr.get());
 })" },
     { R"(String.cpp)", R"(#include "String.h"
 

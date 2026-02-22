@@ -11,8 +11,11 @@ requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 class Array : public Object
 {
 public:
-    // If T is arithmetic, wrap it in Primitive<T>, else leave T as-is
-    using SafeType = std::conditional_t<std::is_arithmetic_v<T>, Primitive<T>, T>;
+    using SafeType = std::conditional_t<
+        std::is_arithmetic_v<T> && !is_primitive<T>::value,
+        Primitive<T>,
+        T
+    >;
     using SP = SafePtr<SafeType>;
     Array(); // default constructor
     explicit Array(Primitive<unsigned int> size);

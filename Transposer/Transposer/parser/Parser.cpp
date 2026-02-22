@@ -156,17 +156,24 @@ std::string Parser::translateToCpp(const std::filesystem::path& hPath, const boo
         oss << std::endl << stmt->translateToCpp();
     }
 
+    if (isMain)
+    {
+        oss << "int main()" << std::endl <<
+            "{" << std::endl <<
+            "\treturn prelude().getValue();" << std::endl <<
+            "}" << std::endl;
+    }
+
     return oss.str();
 }
 
 std::string Parser::translateToH(const bool isMain) const
 {
     std::ostringstream oss;
-    const std::filesystem::path outArrPath = File::getOutDir() / "includes" / "Array.h";
     if (!isMain) oss << "#pragma once" << std::endl;
 
     oss << "#include <string>" << std::endl;
-    if (isMain) oss << "#include \"" << outArrPath.string() << "\"" << std::endl;
+    if (isMain) oss << Utils::getAllObjIncludes() << std::endl;
 
     if (!includes.empty()) oss << std::endl;
 
