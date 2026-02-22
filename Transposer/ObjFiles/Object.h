@@ -16,10 +16,6 @@ public:
     virtual Primitive<bool> operator!=(const Object& other) const;
     friend std::ostream& operator<<(std::ostream& os, const Object& obj);
     virtual std::string toString() const;
-    virtual std::unique_ptr<Object> clone() const;
-
-    virtual Object& operator[](int index);
-    virtual Object& operator[](Primitive<int> index);
     virtual Object& operator*();
 
 protected:

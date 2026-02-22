@@ -16,21 +16,6 @@ std::string Object::toString() const
     return "";
 }
 
-std::unique_ptr<Object> Object::clone() const
-{
-    return std::make_unique<Object>();
-}
-
-Object& Object::operator[](int index)
-{
-    return *this;
-}
-
-Object& Object::operator[](Primitive<int> index)
-{
-    return operator[](index.getValue());
-}
-
 Object& Object::operator*()
 {
     return *this;

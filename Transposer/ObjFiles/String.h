@@ -13,7 +13,6 @@ public:
     explicit String(const String& string);
     explicit String(const char* basicCharPtr);
     std::string toString() const override;
-    std::unique_ptr<Object> clone() const override;
     String& operator=(const String& other);
     String& operator=(const Object& other);
     String& operator=(const char* basicCharPtr);
@@ -77,7 +76,17 @@ public:
         return *this;
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const String& str);
+    friend std::ostream& operator<<(std::ostream& os, const String& str)
+    {
+        os << str.value;
+        return os;
+    }
+
+    friend std::istream& operator>>(std::istream& is, String& str)
+    {
+        is >> str.value;
+        return is;
+    }
 
 
 protected:

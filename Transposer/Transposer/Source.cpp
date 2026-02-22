@@ -161,6 +161,11 @@ int main(int argc, char* argv[])
             filesStr += " \"" + path.string() + "\" ";
         }
 
+        for (const auto& path : Utils::getAllObjCppPaths())
+        {
+            filesStr += " \"" + path.string() + "\" ";
+        }
+
         cmdBuild << "g++ -pthread -std=c++20" << filesStr
                  << "-I" << File::getOutDir() <<" -o \"" << exePath.string() << "\""
                  << cmd->getCompileFlags();

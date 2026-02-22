@@ -7,11 +7,8 @@ template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 class Array;
 
-template <typename T> struct is_array_specialization : std::false_type {};
-template <typename T> struct is_array_specialization<Array<T>> : std::true_type {};
-
-template <typename T> struct get_element_type { using type = T; };
-template <typename U> struct get_element_type<Array<U>> { using type = typename Array<U>::SafeType; };
+template <typename T> struct is_array_specialization : std::false_type {using inner_type = void;};
+template <typename T> struct is_array_specialization<Array<T>> : std::true_type {using inner_type = T;};
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
@@ -19,6 +16,12 @@ class SafePtr : public Object
 {
 private:
     std::unique_ptr<T> ptr;
+    using InnerT = typename std::conditional_t<
+        is_array_specialization<T>::value,
+        is_array_specialization<T>,
+        is_array_specialization<Array<T>> // Dummy fallback that won't trigger SafePtr<void>
+    >::inner_type;
+    using InnerSafePtr = SafePtr<InnerT>;
 public:
     SafePtr();
     explicit SafePtr(const std::unique_ptr<T>& ptr);
@@ -26,13 +29,13 @@ public:
     SafePtr(const SafePtr& other);
 
     template <typename U>
-    SafePtr(std::unique_ptr<U>& otherPtr);
+    explicit SafePtr(std::unique_ptr<U>& otherPtr);
 
     template <typename U>
-    SafePtr(const U& u);
+    explicit SafePtr(const U& u);
 
     template <typename U>
-    SafePtr(const SafePtr<U>& other);
+    explicit SafePtr(const SafePtr<U>& other);
 
     template <typename U>
     SafePtr& operator=(const U& u);
@@ -63,13 +66,17 @@ public:
 
     // --- Existing Accessors ---
     SafePtr cloneSafePtr() const;
-    typename get_element_type<T>::type& operator[](int index) override;
-    typename get_element_type<T>::type& operator[](Primitive<int> index) override;
 
     T* operator->() const;
     T& operator*() const;
     T* get() const;
-    std::unique_ptr<Object> clonePtr() const;
+    std::unique_ptr<T> clonePtr() const;
+
+    InnerSafePtr& operator[](int index)
+    requires is_array_specialization<T>::value;
+
+    InnerSafePtr& operator[](Primitive<int> index)
+    requires is_array_specialization<T>::value;
 
     friend std::ostream& operator<<(std::ostream& os, const SafePtr<T>& safePtr) {
         os << *(safePtr.ptr);
@@ -78,7 +85,6 @@ public:
 
     ~SafePtr() override = default;
     std::string toString() const override;
-    std::unique_ptr<Object> clone() const override;
 
 protected:
     Primitive<bool> equals(const Object& other) const override;

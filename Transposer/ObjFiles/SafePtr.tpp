@@ -6,9 +6,21 @@
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-std::unique_ptr<Object> SafePtr<T>::clonePtr() const
+std::unique_ptr<T> SafePtr<T>::clonePtr() const
 {
-    return ptr->clone();
+    return std::make_unique<T>(*ptr);
+}
+
+template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+SafePtr<T>::InnerSafePtr& SafePtr<T>::operator[](int index) requires is_array_specialization<T>::value
+{
+    return ptr->operator[](index);
+}
+
+template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+SafePtr<T>::InnerSafePtr& SafePtr<T>::operator[](Primitive<int> index) requires is_array_specialization<T>::value
+{
+    return ptr->operator[](index);
 }
 
 template <typename T>
@@ -16,13 +28,6 @@ requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 std::string SafePtr<T>::toString() const
 {
     return ptr->toString();
-}
-
-template <typename T>
-requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-std::unique_ptr<Object> SafePtr<T>::clone() const
-{
-    return ptr->clone();
 }
 
 template <typename T>
@@ -108,47 +113,6 @@ SafePtr<T>& SafePtr<T>::operator=(const SafePtr<U>& u)
     return *this;
 }
 
-// Template Constructor (UniquePtr)
-template <typename T>
-requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-template <typename U>
-requires (
-    std::is_convertible_v<U, T> &&
-    (std::is_arithmetic_v<U> || std::is_base_of_v<Object, std::remove_cvref_t<U>>)
-)
-SafePtr<T>::SafePtr(std::unique_ptr<U>& otherPtr)
-{
-    this->ptr = std::move(otherPtr);
-}
-
-// Template Constructor (Value)
-template <typename T>
-requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-template <typename U>
-requires (
-    std::is_convertible_v<U, T> &&
-    (std::is_arithmetic_v<U> || std::is_base_of_v<Object, std::remove_cvref_t<U>>)
-)
-SafePtr<T>::SafePtr(const U& u)
-{
-    // Use SafeType to ensure we wrap in Primitive if U is arithmetic
-    using InternalType = typename Array<T>::SafeType;
-    ptr = std::make_unique<InternalType>(u);
-}
-
-// Template Constructor (Cross-type SafePtr)
-template <typename T>
-requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-template <typename U>
-requires (
-    std::is_convertible_v<U, T> &&
-    (std::is_arithmetic_v<U> || std::is_base_of_v<Object, std::remove_cvref_t<U>>)
-)
-SafePtr<T>::SafePtr(const SafePtr<U>& other)
-{
-    ptr = other.clonePtr();
-}
-
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 SafePtr<T>& SafePtr<T>::operator=(const T& t)
@@ -168,57 +132,11 @@ SafePtr<T>& SafePtr<T>::operator=(const SafePtr& t)
     return *this;
 }
 
-// Template Assignment (Value)
-template <typename T>
-requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-template <typename U>
-requires (
-    std::is_convertible_v<U, T> &&
-    (std::is_arithmetic_v<U> || std::is_base_of_v<Object, std::remove_cvref_t<U>>)
-)
-SafePtr<T>& SafePtr<T>::operator=(const U& u)
-{
-    if constexpr (std::is_same_v<T, Object>)
-        ptr = u.clone();
-    else
-        ptr = std::make_unique<T>(static_cast<const T&>(u));
-    return *this;
-}
-
-// Template Assignment (Cross-type SafePtr)
-template <typename T>
-requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-template <typename U>
-requires (
-    std::is_convertible_v<U, T> &&
-    (std::is_arithmetic_v<U> || std::is_base_of_v<Object, std::remove_cvref_t<U>>)
-)
-SafePtr<T>& SafePtr<T>::operator=(const SafePtr<U>& u)
-{
-    ptr = u.clonePtr();
-    return *this;
-}
-
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 SafePtr<T> SafePtr<T>::cloneSafePtr() const
 {
     return SafePtr<T>(*this);
-}
-
-template <typename T>
-requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-typename get_element_type<T>::type& SafePtr<T>::operator[](int index)
-{
-    T& container = *(*this);
-    return container[index];
-}
-
-template <typename T>
-requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-typename get_element_type<T>::type& SafePtr<T>::operator[](Primitive<int> index)
-{
-    return this->operator[](index.getValue());
 }
 
 template <typename T>

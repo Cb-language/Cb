@@ -20,11 +20,6 @@ std::string String::toString() const
     return value;
 }
 
-std::unique_ptr<Object> String::clone() const
-{
-    return std::make_unique<String>(value);
-}
-
 String& String::operator=(const String& other)
 {
     value = other.value;
@@ -82,10 +77,4 @@ Primitive<bool> String::equals(const Object& other) const
     }
 
     return Primitive<bool>(false);
-}
-
-std::ostream& operator<<(std::ostream& os, const String& str)
-{
-    os << '\"' << str.value << '\"';
-    return os;
 }

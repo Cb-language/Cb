@@ -14,6 +14,12 @@ template <typename T>
 requires std::is_arithmetic_v<T>
 Primitive<T>::Primitive(const Primitive& other) : value(other.value) {}
 
+template <typename T> requires std::is_arithmetic_v<T>
+template <typename U>
+Primitive<T>::Primitive(const Primitive<U>& other) : value(other.getValue())
+{
+}
+
 template <typename T>
 requires std::is_arithmetic_v<T>
 Primitive<T>& Primitive<T>::operator=(const Primitive& other) {
@@ -72,12 +78,6 @@ requires std::is_arithmetic_v<T>
 std::string Primitive<T>::toString() const {
     if constexpr (std::is_same_v<T, bool>) return value ? "cres" : "demen";
     return std::to_string(value);
-}
-
-template <typename T>
-requires std::is_arithmetic_v<T>
-std::unique_ptr<Object> Primitive<T>::clone() const {
-    return std::make_unique<Primitive>(value);
 }
 
 template <typename T>
@@ -158,7 +158,7 @@ template <typename T> requires std::is_arithmetic_v<T>
 template <typename U>
 Primitive<T>& Primitive<T>::operator-=(const U& other)
 {
-    value -= other.value;
+    value -= other;
     return *this;
 }
 
@@ -166,7 +166,7 @@ template <typename T> requires std::is_arithmetic_v<T>
 template <typename U>
 Primitive<T>& Primitive<T>::operator*=(const U& other)
 {
-    value *= other.value;
+    value *= other;
     return *this;
 }
 
@@ -174,7 +174,7 @@ template <typename T> requires std::is_arithmetic_v<T>
 template <typename U>
 Primitive<T>& Primitive<T>::operator/=(const U& other)
 {
-    value /= other.value;
+    value /= other;
     return *this;
 }
 
@@ -190,26 +190,26 @@ template <typename T> requires std::is_arithmetic_v<T>
 template <typename U>
 Primitive<bool> Primitive<T>::operator>=(const U& other) const
 {
-    return Primitive(value >= other.value);
+    return Primitive<bool>(value >= other);
 }
 
 template <typename T> requires std::is_arithmetic_v<T>
 template <typename U>
 Primitive<bool> Primitive<T>::operator<=(const U& other) const
 {
-    return Primitive(value <= other.value);
+    return Primitive<bool>(value <= other);
 }
 
 template <typename T> requires std::is_arithmetic_v<T>
 Primitive<bool> Primitive<T>::operator||(bool other)
 {
-    return Primitive(value || other);
+    return Primitive<bool>(value || other);
 }
 
 template <typename T> requires std::is_arithmetic_v<T>
 Primitive<bool> Primitive<T>::operator&&(bool other)
 {
-    return Primitive(value && other);
+    return Primitive<bool>(value && other);
 }
 
 // Generic Template Math (Handles both T and Primitive<U>)

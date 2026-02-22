@@ -36,6 +36,9 @@ public:
     explicit Primitive(const T& value = T());
     Primitive(const Primitive& other);
 
+    template <typename U>
+    Primitive(const Primitive<U>& other);
+
     Primitive& operator=(const Primitive& other);
     Primitive& operator=(const T& other);
 
@@ -48,7 +51,6 @@ public:
     Primitive<T>& operator=(const Object& other);
 
     std::string toString() const override;
-    std::unique_ptr<Object> clone() const override;
     T getValue() const;
 
     friend std::istream& operator>>(std::istream& is, Primitive<T>& obj)

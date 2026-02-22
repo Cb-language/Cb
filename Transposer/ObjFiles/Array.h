@@ -11,15 +11,9 @@ requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 class Array : public Object
 {
 public:
-    using SafeType = std::conditional_t<
-        std::is_arithmetic_v<T> && !is_primitive<T>::value,
-        Primitive<T>,
-        T
-    >;
-    using SP = SafePtr<SafeType>;
     Array(); // default constructor
     explicit Array(Primitive<unsigned int> size);
-    explicit Array(Primitive<unsigned int> size, SP defaultValue);
+    explicit Array(Primitive<unsigned int> size, SafePtr<T> defaultValue);
     explicit Array(Primitive<unsigned int> size, T defaultValue);
     Array(const Array& other);
     template <typename U>
@@ -33,21 +27,21 @@ public:
     template <typename U>
     Array& operator=(const U& defaultValue);
 
-    SP& operator[](Primitive<int> index) override;
-    const SP& operator[](Primitive<int> index) const;
+    SafePtr<T>& operator[](Primitive<int> index);
+    const SafePtr<T>& operator[](Primitive<int> index) const;
 
-    SP& operator[](int index) override;
-    const SP& operator[](int index) const;
+    SafePtr<T>& operator[](int index);
+    const SafePtr<T>& operator[](int index) const;
 
     Primitive<unsigned int> Length() const { return size; }
     Primitive<int> NegLength() const { return Primitive<int>(-size.getValue() - 1); }
 
-    // Only enable add() if SafeType is Object or derived
-    template <typename U = SafeType>
+    // Only enable add() if T is Object or derived
+    template <typename U = T>
     std::enable_if_t<std::is_base_of_v<Object, U>, void>
     add(const U& obj);
 
-    void add(SafeType& value, Primitive<int> index = Primitive<int>(-1));
+    void add(T& value, Primitive<int> index = Primitive<int>(-1));
     void remove(Primitive<int> index);
 
     Array slice(Primitive<int> start, Primitive<int> stop = Primitive<int>(-1), Primitive<int> step = Primitive<int>(1)) const;
@@ -64,15 +58,14 @@ public:
     }
 
     std::string toString() const override;
-    std::unique_ptr<Object> clone() const override;
 
 protected:
     Primitive<bool> equals(const Object& other) const override;
 
 private:
     Primitive<unsigned int> size = Primitive<unsigned int>(0);
-    SP defaultValueSet = SP();
-    std::vector<SP> data;
+    SafePtr<T> defaultValueSet = SafePtr<T>();
+    std::vector<SafePtr<T>> data;
 
     Primitive<int> getNormalIndex(int index) const;
     Primitive<int> getNormalIndex(Primitive<int> index) const;
