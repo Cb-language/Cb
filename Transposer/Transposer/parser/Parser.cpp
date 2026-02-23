@@ -1198,10 +1198,16 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
         }
         else
         {
-            throw InvalidAccessKeyword(current());
+            addError(new InvalidAccessKeyword(current()));
+            return nullptr;
         }
         advance();
         if (!expectAndGet(Token::IDENTIFIER, new MissingIdentifier(current()), nameToken)) return nullptr;
+        if (symTable.getClass(nameToken.value) == nullptr)
+        {
+            addError(new UnrecognizedIdentifier(current()));
+            return nullptr;
+        }
         inheritingName = nameToken.value;
     }
 
