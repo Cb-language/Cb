@@ -226,6 +226,9 @@ add_executable(Transposer
         Transposer/files/LibHelper.h
         Transposer/errorHandling/classErrors/InvalidAccessKeyword.cpp
         Transposer/errorHandling/classErrors/InvalidAccessKeyword.h
+        Transposer/class/ClassTree.cpp
+        Transposer/class/ClassTree.h
+        Transposer/class/AccessType.h
 )
 
 # In order to call the exe from the cmd
