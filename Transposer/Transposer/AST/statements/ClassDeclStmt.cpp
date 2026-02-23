@@ -3,10 +3,13 @@
 #include <ranges>
 
 #include "FuncDeclStmt.h"
+#include "errorHandling/how/HowDidYouGetHere.h"
+#include "other/SymbolTable.h"
 
 ClassDeclStmt::ClassDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-    const std::wstring& name, std::vector<Field>& fields, std::vector<Method>& methods, std::vector<Ctor>& ctors)
-        : Stmt(token, scope, funcDecl, currClass), name(name)
+                             const std::wstring& name, std::vector<Field>& fields, std::vector<Method>& methods, std::vector<Ctor>& ctors,
+                             const bool isInhereting, const std::wstring& inheretingName)
+    : Stmt(token, scope, funcDecl, currClass), name(name), isInhereting(isInhereting), inheretingName(inheretingName)
 {
     for (auto& [isPublic, func] : fields) this->fields.emplace_back(isPublic, std::move(func));
     for (auto& [isPublic, method] : methods) this->methods.emplace_back(isPublic, std::move(method));
@@ -17,6 +20,14 @@ void ClassDeclStmt::analyze() const
 {
     for (const auto& field : fields | std::views::values) field->analyze();
     for (const auto& method : methods | std::views::values) method->analyze();
+
+    if (isInhereting)
+    {
+        if (inheretingName.empty())
+        {
+            throw HowDidYouGetHere(token);
+        }
+    }
 }
 
 std::string ClassDeclStmt::translateToCpp() const
@@ -37,7 +48,12 @@ std::string ClassDeclStmt::translateToH() const
     privates << "private:";
     publics << "public:";
 
-    oss << "class " << Utils::wstrToStr(name) << std::endl << "{" << std::endl;
+    oss << "class " << Utils::wstrToStr(name);
+    if (isInhereting)
+    {
+        oss << " : " << Utils::wstrToStr(inheretingName);
+    }
+    oss << std::endl << "{" << std::endl;
 
     for (const auto& [isPublic, field] : fields)
     {

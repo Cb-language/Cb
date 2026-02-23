@@ -16,9 +16,12 @@ private:
     std::vector<Method> methods;
     std::vector<Ctor> ctors;
 
+    bool isInhereting = false;
+    const std::wstring inheretingName;
+
 public:
     ClassDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const std::wstring& name, std::vector<Field>& fields,
-        std::vector<Method>& methods, std::vector<Ctor>& ctors);
+        std::vector<Method>& methods, std::vector<Ctor>& ctors, const bool isInhereting, const std::wstring& inheretingName);
     void analyze() const override;
     std::string translateToCpp() const override;
     std::string translateToH() const override;
