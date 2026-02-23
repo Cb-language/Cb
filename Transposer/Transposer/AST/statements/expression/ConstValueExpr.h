@@ -7,6 +7,8 @@ class ConstValueExpr : public Expr
 private:
     std::unique_ptr<IType> type;
     std::wstring value;
+
+    std::string getValueStr() const;
 public:
     ConstValueExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::unique_ptr<IType> type, const std::wstring &value);
     void analyze() const override;

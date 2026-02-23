@@ -3,6 +3,9 @@
 #include <iomanip>
 #include <codecvt>
 #include <locale>
+#include <vector>
+
+#include "files/File.h"
 
 std::string Utils::wstrToStr(const std::wstring& wstr)
 {
@@ -70,4 +73,28 @@ std::string Utils::escapeJson(const std::string& str)
         }
     }
     return res;
+}
+
+std::string Utils::getAllObjIncludes()
+{
+    std::ostringstream oss;
+
+    oss << R"(#include "includes\Object.h")" << std::endl <<
+        R"(#include "includes\String.h")" << std::endl <<
+        R"(#include "includes\Array.h")" << std::endl <<
+        R"(#include "includes\Primitive.h")" << std::endl <<
+        R"(#include "includes\SafePtr.h")" << std::endl;
+
+    return oss.str();
+}
+
+std::vector<std::filesystem::path> Utils::getAllObjCppPaths()
+{
+    const std::filesystem::path out = File::getOutDir() / "includes";
+    std::vector<std::filesystem::path> p = {
+        out / "Object.cpp",
+        out / "String.cpp"
+    };
+
+    return p;
 }

@@ -94,8 +94,6 @@ add_executable(Transposer
         Transposer/AST/statements/FuncCreditStmt.h
         Transposer/AST/statements/expression/FuncCallExpr.cpp
         Transposer/AST/statements/expression/FuncCallExpr.h
-        Transposer/files/ArrayHelper.cpp
-        Transposer/files/ArrayHelper.h
         Transposer/symbols/Type/IType.h
         Transposer/AST/statements/IfStmt.cpp
         Transposer/AST/statements/IfStmt.h
@@ -224,6 +222,8 @@ add_executable(Transposer
         Transposer/errorHandling/classErrors/ClassDosentExisit.h
         Transposer/LSPPacking/LSPPacker.cpp
         Transposer/LSPPacking/LSPPacker.h
+        Transposer/files/LibHelper.cpp
+        Transposer/files/LibHelper.h
 )
 
 # In order to call the exe from the cmd

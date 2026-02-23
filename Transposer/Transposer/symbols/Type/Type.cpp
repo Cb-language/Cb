@@ -98,7 +98,7 @@ bool Type::isStringable() const
 
 bool Type::isPrimitive() const
 {
-    return isNumberable() || isStringable();
+    return true;
 }
 
 std::wstring Type::getType() const
@@ -108,14 +108,27 @@ std::wstring Type::getType() const
 
 std::string Type::translateTypeToCpp() const
 {
-    std::string ret = "";
+    std::string ret;
 
-    if (!extra.empty())
+    if (type == L"bar")
     {
-        ret = extra + " ";
+        ret = "String";
     }
+    else if (type == L"fermata")
+    {
+        return "void";
+    }
+    else
+    {
+        std::string typeStr;
+        if (!extra.empty())
+        {
+            typeStr = extra + " ";
+        }
 
-    ret += Type::typeMap.at(type);
+        typeStr += Type::typeMap.at(type);
+        ret = "Primitive<" + typeStr + ">";
+    }
 
     return ret;
 }

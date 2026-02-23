@@ -37,12 +37,7 @@ std::string ArrayDeclStmt::createConstructor(IType* type, const size_t dim) cons
 
         if (type->isPrimitive())
         {
-            if (type->getType() == L"bar")
-            {
-                return "\"\"";
-            }
-
-            return "0";
+            return type->translateTypeToCpp() + "()";
         }
 
         return type->translateTypeToCpp() + "()";

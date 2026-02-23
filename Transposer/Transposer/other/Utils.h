@@ -1,6 +1,7 @@
 #pragma once
 #include <filesystem>
 #include <string>
+#include <bits/stl_vector.h>
 
 class Utils
 {
@@ -15,4 +16,7 @@ public:
 
     static bool startsWithNote(const std::wstring& wstr);
     static std::string escapeJson(const std::string& str);
+
+    static std::string getAllObjIncludes();
+    static std::vector<std::filesystem::path> getAllObjCppPaths();
 };

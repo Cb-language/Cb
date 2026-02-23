@@ -32,12 +32,6 @@ std::unique_ptr<IType> Func::getType() const
 std::string Func::translateToCpp(const std::wstring& className) const
 {
     std::string funcNameStr = Utils::wstrToStr(funcName);
-
-    if (funcNameStr == "prelude")
-    {
-        funcNameStr = "main";
-    }
-
     std::string header = rType->translateTypeToCpp() + " ";
 
     if (!className.empty())

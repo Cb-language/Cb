@@ -19,21 +19,11 @@ void VarDeclStmt::analyze() const
 
 std::string VarDeclStmt::translateToCpp() const
 {
-    if (var.getType()->getType() == L"bar" && hasStartingValue && startingValue->getType()->getType() != L"bar")
-    {
-        return getTabs() + var.getType()->translateTypeToCpp() + " " + Utils::wstrToStr(var.getName())
-        + " = std::to_string(" + startingValue->translateToCpp() + ");";
-    }
-
     std::string ret = getTabs() + var.getType()->translateTypeToCpp() + " " + Utils::wstrToStr(var.getName());
 
-    if (hasStartingValue)
+    if (hasStartingValue && startingValue != nullptr)
     {
-        ret += " = " + startingValue->translateToCpp();
-    }
-    else if (var.isNumberable())
-    {
-        ret += " = 0";
+        ret += " = " + var.getType()->translateTypeToCpp() + "(" + startingValue->translateToCpp() + ")";
     }
 
     ret += ";";
