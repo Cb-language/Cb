@@ -51,6 +51,7 @@
 #include "../errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/classErrors/ClassDosentExisit.h"
 #include "errorHandling/classErrors/IllegalFieldName.h"
+#include "errorHandling/classErrors/InvalidAccessKeyword.h"
 
 #include "errorHandling/classErrors/MissingClassPipe.h"
 #include "errorHandling/classErrors/NoCtor.h"
@@ -1168,13 +1169,42 @@ std::unique_ptr<ForStmt> Parser::parseForStmt()
 
 std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
 {
+    bool isInheriting = false;
+    std::wstring type;
+    std::wstring inheritingName = L"";
+
     Token t = current();
     if (!expect(Token::KEYWORD, L"instrument", new HowDidYouGetHere(t))) return nullptr;
     
     Token nameToken;
     if (!expectAndGet(Token::IDENTIFIER, new MissingIdentifier(current()), nameToken)) return nullptr;
-
     const std::wstring name = nameToken.value;
+
+    if (match(Token::PUNCTUATION, L"|"))
+    {
+        advance();
+        isInheriting = true;
+        if (match(Token::KEYWORD, L"tutti"))
+        {
+            type = current().value;
+        }
+        else if (match(Token::KEYWORD, L"sordino"))
+        {
+            type = current().value;
+        }
+        else if (match(Token::KEYWORD, L"section"))
+        {
+            type = current().value;
+        }
+        else
+        {
+            throw InvalidAccessKeyword(current());
+        }
+        advance();
+        if (!expectAndGet(Token::IDENTIFIER, new MissingIdentifier(current()), nameToken)) return nullptr;
+        inheritingName = nameToken.value;
+    }
+
     std::vector<Field> fields;
     std::vector<Method> methods;
     std::vector<Ctor> ctors;
@@ -1199,7 +1229,7 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
     if (!parseCtors(ctors)) return nullptr;
     if (!expect(Token::PUNCTUATION, L"☉", new MissingBrace(current()))) return nullptr;
 
-    return std::make_unique<ClassDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), name, fields, methods, ctors);
+    return std::make_unique<ClassDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), name, fields, methods, ctors, isInheriting, type, inheritingName);
 }
 
 std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()

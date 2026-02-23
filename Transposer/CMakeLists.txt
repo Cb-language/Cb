@@ -224,6 +224,8 @@ add_executable(Transposer
         Transposer/LSPPacking/LSPPacker.h
         Transposer/files/LibHelper.cpp
         Transposer/files/LibHelper.h
+        Transposer/errorHandling/classErrors/InvalidAccessKeyword.cpp
+        Transposer/errorHandling/classErrors/InvalidAccessKeyword.h
 )
 
 # In order to call the exe from the cmd

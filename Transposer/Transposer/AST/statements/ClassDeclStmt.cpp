@@ -7,9 +7,9 @@
 #include "other/SymbolTable.h"
 
 ClassDeclStmt::ClassDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-                             const std::wstring& name, std::vector<Field>& fields, std::vector<Method>& methods, std::vector<Ctor>& ctors,
-                             const bool isInhereting, const std::wstring& inheretingName)
-    : Stmt(token, scope, funcDecl, currClass), name(name), isInhereting(isInhereting), inheretingName(inheretingName)
+    const std::wstring& name, std::vector<Field>& fields, std::vector<Method>& methods, std::vector<Ctor>& ctors,
+    const bool isInhereting, const std::wstring& inheritingPublic, const std::wstring& inheretingName)
+    : Stmt(token, scope, funcDecl, currClass), name(name), isInhereting(isInhereting), inheritingPublic(inheritingPublic), inheretingName(inheretingName)
 {
     for (auto& [isPublic, func] : fields) this->fields.emplace_back(isPublic, std::move(func));
     for (auto& [isPublic, method] : methods) this->methods.emplace_back(isPublic, std::move(method));
@@ -24,6 +24,10 @@ void ClassDeclStmt::analyze() const
     if (isInhereting)
     {
         if (inheretingName.empty())
+        {
+            throw HowDidYouGetHere(token);
+        }
+        if (inheritingPublic != L"tutti" || inheritingPublic == L"section" || inheritingPublic == L"sordino")
         {
             throw HowDidYouGetHere(token);
         }
@@ -51,7 +55,21 @@ std::string ClassDeclStmt::translateToH() const
     oss << "class " << Utils::wstrToStr(name);
     if (isInhereting)
     {
-        oss << " : " << Utils::wstrToStr(inheretingName);
+        oss << " : ";
+        if (inheritingPublic == L"tutti")
+        {
+            oss << "public ";
+        }
+        else if (inheritingPublic == L"section")
+        {
+            oss << "protected ";
+        }
+        else
+        {
+            oss << "private ";
+        }
+
+        oss << Utils::wstrToStr(inheretingName);
     }
     oss << std::endl << "{" << std::endl;
 

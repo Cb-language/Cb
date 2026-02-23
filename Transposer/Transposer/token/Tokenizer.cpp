@@ -11,7 +11,7 @@ const std::vector<std::wstring> Tokenizer::capture_blocks = {
     LR"((?<ConstChar>'(\\.|[^\\'\n])'))",
     LR"((?<ConstStr>"(\\.|[\s\S])*?"))",
     LR"((?<Type>\b((flat|sharp)[\s\r\n]*(degree|freq|note))\b)|(?<Type>\b(degree|freq|note)\b)|(?<Type>\b(mute|bar|riff|fermata)\b))",
-    LR"((?<Keyword>(instrument|playerScore|conductorScore|pause|resume|break|playBar|play|hear|F(?:maj|min)|[A-EG]|song|feat)(?![A-Za-z])))",
+    LR"((?<Keyword>(instrument|playerScore|conductorScore|sectionScore|tutti|sordino|section|pause|resume|break|playBar|play|hear|F(?:maj|min)|[A-EG]|song|feat)(?![A-Za-z])))",
     LR"((?<Punctuation>->))",
     LR"((?<UnaryOp>♯|♭|♮))",
     LR"((?<AssignmentOp>\+=|-=|//=|/=|\*=|%=))",
