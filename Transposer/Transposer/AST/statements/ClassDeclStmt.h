@@ -4,9 +4,16 @@
 #include "VarDeclStmt.h"
 #include "AST/abstract/Statement.h"
 
-typedef std::pair<bool, std::unique_ptr<VarDeclStmt>> Field;
-typedef std::pair<bool, std::unique_ptr<FuncDeclStmt>> Method;
-typedef std::pair<bool, std::unique_ptr<ConstractorDeclStmt>> Ctor;
+enum accessType
+{
+    PUBLIC = 0,
+    PROTECTED = 1,
+    PRIVATE = 2
+};
+
+typedef std::pair<accessType, std::unique_ptr<VarDeclStmt>> Field;
+typedef std::pair<accessType, std::unique_ptr<FuncDeclStmt>> Method;
+typedef std::pair<accessType, std::unique_ptr<ConstractorDeclStmt>> Ctor;
 
 class ClassDeclStmt : public Stmt
 {

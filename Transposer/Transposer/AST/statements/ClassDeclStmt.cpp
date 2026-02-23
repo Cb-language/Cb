@@ -48,9 +48,11 @@ std::string ClassDeclStmt::translateToH() const
     std::ostringstream oss;
     std::ostringstream privates;
     std::ostringstream publics;
+    std::ostringstream protecteds;
 
     privates << "private:";
     publics << "public:";
+    protecteds << "protected: ";
 
     oss << "class " << Utils::wstrToStr(name);
     if (isInhereting)
@@ -75,22 +77,25 @@ std::string ClassDeclStmt::translateToH() const
 
     for (const auto& [isPublic, field] : fields)
     {
-        if (isPublic) publics << std::endl << getTabs(1) << field->translateToCpp();
+        if (isPublic == PUBLIC) publics << std::endl << getTabs(1) << field->translateToCpp();
+        else if (isPublic == PROTECTED) protecteds << std::endl << getTabs(1) << field->translateToCpp();
         else privates << std::endl << getTabs(1) << field->translateToCpp();
     }
 
     for (const auto& [isPublic, method] : methods)
     {
-        if (isPublic) publics << std::endl << getTabs(1) << method->translateToH() << ";";
+        if (isPublic == PUBLIC) publics << std::endl << getTabs(1) << method->translateToH() << ";";
+        else if (isPublic == PROTECTED) protecteds << std::endl << getTabs(1) << method->translateToH() << ";";
         else privates << std::endl << getTabs(1) << method->translateToH() << ";";
     }
 
     for (const auto& [isPublic, ctor] : ctors)
     {
-        if (isPublic) publics << std::endl << getTabs(1) << ctor->translateToH() << ";";
+        if (isPublic == PUBLIC) publics << std::endl << getTabs(1) << ctor->translateToH() << ";";
+        else if (isPublic == PROTECTED) protecteds << std::endl << getTabs(1) << ctor->translateToH() << ";";
         else privates << std::endl << getTabs(1) << ctor->translateToH() << ";";
     }
 
-    oss << privates.str() << std::endl << std::endl << publics.str() << std::endl << "};" << std::endl;
+    oss << privates.str() << std::endl << std::endl << publics.str() << std::endl << protecteds.str() << "};" << std::endl;
     return oss.str();
 }

@@ -1452,7 +1452,7 @@ bool Parser::parseFields(std::vector<Field>& fields)
 
                     symTable.addField(false, field->getVar().copy(), current());
 
-                    fields.emplace_back(false, std::move(field));
+                    fields.emplace_back(PRIVATE, std::move(field));
                 }
                 else 
                 {
@@ -1494,9 +1494,51 @@ bool Parser::parseFields(std::vector<Field>& fields)
 
                     symTable.addField(true, field->getVar().copy(), current());
 
-                    fields.emplace_back(true, std::move(field));
+                    fields.emplace_back(PUBLIC, std::move(field));
                 }
                 else 
+                {
+                    unsigned int level = 0;
+                    while (true)
+                    {
+                        if (isAtEnd() || (level == 0 && (match(Token::PUNCTUATION, L"|") || match(Token::PUNCTUATION, L"║")))) break;
+
+                        if (match(Token::PUNCTUATION, L"∮")) level++;
+                        else if (match(Token::PUNCTUATION, L"☉")) level--;
+                        advance();
+                    }
+                }
+
+                if (match(Token::PUNCTUATION, L"║"))
+                {
+                    break;
+                }
+
+                if (!expect(Token::PUNCTUATION, L"|", new MissingClassPipe(current()))) return false;
+            }
+            advance();
+            if (!expect(Token::PUNCTUATION, L"☉", new MissingBrace(current()))) return false;
+        }
+        else if (match(Token::KEYWORD, L"sectionScore"))
+        {
+            advance();
+            if (!expect(Token::PUNCTUATION, L"∮", new MissingBrace(current()))) return false;
+
+            while (true)
+            {
+                if (match(Token::TYPE))
+                {
+                    auto field = parseVarDecStmt(true);
+                    if (!field) {
+                        synchronize();
+                        continue;
+                    }
+
+                    symTable.addField(true, field->getVar().copy(), current());
+
+                    fields.emplace_back(PROTECTED, std::move(field));
+                }
+                else
                 {
                     unsigned int level = 0;
                     while (true)
@@ -1553,7 +1595,7 @@ bool Parser::parseMethods(std::vector<Method>& methods)
                         continue;
                     }
                     symTable.addMethod(false, method->getFunc().copy(), current());
-                    methods.emplace_back(false, std::move(method));
+                    methods.emplace_back(PRIVATE, std::move(method));
                 }
                 else
                 {
@@ -1593,7 +1635,47 @@ bool Parser::parseMethods(std::vector<Method>& methods)
                         continue;
                     }
                     symTable.addMethod(true, method->getFunc().copy(), current());
-                    methods.emplace_back(true, std::move(method));
+                    methods.emplace_back(PUBLIC, std::move(method));
+                }
+                else
+                {
+                    unsigned int level = 0;
+                    while (true)
+                    {
+                        if (isAtEnd() || (level == 0 && (match(Token::PUNCTUATION, L"|") || match(Token::PUNCTUATION, L"║")))) break;
+
+                        if (match(Token::PUNCTUATION, L"∮")) level++;
+                        else if (match(Token::PUNCTUATION, L"☉")) level--;
+                        advance();
+                    }
+                }
+
+                if (match(Token::PUNCTUATION, L"║"))
+                {
+                    break;
+                }
+
+                if (!expect(Token::PUNCTUATION, L"|", new MissingClassPipe(current()))) return false;
+            }
+            advance();
+            if (!expect(Token::PUNCTUATION, L"☉", new MissingBrace(current()))) return false;
+        }
+        else if (match(Token::KEYWORD, L"sectionScore"))
+        {
+            advance();
+            if (!expect(Token::PUNCTUATION, L"∮", new MissingBrace(current()))) return false;
+
+            while (true)
+            {
+                if (match(Token::KEYWORD, L"song"))
+                {
+                    auto method = parseFuncDeclStmt();
+                    if (!method) {
+                        synchronize();
+                        continue;
+                    }
+                    symTable.addMethod(true, method->getFunc().copy(), current());
+                    methods.emplace_back(PROTECTED, std::move(method));
                 }
                 else
                 {
@@ -1652,7 +1734,7 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
                         continue;
                     }
                     symTable.addCtor(false, ctor->getConstractor().copy(), current());
-                    ctors.emplace_back(false, std::move(ctor));
+                    ctors.emplace_back(PRIVATE, std::move(ctor));
                 }
                 else 
                 {
@@ -1692,7 +1774,7 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
                         continue;
                     }
                     symTable.addCtor(true, ctor->getConstractor().copy(), current());
-                    ctors.emplace_back(true, std::move(ctor));
+                    ctors.emplace_back(PUBLIC, std::move(ctor));
                 }
                 else
                 {
@@ -1715,6 +1797,46 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
                 if (!expect(Token::PUNCTUATION, L"|", new MissingClassPipe(current()))) return false;
             }
             advance(); 
+            if (!expect(Token::PUNCTUATION, L"☉", new MissingBrace(current()))) return false;
+        }
+        else if (match(Token::KEYWORD, L"sectionScore"))
+        {
+            advance();
+            if (!expect(Token::PUNCTUATION, L"∮", new MissingBrace(current()))) return false;
+
+            while (true)
+            {
+                if (match(Token::IDENTIFIER_CALL))
+                {
+                    auto ctor = parseCtor();
+                    if (!ctor) {
+                        synchronize();
+                        continue;
+                    }
+                    symTable.addCtor(false, ctor->getConstractor().copy(), current());
+                    ctors.emplace_back(PROTECTED, std::move(ctor));
+                }
+                else
+                {
+                    unsigned int level = 0;
+                    while (true)
+                    {
+                        if (isAtEnd() || (level == 0 && (match(Token::PUNCTUATION, L"|") || match(Token::PUNCTUATION, L"║")))) break;
+
+                        if (match(Token::PUNCTUATION, L"∮")) level++;
+                        else if (match(Token::PUNCTUATION, L"☉")) level--;
+                        advance();
+                    }
+                }
+
+                if (match(Token::PUNCTUATION, L"║"))
+                {
+                    break;
+                }
+
+                if (!expect(Token::PUNCTUATION, L"|", new MissingClassPipe(current()))) return false;
+            }
+            advance();
             if (!expect(Token::PUNCTUATION, L"☉", new MissingBrace(current()))) return false;
         }
         else
