@@ -1,0 +1,27 @@
+#pragma once
+#include "ClassNode.h"
+
+class ClassTree
+{
+private:
+    static std::vector<std::unique_ptr<ClassNode>> classes;
+    static ClassNode* root;
+
+    ClassTree() = default;
+    ~ClassTree() = default;
+
+public:
+    ClassTree(const ClassTree&) = delete;
+    ClassTree& operator=(const ClassTree&) = delete;
+
+    ClassTree(ClassTree&&) = delete;
+    ClassTree& operator=(ClassTree&&) = delete;
+
+    static ClassTree& instance();
+
+    static void addClass(const Class& c, ClassNode* p);
+    static ClassNode* find(const std::wstring& name);
+
+    static void init();
+    static void destroy();
+};

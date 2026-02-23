@@ -7,7 +7,7 @@ class ClassNode
 private:
     ClassNode* parent;
     Class c;
-    std::vector<std::unique_ptr<ClassNode>> children;
+    std::vector<ClassNode*> children;
 
 public:
     explicit ClassNode(const Class& c, ClassNode* parent = nullptr);
@@ -21,7 +21,7 @@ public:
     void add(const AccessType accessType, const Func& method);
     void add(const AccessType accessType, const Constractor& ctor);
 
-    void addChild(const Class& cl);
+    void addChild(ClassNode* cl);
 
     const Class& getClass() const;
 };

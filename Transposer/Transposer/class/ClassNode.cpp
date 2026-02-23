@@ -55,9 +55,9 @@ void ClassNode::add(const AccessType accessType, const Constractor& ctor)
     c.addConstractor(accessType, ctor);
 }
 
-void ClassNode::addChild(const Class& cl)
+void ClassNode::addChild(ClassNode* cl)
 {
-    children.emplace_back(std::make_unique<ClassNode>(cl, this));
+    children.emplace_back(cl);
 }
 
 const Class& ClassNode::getClass() const
