@@ -14,7 +14,8 @@ void ClassTree::addClass(const Class& c, ClassNode* p)
     std::unique_ptr<ClassNode> temp;
     if (p == nullptr)
     {
-        temp = std::make_unique<ClassNode>(c);
+        if (root == nullptr) temp = std::make_unique<ClassNode>(c);
+        else temp = std::make_unique<ClassNode>(c, root);
     }
     else
     {
@@ -61,7 +62,7 @@ void ClassTree::init()
 
     Class obj = Class(L"Object", methods, args, ctors);
 
-    addClass(obj, nullptr);
+    instance().addClass(obj, nullptr);
 
     root = classes.back().get();
 }

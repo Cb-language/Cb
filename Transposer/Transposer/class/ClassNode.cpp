@@ -4,6 +4,16 @@ ClassNode::ClassNode(const Class& c, ClassNode* parent) : parent(parent), c(c.co
 {
 }
 
+const ClassNode* ClassNode::getParent() const
+{
+    return parent;
+}
+
+const std::vector<ClassNode*>& ClassNode::getChildren() const
+{
+    return children;
+}
+
 bool ClassNode::isLegal(const Var& field, const ClassNode* curr) const
 {
     if (parent != nullptr && parent->isLegal(field, curr)) return true;

@@ -4,6 +4,7 @@
 
 #include "Scope.h"
 #include "class/ClassNode.h"
+#include "class/ClassTree.h"
 #include "symbols/Func.h"
 #include "symbols/FuncCredit.h"
 
@@ -19,7 +20,7 @@ private:
     std::set<std::pair<Func, bool>> funcs; // the bool means is it included to this file
     ClassNode* currClass = nullptr;
 
-    static std::vector<std::unique_ptr<ClassNode>> classes; // TODO: change it to a tree when Obj is incorporated
+    static ClassTree& classTree;
 
 public:
     SymbolTable();
@@ -49,7 +50,7 @@ public:
 
     std::string getFuncsHeaders() const;
 
-    void setClass(const Class& cls);
+    void setClass(const Class& cls, ClassNode* parent = nullptr);
     const ClassNode* getCurrClass() const;
 
     void addField(const AccessType isPublic, const Var& field, const Token& token) const;

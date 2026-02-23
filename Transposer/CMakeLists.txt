@@ -228,8 +228,6 @@ add_executable(Transposer
         Transposer/errorHandling/classErrors/InvalidAccessKeyword.h
         Transposer/class/ClassTree.cpp
         Transposer/class/ClassTree.h
-        Transposer/class/ObjectsClassMaker.cpp
-        Transposer/class/ObjectsClassMaker.h
         Transposer/class/AccessType.h
 )
 

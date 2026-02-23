@@ -19,8 +19,8 @@ public:
 
     static ClassTree& instance();
 
-    static void addClass(const Class& c, ClassNode* p);
-    static ClassNode* find(const std::wstring& name);
+    void addClass(const Class& c, ClassNode* p);
+    ClassNode* find(const std::wstring& name);
 
     static void init();
     static void destroy();

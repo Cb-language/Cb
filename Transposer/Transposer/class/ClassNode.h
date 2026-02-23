@@ -13,6 +13,9 @@ public:
     explicit ClassNode(const Class& c, ClassNode* parent = nullptr);
     ~ClassNode() = default;
 
+    const ClassNode* getParent() const;
+    const std::vector<ClassNode*>& getChildren() const;
+
     bool isLegal(const Var& field, const ClassNode* curr) const;
     bool isLegal(const Func& method, const ClassNode* curr) const;
     bool isLegal(const Constractor& ctor, const ClassNode* curr) const;
