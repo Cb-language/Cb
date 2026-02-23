@@ -52,9 +52,9 @@ public:
     void setClass(const Class& cls);
     const ClassNode* getCurrClass() const;
 
-    void addField(const bool isPublic, const Var& field, const Token& token) const;
-    void addMethod(const bool isPublic, const Func& method, const Token& token) const;
-    void addCtor(const bool isPublic, const Constractor& ctor, const Token& token) const;
+    void addField(const AccessType isPublic, const Var& field, const Token& token) const;
+    void addMethod(const AccessType isPublic, const Func& method, const Token& token) const;
+    void addCtor(const AccessType isPublic, const Constractor& ctor, const Token& token) const;
 
     SymbolTable& operator+=(const SymbolTable& other);
 

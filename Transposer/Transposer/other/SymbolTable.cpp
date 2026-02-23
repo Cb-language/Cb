@@ -188,25 +188,25 @@ const ClassNode* SymbolTable::getCurrClass() const
     return currClass;
 }
 
-void SymbolTable::addField(const bool isPublic, const Var& field, const Token& token) const
+void SymbolTable::addField(const AccessType accessType, const Var& field, const Token& token) const
 {
     if (currClass == nullptr) throw HowDidYouGetHere(token);
 
-    currClass->add(isPublic, field);
+    currClass->add(accessType, field);
 }
 
-void SymbolTable::addMethod(const bool isPublic, const Func& method, const Token& token) const
+void SymbolTable::addMethod(const AccessType accessType, const Func& method, const Token& token) const
 {
     if (currClass == nullptr) throw HowDidYouGetHere(token);
 
-    currClass->add(isPublic, method);
+    currClass->add(accessType, method);
 }
 
-void SymbolTable::addCtor(const bool isPublic, const Constractor& ctor, const Token& token) const
+void SymbolTable::addCtor(const AccessType accessType, const Constractor& ctor, const Token& token) const
 {
     if (currClass == nullptr) throw HowDidYouGetHere(token);
 
-    currClass->add(isPublic, ctor);
+    currClass->add(accessType, ctor);
 }
 
 SymbolTable& SymbolTable::operator+=(const SymbolTable& other)
@@ -246,21 +246,21 @@ bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const
 
     if (res == nullptr) throw HowDidYouGetHere(token);
 
-    for (const auto& [isPublic, field] : res->getClass().getFields())
+    for (const auto& [accessType, field] : res->getClass().getFields())
     {
         if (field.getName() == name)
         {
-            if (isPublic) return true;
+            if (accessType) return true;
 
             throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
         }
     }
 
-    for (const auto& [isPublic, method] : res->getClass().getMethods())
+    for (const auto& [accessType, method] : res->getClass().getMethods())
     {
         if (method.getFuncName() == name)
         {
-            if (isPublic) return true;
+            if (accessType) return true;
 
             throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
         }

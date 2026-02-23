@@ -1456,7 +1456,7 @@ bool Parser::parseFields(std::vector<Field>& fields)
                         continue;
                     }
 
-                    symTable.addField(false, field->getVar().copy(), current());
+                    symTable.addField(PRIVATE, field->getVar().copy(), current());
 
                     fields.emplace_back(PRIVATE, std::move(field));
                 }
@@ -1498,7 +1498,7 @@ bool Parser::parseFields(std::vector<Field>& fields)
                         continue;
                     }
 
-                    symTable.addField(true, field->getVar().copy(), current());
+                    symTable.addField(PUBLIC, field->getVar().copy(), current());
 
                     fields.emplace_back(PUBLIC, std::move(field));
                 }
@@ -1540,7 +1540,7 @@ bool Parser::parseFields(std::vector<Field>& fields)
                         continue;
                     }
 
-                    symTable.addField(true, field->getVar().copy(), current());
+                    symTable.addField(PROTECTED, field->getVar().copy(), current());
 
                     fields.emplace_back(PROTECTED, std::move(field));
                 }
@@ -1600,7 +1600,7 @@ bool Parser::parseMethods(std::vector<Method>& methods)
                         synchronize();
                         continue;
                     }
-                    symTable.addMethod(false, method->getFunc().copy(), current());
+                    symTable.addMethod(PUBLIC, method->getFunc().copy(), current());
                     methods.emplace_back(PRIVATE, std::move(method));
                 }
                 else
@@ -1640,7 +1640,7 @@ bool Parser::parseMethods(std::vector<Method>& methods)
                         synchronize();
                         continue;
                     }
-                    symTable.addMethod(true, method->getFunc().copy(), current());
+                    symTable.addMethod(PUBLIC, method->getFunc().copy(), current());
                     methods.emplace_back(PUBLIC, std::move(method));
                 }
                 else
@@ -1680,7 +1680,7 @@ bool Parser::parseMethods(std::vector<Method>& methods)
                         synchronize();
                         continue;
                     }
-                    symTable.addMethod(true, method->getFunc().copy(), current());
+                    symTable.addMethod(PROTECTED, method->getFunc().copy(), current());
                     methods.emplace_back(PROTECTED, std::move(method));
                 }
                 else
@@ -1739,7 +1739,7 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
                         synchronize();
                         continue;
                     }
-                    symTable.addCtor(false, ctor->getConstractor().copy(), current());
+                    symTable.addCtor(PRIVATE, ctor->getConstractor().copy(), current());
                     ctors.emplace_back(PRIVATE, std::move(ctor));
                 }
                 else 
@@ -1779,7 +1779,7 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
                         synchronize();
                         continue;
                     }
-                    symTable.addCtor(true, ctor->getConstractor().copy(), current());
+                    symTable.addCtor(PUBLIC, ctor->getConstractor().copy(), current());
                     ctors.emplace_back(PUBLIC, std::move(ctor));
                 }
                 else
@@ -1819,7 +1819,7 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
                         synchronize();
                         continue;
                     }
-                    symTable.addCtor(false, ctor->getConstractor().copy(), current());
+                    symTable.addCtor(PROTECTED, ctor->getConstractor().copy(), current());
                     ctors.emplace_back(PROTECTED, std::move(ctor));
                 }
                 else
