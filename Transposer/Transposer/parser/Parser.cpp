@@ -151,7 +151,7 @@ std::string Parser::translateToCpp(const std::filesystem::path& hPath, const boo
     oss << "#include <iostream>" << std::endl;
 
     if (isMain) oss << translateToH(isMain);
-    else oss << "#include \"" << hPath.string() << "\"" << std::endl;
+    else oss << "#include \"" << hPath.generic_string() << "\"" << std::endl;
 
     for (const auto& stmt : stmts)
     {
@@ -175,7 +175,7 @@ std::string Parser::translateToH(const bool isMain) const
     if (!isMain) oss << "#pragma once" << std::endl;
 
     oss << "#include <string>" << std::endl;
-    if (isMain) oss << Utils::getAllObjIncludes() << std::endl;
+    oss << Utils::getAllObjIncludes() << std::endl;
 
     if (!includes.empty()) oss << std::endl;
 
@@ -1347,7 +1347,6 @@ std::unique_ptr<ConstractorCallStmt> Parser::parseConstractorCallStmt()
         first = false;
     }
     advance();
-    if (!expect(Token::PUNCTUATION, L"║", new MissingSemicolon(current()))) return nullptr;
     return std::make_unique<ConstractorCallStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), c, std::move(args));
 }
 
