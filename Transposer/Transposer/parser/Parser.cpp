@@ -1929,6 +1929,12 @@ std::unique_ptr<Type> Parser::parseType()
     if (!expectAndGet(Token::TYPE, new InvalidNumberLiteral(current()), typeToken)) return nullptr;
     std::wstring value = typeToken.value;
 
+    if (value == L"sharp freq" || value == L"flat freq")
+    {
+        addError(new UnrecognizedToken(typeToken));
+        return nullptr;
+    }
+
     return std::make_unique<Type>(value);
 }
 
