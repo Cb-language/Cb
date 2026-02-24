@@ -19,6 +19,7 @@ public:
     bool isLegal(const Var& field, const ClassNode* curr) const;
     bool isLegal(const Func& method, const ClassNode* curr) const;
     bool isLegal(const Constractor& ctor, const ClassNode* curr) const;
+    bool isLegalAccess(const AccessType accessType, const ClassNode* curr) const;
 
     void add(const AccessType accessType, const Var& field);
     void add(const AccessType accessType, const Func& method);

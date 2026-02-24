@@ -1,5 +1,7 @@
 #include "ConstractorDeclStmt.h"
 
+#include <ranges>
+
 #include "errorHandling/classErrors/ParentNotInitialized.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "expression/ConstractorCallStmt.h"
@@ -19,7 +21,6 @@ void ConstractorDeclStmt::setBody(std::unique_ptr<BodyStmt> body)
 void ConstractorDeclStmt::analyze() const
 {
     if (this->body == nullptr) throw HowDidYouGetHere(token);
-    body->analyze();
 
     if (currClass->getParent() != nullptr)
     {
@@ -39,6 +40,8 @@ void ConstractorDeclStmt::analyze() const
             throw ParentNotInitialized(token, Utils::wstrToStr(currClass->getClass().getClassName()), Utils::wstrToStr(currClass->getParent()->getClass().getClassName()));
         }
     }
+
+    body->analyze();
 }
 
 std::string ConstractorDeclStmt::translateToCpp() const

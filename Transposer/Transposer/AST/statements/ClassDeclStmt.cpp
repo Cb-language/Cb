@@ -20,6 +20,7 @@ void ClassDeclStmt::analyze() const
 {
     for (const auto& field : fields | std::views::values) field->analyze();
     for (const auto& method : methods | std::views::values) method->analyze();
+    for (const auto& ctor : ctors | std::views::values) ctor->analyze();
 
     if (isInheriting)
     {

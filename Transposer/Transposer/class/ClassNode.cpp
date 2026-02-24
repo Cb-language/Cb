@@ -58,14 +58,9 @@ bool ClassNode::isLegal(const Constractor& ctor, const ClassNode* curr) const
     {
         if (ct == ctor)
         {
-            if (curr == this) return true;
-            if (accessType == PUBLIC) return true;
-            if (accessType == PROTECTED && curr != nullptr && curr->isDescendantOf(this)) return true;
-            return false;
+            return isLegalAccess(accessType, curr);
         }
     }
-
-    if (parent != nullptr && parent->isLegal(ctor, curr)) return true;
 
     return false;
 }
@@ -121,3 +116,13 @@ const Class& ClassNode::getClass() const
 {
     return c;
 }
+
+
+bool ClassNode::isLegalAccess(const AccessType accessType, const ClassNode* curr) const
+{
+    if (curr == this) return true;
+    if (accessType == PUBLIC) return true;
+    if (accessType == PROTECTED && curr != nullptr && curr->isDescendantOf(this)) return true;
+    return false;
+}
+

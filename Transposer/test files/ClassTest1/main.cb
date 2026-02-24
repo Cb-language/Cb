@@ -2,7 +2,8 @@ feat "class.cb"║
 
 song prelude() -> degree
 ∮
-    Test t1 = Test_call()║
+    degree x = 0║
+    Test t1 = Test_call(x)║
     Test2 t2 = Test2_call()║
 
     B\0║

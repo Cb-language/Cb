@@ -15,11 +15,8 @@ instrument Test
         Test_call(degree x)
         ∮
             do_x = x║
-        ☉ |
-        Test_call()
-        ∮
-            do_x=1║
-        ☉║
+            playBar("entered ctor")║
+        ☉ ║
     ☉
 ☉
 
@@ -31,9 +28,10 @@ instrument Test2 | tutti Test
     ☉
     conductorScore
     ∮
-        Test2_call(degree x)
+        Test2_call()
         ∮
-            do_y = x║
+            Test_call(1)║
+            do_y = 2║
         ☉║
     ☉
 ☉

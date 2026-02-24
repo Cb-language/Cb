@@ -38,7 +38,7 @@ void ConstractorCallStmt::analyze() const
 
         if (!differ)
         {
-            if (classNode->isLegal(ctor, currClass)) return;
+            if (classNode->isLegalAccess(accessType, currClass)) return;
 
             throw AccessError(token, Utils::wstrToStr(classNode->getClass().getClassName()), Utils::wstrToStr(classNode->getClass().getClassName()) + "_call");
         }
