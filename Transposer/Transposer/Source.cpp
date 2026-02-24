@@ -101,7 +101,6 @@ int main(int argc, char* argv[])
 
         graph.reset();
         SymbolTable::clearClasses();
-        LSPPacker::deleteErrors(errors);
         return -1;
     }
     catch (const std::exception& e) // Catch unexpected C++ errors
@@ -129,7 +128,6 @@ int main(int argc, char* argv[])
         }
         graph.reset();
         SymbolTable::clearClasses();
-        LSPPacker::deleteErrors(errors);
         return -1;
     }
 
