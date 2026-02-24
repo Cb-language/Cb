@@ -12,6 +12,9 @@ instrument Test
     conductorScore
     ∮
         mute mi_m = cres |
+        song abc(Test other)
+        ∮
+        ☉|
         song ©(f) g(degree z) -> degree
         ∮
             f()║
@@ -22,6 +25,9 @@ instrument Test
         ∮
             do_x = x║
             fa_n = x*x + .01║
+        ☉ |
+        Test_call(Test t)
+        ∮
         ☉ |
         Test_call()
         ∮

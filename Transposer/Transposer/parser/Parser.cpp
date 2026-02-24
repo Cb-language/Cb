@@ -800,7 +800,19 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
     if (!expect(Token::PUNCTUATION, L"(", new MissingParenthesis(current()))) return nullptr;
     while (!match(Token::PUNCTUATION, L")"))
     {
-        const std::unique_ptr<IType> type = parseIType();
+        std::unique_ptr<IType> type = nullptr;
+        auto cls = symTable.getCurrClass();
+
+        if (cls != nullptr && current().value == cls->getClass().getClassName())
+        {
+            type = std::make_unique<ClassType>(cls);
+            advance();
+        }
+        else
+        {
+            type = parseIType();
+        }
+
         if (!type) return nullptr;
 
         Token currNameToken;
@@ -1223,7 +1235,19 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
     if (!expect(Token::PUNCTUATION, L"(", new MissingParenthesis(current()))) return nullptr;
     while (!match(Token::PUNCTUATION, L")"))
     {
-        const std::unique_ptr<IType> type = parseIType();
+        std::unique_ptr<IType> type = nullptr;
+        auto cls = symTable.getCurrClass();
+
+        if (cls != nullptr && current().value == cls->getClass().getClassName())
+        {
+            type = std::make_unique<ClassType>(cls);
+            advance();
+        }
+        else
+        {
+            type = parseIType();
+        }
+
         if (!type) return nullptr;
 
         Token currNameToken;
