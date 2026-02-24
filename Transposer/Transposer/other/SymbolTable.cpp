@@ -170,6 +170,7 @@ std::string SymbolTable::getFuncsHeaders() const
 void SymbolTable::setClass(const Class& cls, ClassNode* parent)
 {
     classTree.addClass(cls, parent);
+    currClass = classTree.find(cls.getClassName());
 }
 
 const ClassNode* SymbolTable::getCurrClass() const
@@ -177,25 +178,28 @@ const ClassNode* SymbolTable::getCurrClass() const
     return currClass;
 }
 
-void SymbolTable::addField(const AccessType accessType, const Var& field, const Token& token) const
+bool SymbolTable::addField(const AccessType accessType, const Var& field, const Token& token) const
 {
-    if (currClass == nullptr) throw HowDidYouGetHere(token);
+    if (currClass == nullptr) return false;
 
     currClass->add(accessType, field);
+    return true;
 }
 
-void SymbolTable::addMethod(const AccessType accessType, const Func& method, const Token& token) const
+bool SymbolTable::addMethod(const AccessType accessType, const Func& method, const Token& token) const
 {
-    if (currClass == nullptr) throw HowDidYouGetHere(token);
+    if (currClass == nullptr) return false;
 
     currClass->add(accessType, method);
+    return true;
 }
 
-void SymbolTable::addCtor(const AccessType accessType, const Constractor& ctor, const Token& token) const
+bool SymbolTable::addCtor(const AccessType accessType, const Constractor& ctor, const Token& token) const
 {
-    if (currClass == nullptr) throw HowDidYouGetHere(token);
+    if (currClass == nullptr) return false;
 
     currClass->add(accessType, ctor);
+    return true;
 }
 
 SymbolTable& SymbolTable::operator+=(const SymbolTable& other)
@@ -220,30 +224,26 @@ void SymbolTable::clearClasses()
     ClassTree::destroy();
 }
 
-bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token)
+bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token, const ClassNode* curr)
 {
     const ClassNode* res = classTree.find(type->getType());
 
     if (res == nullptr) throw HowDidYouGetHere(token);
 
-    for (const auto& [accessType, field] : res->getClass().getFields())
+    const Var* field = res->findField(name);
+    if (field != nullptr)
     {
-        if (field.getName() == name)
-        {
-            if (accessType) return true;
+        if (res->isLegal(*field, curr)) return true;
 
-            throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
-        }
+        throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
     }
 
-    for (const auto& [accessType, method] : res->getClass().getMethods())
+    const Func* method = res->findMethod(name);
+    if (method != nullptr)
     {
-        if (method.getFuncName() == name)
-        {
-            if (accessType) return true;
+        if (res->isLegal(*method, curr)) return true;
 
-            throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
-        }
+        throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
     }
 
     return false;

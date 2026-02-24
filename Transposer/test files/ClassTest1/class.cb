@@ -12,20 +12,28 @@ instrument Test
     conductorScore
     ∮
         mute mi_m = cres |
-        song ©(f) g(degree z) -> degree
-        ∮
-            f()║
-            B\z*z║
-        ☉ |
-        freq fa_n |
         Test_call(degree x)
         ∮
             do_x = x║
-            fa_n = x*x + .01║
         ☉ |
         Test_call()
         ∮
             do_x=1║
+        ☉║
+    ☉
+☉
+
+instrument Test2 | tutti Test
+∮
+    playerScore
+    ∮
+        degree do_y║
+    ☉
+    conductorScore
+    ∮
+        Test2_call(degree x)
+        ∮
+            do_y = x║
         ☉║
     ☉
 ☉

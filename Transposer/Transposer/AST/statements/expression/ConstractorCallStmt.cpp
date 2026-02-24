@@ -1,7 +1,9 @@
 #include "ConstractorCallStmt.h"
 
+#include "errorHandling/classErrors/AccessError.h"
 #include "errorHandling/classErrors/InvalidCtorArgs.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
+#include "other/Utils.h"
 #include "symbols/Type/ClassType.h"
 
 ConstractorCallStmt::ConstractorCallStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl,
@@ -22,10 +24,10 @@ std::unique_ptr<IType> ConstractorCallStmt::getType() const
 
 void ConstractorCallStmt::analyze() const
 {
-    for (const auto& [isPublic, ctor] : classNode->getClass().getConstractors())
+    for (const auto& [accessType, ctor] : classNode->getClass().getConstractors())
     {
         auto ctorArgs = ctor.getArgs();
-        if (!isPublic || args.size() != ctorArgs.size()) continue;
+        if (args.size() != ctorArgs.size()) continue;
 
         bool differ = false;
 
@@ -34,7 +36,12 @@ void ConstractorCallStmt::analyze() const
             if (*args[i]->getType() != *ctorArgs[i].getType()) differ = true;
         }
 
-        if (!differ) return;
+        if (!differ)
+        {
+            if (classNode->isLegal(ctor, currClass)) return;
+
+            throw AccessError(token, Utils::wstrToStr(classNode->getClass().getClassName()), Utils::wstrToStr(classNode->getClass().getClassName()) + "_call");
+        }
     }
 
     throw InvalidCtorArgs(token);
@@ -60,4 +67,9 @@ std::string ConstractorCallStmt::translateToCpp() const
 
     oss << ")";
     return oss.str();
+}
+
+const ClassNode* ConstractorCallStmt::getClassNode() const
+{
+    return classNode;
 }

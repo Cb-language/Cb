@@ -26,5 +26,10 @@ public:
 
     void addChild(ClassNode* cl);
 
+    bool isDescendantOf(const ClassNode* other) const;
+
+    const Var* findField(const std::wstring& name) const;
+    const Func* findMethod(const std::wstring& name) const;
+
     const Class& getClass() const;
 };

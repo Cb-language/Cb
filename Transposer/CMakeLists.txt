@@ -218,6 +218,8 @@ add_executable(Transposer
         Transposer/errorHandling/classErrors/InvalidCtorArgs.h
         Transposer/errorHandling/classErrors/RedefOfCtor.cpp
         Transposer/errorHandling/classErrors/RedefOfCtor.h
+        Transposer/errorHandling/classErrors/ParentNotInitialized.cpp
+        Transposer/errorHandling/classErrors/ParentNotInitialized.h
         Transposer/errorHandling/classErrors/ClassDosentExisit.cpp
         Transposer/errorHandling/classErrors/ClassDosentExisit.h
         Transposer/LSPPacking/LSPPacker.cpp

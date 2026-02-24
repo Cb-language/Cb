@@ -25,6 +25,7 @@
 #include "../errorHandling/syntaxErrors/MissingParenthesis.h"
 #include "../errorHandling/syntaxErrors/IncludeNotInTop.h"
 #include "../errorHandling/syntaxErrors/ExpectedAPath.h"
+#include "../errorHandling/syntaxErrors/IllegalVarName.h"
 
 // ---------- semantic errors ----------
 #include "../errorHandling/semanticErrors/IdentifierTaken.h"
@@ -47,16 +48,16 @@
 #include "../errorHandling/lexicalErrors/UnexpectedEOF.h"
 #include "../errorHandling/lexicalErrors/UnrecognizedToken.h"
 
+// ---------- class errors ----------
+#include "../errorHandling/classErrors/ClassDosentExisit.h"
+#include "../errorHandling/classErrors/IllegalFieldName.h"
+#include "../errorHandling/classErrors/InvalidAccessKeyword.h"
+#include "../errorHandling/classErrors/MissingClassPipe.h"
+#include "../errorHandling/classErrors/NoCtor.h"
+#include "../errorHandling/classErrors/RedefOfCtor.h"
+
 // ---------- just how ----------
 #include "../errorHandling/how/HowDidYouGetHere.h"
-#include "errorHandling/classErrors/ClassDosentExisit.h"
-#include "errorHandling/classErrors/IllegalFieldName.h"
-#include "errorHandling/classErrors/InvalidAccessKeyword.h"
-
-#include "errorHandling/classErrors/MissingClassPipe.h"
-#include "errorHandling/classErrors/NoCtor.h"
-#include "errorHandling/classErrors/RedefOfCtor.h"
-#include "errorHandling/syntaxErrors/IllegalVarName.h"
 
 #include "files/FileGraph.h"
 #include "symbols/Type/ClassType.h"
@@ -628,6 +629,11 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         else if (match(Token::IDENTIFIER) && SymbolTable::isClass(current().value))
         {
             stmt = parseObjCreationStmt();
+            if (!stmt)
+            {
+                synchronize();
+                continue;
+            }
         }
         else if (match(Token::IDENTIFIER) && isAssignmentStmtAhead())
         {
@@ -657,6 +663,14 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         else if (match(Token::IDENTIFIER) && peek().type == Token::PUNCTUATION && peek().value == L"(")
         {
             stmt = parseFuncCallExpr(true);
+        }
+        else if (match(Token::IDENTIFIER_CALL))
+        {
+            stmt = parseConstractorCallStmt();
+            if (stmt && !expect(Token::PUNCTUATION, L"║", new MissingSemicolon(current())))
+            {
+                stmt = nullptr;
+            }
         }
         else if (match(Token::KEYWORD, L"D"))
         {
@@ -731,7 +745,9 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         if(stmt)
         {
             bodyStmts.push_back(std::move(stmt));
-        } else {
+        }
+        else
+        {
             synchronize();
         }
     }
@@ -1331,7 +1347,7 @@ std::unique_ptr<ConstractorCallStmt> Parser::parseConstractorCallStmt()
         first = false;
     }
     advance();
-
+    if (!expect(Token::PUNCTUATION, L"║", new MissingSemicolon(current()))) return nullptr;
     return std::make_unique<ConstractorCallStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), c, std::move(args));
 }
 
@@ -1456,7 +1472,10 @@ bool Parser::parseFields(std::vector<Field>& fields)
                         continue;
                     }
 
-                    symTable.addField(PRIVATE, field->getVar().copy(), current());
+                    if (!symTable.addField(PRIVATE, field->getVar().copy(), current()))
+                    {
+                        addError(new HowDidYouGetHere(current()));
+                    }
 
                     fields.emplace_back(PRIVATE, std::move(field));
                 }
@@ -1498,7 +1517,10 @@ bool Parser::parseFields(std::vector<Field>& fields)
                         continue;
                     }
 
-                    symTable.addField(PUBLIC, field->getVar().copy(), current());
+                    if (!symTable.addField(PUBLIC, field->getVar().copy(), current()))
+                    {
+                        addError(new HowDidYouGetHere(current()));
+                    }
 
                     fields.emplace_back(PUBLIC, std::move(field));
                 }
@@ -1540,7 +1562,10 @@ bool Parser::parseFields(std::vector<Field>& fields)
                         continue;
                     }
 
-                    symTable.addField(PROTECTED, field->getVar().copy(), current());
+                    if (!symTable.addField(PROTECTED, field->getVar().copy(), current()))
+                    {
+                        addError(new HowDidYouGetHere(current()));
+                    }
 
                     fields.emplace_back(PROTECTED, std::move(field));
                 }
@@ -1600,7 +1625,10 @@ bool Parser::parseMethods(std::vector<Method>& methods)
                         synchronize();
                         continue;
                     }
-                    symTable.addMethod(PUBLIC, method->getFunc().copy(), current());
+                    if (!symTable.addMethod(PRIVATE, method->getFunc().copy(), current()))
+                    {
+                        addError(new HowDidYouGetHere(current()));
+                    }
                     methods.emplace_back(PRIVATE, std::move(method));
                 }
                 else
@@ -1640,7 +1668,10 @@ bool Parser::parseMethods(std::vector<Method>& methods)
                         synchronize();
                         continue;
                     }
-                    symTable.addMethod(PUBLIC, method->getFunc().copy(), current());
+                    if (!symTable.addMethod(PUBLIC, method->getFunc().copy(), current()))
+                    {
+                        addError(new HowDidYouGetHere(current()));
+                    }
                     methods.emplace_back(PUBLIC, std::move(method));
                 }
                 else
@@ -1680,7 +1711,10 @@ bool Parser::parseMethods(std::vector<Method>& methods)
                         synchronize();
                         continue;
                     }
-                    symTable.addMethod(PROTECTED, method->getFunc().copy(), current());
+                    if (!symTable.addMethod(PROTECTED, method->getFunc().copy(), current()))
+                    {
+                        addError(new HowDidYouGetHere(current()));
+                    }
                     methods.emplace_back(PROTECTED, std::move(method));
                 }
                 else
@@ -1739,7 +1773,10 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
                         synchronize();
                         continue;
                     }
-                    symTable.addCtor(PRIVATE, ctor->getConstractor().copy(), current());
+                    if (!symTable.addCtor(PRIVATE, ctor->getConstractor().copy(), current()))
+                    {
+                        addError(new HowDidYouGetHere(current()));
+                    }
                     ctors.emplace_back(PRIVATE, std::move(ctor));
                 }
                 else 
@@ -1779,7 +1816,10 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
                         synchronize();
                         continue;
                     }
-                    symTable.addCtor(PUBLIC, ctor->getConstractor().copy(), current());
+                    if (!symTable.addCtor(PUBLIC, ctor->getConstractor().copy(), current()))
+                    {
+                        addError(new HowDidYouGetHere(current()));
+                    }
                     ctors.emplace_back(PUBLIC, std::move(ctor));
                 }
                 else
@@ -1819,7 +1859,10 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
                         synchronize();
                         continue;
                     }
-                    symTable.addCtor(PROTECTED, ctor->getConstractor().copy(), current());
+                    if (!symTable.addCtor(PROTECTED, ctor->getConstractor().copy(), current()))
+                    {
+                        addError(new HowDidYouGetHere(current()));
+                    }
                     ctors.emplace_back(PROTECTED, std::move(ctor));
                 }
                 else

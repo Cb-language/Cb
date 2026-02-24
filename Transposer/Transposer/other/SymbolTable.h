@@ -53,14 +53,14 @@ public:
     void setClass(const Class& cls, ClassNode* parent = nullptr);
     const ClassNode* getCurrClass() const;
 
-    void addField(const AccessType isPublic, const Var& field, const Token& token) const;
-    void addMethod(const AccessType isPublic, const Func& method, const Token& token) const;
-    void addCtor(const AccessType isPublic, const Constractor& ctor, const Token& token) const;
+    bool addField(const AccessType accessType, const Var& field, const Token& token) const;
+    bool addMethod(const AccessType accessType, const Func& method, const Token& token) const;
+    bool addCtor(const AccessType accessType, const Constractor& ctor, const Token& token) const;
 
     SymbolTable& operator+=(const SymbolTable& other);
 
     static void clearClasses();
     static bool isClass(const std::wstring& name);
     static ClassNode* getClass(const std::wstring& name);
-    static bool isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token);
+    static bool isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token, const ClassNode* curr);
 };
