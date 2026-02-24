@@ -33,19 +33,7 @@ std::string Utils::removeFirstTabs(std::string& str)
 
 std::string Utils::normalizePath(const std::filesystem::path& path)
 {
-    std::string res;
-    bool dontAddBackslash = true;
-    for (auto& part : path)
-    {
-        if (!dontAddBackslash)
-        {
-            if (part == "\\") continue;
-            res += "/";
-        }
-        else dontAddBackslash = false;
-        res += part.string();
-    }
-    return res;
+    return path.generic_string();
 }
 
 bool Utils::startsWithNote(const std::wstring& wstr)
@@ -79,11 +67,11 @@ std::string Utils::getAllObjIncludes()
 {
     std::ostringstream oss;
 
-    oss << R"(#include "includes\Object.h")" << std::endl <<
-        R"(#include "includes\String.h")" << std::endl <<
-        R"(#include "includes\Array.h")" << std::endl <<
-        R"(#include "includes\Primitive.h")" << std::endl <<
-        R"(#include "includes\SafePtr.h")" << std::endl;
+    oss << R"(#include "includes/Object.h")" << std::endl <<
+        R"(#include "includes/String.h")" << std::endl <<
+        R"(#include "includes/Array.h")" << std::endl <<
+        R"(#include "includes/Primitive.h")" << std::endl <<
+        R"(#include "includes/SafePtr.h")" << std::endl;
 
     return oss.str();
 }
