@@ -1,4 +1,6 @@
 #pragma once
+#include <iomanip>
+
 #include "Primitive.h"
 
 
@@ -77,6 +79,26 @@ template <typename T>
 requires std::is_arithmetic_v<T>
 std::string Primitive<T>::toString() const {
     if constexpr (std::is_same_v<T, bool>) return value ? "cres" : "demen";
+    if constexpr (std::is_same_v<T, double>)
+    {
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(6) << value;
+        std::string s = oss.str();
+
+        // remove trailing zeros, but leave at least one decimal
+        size_t dotPos = s.find('.');
+        if (dotPos != std::string::npos) {
+            // remove trailing zeros after the dot
+            size_t lastNonZero = s.find_last_not_of('0');
+            if (lastNonZero == dotPos) {
+                // if all decimals were zeros, leave one zero
+                lastNonZero++;
+            }
+            s.erase(lastNonZero + 1);
+        }
+
+        return s;
+    }
     return std::to_string(value);
 }
 
@@ -87,23 +109,23 @@ T Primitive<T>::getValue() const { return value; }
 // Math Implementation
 template <typename T>
 requires std::is_arithmetic_v<T>
-Primitive<T> Primitive<T>::operator+(const Primitive& other) const { return Primitive(value + other.value); }
+Primitive<double> Primitive<T>::operator+(const Primitive& other) const { return Primitive(value + other.value); }
 
 template <typename T>
 requires std::is_arithmetic_v<T>
-Primitive<T> Primitive<T>::operator-(const Primitive& other) const { return Primitive(value - other.value); }
+Primitive<double> Primitive<T>::operator-(const Primitive& other) const { return Primitive(value - other.value); }
 
 template <typename T>
 requires std::is_arithmetic_v<T>
-Primitive<T> Primitive<T>::operator*(const Primitive& other) const { return Primitive(value * other.value); }
+Primitive<double> Primitive<T>::operator*(const Primitive& other) const { return Primitive(value * other.value); }
 
 template <typename T>
 requires std::is_arithmetic_v<T>
-Primitive<T> Primitive<T>::operator/(const Primitive& other) const { return Primitive(value / other.value); }
+Primitive<double> Primitive<T>::operator/(const Primitive& other) const { return Primitive(value / other.value); }
 
 template <typename T>
 requires std::is_arithmetic_v<T>
-Primitive<T> Primitive<T>::operator%(const Primitive& other) const {
+Primitive<int> Primitive<T>::operator%(const Primitive& other) const {
     if constexpr (std::is_integral_v<T>) return Primitive(value % other.value);
     return Primitive(T());
 }

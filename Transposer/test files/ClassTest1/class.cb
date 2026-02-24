@@ -26,9 +26,6 @@ instrument Test
             do_x = x║
             fa_n = x*x + .01║
         ☉ |
-        Test_call(Test t)
-        ∮
-        ☉ |
         Test_call()
         ∮
             do_x=1║

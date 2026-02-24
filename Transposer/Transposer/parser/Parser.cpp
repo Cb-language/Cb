@@ -173,7 +173,7 @@ std::string Parser::translateToH(const bool isMain) const
     if (!isMain) oss << "#pragma once" << std::endl;
 
     oss << "#include <string>" << std::endl;
-    if (isMain) oss << Utils::getAllObjIncludes() << std::endl;
+    oss << Utils::getAllObjIncludes() << std::endl;
 
     if (!includes.empty()) oss << std::endl;
 
