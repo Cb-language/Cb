@@ -51,7 +51,7 @@ std::string ConstractorCallStmt::translateToCpp() const
 {
     std::ostringstream oss;
 
-    oss << Utils::wstrToStr(classNode->getClass().getClassName()) << "(";
+    oss << getTabs() << Utils::wstrToStr(classNode->getClass().getClassName()) << "(";
 
     bool first = true;
     for (const auto& arg : args)
@@ -65,7 +65,7 @@ std::string ConstractorCallStmt::translateToCpp() const
         oss << arg->translateToCpp();
     }
 
-    oss << ")";
+    oss << ");";
     return oss.str();
 }
 

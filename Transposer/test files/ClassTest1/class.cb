@@ -30,7 +30,7 @@ instrument Test2 | tutti Test
     ∮
         Test2_call()
         ∮
-            Test_call(1)║
+            ?Test_call(1)║
             do_y = 2║
         ☉║
     ☉

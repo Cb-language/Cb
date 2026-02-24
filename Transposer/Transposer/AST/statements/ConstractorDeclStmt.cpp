@@ -1,12 +1,14 @@
 #include "ConstractorDeclStmt.h"
 
 #include <ranges>
+#include <iostream>
 
 #include "errorHandling/classErrors/ParentNotInitialized.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "expression/ConstractorCallStmt.h"
 #include "other/SymbolTable.h"
 #include "symbols/Type/ClassType.h"
+#include "other/Utils.h"
 
 ConstractorDeclStmt::ConstractorDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass, const std::wstring& className,
                                          const std::vector<Var>& args) : IFuncDeclStmt(token, scope, currClass), constractor(Constractor(args,  className))
@@ -28,7 +30,7 @@ void ConstractorDeclStmt::analyze() const
         for (const auto& stmt : body->getStmts())
         {
             auto ctorCall = dynamic_cast<ConstractorCallStmt*>(stmt.get());
-            if (ctorCall && ctorCall->getClassNode() == currClass->getParent())
+            if (ctorCall && ctorCall->getClassNode()->getClass().getClassName() == currClass->getParent()->getClass().getClassName())
             {
                 found = true;
                 break;
@@ -37,7 +39,31 @@ void ConstractorDeclStmt::analyze() const
 
         if (!found)
         {
-            throw ParentNotInitialized(token, Utils::wstrToStr(currClass->getClass().getClassName()), Utils::wstrToStr(currClass->getParent()->getClass().getClassName()));
+            bool hasDefaultCtor = false;
+
+            if(currClass->getParent()->getClass().getClassName() == L"Object")
+            {
+                hasDefaultCtor = true;
+            }
+            else if (!currClass->getParent()->getClass().getConstractors().empty())
+            {
+                for (const auto& ctor : currClass->getParent()->getClass().getConstractors() | std::views::values)
+                {
+                    if (ctor.getArgs().empty())
+                    {
+                        if (currClass->getParent()->isLegal(ctor, currClass))
+                        {
+                            hasDefaultCtor = true;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (!hasDefaultCtor)
+            {
+                throw ParentNotInitialized(token, Utils::wstrToStr(currClass->getClass().getClassName()), Utils::wstrToStr(currClass->getParent()->getClass().getClassName()));
+            }
         }
     }
 
@@ -54,7 +80,7 @@ std::string ConstractorDeclStmt::translateToCpp() const
         for (const auto& stmt : body->getStmts())
         {
             auto ctorCall = dynamic_cast<ConstractorCallStmt*>(stmt.get());
-            if (ctorCall && ctorCall->getClassNode() == currClass->getParent())
+            if (ctorCall && ctorCall->getClassNode()->getClass().getClassName() == currClass->getParent()->getClass().getClassName())
             {
                 parentCall = ctorCall;
                 initList = " : " + ctorCall->translateToCpp();
