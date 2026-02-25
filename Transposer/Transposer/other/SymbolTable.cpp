@@ -6,6 +6,7 @@
 #include "AST/statements/expression/FuncCallExpr.h"
 #include "errorHandling/classErrors/AccessError.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
+#include "symbols/Type/ClassType.h"
 
 ClassTree& SymbolTable::classTree = ClassTree::instance();
 
@@ -27,6 +28,13 @@ SymbolTable::~SymbolTable()
 
 std::optional<Var> SymbolTable::getVar(const std::wstring &name) const
 {
+    if (currClass != nullptr)
+    {
+        if (const auto varPtr = currClass->findField(name))
+        {
+            return varPtr->copy();
+        }
+    }
     return currScope->getVar(name, currClass);
 }
 
@@ -167,10 +175,15 @@ std::string SymbolTable::getFuncsHeaders() const
     return oss.str();
 }
 
-void SymbolTable::setClass(const Class& cls, ClassNode* parent)
+void SymbolTable::addClass(const Class& cls, ClassNode* parent)
 {
     classTree.addClass(cls, parent);
     currClass = classTree.find(cls.getClassName());
+}
+
+void SymbolTable::resetCurrClass()
+{
+    currClass = nullptr;
 }
 
 const ClassNode* SymbolTable::getCurrClass() const
@@ -244,6 +257,11 @@ bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const
         if (res->isLegal(*method, curr)) return true;
 
         throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
+    }
+
+    if (auto parent = curr->getParent())
+    {
+        return isLegalFieldOrMethod(std::make_unique<ClassType>(parent), name, token, curr);
     }
 
     return false;

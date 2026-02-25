@@ -50,7 +50,8 @@ public:
 
     std::string getFuncsHeaders() const;
 
-    void setClass(const Class& cls, ClassNode* parent = nullptr);
+    void addClass(const Class& cls, ClassNode* parent = nullptr);
+    void resetCurrClass();
     const ClassNode* getCurrClass() const;
 
     bool addField(const AccessType accessType, const Var& field, const Token& token) const;

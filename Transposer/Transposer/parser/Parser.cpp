@@ -1219,7 +1219,7 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
         }
         advance();
         if (!expectAndGet(Token::IDENTIFIER, new MissingIdentifier(current()), nameToken)) return nullptr;
-        if (symTable.getClass(nameToken.value) == nullptr)
+        if (SymbolTable::getClass(nameToken.value) == nullptr)
         {
             addError(new UnrecognizedIdentifier(current()));
             return nullptr;
@@ -1231,7 +1231,14 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
     std::vector<Method> methods;
     std::vector<Ctor> ctors;
 
-    symTable.setClass(Class(name));
+    ClassNode* parentPtr = nullptr;
+
+    if (!inheritingName.empty())
+    {
+        parentPtr = SymbolTable::getClass(inheritingName);
+    }
+
+    symTable.addClass(Class(name), parentPtr);
 
     const size_t tempPos = pos;
 
@@ -1251,7 +1258,9 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
     if (!parseCtors(ctors)) return nullptr;
     if (!expect(Token::PUNCTUATION, L"☉", new MissingBrace(current()))) return nullptr;
 
-    return std::make_unique<ClassDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), name, fields, methods, ctors, isInheriting, type, inheritingName);
+    auto declStmt = std::make_unique<ClassDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), name, fields, methods, ctors, isInheriting, type, inheritingName);
+    symTable.resetCurrClass();
+    return std::move(declStmt);
 }
 
 std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()

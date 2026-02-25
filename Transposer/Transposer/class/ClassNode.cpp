@@ -92,23 +92,25 @@ bool ClassNode::isDescendantOf(const ClassNode* other) const
     return parent->isDescendantOf(other);
 }
 
-const Var* ClassNode::findField(const std::wstring& name) const
+const Var* ClassNode::findField(const std::wstring& name, const bool isBase) const
 {
-    for (const auto& field : c.getFields() | std::views::values)
+    for (const auto& [accessType, field] : c.getFields())
     {
+        if (!isBase && accessType == PRIVATE) continue;
         if (field.getName() == name) return &field;
     }
-    if (parent != nullptr) return parent->findField(name);
+    if (parent != nullptr) return parent->findField(name, false);
     return nullptr;
 }
 
-const Func* ClassNode::findMethod(const std::wstring& name) const
+const Func* ClassNode::findMethod(const std::wstring& name, const bool isBase) const
 {
-    for (const auto& method : c.getMethods() | std::views::values)
+    for (const auto& [accessType, method] : c.getMethods())
     {
+        if (!isBase && accessType == PRIVATE) continue;
         if (method.getFuncName() == name) return &method;
     }
-    if (parent != nullptr) return parent->findMethod(name);
+    if (parent != nullptr) return parent->findMethod(name, false);
     return nullptr;
 }
 
