@@ -59,8 +59,3 @@ std::string LSPPacker::pack(const std::vector<Error*>& errors)
 
     return oss.str();
 }
-
-void LSPPacker::deleteErrors(const std::vector<Error*>& errors)
-{
-    for (const Error* error : errors) delete error;
-}

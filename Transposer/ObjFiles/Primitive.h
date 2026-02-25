@@ -60,11 +60,11 @@ public:
     }
 
     // Basic Math
-    Primitive operator+(const Primitive& other) const;
-    Primitive operator-(const Primitive& other) const;
-    Primitive operator*(const Primitive& other) const;
-    Primitive operator/(const Primitive& other) const;
-    Primitive operator%(const Primitive& other) const;
+    Primitive<double> operator+(const Primitive& other) const;
+    Primitive<double> operator-(const Primitive& other) const;
+    Primitive<double> operator*(const Primitive& other) const;
+    Primitive<double> operator/(const Primitive& other) const;
+    Primitive<int> operator%(const Primitive& other) const;
 
     Primitive& operator++();
     Primitive& operator--();
