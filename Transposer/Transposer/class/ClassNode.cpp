@@ -1,66 +1,130 @@
 #include "ClassNode.h"
 
+#include <ranges>
+
 ClassNode::ClassNode(const Class& c, ClassNode* parent) : parent(parent), c(c.copy())
 {
 }
 
+const ClassNode* ClassNode::getParent() const
+{
+    return parent;
+}
+
+const std::vector<ClassNode*>& ClassNode::getChildren() const
+{
+    return children;
+}
+
 bool ClassNode::isLegal(const Var& field, const ClassNode* curr) const
 {
+    for (const auto& [accessType, f] : c.getFields())
+    {
+        if (f == field)
+        {
+            if (curr == this) return true;
+            if (accessType == PUBLIC) return true;
+            if (accessType == PROTECTED && curr != nullptr && curr->isDescendantOf(this)) return true;
+            return false;
+        }
+    }
+
     if (parent != nullptr && parent->isLegal(field, curr)) return true;
 
-    for (const auto& [isPublic, f] : c.getFields())
-    {
-        if (curr != this && !isPublic) continue;
-        if (f == field) return true;
-    }
     return false;
 }
 
 bool ClassNode::isLegal(const Func& method, const ClassNode* curr) const
 {
+    for (const auto& [accessType, m] : c.getMethods())
+    {
+        if (m == method)
+        {
+            if (curr == this) return true;
+            if (accessType == PUBLIC) return true;
+            if (accessType == PROTECTED && curr != nullptr && curr->isDescendantOf(this)) return true;
+            return false;
+        }
+    }
+
     if (parent != nullptr && parent->isLegal(method, curr)) return true;
 
-    for (const auto& [isPublic, m] : c.getMethods())
-    {
-        if (curr != this && !isPublic) continue;
-        if (m == method) return true;
-    }
     return false;
 }
 
 bool ClassNode::isLegal(const Constractor& ctor, const ClassNode* curr) const
 {
-    if (parent != nullptr && parent->isLegal(ctor, curr)) return true;
-
-    for (const auto& [isPublic, ct] : c.getConstractors())
+    for (const auto& [accessType, ct] : c.getConstractors())
     {
-        if (curr != this && !isPublic) continue;
-        if (ct == ctor) return true;
+        if (ct == ctor)
+        {
+            return isLegalAccess(accessType, curr);
+        }
     }
+
     return false;
 }
 
-void ClassNode::add(const bool isPublic, const Var& field)
+void ClassNode::add(const AccessType accessType, const Var& field)
 {
-    c.addField(isPublic, field);
+    c.addField(accessType, field);
 }
 
-void ClassNode::add(const bool isPublic, const Func& method)
+void ClassNode::add(const AccessType accessType, const Func& method)
 {
-    c.addMethod(isPublic, method);
+    c.addMethod(accessType, method);
 }
 
-void ClassNode::add(const bool isPublic, const Constractor& ctor)
+void ClassNode::add(const AccessType accessType, const Constractor& ctor)
 {
-    c.addConstractor(isPublic, ctor);
+    c.addConstractor(accessType, ctor);
 }
 
-void ClassNode::addChild(const Class& cl)
+void ClassNode::addChild(ClassNode* cl)
 {
-    children.emplace_back(std::make_unique<ClassNode>(cl, this));
+    children.emplace_back(cl);
+}
+
+bool ClassNode::isDescendantOf(const ClassNode* other) const
+{
+    if (this == other) return true;
+    if (parent == nullptr) return false;
+    return parent->isDescendantOf(other);
+}
+
+const Var* ClassNode::findField(const std::wstring& name, const bool isBase) const
+{
+    for (const auto& [accessType, field] : c.getFields())
+    {
+        if (!isBase && accessType == PRIVATE) continue;
+        if (field.getName() == name) return &field;
+    }
+    if (parent != nullptr) return parent->findField(name, false);
+    return nullptr;
+}
+
+const Func* ClassNode::findMethod(const std::wstring& name, const bool isBase) const
+{
+    for (const auto& [accessType, method] : c.getMethods())
+    {
+        if (!isBase && accessType == PRIVATE) continue;
+        if (method.getFuncName() == name) return &method;
+    }
+    if (parent != nullptr) return parent->findMethod(name, false);
+    return nullptr;
 }
 
 const Class& ClassNode::getClass() const
 {
     return c;
 }
+
+
+bool ClassNode::isLegalAccess(const AccessType accessType, const ClassNode* curr) const
+{
+    if (curr == this) return true;
+    if (accessType == PUBLIC) return true;
+    if (accessType == PROTECTED && curr != nullptr && curr->isDescendantOf(this)) return true;
+    return false;
+}
+

@@ -25,6 +25,7 @@
 #include "../errorHandling/syntaxErrors/MissingParenthesis.h"
 #include "../errorHandling/syntaxErrors/IncludeNotInTop.h"
 #include "../errorHandling/syntaxErrors/ExpectedAPath.h"
+#include "../errorHandling/syntaxErrors/IllegalVarName.h"
 
 // ---------- semantic errors ----------
 #include "../errorHandling/semanticErrors/IdentifierTaken.h"
@@ -47,15 +48,16 @@
 #include "../errorHandling/lexicalErrors/UnexpectedEOF.h"
 #include "../errorHandling/lexicalErrors/UnrecognizedToken.h"
 
+// ---------- class errors ----------
+#include "../errorHandling/classErrors/ClassDosentExisit.h"
+#include "../errorHandling/classErrors/IllegalFieldName.h"
+#include "../errorHandling/classErrors/InvalidAccessKeyword.h"
+#include "../errorHandling/classErrors/MissingClassPipe.h"
+#include "../errorHandling/classErrors/NoCtor.h"
+#include "../errorHandling/classErrors/RedefOfCtor.h"
+
 // ---------- just how ----------
 #include "../errorHandling/how/HowDidYouGetHere.h"
-#include "errorHandling/classErrors/ClassDosentExisit.h"
-#include "errorHandling/classErrors/IllegalFieldName.h"
-
-#include "errorHandling/classErrors/MissingClassPipe.h"
-#include "errorHandling/classErrors/NoCtor.h"
-#include "errorHandling/classErrors/RedefOfCtor.h"
-#include "errorHandling/syntaxErrors/IllegalVarName.h"
 
 #include "files/FileGraph.h"
 #include "symbols/Type/ClassType.h"
@@ -149,7 +151,7 @@ std::string Parser::translateToCpp(const std::filesystem::path& hPath, const boo
     oss << "#include <iostream>" << std::endl;
 
     if (isMain) oss << translateToH(isMain);
-    else oss << "#include \"" << hPath.string() << "\"" << std::endl;
+    else oss << "#include \"" << hPath.generic_string() << "\"" << std::endl;
 
     for (const auto& stmt : stmts)
     {
@@ -627,6 +629,11 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         else if (match(Token::IDENTIFIER) && SymbolTable::isClass(current().value))
         {
             stmt = parseObjCreationStmt();
+            if (!stmt)
+            {
+                synchronize();
+                continue;
+            }
         }
         else if (match(Token::IDENTIFIER) && isAssignmentStmtAhead())
         {
@@ -656,6 +663,14 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         else if (match(Token::IDENTIFIER) && peek().type == Token::PUNCTUATION && peek().value == L"(")
         {
             stmt = parseFuncCallExpr(true);
+        }
+        else if (match(Token::IDENTIFIER_CALL))
+        {
+            stmt = parseConstractorCallStmt();
+            if (stmt && !expect(Token::PUNCTUATION, L"║", new MissingSemicolon(current())))
+            {
+                stmt = nullptr;
+            }
         }
         else if (match(Token::KEYWORD, L"D"))
         {
@@ -730,7 +745,9 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         if(stmt)
         {
             bodyStmts.push_back(std::move(stmt));
-        } else {
+        }
+        else
+        {
             synchronize();
         }
     }
@@ -800,18 +817,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
     if (!expect(Token::PUNCTUATION, L"(", new MissingParenthesis(current()))) return nullptr;
     while (!match(Token::PUNCTUATION, L")"))
     {
-        std::unique_ptr<IType> type = nullptr;
-        auto cls = symTable.getCurrClass();
-
-        if (cls != nullptr && current().value == cls->getClass().getClassName())
-        {
-            type = std::make_unique<ClassType>(cls);
-            advance();
-        }
-        else
-        {
-            type = parseIType();
-        }
+        const std::unique_ptr<IType> type = parseIType();
 
         if (!type) return nullptr;
 
@@ -1180,18 +1186,60 @@ std::unique_ptr<ForStmt> Parser::parseForStmt()
 
 std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
 {
+    bool isInheriting = false;
+    std::wstring type;
+    std::wstring inheritingName = L"";
+
     Token t = current();
     if (!expect(Token::KEYWORD, L"instrument", new HowDidYouGetHere(t))) return nullptr;
     
     Token nameToken;
     if (!expectAndGet(Token::IDENTIFIER, new MissingIdentifier(current()), nameToken)) return nullptr;
-
     const std::wstring name = nameToken.value;
+
+    if (match(Token::PUNCTUATION, L"|"))
+    {
+        advance();
+        isInheriting = true;
+        if (match(Token::KEYWORD, L"tutti"))
+        {
+            type = current().value;
+        }
+        else if (match(Token::KEYWORD, L"sordino"))
+        {
+            type = current().value;
+        }
+        else if (match(Token::KEYWORD, L"section"))
+        {
+            type = current().value;
+        }
+        else
+        {
+            addError(new InvalidAccessKeyword(current()));
+            return nullptr;
+        }
+        advance();
+        if (!expectAndGet(Token::IDENTIFIER, new MissingIdentifier(current()), nameToken)) return nullptr;
+        if (SymbolTable::getClass(nameToken.value) == nullptr)
+        {
+            addError(new UnrecognizedIdentifier(current()));
+            return nullptr;
+        }
+        inheritingName = nameToken.value;
+    }
+
     std::vector<Field> fields;
     std::vector<Method> methods;
     std::vector<Ctor> ctors;
 
-    symTable.setClass(Class(name));
+    ClassNode* parentPtr = nullptr;
+
+    if (!inheritingName.empty())
+    {
+        parentPtr = SymbolTable::getClass(inheritingName);
+    }
+
+    symTable.addClass(Class(name), parentPtr);
 
     const size_t tempPos = pos;
 
@@ -1211,13 +1259,16 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
     if (!parseCtors(ctors)) return nullptr;
     if (!expect(Token::PUNCTUATION, L"☉", new MissingBrace(current()))) return nullptr;
 
-    return std::make_unique<ClassDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), name, fields, methods, ctors);
+    auto declStmt = std::make_unique<ClassDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), name, fields, methods, ctors, isInheriting, type, inheritingName);
+    symTable.resetCurrClass();
+    return std::move(declStmt);
 }
 
 std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
 {
     const Token& t = current();
     std::vector<std::pair<Var, const Token>> args;
+    std::vector<std::pair<Var, const Token>> emptyArgs;
     std::vector<std::unique_ptr<FuncCreditStmt>> credited;
     IFuncDeclStmt* currFunc = symTable.getCurrFunc();
 
@@ -1232,21 +1283,13 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
         return nullptr;
     }
 
+    // entering scope so we can do parent inits
+    symTable.enterScope(false, false);
+
     if (!expect(Token::PUNCTUATION, L"(", new MissingParenthesis(current()))) return nullptr;
     while (!match(Token::PUNCTUATION, L")"))
     {
-        std::unique_ptr<IType> type = nullptr;
-        auto cls = symTable.getCurrClass();
-
-        if (cls != nullptr && current().value == cls->getClass().getClassName())
-        {
-            type = std::make_unique<ClassType>(cls);
-            advance();
-        }
-        else
-        {
-            type = parseIType();
-        }
+        const std::unique_ptr<IType> type = parseIType();
 
         if (!type) return nullptr;
 
@@ -1267,9 +1310,10 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
 
     if (!args.empty())
     {
-        for (const auto& key : args | std::views::keys)
+        for (const auto& [var, varToken] : args )
         {
-            varArgs.emplace_back(key.copy());
+            varArgs.emplace_back(var.copy());
+            symTable.addVar(var.copy(), varToken);
         }
     }
 
@@ -1277,12 +1321,42 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
     {
         addError(new RedefOfCtor(t));
     }
-    auto ctorDeclStmt = std::make_unique<ConstractorDeclStmt>(t, symTable.getCurrScope(), pClass, pClass->getClass().getClassName(), varArgs);
 
-    auto body = parseBodyStmt(args);
+    auto ctorDeclStmt = std::make_unique<ConstractorDeclStmt>(t, symTable.getCurrScope(), pClass, pClass->getClass().getClassName(), varArgs);
+    symTable.changeFunc(ctorDeclStmt.get());
+
+    if (match(Token::PUNCTUATION, L"\\"))
+    {
+        advance();
+        Token token = current();
+        if (!expectAndGet(Token::KEYWORD, L"bass", token) || !expectAndGet(Token::PUNCTUATION, L"(", new MissingBrace(token), token)) return nullptr;
+
+        std::vector<std::unique_ptr<Expr>> parentArgs;
+
+        while (!match(Token::PUNCTUATION, L")"))
+        {
+            auto expr = parseExpr();
+
+            if (expr == nullptr) return nullptr;
+
+            parentArgs.emplace_back(std::move(expr));
+
+            if (!match(Token::PUNCTUATION, L")"))
+            {
+                if (!expect(Token::PUNCTUATION, L",", new UnexpectedToken(current()))) return nullptr;
+            }
+        }
+
+        token = current();
+        if (!expectAndGet(Token::PUNCTUATION, L")", new MissingBrace(current()), token)) return nullptr;
+        ctorDeclStmt->setParentCtorCall(std::move(parentArgs));
+    }
+
+    auto body = parseBodyStmt(emptyArgs); // we already added the args
     if (!body) return nullptr;
     ctorDeclStmt->setBody(std::move(body));
 
+    symTable.exitScope();
     symTable.changeFunc(currFunc);
     return std::move(ctorDeclStmt);
 }
@@ -1319,7 +1393,6 @@ std::unique_ptr<ConstractorCallStmt> Parser::parseConstractorCallStmt()
         first = false;
     }
     advance();
-
     return std::make_unique<ConstractorCallStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), c, std::move(args));
 }
 
@@ -1444,9 +1517,12 @@ bool Parser::parseFields(std::vector<Field>& fields)
                         continue;
                     }
 
-                    symTable.addField(false, field->getVar().copy(), current());
+                    if (!symTable.addField(PRIVATE, field->getVar().copy(), current()))
+                    {
+                        addError(new HowDidYouGetHere(current()));
+                    }
 
-                    fields.emplace_back(false, std::move(field));
+                    fields.emplace_back(PRIVATE, std::move(field));
                 }
                 else 
                 {
@@ -1486,11 +1562,59 @@ bool Parser::parseFields(std::vector<Field>& fields)
                         continue;
                     }
 
-                    symTable.addField(true, field->getVar().copy(), current());
+                    if (!symTable.addField(PUBLIC, field->getVar().copy(), current()))
+                    {
+                        addError(new HowDidYouGetHere(current()));
+                    }
 
-                    fields.emplace_back(true, std::move(field));
+                    fields.emplace_back(PUBLIC, std::move(field));
                 }
                 else 
+                {
+                    unsigned int level = 0;
+                    while (true)
+                    {
+                        if (isAtEnd() || (level == 0 && (match(Token::PUNCTUATION, L"|") || match(Token::PUNCTUATION, L"║")))) break;
+
+                        if (match(Token::PUNCTUATION, L"∮")) level++;
+                        else if (match(Token::PUNCTUATION, L"☉")) level--;
+                        advance();
+                    }
+                }
+
+                if (match(Token::PUNCTUATION, L"║"))
+                {
+                    break;
+                }
+
+                if (!expect(Token::PUNCTUATION, L"|", new MissingClassPipe(current()))) return false;
+            }
+            advance();
+            if (!expect(Token::PUNCTUATION, L"☉", new MissingBrace(current()))) return false;
+        }
+        else if (match(Token::KEYWORD, L"sectionScore"))
+        {
+            advance();
+            if (!expect(Token::PUNCTUATION, L"∮", new MissingBrace(current()))) return false;
+
+            while (true)
+            {
+                if (match(Token::TYPE))
+                {
+                    auto field = parseVarDecStmt(true);
+                    if (!field) {
+                        synchronize();
+                        continue;
+                    }
+
+                    if (!symTable.addField(PROTECTED, field->getVar().copy(), current()))
+                    {
+                        addError(new HowDidYouGetHere(current()));
+                    }
+
+                    fields.emplace_back(PROTECTED, std::move(field));
+                }
+                else
                 {
                     unsigned int level = 0;
                     while (true)
@@ -1546,8 +1670,11 @@ bool Parser::parseMethods(std::vector<Method>& methods)
                         synchronize();
                         continue;
                     }
-                    symTable.addMethod(false, method->getFunc().copy(), current());
-                    methods.emplace_back(false, std::move(method));
+                    if (!symTable.addMethod(PRIVATE, method->getFunc().copy(), current()))
+                    {
+                        addError(new HowDidYouGetHere(current()));
+                    }
+                    methods.emplace_back(PRIVATE, std::move(method));
                 }
                 else
                 {
@@ -1586,8 +1713,54 @@ bool Parser::parseMethods(std::vector<Method>& methods)
                         synchronize();
                         continue;
                     }
-                    symTable.addMethod(true, method->getFunc().copy(), current());
-                    methods.emplace_back(true, std::move(method));
+                    if (!symTable.addMethod(PUBLIC, method->getFunc().copy(), current()))
+                    {
+                        addError(new HowDidYouGetHere(current()));
+                    }
+                    methods.emplace_back(PUBLIC, std::move(method));
+                }
+                else
+                {
+                    unsigned int level = 0;
+                    while (true)
+                    {
+                        if (isAtEnd() || (level == 0 && (match(Token::PUNCTUATION, L"|") || match(Token::PUNCTUATION, L"║")))) break;
+
+                        if (match(Token::PUNCTUATION, L"∮")) level++;
+                        else if (match(Token::PUNCTUATION, L"☉")) level--;
+                        advance();
+                    }
+                }
+
+                if (match(Token::PUNCTUATION, L"║"))
+                {
+                    break;
+                }
+
+                if (!expect(Token::PUNCTUATION, L"|", new MissingClassPipe(current()))) return false;
+            }
+            advance();
+            if (!expect(Token::PUNCTUATION, L"☉", new MissingBrace(current()))) return false;
+        }
+        else if (match(Token::KEYWORD, L"sectionScore"))
+        {
+            advance();
+            if (!expect(Token::PUNCTUATION, L"∮", new MissingBrace(current()))) return false;
+
+            while (true)
+            {
+                if (match(Token::KEYWORD, L"song"))
+                {
+                    auto method = parseFuncDeclStmt();
+                    if (!method) {
+                        synchronize();
+                        continue;
+                    }
+                    if (!symTable.addMethod(PROTECTED, method->getFunc().copy(), current()))
+                    {
+                        addError(new HowDidYouGetHere(current()));
+                    }
+                    methods.emplace_back(PROTECTED, std::move(method));
                 }
                 else
                 {
@@ -1645,8 +1818,11 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
                         synchronize();
                         continue;
                     }
-                    symTable.addCtor(false, ctor->getConstractor().copy(), current());
-                    ctors.emplace_back(false, std::move(ctor));
+                    if (!symTable.addCtor(PRIVATE, ctor->getConstractor().copy(), current()))
+                    {
+                        addError(new HowDidYouGetHere(current()));
+                    }
+                    ctors.emplace_back(PRIVATE, std::move(ctor));
                 }
                 else 
                 {
@@ -1685,8 +1861,11 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
                         synchronize();
                         continue;
                     }
-                    symTable.addCtor(true, ctor->getConstractor().copy(), current());
-                    ctors.emplace_back(true, std::move(ctor));
+                    if (!symTable.addCtor(PUBLIC, ctor->getConstractor().copy(), current()))
+                    {
+                        addError(new HowDidYouGetHere(current()));
+                    }
+                    ctors.emplace_back(PUBLIC, std::move(ctor));
                 }
                 else
                 {
@@ -1709,6 +1888,49 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
                 if (!expect(Token::PUNCTUATION, L"|", new MissingClassPipe(current()))) return false;
             }
             advance(); 
+            if (!expect(Token::PUNCTUATION, L"☉", new MissingBrace(current()))) return false;
+        }
+        else if (match(Token::KEYWORD, L"sectionScore"))
+        {
+            advance();
+            if (!expect(Token::PUNCTUATION, L"∮", new MissingBrace(current()))) return false;
+
+            while (true)
+            {
+                if (match(Token::IDENTIFIER_CALL))
+                {
+                    auto ctor = parseCtor();
+                    if (!ctor) {
+                        synchronize();
+                        continue;
+                    }
+                    if (!symTable.addCtor(PROTECTED, ctor->getConstractor().copy(), current()))
+                    {
+                        addError(new HowDidYouGetHere(current()));
+                    }
+                    ctors.emplace_back(PROTECTED, std::move(ctor));
+                }
+                else
+                {
+                    unsigned int level = 0;
+                    while (true)
+                    {
+                        if (isAtEnd() || (level == 0 && (match(Token::PUNCTUATION, L"|") || match(Token::PUNCTUATION, L"║")))) break;
+
+                        if (match(Token::PUNCTUATION, L"∮")) level++;
+                        else if (match(Token::PUNCTUATION, L"☉")) level--;
+                        advance();
+                    }
+                }
+
+                if (match(Token::PUNCTUATION, L"║"))
+                {
+                    break;
+                }
+
+                if (!expect(Token::PUNCTUATION, L"|", new MissingClassPipe(current()))) return false;
+            }
+            advance();
             if (!expect(Token::PUNCTUATION, L"☉", new MissingBrace(current()))) return false;
         }
         else
@@ -1919,8 +2141,8 @@ std::unique_ptr<IType> Parser::parseIType()
         advance();
         return parseArrayType();
     }
-
-    return parseType();
+    if (match(Token::TYPE)) return parseType();
+    return parseClassType();
 }
 
 std::unique_ptr<Type> Parser::parseType()
@@ -1944,6 +2166,20 @@ std::unique_ptr<ArrayType> Parser::parseArrayType()
     if (!arrType) return nullptr;
 
     return std::make_unique<ArrayType>(std::move(arrType));
+}
+
+std::unique_ptr<ClassType> Parser::parseClassType()
+{
+    if (!expect(Token::IDENTIFIER, new MissingBrace(current()))) return nullptr;
+
+    const std::wstring classname = current().value;
+
+    if (auto cls = SymbolTable::getClass(classname))
+    {
+        return std::make_unique<ClassType>(cls);
+    }
+
+    return nullptr;
 }
 
 

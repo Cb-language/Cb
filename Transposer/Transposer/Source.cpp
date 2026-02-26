@@ -72,6 +72,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    ClassTree::init();
     FileGraph& graph = FileGraph::Instance();
     graph.reset();
     if (mode != LSP) Utils::logMsg("Translating...");

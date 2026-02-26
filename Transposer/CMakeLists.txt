@@ -218,12 +218,19 @@ add_executable(Transposer
         Transposer/errorHandling/classErrors/InvalidCtorArgs.h
         Transposer/errorHandling/classErrors/RedefOfCtor.cpp
         Transposer/errorHandling/classErrors/RedefOfCtor.h
+        Transposer/errorHandling/classErrors/ParentNotInitialized.cpp
+        Transposer/errorHandling/classErrors/ParentNotInitialized.h
         Transposer/errorHandling/classErrors/ClassDosentExisit.cpp
         Transposer/errorHandling/classErrors/ClassDosentExisit.h
         Transposer/LSPPacking/LSPPacker.cpp
         Transposer/LSPPacking/LSPPacker.h
         Transposer/files/LibHelper.cpp
         Transposer/files/LibHelper.h
+        Transposer/errorHandling/classErrors/InvalidAccessKeyword.cpp
+        Transposer/errorHandling/classErrors/InvalidAccessKeyword.h
+        Transposer/class/ClassTree.cpp
+        Transposer/class/ClassTree.h
+        Transposer/class/AccessType.h
 )
 
 # In order to call the exe from the cmd

@@ -6,8 +6,9 @@
 #include "AST/statements/expression/FuncCallExpr.h"
 #include "errorHandling/classErrors/AccessError.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
+#include "symbols/Type/ClassType.h"
 
-std::vector<std::unique_ptr<ClassNode>> SymbolTable::classes;
+ClassTree& SymbolTable::classTree = ClassTree::instance();
 
 SymbolTable::SymbolTable()
 {
@@ -27,6 +28,13 @@ SymbolTable::~SymbolTable()
 
 std::optional<Var> SymbolTable::getVar(const std::wstring &name) const
 {
+    if (currClass != nullptr)
+    {
+        if (const auto varPtr = currClass->findField(name))
+        {
+            return varPtr->copy();
+        }
+    }
     return currScope->getVar(name, currClass);
 }
 
@@ -42,14 +50,7 @@ void SymbolTable::addVar(const Var& var, const Token& token) const
 
 ClassNode* SymbolTable::getClass(const std::wstring& name)
 {
-    // TODO: replace it with tree search
-
-    for (const auto& c : classes)
-    {
-        if (c->getClass().getClassName() == name) return c.get();
-    }
-
-    return nullptr;
+    return classTree.find(name);
 }
 
 bool SymbolTable::isClass(const std::wstring& name)
@@ -174,13 +175,15 @@ std::string SymbolTable::getFuncsHeaders() const
     return oss.str();
 }
 
-void SymbolTable::setClass(const Class& cls)
+void SymbolTable::addClass(const Class& cls, ClassNode* parent)
 {
-    auto c = std::make_unique<ClassNode>(cls);
+    classTree.addClass(cls, parent);
+    currClass = classTree.find(cls.getClassName());
+}
 
-    currClass = c.get();
-
-    classes.push_back(std::move(c));
+void SymbolTable::resetCurrClass()
+{
+    currClass = nullptr;
 }
 
 const ClassNode* SymbolTable::getCurrClass() const
@@ -188,25 +191,28 @@ const ClassNode* SymbolTable::getCurrClass() const
     return currClass;
 }
 
-void SymbolTable::addField(const bool isPublic, const Var& field, const Token& token) const
+bool SymbolTable::addField(const AccessType accessType, const Var& field, const Token& token) const
 {
-    if (currClass == nullptr) throw HowDidYouGetHere(token);
+    if (currClass == nullptr) return false;
 
-    currClass->add(isPublic, field);
+    currClass->add(accessType, field);
+    return true;
 }
 
-void SymbolTable::addMethod(const bool isPublic, const Func& method, const Token& token) const
+bool SymbolTable::addMethod(const AccessType accessType, const Func& method, const Token& token) const
 {
-    if (currClass == nullptr) throw HowDidYouGetHere(token);
+    if (currClass == nullptr) return false;
 
-    currClass->add(isPublic, method);
+    currClass->add(accessType, method);
+    return true;
 }
 
-void SymbolTable::addCtor(const bool isPublic, const Constractor& ctor, const Token& token) const
+bool SymbolTable::addCtor(const AccessType accessType, const Constractor& ctor, const Token& token) const
 {
-    if (currClass == nullptr) throw HowDidYouGetHere(token);
+    if (currClass == nullptr) return false;
 
-    currClass->add(isPublic, ctor);
+    currClass->add(accessType, ctor);
+    return true;
 }
 
 SymbolTable& SymbolTable::operator+=(const SymbolTable& other)
@@ -228,42 +234,34 @@ SymbolTable& SymbolTable::operator+=(const SymbolTable& other)
 
 void SymbolTable::clearClasses()
 {
-    classes.clear();
+    ClassTree::destroy();
 }
 
-bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token)
+bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token, const ClassNode* curr)
 {
-    const ClassNode* res = nullptr;
-
-    for (const auto& cls : classes)
-    {
-        if (cls->getClass().getClassName() == type->getType()) // TEMP fix
-        {
-            res = cls.get();
-            break;
-        }
-    }
+    const ClassNode* res = classTree.find(type->getType());
 
     if (res == nullptr) throw HowDidYouGetHere(token);
 
-    for (const auto& [isPublic, field] : res->getClass().getFields())
+    const Var* field = res->findField(name);
+    if (field != nullptr)
     {
-        if (field.getName() == name)
-        {
-            if (isPublic) return true;
+        if (res->isLegal(*field, curr)) return true;
 
-            throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
-        }
+        throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
     }
 
-    for (const auto& [isPublic, method] : res->getClass().getMethods())
+    const Func* method = res->findMethod(name);
+    if (method != nullptr)
     {
-        if (method.getFuncName() == name)
-        {
-            if (isPublic) return true;
+        if (res->isLegal(*method, curr)) return true;
 
-            throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
-        }
+        throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
+    }
+
+    if (auto parent = curr->getParent())
+    {
+        return isLegalFieldOrMethod(std::make_unique<ClassType>(parent), name, token, curr);
     }
 
     return false;

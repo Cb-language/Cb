@@ -30,7 +30,7 @@ void DotOpExpr::analyze() const
 
     if (rightCasted == nullptr) throw HowDidYouGetHere(token);
 
-    if (!SymbolTable::isLegalFieldOrMethod(leftType, rightCasted->toString(), token))
+    if (!SymbolTable::isLegalFieldOrMethod(leftType, rightCasted->toString(), token, currClass))
     {
         throw IllegalOpOnType(token, leftType->toString());
     }

@@ -13,6 +13,11 @@ std::vector<std::unique_ptr<Stmt>>& BodyStmt::getStmts()
     return stmts;
 }
 
+const std::vector<std::unique_ptr<Stmt>>& BodyStmt::getStmts() const
+{
+    return stmts;
+}
+
 void BodyStmt::analyze() const
 {
     for (const auto& stmt : stmts)

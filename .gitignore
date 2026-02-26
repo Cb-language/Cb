@@ -187,3 +187,6 @@ Transposer/test files/**/*.{exe,cpp,tpp,hpp,h}
 # Android studio 3.1+ serialized cache file
 
 # End of https://www.toptal.com/developers/gitignore/api/clion,rider,cmake
+
+# Ignore all .exe and .cpp files in "Transposer/test files" folder
+Transposer/test files/**/*.{exe,cpp,tpp,hpp,h}
