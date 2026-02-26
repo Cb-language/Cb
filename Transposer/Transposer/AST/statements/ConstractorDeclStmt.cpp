@@ -11,7 +11,15 @@
 #include "other/Utils.h"
 
 ConstractorDeclStmt::ConstractorDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass, const std::wstring& className,
-                                         const std::vector<Var>& args) : IFuncDeclStmt(token, scope, currClass), constractor(Constractor(args,  className))
+                                         const std::vector<Var>& args) : IFuncDeclStmt(token, scope, currClass),
+    constractor(Constractor(args,  className)), parentCtorCall(nullptr)
+{
+}
+
+ConstractorDeclStmt::ConstractorDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass,
+    const std::wstring& className, const std::vector<Var>& args, std::vector<std::unique_ptr<Expr>> parentArgs) : IFuncDeclStmt(token, scope, currClass),
+    constractor(Constractor(args,  className)),
+    parentCtorCall(std::make_unique<ConstractorCallStmt>(token, scope, funcDecl, currClass, currClass->getParent(), std::move(parentArgs)))
 {
 }
 
@@ -24,91 +32,34 @@ void ConstractorDeclStmt::analyze() const
 {
     if (this->body == nullptr) throw HowDidYouGetHere(token);
 
-    if (currClass->getParent() != nullptr)
-    {
-        bool found = false;
-        for (const auto& stmt : body->getStmts())
-        {
-            auto ctorCall = dynamic_cast<ConstractorCallStmt*>(stmt.get());
-            if (ctorCall && ctorCall->getClassNode()->getClass().getClassName() == currClass->getParent()->getClass().getClassName())
-            {
-                found = true;
-                break;
-            }
-        }
-
-        if (!found)
-        {
-            bool hasDefaultCtor = false;
-
-            if(currClass->getParent()->getClass().getClassName() == L"Object")
-            {
-                hasDefaultCtor = true;
-            }
-            else if (!currClass->getParent()->getClass().getConstractors().empty())
-            {
-                for (const auto& ctor : currClass->getParent()->getClass().getConstractors() | std::views::values)
-                {
-                    if (ctor.getArgs().empty())
-                    {
-                        if (currClass->getParent()->isLegal(ctor, currClass))
-                        {
-                            hasDefaultCtor = true;
-                        }
-                        break;
-                    }
-                }
-            }
-
-            if (!hasDefaultCtor)
-            {
-                throw ParentNotInitialized(token, Utils::wstrToStr(currClass->getClass().getClassName()), Utils::wstrToStr(currClass->getParent()->getClass().getClassName()));
-            }
-        }
-    }
-
     body->analyze();
 }
 
 std::string ConstractorDeclStmt::translateToCpp() const
 {
-    std::string initList;
-    ConstractorCallStmt* parentCall = nullptr;
+    std::ostringstream oss;
+    oss << Utils::wstrToStr(constractor.getClassName()) << "::" << constractor.translateToCpp();
 
-    if (currClass->getParent() != nullptr)
+    if (parentCtorCall != nullptr)
     {
-        for (const auto& stmt : body->getStmts())
-        {
-            auto ctorCall = dynamic_cast<ConstractorCallStmt*>(stmt.get());
-            if (ctorCall && ctorCall->getClassNode()->getClass().getClassName() == currClass->getParent()->getClass().getClassName())
-            {
-                parentCall = ctorCall;
-                initList = " : " + ctorCall->translateToCpp();
-                break;
-            }
-        }
+        oss << " : " << parentCtorCall->translateToCpp();
     }
 
-    std::ostringstream oss;
-    oss << Utils::wstrToStr(constractor.getClassName()) << "::" << constractor.translateToCpp() << initList << std::endl;
-
     const std::string tabs = getTabs();
-    oss << tabs << "{\n";
+    oss << std::endl << tabs << "{" << std::endl;
 
     bool first = true;
     for (const auto& stmt : body->getStmts())
     {
-        if (stmt.get() == parentCall) continue;
-
         if (!first)
         {
-            oss << "\n";
+            oss << std::endl;
         }
         oss << stmt->translateToCpp();
         first = false;
     }
 
-    oss << "\n" << tabs << "}\n";
+    oss << std::endl << tabs << "}" << std::endl;
 
     return oss.str();
 }
