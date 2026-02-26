@@ -1338,7 +1338,32 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
     {
         addError(new RedefOfCtor(t));
     }
-    auto ctorDeclStmt = std::make_unique<ConstractorDeclStmt>(t, symTable.getCurrScope(), pClass, pClass->getClass().getClassName(), varArgs);
+
+    std::unique_ptr<ConstractorDeclStmt> ctorDeclStmt = nullptr;
+
+    if (match(Token::PUNCTUATION, L"\\"))
+    {
+        advance();
+        Token token = current();
+        if (!expectAndGet(Token::KEYWORD, L"bass", token) || !expectAndGet(Token::PUNCTUATION, L"(", new MissingBrace(token), token)) return nullptr;
+
+        std::vector<std::unique_ptr<Expr>> parentArgs;
+
+        while (!match(Token::PUNCTUATION, L")"))
+        {
+            parentArgs.emplace_back(parseExpr());
+
+            if (!match(Token::PUNCTUATION, L")"))
+            {
+                if (!expect(Token::PUNCTUATION, L",", new UnexpectedToken(current()))) return nullptr;
+            }
+        }
+
+        token = current();
+        if (!expectAndGet(Token::PUNCTUATION, L")", new MissingBrace(current()), token)) return nullptr;
+        ctorDeclStmt = std::make_unique<ConstractorDeclStmt>(t, symTable.getCurrScope(), pClass, pClass->getClass().getClassName(), varArgs, std::move(parentArgs));
+    }
+    else ctorDeclStmt = std::make_unique<ConstractorDeclStmt>(t, symTable.getCurrScope(), pClass, pClass->getClass().getClassName(), varArgs);
 
     auto body = parseBodyStmt(args);
     if (!body) return nullptr;

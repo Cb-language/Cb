@@ -28,11 +28,10 @@ instrument Test2 | tutti Test
     ☉
     conductorScore
     ∮
-        Test2_call()
+        Test2_call() \ bass(1)
         ∮
             do_y = 2║
             mi_m = demen║
-            re_b = "bla"║
         ☉║
     ☉
 ☉
