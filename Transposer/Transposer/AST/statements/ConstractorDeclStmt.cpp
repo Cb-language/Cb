@@ -1,6 +1,7 @@
 #include "ConstractorDeclStmt.h"
 
 #include <ranges>
+#include <algorithm>
 #include <iostream>
 
 #include "errorHandling/classErrors/ParentNotInitialized.h"
@@ -31,7 +32,7 @@ void ConstractorDeclStmt::setBody(std::unique_ptr<BodyStmt> body)
 void ConstractorDeclStmt::analyze() const
 {
     if (this->body == nullptr) throw HowDidYouGetHere(token);
-
+    if (parentCtorCall != nullptr) parentCtorCall->analyze();
     body->analyze();
 }
 
@@ -42,7 +43,12 @@ std::string ConstractorDeclStmt::translateToCpp() const
 
     if (parentCtorCall != nullptr)
     {
-        oss << " : " << parentCtorCall->translateToCpp();
+        std::string str = parentCtorCall->translateToCpp();
+        str.erase(
+            std::ranges::remove(str, ';').begin(),
+            str.end()
+        ); // removing ;
+        oss << " : " << str;
     }
 
     const std::string tabs = getTabs();
