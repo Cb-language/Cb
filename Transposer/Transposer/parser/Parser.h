@@ -31,6 +31,7 @@
 #include "AST/statements/IncludeStmt.h"
 #include "AST/statements/ObjCreationStmt.h"
 #include "AST/statements/expression/DotOpExpr.h"
+#include "symbols/Type/ClassType.h"
 
 class Parser
 {
@@ -121,6 +122,7 @@ private:
     std::unique_ptr<IType> parseIType();
     std::unique_ptr<Type> parseType();
     std::unique_ptr<ArrayType> parseArrayType();
+    std::unique_ptr<ClassType> parseClassType();
 
 public:
     explicit Parser(const std::vector<Token>& tokens);

@@ -817,18 +817,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
     if (!expect(Token::PUNCTUATION, L"(", new MissingParenthesis(current()))) return nullptr;
     while (!match(Token::PUNCTUATION, L")"))
     {
-        std::unique_ptr<IType> type = nullptr;
-        auto cls = symTable.getCurrClass();
-
-        if (cls != nullptr && current().value == cls->getClass().getClassName())
-        {
-            type = std::make_unique<ClassType>(cls);
-            advance();
-        }
-        else
-        {
-            type = parseIType();
-        }
+        const std::unique_ptr<IType> type = parseIType();
 
         if (!type) return nullptr;
 
@@ -1279,6 +1268,7 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
 {
     const Token& t = current();
     std::vector<std::pair<Var, const Token>> args;
+    std::vector<std::pair<Var, const Token>> emptyArgs;
     std::vector<std::unique_ptr<FuncCreditStmt>> credited;
     IFuncDeclStmt* currFunc = symTable.getCurrFunc();
 
@@ -1293,21 +1283,13 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
         return nullptr;
     }
 
+    // entering scope so we can do parent inits
+    symTable.enterScope(false, false);
+
     if (!expect(Token::PUNCTUATION, L"(", new MissingParenthesis(current()))) return nullptr;
     while (!match(Token::PUNCTUATION, L")"))
     {
-        std::unique_ptr<IType> type = nullptr;
-        auto cls = symTable.getCurrClass();
-
-        if (cls != nullptr && current().value == cls->getClass().getClassName())
-        {
-            type = std::make_unique<ClassType>(cls);
-            advance();
-        }
-        else
-        {
-            type = parseIType();
-        }
+        const std::unique_ptr<IType> type = parseIType();
 
         if (!type) return nullptr;
 
@@ -1328,9 +1310,10 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
 
     if (!args.empty())
     {
-        for (const auto& key : args | std::views::keys)
+        for (const auto& [var, varToken] : args )
         {
-            varArgs.emplace_back(key.copy());
+            varArgs.emplace_back(var.copy());
+            symTable.addVar(var.copy(), varToken);
         }
     }
 
@@ -1339,7 +1322,8 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
         addError(new RedefOfCtor(t));
     }
 
-    std::unique_ptr<ConstractorDeclStmt> ctorDeclStmt = nullptr;
+    auto ctorDeclStmt = std::make_unique<ConstractorDeclStmt>(t, symTable.getCurrScope(), pClass, pClass->getClass().getClassName(), varArgs);
+    symTable.changeFunc(ctorDeclStmt.get());
 
     if (match(Token::PUNCTUATION, L"\\"))
     {
@@ -1351,7 +1335,11 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
 
         while (!match(Token::PUNCTUATION, L")"))
         {
-            parentArgs.emplace_back(parseExpr());
+            auto expr = parseExpr();
+
+            if (expr == nullptr) return nullptr;
+
+            parentArgs.emplace_back(std::move(expr));
 
             if (!match(Token::PUNCTUATION, L")"))
             {
@@ -1361,14 +1349,14 @@ std::unique_ptr<ConstractorDeclStmt> Parser::parseCtor()
 
         token = current();
         if (!expectAndGet(Token::PUNCTUATION, L")", new MissingBrace(current()), token)) return nullptr;
-        ctorDeclStmt = std::make_unique<ConstractorDeclStmt>(t, symTable.getCurrScope(), pClass, pClass->getClass().getClassName(), varArgs, std::move(parentArgs));
+        ctorDeclStmt->setParentCtorCall(std::move(parentArgs));
     }
-    else ctorDeclStmt = std::make_unique<ConstractorDeclStmt>(t, symTable.getCurrScope(), pClass, pClass->getClass().getClassName(), varArgs);
 
-    auto body = parseBodyStmt(args);
+    auto body = parseBodyStmt(emptyArgs); // we already added the args
     if (!body) return nullptr;
     ctorDeclStmt->setBody(std::move(body));
 
+    symTable.exitScope();
     symTable.changeFunc(currFunc);
     return std::move(ctorDeclStmt);
 }
@@ -2153,8 +2141,8 @@ std::unique_ptr<IType> Parser::parseIType()
         advance();
         return parseArrayType();
     }
-
-    return parseType();
+    if (match(Token::TYPE)) return parseType();
+    return parseClassType();
 }
 
 std::unique_ptr<Type> Parser::parseType()
@@ -2178,6 +2166,20 @@ std::unique_ptr<ArrayType> Parser::parseArrayType()
     if (!arrType) return nullptr;
 
     return std::make_unique<ArrayType>(std::move(arrType));
+}
+
+std::unique_ptr<ClassType> Parser::parseClassType()
+{
+    if (!expect(Token::IDENTIFIER, new MissingBrace(current()))) return nullptr;
+
+    const std::wstring classname = current().value;
+
+    if (auto cls = SymbolTable::getClass(classname))
+    {
+        return std::make_unique<ClassType>(cls);
+    }
+
+    return nullptr;
 }
 
 

@@ -14,8 +14,8 @@ private:
 
 public:
     ConstractorDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass, const std::wstring& className, const std::vector<Var>& args);
-    ConstractorDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass, const std::wstring& className, const std::vector<Var>& args,
-        std::vector<std::unique_ptr<Expr>> parentArgs);
+
+    void setParentCtorCall(std::vector<std::unique_ptr<Expr>> args);
 
     void setBody(std::unique_ptr<BodyStmt> body);
 

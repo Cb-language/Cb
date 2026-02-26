@@ -17,11 +17,10 @@ ConstractorDeclStmt::ConstractorDeclStmt(const Token& token, Scope* scope, const
 {
 }
 
-ConstractorDeclStmt::ConstractorDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass,
-    const std::wstring& className, const std::vector<Var>& args, std::vector<std::unique_ptr<Expr>> parentArgs) : IFuncDeclStmt(token, scope, currClass),
-    constractor(Constractor(args,  className)),
-    parentCtorCall(std::make_unique<ConstractorCallStmt>(token, scope, funcDecl, currClass, currClass->getParent(), std::move(parentArgs)))
+void ConstractorDeclStmt::setParentCtorCall(std::vector<std::unique_ptr<Expr>> args)
 {
+    if (parentCtorCall != nullptr) return;
+    parentCtorCall = std::make_unique<ConstractorCallStmt>(token, scope, funcDecl, currClass, currClass->getParent(), std::move(args));
 }
 
 void ConstractorDeclStmt::setBody(std::unique_ptr<BodyStmt> body)
@@ -48,24 +47,20 @@ std::string ConstractorDeclStmt::translateToCpp() const
             std::ranges::remove(str, ';').begin(),
             str.end()
         ); // removing ;
-        oss << " : " << str;
+
+        oss << " : " << Utils::removeFirstTabs(str);
     }
 
-    const std::string tabs = getTabs();
+    const std::string tabs = getTabs(-1);
     oss << std::endl << tabs << "{" << std::endl;
 
-    bool first = true;
     for (const auto& stmt : body->getStmts())
     {
-        if (!first)
-        {
-            oss << std::endl;
-        }
-        oss << stmt->translateToCpp();
-        first = false;
+        std::string temp = stmt->translateToCpp();
+        oss << getTabs() << Utils::removeFirstTabs(temp) << std::endl;
     }
 
-    oss << std::endl << tabs << "}" << std::endl;
+    oss << tabs << "}" << std::endl;
 
     return oss.str();
 }

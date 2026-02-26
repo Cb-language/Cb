@@ -32,6 +32,16 @@ instrument Test2 | tutti Test
         ∮
             do_y = 2║
             mi_m = demen║
+        ☉ |
+
+        Test2_call(degree x) \ bass(x)
+        ∮
+            do_y = x║
+        ☉ |
+
+        Test2_call(degree y, mute m)
+        ∮
+            do_y = y║
         ☉║
     ☉
 ☉
