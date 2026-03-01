@@ -5,6 +5,7 @@ song prelude() -> degree
     degree x = 0║
     Test t1 = Test_call(x)║
     Test2 t2 = Test2_call()║
-
+    t1\g()║
+    t2\g()║
     B\0║
 ☉

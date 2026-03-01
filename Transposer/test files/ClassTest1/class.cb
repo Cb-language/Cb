@@ -16,7 +16,11 @@ instrument Test
         ∮
             do_x = x║
             playBar("entered ctor")║
-        ☉ ║
+        ☉ |
+        song ©(f) g()
+        ∮
+            f()║
+        ☉║
     ☉
 ☉
 
