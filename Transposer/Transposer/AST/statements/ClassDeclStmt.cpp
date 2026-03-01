@@ -93,6 +93,10 @@ std::string ClassDeclStmt::translateToH() const
 
         oss << Utils::wstrToStr(inheritingName);
     }
+    else
+    {
+        oss << " : public Object";
+    }
     oss << std::endl << "{" << std::endl;
 
     for (const auto& [isPublic, field] : fields)
