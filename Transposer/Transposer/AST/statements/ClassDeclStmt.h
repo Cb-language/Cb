@@ -12,6 +12,7 @@ typedef std::pair<AccessType, std::unique_ptr<ConstractorDeclStmt>> Ctor;
 class ClassDeclStmt : public Stmt
 {
 private:
+    bool hasEmptyCtor = false;
     const std::wstring name;
     std::vector<Field> fields;
     std::vector<Method> methods;
@@ -27,4 +28,5 @@ public:
     void analyze() const override;
     std::string translateToCpp() const override;
     std::string translateToH() const override;
+    bool getHasEmptyCtor() const;
 };

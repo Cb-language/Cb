@@ -1260,6 +1260,13 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
     if (!expect(Token::PUNCTUATION, L"☉", new MissingBrace(current()))) return nullptr;
 
     auto declStmt = std::make_unique<ClassDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), name, fields, methods, ctors, isInheriting, type, inheritingName);
+
+    if (!declStmt->getHasEmptyCtor())
+    {
+        std::vector<Var> emptyArgs;
+        symTable.addCtor(PUBLIC, Constractor(emptyArgs, name) ,t);
+    }
+
     symTable.resetCurrClass();
     return std::move(declStmt);
 }

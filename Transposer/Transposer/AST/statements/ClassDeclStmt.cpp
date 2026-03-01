@@ -13,7 +13,26 @@ ClassDeclStmt::ClassDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* fu
 {
     for (auto& [isPublic, func] : fields) this->fields.emplace_back(isPublic, std::move(func));
     for (auto& [isPublic, method] : methods) this->methods.emplace_back(isPublic, std::move(method));
-    for (auto& [isPublic, ctor] : ctors) this->ctors.emplace_back(isPublic, std::move(ctor));
+    for (auto& [isPublic, ctor] : ctors)
+    {
+        if (!hasEmptyCtor && ctor->getConstractor().getArgs().empty()) hasEmptyCtor = true;
+        this->ctors.emplace_back(isPublic, std::move(ctor));
+    }
+
+    if (!hasEmptyCtor)
+    {
+        std::vector<Var> emptyArgs;
+        this->ctors.emplace_back(
+            PUBLIC,
+            std::make_unique<ConstractorDeclStmt>(
+                token,
+                scope,
+                currClass,
+                name,
+                std::move(emptyArgs)
+            )
+        );
+    }
 }
 
 void ClassDeclStmt::analyze() const
@@ -99,4 +118,9 @@ std::string ClassDeclStmt::translateToH() const
 
     oss << privates.str() << std::endl << std::endl << publics.str() << std::endl << protecteds.str() << "};" << std::endl;
     return oss.str();
+}
+
+bool ClassDeclStmt::getHasEmptyCtor() const
+{
+    return hasEmptyCtor;
 }
