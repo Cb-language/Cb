@@ -67,7 +67,7 @@ std::string ConstractorDeclStmt::translateToCpp() const
 
 std::string ConstractorDeclStmt::translateToH() const
 {
-    return constractor.translateToCpp();
+    return constractor.translateToCpp() + ";";
 }
 
 std::wstring ConstractorDeclStmt::getName() const

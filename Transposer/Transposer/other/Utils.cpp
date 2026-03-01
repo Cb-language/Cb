@@ -21,7 +21,7 @@ void Utils::logMsg(const std::string& msg)
         << std::endl;
 }
 
-std::string Utils::removeFirstTabs(std::string& str)
+std::string Utils::removeFirstTabs(std::string str)
 {
     if (!str.starts_with("\t"))
     {
@@ -29,6 +29,34 @@ std::string Utils::removeFirstTabs(std::string& str)
     }
     str.erase(0, 1);
     return removeFirstTabs(str);
+}
+
+std::string Utils::removeAllFirstTabs(std::string str)
+{
+    bool atLineStart = true;
+
+    for (size_t i = 0; i < str.size(); )
+    {
+        if (atLineStart && str[i] == '\t')
+        {
+            str.erase(i, 1);
+            atLineStart = false;
+            continue;
+        }
+
+        if (str[i] == '\n')
+        {
+            atLineStart = true;
+        }
+        else
+        {
+            atLineStart = false;
+        }
+
+        ++i;
+    }
+
+    return str;
 }
 
 std::string Utils::normalizePath(const std::filesystem::path& path)

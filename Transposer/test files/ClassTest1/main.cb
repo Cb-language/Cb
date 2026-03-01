@@ -1,11 +1,14 @@
 feat "class.cb"║
+feat "class2.cb"║
 
 song prelude() -> degree
 ∮
     degree x = 0║
     Test t1 = Test_call(x)║
     Test2 t2 = Test2_call()║
+    Test3 t3 = Test3_call()║
     t1\g()║
     t2\g()║
+    playBar(t3)║
     B\0║
 ☉

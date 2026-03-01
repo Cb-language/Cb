@@ -1,0 +1,16 @@
+feat "class.cb"║
+
+instrument Test3
+∮
+    playerScore
+    ∮
+        Test sol_t║
+    ☉
+    conductorScore
+    ∮
+        Test3_call(Test t)
+        ∮
+            sol_t = t║
+        ☉║
+    ☉
+☉

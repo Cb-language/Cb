@@ -115,12 +115,12 @@ std::string ClassDeclStmt::translateToCpp() const
 {
     std::ostringstream oss;
 
-    for (const auto& ctor : ctors | std::views::values) oss << ctor->translateToCpp() << std::endl;
+    for (const auto& ctor : ctors | std::views::values) oss << Utils::removeAllFirstTabs(ctor->translateToCpp()) << std::endl;
 
     oss << generateEquals() << std::endl;
     oss << generateToString() << std::endl;
 
-    for (const auto& method : methods | std::views::values) oss << method->translateToCppClass(name) << std::endl;
+    for (const auto& method : methods | std::views::values) oss << Utils::removeAllFirstTabs(method->translateToCppClass(name)) << std::endl;
     return oss.str();
 }
 
@@ -130,6 +130,7 @@ std::string ClassDeclStmt::translateToH() const
     std::ostringstream privates;
     std::ostringstream publics;
     std::ostringstream protecteds;
+    const std::string tabs = getTabs();
 
     privates << "private:";
     publics << "public:";
@@ -162,28 +163,28 @@ std::string ClassDeclStmt::translateToH() const
 
     for (const auto& [isPublic, field] : fields)
     {
-        if (isPublic == PUBLIC) publics << std::endl << getTabs(1) << field->translateToCpp();
-        else if (isPublic == PROTECTED) protecteds << std::endl << getTabs(1) << field->translateToCpp();
-        else privates << std::endl << getTabs(1) << field->translateToCpp();
+        if (isPublic == PUBLIC) publics << std::endl << tabs << Utils::removeAllFirstTabs(field->translateToCpp());
+        else if (isPublic == PROTECTED) protecteds << std::endl << tabs << Utils::removeAllFirstTabs(field->translateToCpp());
+        else privates << std::endl << tabs << Utils::removeAllFirstTabs(field->translateToCpp());
     }
 
     for (const auto& [isPublic, method] : methods)
     {
-        if (isPublic == PUBLIC) publics << std::endl << getTabs(1) << method->translateToH() << ";";
-        else if (isPublic == PROTECTED) protecteds << std::endl << getTabs(1) << method->translateToH() << ";";
-        else privates << std::endl << getTabs(1) << method->translateToH() << ";";
+        if (isPublic == PUBLIC) publics << std::endl << tabs << Utils::removeAllFirstTabs(method->translateToH());
+        else if (isPublic == PROTECTED) protecteds << std::endl << tabs << Utils::removeAllFirstTabs(method->translateToH());
+        else privates << std::endl << tabs << Utils::removeAllFirstTabs(method->translateToH());
     }
 
     for (const auto& [isPublic, ctor] : ctors)
     {
-        if (isPublic == PUBLIC) publics << std::endl << getTabs(1) << ctor->translateToH() << ";";
-        else if (isPublic == PROTECTED) protecteds << std::endl << getTabs(1) << ctor->translateToH() << ";";
-        else privates << std::endl << getTabs(1) << ctor->translateToH() << ";";
+        if (isPublic == PUBLIC) publics << std::endl << tabs << Utils::removeAllFirstTabs(ctor->translateToH());
+        else if (isPublic == PROTECTED) protecteds << std::endl << tabs << Utils::removeAllFirstTabs(ctor->translateToH());
+        else privates << std::endl << tabs << Utils::removeAllFirstTabs(ctor->translateToH());
     }
 
-    publics << "std::string toString() const override;" << std::endl << "Primitive<bool> equals(const Object& other) const override;" << std::endl;
+    publics << std::endl << tabs << "std::string toString() const override;" << std::endl << tabs << "Primitive<bool> equals(const Object& other) const override;" << std::endl;
 
-    oss << privates.str() << std::endl << std::endl << publics.str() << std::endl << protecteds.str() << "};" << std::endl;
+    oss << privates.str() << std::endl << std::endl << publics.str() << std::endl << protecteds.str() << std::endl << "};" << std::endl << std::endl;
     return oss.str();
 }
 
