@@ -54,7 +54,7 @@ std::wstring ClassType::getType() const
 
 std::string ClassType::translateTypeToCpp() const
 {
-    return Utils::wstrToStr(type);
+    return "SafePtr<" + Utils::wstrToStr(type) + ">";
 }
 
 std::unique_ptr<IType> ClassType::copy() const

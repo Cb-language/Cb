@@ -19,17 +19,14 @@ std::string ObjCreationStmt::translateToCpp() const
     if (classNode == nullptr) throw HowDidYouGetHere(token);
 
     const std::string className = Utils::wstrToStr(classNode->getClass().getClassName());
+    const std::string classSafePtr = "SafePtr<" + className + ">";
 
-    oss << getTabs() << className << " " << Utils::wstrToStr(var.getName());
+    oss << getTabs() << classSafePtr << " " << Utils::wstrToStr(var.getName()) << " = " << classSafePtr << "(";
 
-    if (hasStartingValue && startingValue != nullptr)
-    {
-        oss << " = " << startingValue->translateToCpp() << ";";
-    }
-    else
-    {
-        oss << " = " << className << "();";
-    }
+    if (hasStartingValue && startingValue != nullptr) oss  << startingValue->translateToCpp();
+    else oss << className << "()";
+
+    oss << ");";
 
     return oss.str();
 }
