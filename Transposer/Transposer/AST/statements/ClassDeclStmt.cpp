@@ -9,20 +9,41 @@
 std::string ClassDeclStmt::generateToString() const
 {
     std::ostringstream oss;
-    const std::string strName = Utils::wstrToStr(name);
+    const std::string className = Utils::wstrToStr(name);
 
-    oss << "std::string " << strName <<"::toString() const" << std::endl <<
-        "{" << std::endl <<
-            "\tstd::string str = \"" << strName << "{\";" << std::endl;
+    // Function signature
+    oss << "std::string " << className << "::toString(int indents) const" << std::endl;
+    oss << "{" << std::endl;
 
-    for (const auto& field : fields | std::views::values)
+    // Start of class string
+    oss << "\tstd::string str = \"" << className << " {\\n\";" << std::endl;
+
+    // Loop over fields
+    for (auto& field : fields | std::views::values)
     {
         const std::string fieldName = Utils::wstrToStr(field->getVar().getName());
-        oss << "\tstr += \"" << fieldName << " = \" + " << fieldName  << R"(.toString() + "\n";)" << std::endl;
+        oss << "\tstr += getIndents(indents + 1) + \"" << fieldName << " = ";
+        if (field->getVar().isPrimitive())
+            oss << "\" + " << fieldName << ".toString() + \"\\n\";" << std::endl;
+        else
+            oss << "\" + " << fieldName << ".toString(indents + 1) + \"\\n\";" << std::endl;
     }
-    if (auto parent = currClass->getParent()) oss << "\tstr += " << Utils::wstrToStr(parent->getClass().getClassName()) << "::toString();" << std::endl;
-    oss << "\tstr += \"}\";" << std::endl;
-    oss << "\treturn str;" << std::endl << "}" << std::endl;
+
+    // Include parent class toString if applicable
+    if (const auto parent = currClass->getParent())
+    {
+        if (parent->getClass().getClassName() != L"Object")
+        {
+            oss << "\tstr += getIndents(indents + 1) + " << Utils::wstrToStr(parent->getClass().getClassName())
+                << "::toString(indents + 1) + \"\\n\";" << std::endl;
+        }
+    }
+
+    // Close class braces
+    oss << "\tstr += getIndents(indents) + \"}\";" << std::endl;
+    oss << "\treturn str;" << std::endl;
+    oss << "}" << std::endl;
+
     return oss.str();
 }
 
@@ -182,7 +203,7 @@ std::string ClassDeclStmt::translateToH() const
         else privates << std::endl << tabs << Utils::removeAllFirstTabs(ctor->translateToH());
     }
 
-    publics << std::endl << tabs << "std::string toString() const override;" << std::endl << tabs << "Primitive<bool> equals(const Object& other) const override;" << std::endl;
+    publics << std::endl << tabs << "std::string toString(int indents = 0) const override;" << std::endl << tabs << "Primitive<bool> equals(const Object& other) const override;" << std::endl;
 
     oss << privates.str() << std::endl << std::endl << publics.str() << std::endl << protecteds.str() << std::endl << "};" << std::endl << std::endl;
     return oss.str();

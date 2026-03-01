@@ -15,9 +15,11 @@ public:
     virtual Primitive<bool> operator==(const Object& other) const;
     virtual Primitive<bool> operator!=(const Object& other) const;
     friend std::ostream& operator<<(std::ostream& os, const Object& obj);
-    virtual std::string toString() const;
+    virtual std::string toString(int indent = 0) const;
+    virtual std::string toString(Primitive<int> indent) const;
     virtual Object& operator*();
 
 protected:
     virtual Primitive<bool> equals(const Object& other) const;
+    static std::string getIndents(int indents);
 };

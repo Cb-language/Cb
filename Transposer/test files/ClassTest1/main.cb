@@ -9,6 +9,8 @@ song prelude() -> degree
     Test3 t3 = Test3_call()║
     t1\g()║
     t2\g()║
-    playBar(t3)║
+    playBar(t1, "\n")║
+    playBar(t2, "\n")║
+    playBar(t3, "\n")║
     B\0║
 ☉

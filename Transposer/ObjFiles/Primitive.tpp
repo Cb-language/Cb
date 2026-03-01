@@ -77,8 +77,8 @@ Primitive<bool> Primitive<T>::equals(const Object& other) const {
 
 template <typename T>
 requires std::is_arithmetic_v<T>
-std::string Primitive<T>::toString() const {
-    if constexpr (std::is_same_v<T, bool>) return value ? "cres" : "demen";
+std::string Primitive<T>::toString(int indents) const {
+    if constexpr (std::is_same_v<T, bool>) return getIndents(indents) + (value ? "cres" : "demen");
     if constexpr (std::is_same_v<T, double>)
     {
         std::ostringstream oss;
@@ -97,9 +97,9 @@ std::string Primitive<T>::toString() const {
             s.erase(lastNonZero + 1);
         }
 
-        return s;
+        return getIndents(indents) + s;
     }
-    return std::to_string(value);
+    return getIndents(indents) + std::to_string(value);
 }
 
 template <typename T>

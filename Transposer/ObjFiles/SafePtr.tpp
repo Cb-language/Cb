@@ -25,9 +25,9 @@ SafePtr<T>::InnerSafePtr& SafePtr<T>::operator[](Primitive<int> index) requires 
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-std::string SafePtr<T>::toString() const
+std::string SafePtr<T>::toString(int indents) const
 {
-    return ptr->toString();
+    return ptr->toString(indents);
 }
 
 template <typename T>

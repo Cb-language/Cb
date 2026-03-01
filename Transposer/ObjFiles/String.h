@@ -12,7 +12,7 @@ public:
     explicit String(const std::string& basicString);
     explicit String(const String& string);
     explicit String(const char* basicCharPtr);
-    std::string toString() const override;
+    std::string toString(int indents = 0) const override;
     String& operator=(const String& other);
     String& operator=(const Object& other);
     String& operator=(const char* basicCharPtr);

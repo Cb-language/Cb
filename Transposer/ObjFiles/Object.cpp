@@ -11,9 +11,14 @@ Primitive<bool> Object::operator!=(const Object& other) const
     return Primitive<bool>(!(*this == other));
 }
 
-std::string Object::toString() const
+std::string Object::toString(int indent) const
 {
     return "";
+}
+
+std::string Object::toString(Primitive<int> indent) const
+{
+    return toString(indent.getValue());
 }
 
 Object& Object::operator*()
@@ -23,7 +28,12 @@ Object& Object::operator*()
 
 Primitive<bool> Object::equals(const Object& other) const
 {
-    return Primitive<bool>(false);
+    return Primitive<bool>(true);
+}
+
+std::string Object::getIndents(int indents)
+{
+    return std::string(indents, ' ');
 }
 
 std::ostream& operator<<(std::ostream& os, const Object& obj)
