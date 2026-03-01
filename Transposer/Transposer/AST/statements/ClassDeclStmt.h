@@ -22,6 +22,9 @@ private:
     const std::wstring inheritingPublic;
     const std::wstring inheritingName;
 
+    std::string generateToString() const;
+    std::string generateEquals() const;
+
 public:
     ClassDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const std::wstring& name, std::vector<Field>& fields,
         std::vector<Method>& methods, std::vector<Ctor>& ctors, const bool isInheriting, const std::wstring& inheritingPublic, const std::wstring& inheritingName);
