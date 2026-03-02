@@ -61,7 +61,7 @@ public:
         return os;
     }
 
-    std::string toString() const override;
+    std::string toString(int indents = 0) const override;
 
 protected:
     Primitive<bool> equals(const Object& other) const override;
@@ -333,9 +333,9 @@ Array<T> Array<T>::slice(Primitive<int> start, Primitive<int> stop, Primitive<in
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-std::string Array<T>::toString() const
+std::string Array<T>::toString(int indents) const
 {
-    std::string str = "[";
+    std::string str = getIndents(indents) + "[";
     bool first = true;
 
     for (Primitive<int> i; i < size; ++i)
@@ -399,9 +399,14 @@ Primitive<bool> Object::operator!=(const Object& other) const
     return Primitive<bool>(!(*this == other));
 }
 
-std::string Object::toString() const
+std::string Object::toString(int indent) const
 {
     return "";
+}
+
+std::string Object::toString(Primitive<int> indent) const
+{
+    return toString(indent.getValue());
 }
 
 Object& Object::operator*()
@@ -411,7 +416,12 @@ Object& Object::operator*()
 
 Primitive<bool> Object::equals(const Object& other) const
 {
-    return Primitive<bool>(false);
+    return Primitive<bool>(true);
+}
+
+std::string Object::getIndents(int indents)
+{
+    return std::string(indents, ' ');
 }
 
 std::ostream& operator<<(std::ostream& os, const Object& obj)
@@ -437,11 +447,13 @@ public:
     virtual Primitive<bool> operator==(const Object& other) const;
     virtual Primitive<bool> operator!=(const Object& other) const;
     friend std::ostream& operator<<(std::ostream& os, const Object& obj);
-    virtual std::string toString() const;
+    virtual std::string toString(int indent = 0) const;
+    virtual std::string toString(Primitive<int> indent) const;
     virtual Object& operator*();
 
 protected:
     virtual Primitive<bool> equals(const Object& other) const;
+    static std::string getIndents(int indents);
 };
 )" },
     { R"(Primitive.h)", R"(#pragma once
@@ -496,7 +508,7 @@ public:
 
     Primitive<T>& operator=(const Object& other);
 
-    std::string toString() const override;
+    std::string toString(int indents = 0) const override;
     T getValue() const;
 
     friend std::istream& operator>>(std::istream& is, Primitive<T>& obj)
@@ -654,8 +666,8 @@ Primitive<bool> Primitive<T>::equals(const Object& other) const {
 
 template <typename T>
 requires std::is_arithmetic_v<T>
-std::string Primitive<T>::toString() const {
-    if constexpr (std::is_same_v<T, bool>) return value ? "cres" : "demen";
+std::string Primitive<T>::toString(int indents) const {
+    if constexpr (std::is_same_v<T, bool>) return getIndents(indents) + (value ? "cres" : "demen");
     if constexpr (std::is_same_v<T, double>)
     {
         std::ostringstream oss;
@@ -674,9 +686,9 @@ std::string Primitive<T>::toString() const {
             s.erase(lastNonZero + 1);
         }
 
-        return s;
+        return getIndents(indents) + s;
     }
-    return std::to_string(value);
+    return getIndents(indents) + std::to_string(value);
 }
 
 template <typename T>
@@ -998,7 +1010,7 @@ public:
     }
 
     ~SafePtr() override = default;
-    std::string toString() const override;
+    std::string toString(int indents = 0) const override;
 
 protected:
     Primitive<bool> equals(const Object& other) const override;
@@ -1059,9 +1071,9 @@ SafePtr<T>::InnerSafePtr& SafePtr<T>::operator[](Primitive<int> index) requires 
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-std::string SafePtr<T>::toString() const
+std::string SafePtr<T>::toString(int indents) const
 {
-    return ptr->toString();
+    return ptr->toString(indents);
 }
 
 template <typename T>
@@ -1210,9 +1222,9 @@ String::String(const char* basicCharPtr) : value(basicCharPtr)
 {
 }
 
-std::string String::toString() const
+std::string String::toString(int indents) const
 {
-    return value;
+    return  getIndents(indents) + value;
 }
 
 String& String::operator=(const String& other)
@@ -1288,7 +1300,7 @@ public:
     explicit String(const std::string& basicString);
     explicit String(const String& string);
     explicit String(const char* basicCharPtr);
-    std::string toString() const override;
+    std::string toString(int indents = 0) const override;
     String& operator=(const String& other);
     String& operator=(const Object& other);
     String& operator=(const char* basicCharPtr);

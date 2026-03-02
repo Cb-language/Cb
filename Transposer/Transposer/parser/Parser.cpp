@@ -1239,6 +1239,7 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
         parentPtr = SymbolTable::getClass(inheritingName);
     }
 
+    symTable.enterScope(false, false);
     symTable.addClass(Class(name), parentPtr);
 
     const size_t tempPos = pos;
@@ -1260,7 +1261,15 @@ std::unique_ptr<ClassDeclStmt> Parser::parseClassDeclStmt()
     if (!expect(Token::PUNCTUATION, L"☉", new MissingBrace(current()))) return nullptr;
 
     auto declStmt = std::make_unique<ClassDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), name, fields, methods, ctors, isInheriting, type, inheritingName);
+
+    if (!declStmt->getHasEmptyCtor())
+    {
+        std::vector<Var> emptyArgs;
+        symTable.addCtor(PUBLIC, Constractor(emptyArgs, name) ,t);
+    }
+
     symTable.resetCurrClass();
+    symTable.exitScope();
     return std::move(declStmt);
 }
 
@@ -1509,7 +1518,7 @@ bool Parser::parseFields(std::vector<Field>& fields)
 
             while (true)
             {
-                if (match(Token::TYPE))
+                if (match(Token::TYPE) || SymbolTable::getClass(current().value))
                 {
                     auto field = parseVarDecStmt(true);
                     if (!field) {
@@ -1554,7 +1563,7 @@ bool Parser::parseFields(std::vector<Field>& fields)
 
             while (true)
             {
-                if (match(Token::TYPE))
+                if (match(Token::TYPE) || SymbolTable::getClass(current().value))
                 {
                     auto field = parseVarDecStmt(true);
                      if (!field) {
@@ -1599,7 +1608,7 @@ bool Parser::parseFields(std::vector<Field>& fields)
 
             while (true)
             {
-                if (match(Token::TYPE))
+                if (match(Token::TYPE) || SymbolTable::getClass(current().value))
                 {
                     auto field = parseVarDecStmt(true);
                     if (!field) {
@@ -2170,9 +2179,8 @@ std::unique_ptr<ArrayType> Parser::parseArrayType()
 
 std::unique_ptr<ClassType> Parser::parseClassType()
 {
-    if (!expect(Token::IDENTIFIER, new MissingBrace(current()))) return nullptr;
-
     const std::wstring classname = current().value;
+    if (!expect(Token::IDENTIFIER, new MissingBrace(current()))) return nullptr;
 
     if (auto cls = SymbolTable::getClass(classname))
     {

@@ -38,5 +38,5 @@ void DotOpExpr::analyze() const
 
 std::string DotOpExpr::translateToCpp() const
 {
-    return getTabs() + left->translateToCpp() + "." + right->translateToCpp(); // TEMP, TODO: need to be -> later
+    return getTabs() + left->translateToCpp() + "->" + right->translateToCpp();
 }

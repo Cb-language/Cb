@@ -57,7 +57,7 @@ public:
         return os;
     }
 
-    std::string toString() const override;
+    std::string toString(int indents = 0) const override;
 
 protected:
     Primitive<bool> equals(const Object& other) const override;

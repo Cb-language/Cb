@@ -15,9 +15,9 @@ String::String(const char* basicCharPtr) : value(basicCharPtr)
 {
 }
 
-std::string String::toString() const
+std::string String::toString(int indents) const
 {
-    return value;
+    return  getIndents(indents) + value;
 }
 
 String& String::operator=(const String& other)

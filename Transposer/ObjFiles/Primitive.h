@@ -50,7 +50,7 @@ public:
 
     Primitive<T>& operator=(const Object& other);
 
-    std::string toString() const override;
+    std::string toString(int indents = 0) const override;
     T getValue() const;
 
     friend std::istream& operator>>(std::istream& is, Primitive<T>& obj)

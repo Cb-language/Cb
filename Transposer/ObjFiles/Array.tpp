@@ -255,9 +255,9 @@ Array<T> Array<T>::slice(Primitive<int> start, Primitive<int> stop, Primitive<in
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-std::string Array<T>::toString() const
+std::string Array<T>::toString(int indents) const
 {
-    std::string str = "[";
+    std::string str = getIndents(indents) + "[";
     bool first = true;
 
     for (Primitive<int> i; i < size; ++i)

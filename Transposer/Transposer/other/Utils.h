@@ -10,7 +10,8 @@ public:
 
     static void logMsg(const std::string& msg);
 
-    static std::string removeFirstTabs(std::string& str);
+    static std::string removeFirstTabs(std::string str);
+    static std::string removeAllFirstTabs(std::string str);
 
     static std::string normalizePath(const std::filesystem::path& path);
 
