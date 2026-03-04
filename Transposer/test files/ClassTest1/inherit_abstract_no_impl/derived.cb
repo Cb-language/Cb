@@ -1,0 +1,8 @@
+feat "base.cb"║
+
+instrument Derived | tutti Base
+∮
+    conductorScore
+    ∮
+        song c() ∮ playBar("c")║ ☉
+☉

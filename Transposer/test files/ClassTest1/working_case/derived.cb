@@ -1,0 +1,9 @@
+feat "base.cb"║
+
+instrument Derived | tutti Base
+∮
+    conductorScore
+    ∮
+        song a() variation ∮ playBar("Derived a")║ ☉
+        song b() -> degree variation ∮ B\ 1║ ☉
+☉

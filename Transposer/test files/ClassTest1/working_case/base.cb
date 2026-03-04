@@ -1,0 +1,8 @@
+? this is the working case for virtual, pure virtual and override
+instrument Base
+∮
+    conductorScore
+    ∮
+        motif song a() ∮ playBar("Base a")║ ☉
+        rest song b() -> degree║
+☉

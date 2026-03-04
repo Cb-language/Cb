@@ -1,0 +1,8 @@
+feat "base.cb"║
+
+song prelude() -> degree
+∮
+    Base b = Base_call()║
+    b\a()║
+    B\ 0║
+☉

@@ -1,0 +1,7 @@
+? instantiate abstract class
+instrument Base
+∮
+    conductorScore
+    ∮
+        rest song a() -> degree║
+☉
