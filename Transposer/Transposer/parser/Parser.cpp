@@ -778,6 +778,18 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
     std::vector<std::unique_ptr<FuncCreditStmt>> credited;
     IFuncDeclStmt* currFunc = symTable.getCurrFunc();
     const Token& t = current();
+    VirtualType vType = VirtualType::None;
+
+    if (match(Token::KEYWORD, L"motif"))
+    {
+        vType = VirtualType::Virtual;
+        advance();
+    }
+    else if (match(Token::KEYWORD, L"rest"))
+    {
+        vType = VirtualType::Pure;
+        advance();
+    }
 
     if (!expect(Token::KEYWORD, L"song", new HowDidYouGetHere(current()))) return nullptr;
 
@@ -844,6 +856,17 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
         }
     }
 
+    if (match(Token::KEYWORD, L"variation"))
+    {
+        if (vType != VirtualType::None)
+        {
+            addError(new UnexpectedToken(current()));
+            return nullptr;
+        }
+        vType = VirtualType::Override;
+        advance();
+    }
+
     if (!match(Token::PUNCTUATION, L"->"))
     {
         if (funcName == L"prelude")
@@ -851,7 +874,8 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
             addError(new InvalidMainReturnType(current()));
         }
 
-        auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, std::make_unique<Type>(L"fermata"), varArgs, credited);
+        auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, std::make_unique<Type>(L"fermata"), varArgs, credited, isMethod);
+        funcDeclStmt->setVirtual(vType);
         symTable.addFunc(funcDeclStmt->getFunc());
         symTable.changeFunc(funcDeclStmt.get());
         auto body = parseBodyStmt(args);
@@ -880,7 +904,8 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
         hasMain = true;
     }
 
-    auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, rType->copy(), varArgs, credited);
+    auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, rType->copy(), varArgs, credited, isMethod);
+    funcDeclStmt->setVirtual(vType);
 
     if (!isMethod) symTable.addFunc(funcDeclStmt->getFunc());
     symTable.changeFunc(funcDeclStmt.get());

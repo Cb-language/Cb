@@ -3,18 +3,18 @@
 #include <ranges>
 
 Class::Class(const std::wstring& name, const std::vector<std::pair<AccessType, Func>>& methods,
-             const std::vector<std::pair<AccessType, Var>>& fields, const std::vector<std::pair<AccessType, Constractor>>& constractors) : name(name)
+             const std::vector<std::pair<AccessType, Var>>& fields, const std::vector<std::pair<AccessType, Constractor>>& constractors, bool isAbstract) : name(name), _isAbstract(isAbstract)
 {
     for (const auto& [accessType, method] : methods) this->methods.emplace_back(accessType, method.copy());
     for (const auto& [accessType, field] : fields) this->fields.emplace_back(accessType, field.copy());
     for (const auto& [accessType, constractor] : constractors) this->constractors.emplace_back(accessType, constractor.copy());
 }
 
-Class::Class(const Class& other) : Class(other.name, other.methods, other.fields, other.constractors)
+Class::Class(const Class& other) : Class(other.name, other.methods, other.fields, other.constractors, other._isAbstract)
 {
 }
 
-Class::Class(const std::wstring& name) : name(name)
+Class::Class(const std::wstring& name) : name(name), _isAbstract(false)
 {
 }
 
@@ -36,6 +36,16 @@ const std::vector<std::pair<AccessType, Var>>& Class::getFields() const
 const std::vector<std::pair<AccessType, Constractor>>& Class::getConstractors() const
 {
     return constractors;
+}
+
+void Class::setAbstract(const bool isAbstract)
+{
+    this->_isAbstract = isAbstract;
+}
+
+bool Class::isAbstract() const
+{
+    return _isAbstract;
 }
 
 void Class::addMethod(const AccessType accessType, const Func& method)

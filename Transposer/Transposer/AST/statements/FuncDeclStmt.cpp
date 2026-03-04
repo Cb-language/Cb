@@ -2,11 +2,12 @@
 
 #include "errorHandling/semanticErrors/FuncInsideFunc.h"
 #include "errorHandling/semanticErrors/NoReturn.h"
+#include "../../errorHandling/classErrors/VirtualNonMethod.h"
 
 FuncDeclStmt::FuncDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass, const std::wstring& funcName, std::unique_ptr<IType> returnType,
-                           const std::vector<Var>& args, std::vector<std::unique_ptr<FuncCreditStmt>>& credited) : IFuncDeclStmt(token, scope, currClass),
-                                                                                                                   func(Func(std::move(returnType), funcName, args)), body(nullptr),
-                                                                                                                   hasReturned(false)
+                           const std::vector<Var>& args, std::vector<std::unique_ptr<FuncCreditStmt>>& credited, bool isMethod) : IFuncDeclStmt(token, scope, currClass),
+                                                                                                                   func(Func(std::move(returnType), funcName, args, VirtualType::None)), body(nullptr),
+                                                                                                                   hasReturned(false), isMethod(isMethod)
 {
     for (auto& c : credited)
     {
@@ -34,6 +35,17 @@ const Func& FuncDeclStmt::getFunc() const
     return func;
 }
 
+void FuncDeclStmt::setVirtual(const VirtualType vType)
+{
+    this->virtualType = vType;
+    this->func.setVirtual(vType);
+}
+
+VirtualType FuncDeclStmt::getVirtual() const
+{
+    return virtualType;
+}
+
 void FuncDeclStmt::setBody(std::unique_ptr<BodyStmt> body)
 {
     this->body = std::move(body);
@@ -56,6 +68,11 @@ const std::vector<std::unique_ptr<FuncCreditStmt>>& FuncDeclStmt::getCredited() 
 
 void FuncDeclStmt::analyze() const
 {
+    if (virtualType != VirtualType::None && !isMethod)
+    {
+        throw VirtualNonMethod(token);
+    }
+
     if (func.getType()->getType() != L"fermata" && !hasReturned)
     {
         throw NoReturn(token);

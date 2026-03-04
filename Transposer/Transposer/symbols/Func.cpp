@@ -2,7 +2,7 @@
 
 #include "other/Utils.h"
 
-Func::Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std::vector<Var>& args) : rType(std::move(rType)), funcName(funcName)
+Func::Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std::vector<Var>& args, const VirtualType vType) : rType(std::move(rType)), funcName(funcName), virtualType(vType)
 {
     for (const auto& arg : args)
     {
@@ -10,7 +10,7 @@ Func::Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std
     }
 }
 
-Func::Func(const Func& other) : Func(other.rType->copy(), other.funcName, other.args)
+Func::Func(const Func& other) : Func(other.rType->copy(), other.funcName, other.args, other.virtualType)
 {
 }
 
@@ -29,10 +29,27 @@ std::unique_ptr<IType> Func::getType() const
     return rType->copy();
 }
 
+void Func::setVirtual(const VirtualType vType)
+{
+    this->virtualType = vType;
+}
+
+VirtualType Func::getVirtual() const
+{
+    return virtualType;
+}
+
 std::string Func::translateToCpp(const std::wstring& className) const
 {
     std::string funcNameStr = Utils::wstrToStr(funcName);
-    std::string header = rType->translateTypeToCpp() + " ";
+    std::string header;
+
+    if (virtualType == VirtualType::Virtual || virtualType == VirtualType::Pure)
+    {
+        header += "virtual ";
+    }
+
+    header += rType->translateTypeToCpp() + " ";
 
     if (!className.empty())
     {
@@ -53,39 +70,45 @@ std::string Func::translateToCpp(const std::wstring& className) const
     }
 
     header += ")";
+
+    if (virtualType == VirtualType::Override)
+    {
+        header += " override";
+    }
+
+    if (virtualType == VirtualType::Pure)
+    {
+        header += " = 0";
+    }
+
     return header;
 }
 
 bool Func::operator==(const Func& other) const
 {
-    if (rType->getType() != other.rType->getType() || funcName != other.funcName)
+    if (*rType != *other.rType)
     {
         return false;
     }
 
-    for (const auto& arg : other.args)
-    {
-        // arg name doesn't matter for func
-        if (*(arg.getType()) != rType->getType())
-        {
-            return false;
-        }
-    }
-
-    return true;
+    return this->isSameNameAndArgs(other);
 }
 
-bool Func::isLegalCall(const Func& other) const
+bool Func::operator!=(const Func& other) const
 {
-    if (funcName != other.funcName)
+    return !(*this == other);
+}
+
+bool Func::isSameNameAndArgs(const Func& other) const
+{
+    if (funcName != other.funcName || args.size() != other.args.size())
     {
         return false;
     }
 
-    for (const auto& arg : other.args)
+    for (size_t i = 0; i < args.size(); ++i)
     {
-        // arg name doesn't matter for func
-        if (*(arg.getType()) != rType->getType())
+        if (*(args[i].getType()) != *(other.args[i].getType()))
         {
             return false;
         }
