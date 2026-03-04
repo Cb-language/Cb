@@ -3,6 +3,7 @@ instrument Base
 ∮
     conductorScore
     ∮
-        song a() ∮ playBar("Base a")║ ☉
+        song a() ∮ playBar("Base a")║ ☉ |
+        Base_call()∮☉║
     ☉
 ☉

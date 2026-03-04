@@ -4,6 +4,13 @@ instrument Derived | tutti Base
 ∮
     conductorScore
     ∮
-        song c() ∮ playBar("c")║ ☉
+        song c() 
+        ∮ 
+            playBar("c") ║
+        ☉ |
+        Derived_call()
+        ∮
+            Base_call()║
+        ☉║
     ☉
 ☉

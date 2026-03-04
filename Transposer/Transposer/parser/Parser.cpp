@@ -793,11 +793,6 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
 
     else if (match(Token::KEYWORD, L"variation"))
     {
-        if (vType != VirtualType::None)
-        {
-            addError(new UnexpectedToken(current()));
-            return nullptr;
-        }
         vType = VirtualType::Override;
         advance();
     }

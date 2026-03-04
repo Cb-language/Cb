@@ -4,6 +4,17 @@ instrument Derived | tutti Base
 ∮
     conductorScore
     ∮
-        variation song a() ∮ playBar("Derived a")║ ☉
-        variation song b() -> degree ∮ B\ 1║ ☉
+        variation song a() 
+        ∮
+            playBar("Derived a")║ 
+        ☉ |
+        variation song b() -> degree 
+        ∮
+            B\ 1║
+        ☉ |
+        Derived_call()
+        ∮
+            Base_call()║
+        ☉ ║
+     ☉
 ☉
