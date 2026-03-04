@@ -231,6 +231,14 @@ add_executable(Transposer
         Transposer/class/ClassTree.cpp
         Transposer/class/ClassTree.h
         Transposer/class/AccessType.h
+        Transposer/errorHandling/classErrors/VirtualNonMethod.h
+        Transposer/errorHandling/classErrors/VirtualNonMethod.cpp
+        Transposer/errorHandling/classErrors/OverrideError.h
+        Transposer/errorHandling/classErrors/OverrideError.cpp
+        Transposer/errorHandling/classErrors/InvalidOverrideSignature.h
+        Transposer/errorHandling/classErrors/InvalidOverrideSignature.cpp
+        Transposer/errorHandling/classErrors/InstantiateAbstractClass.h
+        Transposer/errorHandling/classErrors/InstantiateAbstractClass.cpp
 )
 
 # In order to call the exe from the cmd

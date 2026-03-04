@@ -2,7 +2,6 @@
 
 #include "class/ClassNode.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
-#include "symbols/Type/ClassType.h"
 #include "../../errorHandling/classErrors/InstantiateAbstractClass.h"
 
 ObjCreationStmt::ObjCreationStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
