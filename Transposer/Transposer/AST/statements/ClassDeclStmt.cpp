@@ -5,6 +5,8 @@
 #include "FuncDeclStmt.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "other/SymbolTable.h"
+#include "errorHandling/classErrors/InvalidOverrideSignature.h"
+#include "errorHandling/classErrors/OverrideError.h"
 
 std::string ClassDeclStmt::generateToString() const
 {
@@ -116,8 +118,75 @@ ClassDeclStmt::ClassDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* fu
 void ClassDeclStmt::analyze() const
 {
     for (const auto& field : fields | std::views::values) field->analyze();
-    for (const auto& method : methods | std::views::values) method->analyze();
     for (const auto& ctor : ctors | std::views::values) ctor->analyze();
+
+    bool isAbstract = false;
+
+    for (const auto& method : methods | std::views::values)
+    {
+        method->analyze();
+        if (method->getVirtual() == VirtualType::Pure)
+        {
+            isAbstract = true;
+        }
+        else if (method->getVirtual() == VirtualType::Override)
+        {
+            const ClassNode* parent = this->currClass->getParent();
+            if (parent == nullptr || parent->getClass().getClassName() == L"Object")
+            {
+                throw OverrideError(token);
+            }
+
+            const Func* baseMethod = parent->findMethod(method->getName());
+            if (baseMethod == nullptr)
+            {
+                throw OverrideError(token);
+            }
+
+            if (baseMethod->getVirtual() != VirtualType::Virtual && baseMethod->getVirtual() != VirtualType::Pure)
+            {
+                throw OverrideError(token);
+            }
+
+            if (*baseMethod != method->getFunc())
+            {
+                throw InvalidOverrideSignature(token);
+            }
+        }
+    }
+
+    if (const ClassNode* parent = this->currClass->getParent())
+    {
+        if (parent->isAbstract())
+        {
+            for (const auto& baseMethod : parent->getClass().getMethods() | std::views::values)
+            {
+                if (baseMethod.getVirtual() == VirtualType::Pure)
+                {
+                    bool implemented = false;
+                    for (const auto& method : methods | std::views::values)
+                    {
+                        if (method->getFunc().isSameNameAndArgs(baseMethod))
+                        {
+                            if (method->getVirtual() != VirtualType::Pure)
+                            {
+                                implemented = true;
+                            }
+                            break;
+                        }
+                    }
+
+                    if (!implemented)
+                    {
+                        isAbstract = true;
+                    }
+                }
+            }
+        }
+    }
+
+    const_cast<ClassNode*>(this->currClass)->setAbstract(isAbstract);
+
 
     if (isInheriting)
     {
