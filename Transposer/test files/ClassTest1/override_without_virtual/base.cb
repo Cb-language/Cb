@@ -4,4 +4,5 @@ instrument Base
     conductorScore
     ∮
         song a() ∮ playBar("Base a")║ ☉
+    ☉
 ☉

@@ -4,5 +4,6 @@ instrument Derived | tutti Base
 ∮
     conductorScore
     ∮
-        song a() variation ∮ playBar("Derived a")║ ☉
+        variation song a() ∮ playBar("Derived a")║ ☉
+    ☉
 ☉

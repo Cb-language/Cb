@@ -4,4 +4,5 @@ instrument Base
     conductorScore
     ∮
         motif song a(degree x) ∮ playBar("Base a")║ ☉
+    ☉
 ☉

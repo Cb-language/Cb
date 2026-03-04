@@ -791,6 +791,17 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
         advance();
     }
 
+    else if (match(Token::KEYWORD, L"variation"))
+    {
+        if (vType != VirtualType::None)
+        {
+            addError(new UnexpectedToken(current()));
+            return nullptr;
+        }
+        vType = VirtualType::Override;
+        advance();
+    }
+
     if (!expect(Token::KEYWORD, L"song", new HowDidYouGetHere(current()))) return nullptr;
 
     if (match(Token::PUNCTUATION, L"©"))
@@ -856,16 +867,6 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
         }
     }
 
-    if (match(Token::KEYWORD, L"variation"))
-    {
-        if (vType != VirtualType::None)
-        {
-            addError(new UnexpectedToken(current()));
-            return nullptr;
-        }
-        vType = VirtualType::Override;
-        advance();
-    }
 
     if (!match(Token::PUNCTUATION, L"->"))
     {
