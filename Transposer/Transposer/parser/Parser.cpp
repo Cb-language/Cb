@@ -842,7 +842,10 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
 
     if (symTable.doesFuncExist(funcName))
     {
-        addError(new IdentifierTaken(current()));
+        if ((symTable.getFunc(funcName)->getVirtual() != VirtualType::Pure && symTable.getFunc(funcName)->getVirtual() != VirtualType::Virtual) || vType == VirtualType::Override)
+        {
+            addError(new IdentifierTaken(current()));
+        }
     }
 
     if (!expect(Token::PUNCTUATION, L"(", new MissingParenthesis(current()))) return nullptr;
@@ -884,9 +887,10 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
         }
 
         auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, std::make_unique<Type>(L"fermata"), varArgs, credited, isMethod, vType);
-        symTable.addFunc(funcDeclStmt->getFunc());
+
         if (vType != VirtualType::Pure)
         {
+            symTable.addFunc(funcDeclStmt->getFunc());
             symTable.changeFunc(funcDeclStmt.get());
             auto body = parseBodyStmt(args);
             if (!body) return nullptr;
@@ -917,10 +921,10 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
 
     auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, rType->copy(), varArgs, credited, isMethod, vType);
 
-    if (!isMethod) symTable.addFunc(funcDeclStmt->getFunc());
 
     if (vType != VirtualType::Pure)
     {
+        symTable.addFunc(funcDeclStmt->getFunc());
         symTable.changeFunc(funcDeclStmt.get());
         auto body = parseBodyStmt(args);
         if (!body) return nullptr;
@@ -930,9 +934,9 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
         {
             addError(new NoReturn(prev()));
         }
+        symTable.changeFunc(currFunc);
     }
 
-    symTable.changeFunc(currFunc);
     return std::move(funcDeclStmt);
 }
 
