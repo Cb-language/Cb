@@ -78,15 +78,22 @@ std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
         while (match(Token::KEYWORD, L"feat"))
         {
             advance();
+
             Token pathToken;
             if (!expectAndGet(Token::CONST_STR, new ExpectedAPath(current()), pathToken)) return {};
+
             std::wstring wstr = pathToken.value;
             wstr.erase(
                 std::ranges::remove(wstr, L'"').begin(),
                 wstr.end()
             );
             std::filesystem::path path = wstr;
-            if (!expect(Token::PUNCTUATION, L"║", new MissingSemicolon(current()))) return {};
+            if (!match(Token::PUNCTUATION, L"║"))
+            {
+                addError(new MissingSemicolon(current()));
+                return {};
+            }
+            advance(); // eat the semicolon
 
             if (path.extension() != ".cb")
             {
@@ -878,11 +885,14 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
 
         auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, std::make_unique<Type>(L"fermata"), varArgs, credited, isMethod, vType);
         symTable.addFunc(funcDeclStmt->getFunc());
-        symTable.changeFunc(funcDeclStmt.get());
-        auto body = parseBodyStmt(args);
-        if (!body) return nullptr;
-        funcDeclStmt->setBody(std::move(body));
-        symTable.changeFunc(currFunc);
+        if (vType != VirtualType::Pure)
+        {
+            symTable.changeFunc(funcDeclStmt.get());
+            auto body = parseBodyStmt(args);
+            if (!body) return nullptr;
+            funcDeclStmt->setBody(std::move(body));
+            symTable.changeFunc(currFunc);
+        }
         return std::move(funcDeclStmt);
     }
     advance(); 
@@ -908,15 +918,18 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
     auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, rType->copy(), varArgs, credited, isMethod, vType);
 
     if (!isMethod) symTable.addFunc(funcDeclStmt->getFunc());
-    symTable.changeFunc(funcDeclStmt.get());
 
-    auto body = parseBodyStmt(args);
-    if (!body) return nullptr;
-    funcDeclStmt->setBody(std::move(body));
-
-    if (!funcDeclStmt->getHasReturned())
+    if (vType != VirtualType::Pure)
     {
-        addError(new NoReturn(prev()));
+        symTable.changeFunc(funcDeclStmt.get());
+        auto body = parseBodyStmt(args);
+        if (!body) return nullptr;
+        funcDeclStmt->setBody(std::move(body));
+
+        if (!funcDeclStmt->getHasReturned())
+        {
+            addError(new NoReturn(prev()));
+        }
     }
 
     symTable.changeFunc(currFunc);

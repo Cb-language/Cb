@@ -73,7 +73,7 @@ void FuncDeclStmt::analyze() const
         throw VirtualNonMethod(token);
     }
 
-    if (func.getType()->getType() != L"fermata" && !hasReturned)
+    if (func.getType()->getType() != L"fermata" && !hasReturned && virtualType != VirtualType::Pure)
     {
         throw NoReturn(token);
     }
@@ -83,7 +83,10 @@ void FuncDeclStmt::analyze() const
         throw FuncInsideFunc(token);
     }
 
-    body->analyze();
+    if (virtualType != VirtualType::Pure)
+    {
+        body->analyze();
+    }
 }
 
 

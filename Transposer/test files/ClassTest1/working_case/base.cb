@@ -2,8 +2,13 @@ instrument Base
 ∮
     conductorScore
     ∮
-        motif song a() ∮ playBar("Base a") ☉ |
+        motif song a()
+        ∮
+            playBar("Base a")║
+        ☉ |
         rest song b() -> degree |
-        Base_call()∮☉║
+        Base_call()
+        ∮
+        ☉ ║
     ☉
 ☉
