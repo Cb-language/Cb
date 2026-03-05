@@ -58,6 +58,7 @@
 
 // ---------- just how ----------
 #include "../errorHandling/how/HowDidYouGetHere.h"
+#include "errorHandling/classErrors/VirtualNonMethod.h"
 
 #include "files/FileGraph.h"
 #include "symbols/Type/ClassType.h"
@@ -779,6 +780,11 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
     IFuncDeclStmt* currFunc = symTable.getCurrFunc();
     const Token& t = current();
     VirtualType vType = VirtualType::None;
+
+    if ((match(Token::KEYWORD, L"motif") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"variation")) && !isMethod)
+    {
+        addError(new VirtualNonMethod(current()));
+    }
 
     if (match(Token::KEYWORD, L"motif"))
     {
@@ -1736,7 +1742,7 @@ bool Parser::parseMethods(std::vector<Method>& methods)
 
             while (true)
             {
-                if (match(Token::KEYWORD, L"song"))
+                if ((match(Token::KEYWORD, L"song")) || ((match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif")) && !isAtEnd() && peek().value == L"song"))
                 {
                     auto method = parseFuncDeclStmt();
                     if (!method) {

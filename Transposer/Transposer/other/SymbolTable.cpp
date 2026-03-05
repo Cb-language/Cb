@@ -98,6 +98,13 @@ bool SymbolTable::isLegalCredit(const FuncCredit& credit) const
 
 std::unique_ptr<IType> SymbolTable::getCallType(FuncCallExpr* expr) const
 {
+    if (currClass != nullptr)
+    {
+        if (const auto funcPtr = currClass->findMethod(expr->getName()))
+        {
+            return funcPtr->getType();
+        }
+    }
     for (const auto& func : funcs| std::views::keys)
     {
         if (expr->isLegalCall(func))
@@ -265,7 +272,7 @@ bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const
 
     if (auto parent = currClass->getParent())
     {
-        return isLegalFieldOrMethod(std::make_unique<ClassType>(parent), name, token, currClass);
+        return isLegalFieldOrMethod(std::make_unique<ClassType>(parent), name, token, currClass->getParent());
     }
 
     return false;
