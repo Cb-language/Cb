@@ -68,12 +68,12 @@ const std::vector<std::unique_ptr<FuncCreditStmt>>& FuncDeclStmt::getCredited() 
 
 void FuncDeclStmt::analyze() const
 {
-    if (virtualType != VirtualType::None && !isMethod)
+    if (virtualType != VirtualType::NONE && !isMethod)
     {
         throw VirtualNonMethod(token);
     }
 
-    if (func.getType()->getType() != L"fermata" && !hasReturned && virtualType != VirtualType::Pure)
+    if (func.getType()->getType() != L"fermata" && !hasReturned && virtualType != VirtualType::PURE)
     {
         throw NoReturn(token);
     }
@@ -83,7 +83,7 @@ void FuncDeclStmt::analyze() const
         throw FuncInsideFunc(token);
     }
 
-    if (virtualType != VirtualType::Pure)
+    if (virtualType != VirtualType::PURE)
     {
         body->analyze();
     }

@@ -48,7 +48,7 @@ void ClassTree::init()
                 std::make_unique<Type>(L"bar"),
                 L"toString",
                 std::vector<Var>(),
-                VirtualType::None)
+                VirtualType::NONE)
             }
     };
     constexpr std::vector<std::pair<AccessType, Var>> args;

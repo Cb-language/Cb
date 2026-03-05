@@ -1,8 +1,9 @@
 #pragma once
 
-enum class VirtualType {
-    None,
-    Virtual,
-    Pure,
-    Override
+enum class VirtualType
+{
+    NONE,
+    VIRTUAL,
+    PURE,
+    OVERRIDE
 };

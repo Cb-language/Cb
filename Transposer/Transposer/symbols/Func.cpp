@@ -44,7 +44,7 @@ std::string Func::translateToCpp(const std::wstring& className) const
     std::string funcNameStr = Utils::wstrToStr(funcName);
     std::string header;
 
-    if (virtualType == VirtualType::Virtual || virtualType == VirtualType::Pure)
+    if (virtualType == VirtualType::VIRTUAL || virtualType == VirtualType::PURE)
     {
         header += "virtual ";
     }
@@ -71,12 +71,12 @@ std::string Func::translateToCpp(const std::wstring& className) const
 
     header += ")";
 
-    if (virtualType == VirtualType::Override)
+    if (virtualType == VirtualType::OVERRIDE)
     {
         header += " override";
     }
 
-    if (virtualType == VirtualType::Pure)
+    if (virtualType == VirtualType::PURE)
     {
         header += " = 0";
     }

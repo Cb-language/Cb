@@ -125,11 +125,11 @@ void ClassDeclStmt::analyze() const
     for (const auto& method : methods | std::views::values)
     {
         method->analyze();
-        if (method->getVirtual() == VirtualType::Pure)
+        if (method->getVirtual() == VirtualType::PURE)
         {
             isAbstract = true;
         }
-        else if (method->getVirtual() == VirtualType::Override)
+        else if (method->getVirtual() == VirtualType::OVERRIDE)
         {
             const ClassNode* parent = this->currClass->getParent();
             if (parent == nullptr || parent->getClass().getClassName() == L"Object")
@@ -143,7 +143,7 @@ void ClassDeclStmt::analyze() const
                 throw OverrideError(token);
             }
 
-            if (baseMethod->getVirtual() != VirtualType::Virtual && baseMethod->getVirtual() != VirtualType::Pure)
+            if (baseMethod->getVirtual() != VirtualType::VIRTUAL && baseMethod->getVirtual() != VirtualType::PURE)
             {
                 throw OverrideError(token);
             }
@@ -161,14 +161,14 @@ void ClassDeclStmt::analyze() const
         {
             for (const auto& baseMethod : parent->getClass().getMethods() | std::views::values)
             {
-                if (baseMethod.getVirtual() == VirtualType::Pure)
+                if (baseMethod.getVirtual() == VirtualType::PURE)
                 {
                     bool implemented = false;
                     for (const auto& method : methods | std::views::values)
                     {
                         if (method->getFunc().isSameNameAndArgs(baseMethod))
                         {
-                            if (method->getVirtual() != VirtualType::Pure)
+                            if (method->getVirtual() != VirtualType::PURE)
                             {
                                 implemented = true;
                             }

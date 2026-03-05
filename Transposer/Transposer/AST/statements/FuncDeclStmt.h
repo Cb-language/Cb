@@ -17,7 +17,7 @@ private:
     std::vector<std::unique_ptr<FuncCreditStmt>> credited;
     std::unique_ptr<BodyStmt> body;
     bool hasReturned;
-    VirtualType virtualType = VirtualType::None;
+    VirtualType virtualType = VirtualType::NONE;
     bool isMethod;
 
 public:

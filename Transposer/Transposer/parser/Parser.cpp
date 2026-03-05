@@ -786,7 +786,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
     std::vector<std::unique_ptr<FuncCreditStmt>> credited;
     IFuncDeclStmt* currFunc = symTable.getCurrFunc();
     const Token& t = current();
-    VirtualType vType = VirtualType::None;
+    VirtualType vType = VirtualType::NONE;
 
     if ((match(Token::KEYWORD, L"motif") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"variation")) && !isMethod)
     {
@@ -795,18 +795,18 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
 
     if (match(Token::KEYWORD, L"motif"))
     {
-        vType = VirtualType::Virtual;
+        vType = VirtualType::VIRTUAL;
         advance();
     }
     else if (match(Token::KEYWORD, L"rest"))
     {
-        vType = VirtualType::Pure;
+        vType = VirtualType::PURE;
         advance();
     }
 
     else if (match(Token::KEYWORD, L"variation"))
     {
-        vType = VirtualType::Override;
+        vType = VirtualType::OVERRIDE;
         advance();
     }
 
@@ -842,7 +842,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
 
     if (symTable.doesFuncExist(funcName))
     {
-        if ((symTable.getFunc(funcName)->getVirtual() != VirtualType::Pure && symTable.getFunc(funcName)->getVirtual() != VirtualType::Virtual) || vType == VirtualType::Override)
+        if ((symTable.getFunc(funcName)->getVirtual() != VirtualType::PURE && symTable.getFunc(funcName)->getVirtual() != VirtualType::VIRTUAL) || vType == VirtualType::OVERRIDE)
         {
             addError(new IdentifierTaken(current()));
         }
@@ -888,7 +888,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
 
         auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, std::make_unique<Type>(L"fermata"), varArgs, credited, isMethod, vType);
 
-        if (vType != VirtualType::Pure)
+        if (vType != VirtualType::PURE)
         {
             symTable.addFunc(funcDeclStmt->getFunc());
             symTable.changeFunc(funcDeclStmt.get());
@@ -922,7 +922,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
     auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, rType->copy(), varArgs, credited, isMethod, vType);
 
 
-    if (vType != VirtualType::Pure)
+    if (vType != VirtualType::PURE)
     {
         symTable.addFunc(funcDeclStmt->getFunc());
         symTable.changeFunc(funcDeclStmt.get());
