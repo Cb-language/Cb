@@ -63,5 +63,5 @@ public:
     static void clearClasses();
     static bool isClass(const std::wstring& name);
     static ClassNode* getClass(const std::wstring& name);
-    static bool isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token, const ClassNode* curr);
+    static bool isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token, const ClassNode* currClass);
 };

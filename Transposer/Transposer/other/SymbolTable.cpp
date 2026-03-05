@@ -237,8 +237,12 @@ void SymbolTable::clearClasses()
     ClassTree::destroy();
 }
 
-bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token, const ClassNode* curr)
+bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token, const ClassNode* currClass)
 {
+    if (currClass == nullptr)
+    {
+        throw HowDidYouGetHere(token);
+    }
     const ClassNode* res = classTree.find(type->getType());
 
     if (res == nullptr) throw HowDidYouGetHere(token);
@@ -246,7 +250,7 @@ bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const
     const Var* field = res->findField(name);
     if (field != nullptr)
     {
-        if (res->isLegal(*field, curr)) return true;
+        if (res->isLegal(*field, currClass)) return true;
 
         throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
     }
@@ -254,14 +258,14 @@ bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const
     const Func* method = res->findMethod(name);
     if (method != nullptr)
     {
-        if (res->isLegal(*method, curr)) return true;
+        if (res->isLegal(*method, currClass)) return true;
 
         throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
     }
 
-    if (auto parent = curr->getParent())
+    if (auto parent = currClass->getParent())
     {
-        return isLegalFieldOrMethod(std::make_unique<ClassType>(parent), name, token, curr);
+        return isLegalFieldOrMethod(std::make_unique<ClassType>(parent), name, token, currClass);
     }
 
     return false;

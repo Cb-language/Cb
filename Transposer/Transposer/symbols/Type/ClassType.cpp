@@ -52,6 +52,11 @@ std::wstring ClassType::getType() const
     return type;
 }
 
+const ClassNode* ClassType::getClass() const
+{
+    return c;
+}
+
 std::string ClassType::translateTypeToCpp() const
 {
     return "SafePtr<" + Utils::wstrToStr(type) + ">";
