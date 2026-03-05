@@ -148,7 +148,7 @@ void ClassDeclStmt::analyze() const
                 throw OverrideError(token);
             }
 
-            if (*baseMethod != method->getFunc())
+            if (!baseMethod->isSameNameAndArgs(method->getFunc()))
             {
                 throw InvalidOverrideSignature(token);
             }

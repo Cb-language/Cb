@@ -86,7 +86,7 @@ std::string Func::translateToCpp(const std::wstring& className) const
 
 bool Func::operator==(const Func& other) const
 {
-    if (*rType != *other.rType)
+    if (rType->getType() != other.rType->getType())
     {
         return false;
     }
