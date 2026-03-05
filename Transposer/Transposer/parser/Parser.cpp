@@ -876,8 +876,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
             addError(new InvalidMainReturnType(current()));
         }
 
-        auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, std::make_unique<Type>(L"fermata"), varArgs, credited, isMethod);
-        funcDeclStmt->setVirtual(vType);
+        auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, std::make_unique<Type>(L"fermata"), varArgs, credited, isMethod, vType);
         symTable.addFunc(funcDeclStmt->getFunc());
         symTable.changeFunc(funcDeclStmt.get());
         auto body = parseBodyStmt(args);
@@ -906,8 +905,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
         hasMain = true;
     }
 
-    auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, rType->copy(), varArgs, credited, isMethod);
-    funcDeclStmt->setVirtual(vType);
+    auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, rType->copy(), varArgs, credited, isMethod, vType);
 
     if (!isMethod) symTable.addFunc(funcDeclStmt->getFunc());
     symTable.changeFunc(funcDeclStmt.get());
@@ -1548,7 +1546,8 @@ bool Parser::parseFields(std::vector<Field>& fields)
                 if (match(Token::TYPE) || SymbolTable::getClass(current().value))
                 {
                     auto field = parseVarDecStmt(true);
-                    if (!field) {
+                    if (!field)
+                    {
                         synchronize();
                         continue;
                     }
@@ -1593,7 +1592,8 @@ bool Parser::parseFields(std::vector<Field>& fields)
                 if (match(Token::TYPE) || SymbolTable::getClass(current().value))
                 {
                     auto field = parseVarDecStmt(true);
-                     if (!field) {
+                     if (!field)
+                     {
                         synchronize();
                         continue;
                     }
@@ -1638,7 +1638,8 @@ bool Parser::parseFields(std::vector<Field>& fields)
                 if (match(Token::TYPE) || SymbolTable::getClass(current().value))
                 {
                     auto field = parseVarDecStmt(true);
-                    if (!field) {
+                    if (!field)
+                    {
                         synchronize();
                         continue;
                     }
@@ -1701,8 +1702,9 @@ bool Parser::parseMethods(std::vector<Method>& methods)
             {
                 if (match(Token::KEYWORD, L"song"))
                 {
-                    auto method = parseFuncDeclStmt();
-                    if (!method) {
+                    auto method = parseFuncDeclStmt(true);
+                    if (!method)
+                    {
                         synchronize();
                         continue;
                     }
@@ -1744,8 +1746,9 @@ bool Parser::parseMethods(std::vector<Method>& methods)
             {
                 if ((match(Token::KEYWORD, L"song")) || ((match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif")) && !isAtEnd() && peek().value == L"song"))
                 {
-                    auto method = parseFuncDeclStmt();
-                    if (!method) {
+                    auto method = parseFuncDeclStmt(true);
+                    if (!method)
+                    {
                         synchronize();
                         continue;
                     }
@@ -1787,8 +1790,9 @@ bool Parser::parseMethods(std::vector<Method>& methods)
             {
                 if (match(Token::KEYWORD, L"song"))
                 {
-                    auto method = parseFuncDeclStmt();
-                    if (!method) {
+                    auto method = parseFuncDeclStmt(true);
+                    if (!method)
+                    {
                         synchronize();
                         continue;
                     }
@@ -1847,10 +1851,11 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
 
             while (true)
             {
-                if (match(Token::IDENTIFIER_CALL))
+                if ((match(Token::IDENTIFIER_CALL)) || ((match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif")) && (!isAtEnd() && peek().type == Token::IDENTIFIER_CALL)))
                 {
                     auto ctor = parseCtor();
-                    if (!ctor) {
+                    if (!ctor)
+                    {
                         synchronize();
                         continue;
                     }
@@ -1890,10 +1895,11 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
 
             while (true)
             {
-                if (match(Token::IDENTIFIER_CALL))
+                if ((match(Token::IDENTIFIER_CALL)) || ((match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif")) && (!isAtEnd() && peek().type == Token::IDENTIFIER_CALL)))
                 {
                     auto ctor = parseCtor();
-                    if (!ctor) {
+                    if (!ctor)
+                    {
                         synchronize();
                         continue;
                     }
@@ -1933,10 +1939,11 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
 
             while (true)
             {
-                if (match(Token::IDENTIFIER_CALL))
+                if ((match(Token::IDENTIFIER_CALL)) || ((match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif")) && (!isAtEnd() && peek().type == Token::IDENTIFIER_CALL)))
                 {
                     auto ctor = parseCtor();
-                    if (!ctor) {
+                    if (!ctor)
+                    {
                         synchronize();
                         continue;
                     }
