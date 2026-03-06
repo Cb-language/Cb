@@ -99,7 +99,15 @@ std::string FuncDeclStmt::translateToH() const
 {
     if (func.getFuncName() == L"prelude") return "";
 
-    return func.translateToCpp() + ";";
+    const std::string fStr = func.translateToCpp();
+
+    switch (virtualType)
+    {
+        case VirtualType::PURE: return "virtual " + fStr + " = 0;";
+        case VirtualType::VIRTUAL: return "virtual " + fStr + ";";
+        case VirtualType::OVERRIDE: return fStr + " override;";
+        default: return fStr + ";";
+    }
 }
 
 std::string FuncDeclStmt::translateToCppClass(const std::wstring& className) const
