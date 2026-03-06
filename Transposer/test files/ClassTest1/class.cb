@@ -12,6 +12,7 @@ instrument Test
     conductorScore
     ∮
         mute mi_m = cres |
+        unison mute mi_x = cres |
         Test_call(degree x)
         ∮
             do_x = x║

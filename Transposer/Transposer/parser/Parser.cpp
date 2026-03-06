@@ -26,6 +26,7 @@
 #include "../errorHandling/syntaxErrors/IncludeNotInTop.h"
 #include "../errorHandling/syntaxErrors/ExpectedAPath.h"
 #include "../errorHandling/syntaxErrors/IllegalVarName.h"
+#include "../errorHandling/syntaxErrors/ExpectedKeywordNotFound.h"
 
 // ---------- semantic errors ----------
 #include "../errorHandling/semanticErrors/IdentifierTaken.h"
@@ -868,7 +869,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
         advance();
     }
 
-    if (!expect(Token::KEYWORD, L"song", new HowDidYouGetHere(current()))) return nullptr;
+    if (!expect(Token::KEYWORD, L"song", new ExpectedKeywordNotFound(current(), "song"))) return nullptr;
 
     if (match(Token::PUNCTUATION, L"©"))
     {
@@ -1666,7 +1667,7 @@ bool Parser::parseFields(std::vector<Field>& fields)
 
             while (true)
             {
-                if (match(Token::TYPE) || SymbolTable::getClass(current().value))
+                if (match(Token::TYPE) || SymbolTable::getClass(current().value) || match(Token::KEYWORD, L"unison"))
                 {
                     auto field = parseVarDecStmt(true);
                     if (!field)
@@ -1712,7 +1713,7 @@ bool Parser::parseFields(std::vector<Field>& fields)
 
             while (true)
             {
-                if (match(Token::TYPE) || SymbolTable::getClass(current().value))
+                if (match(Token::TYPE) || SymbolTable::getClass(current().value) || match(Token::KEYWORD, L"unison"))
                 {
                     auto field = parseVarDecStmt(true);
                      if (!field)
@@ -1758,7 +1759,7 @@ bool Parser::parseFields(std::vector<Field>& fields)
 
             while (true)
             {
-                if (match(Token::TYPE) || SymbolTable::getClass(current().value))
+                if (match(Token::TYPE) || SymbolTable::getClass(current().value) || match(Token::KEYWORD, L"unison"))
                 {
                     auto field = parseVarDecStmt(true);
                     if (!field)
@@ -1823,7 +1824,7 @@ bool Parser::parseMethods(std::vector<Method>& methods)
 
             while (true)
             {
-                if (match(Token::KEYWORD, L"song") || ((match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif")) && !isAtEnd() && peek().value == L"song"))
+                if (match(Token::KEYWORD, L"song") || match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif") || match(Token::KEYWORD, L"unison"))
                 {
                     auto method = parseFuncDeclStmt(true);
                     if (!method)
@@ -1867,7 +1868,7 @@ bool Parser::parseMethods(std::vector<Method>& methods)
 
             while (true)
             {
-                if ((match(Token::KEYWORD, L"song")) || ((match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif")) && !isAtEnd() && peek().value == L"song"))
+                if (match(Token::KEYWORD, L"song") || match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif") || match(Token::KEYWORD, L"unison"))
                 {
                     auto method = parseFuncDeclStmt(true);
                     if (!method)
@@ -1911,7 +1912,7 @@ bool Parser::parseMethods(std::vector<Method>& methods)
 
             while (true)
             {
-                if (match(Token::KEYWORD, L"song") || ((match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif")) && !isAtEnd() && peek().value == L"song"))
+                if (match(Token::KEYWORD, L"song") || match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif") || match(Token::KEYWORD, L"unison"))
                 {
                     auto method = parseFuncDeclStmt(true);
                     if (!method)

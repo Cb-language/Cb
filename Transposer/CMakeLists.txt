@@ -243,6 +243,8 @@ add_executable(Transposer
         Transposer/errorHandling/classErrors/InstantiateAbstractClass.cpp
         Transposer/errorHandling/classErrors/UnimplementedPureVirtualMethod.h
         Transposer/errorHandling/classErrors/UnimplementedPureVirtualMethod.cpp
+        Transposer/errorHandling/syntaxErrors/ExpectedKeywordNotFound.cpp
+        Transposer/errorHandling/syntaxErrors/ExpectedKeywordNotFound.h
 
 )
 

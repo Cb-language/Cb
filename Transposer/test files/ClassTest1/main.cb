@@ -1,16 +1,24 @@
-feat "class.cb"║
-feat "class2.cb"║
+?feat "class.cb"║
+?feat "class2.cb"║
+
+
+instrument T
+∮
+    conductorScore
+    ∮
+        unison cres mi_x = cres |
+        T_call()
+        ∮
+            mi_x = dimin║
+        ☉║
+    ☉
+☉
 
 song prelude() -> degree
 ∮
-    degree x = 0║
-    Test t1 = Test_call(x)║
-    Test2 t2 = Test2_call()║
-    Test3 t3 = Test3_call()║
-    t1\g()║
-    t2\g()║
-    playBar(t1, "\n")║
-    playBar(t2, "\n")║
-    playBar(t3, "\n")║
+    T n = T_call()║
+    play(n\mi_x)║
+    n\mi_x = cres║
+    play(n\mi_x)║
     B\0║
 ☉
