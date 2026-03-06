@@ -5,9 +5,7 @@ instrument Derived | tutti Base
     conductorScore
     ∮
         song a() -> degree ∮ B\ 1║☉ |
-        Derived_call() 
-        ∮
-            Base_call() ║
-        ☉║
+        Derived_call() \ bass()
+        ∮☉║
     ☉
 ☉
