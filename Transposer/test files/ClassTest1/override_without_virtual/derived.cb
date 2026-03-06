@@ -8,9 +8,8 @@ instrument Derived | tutti Base
         ∮
             playBar("Derived a")║
         ☉ |
-        Derived_call()
+        Derived_call() \ bass()
         ∮
-            Base_call()
-        ☉
+        ☉║
     ☉
 ☉

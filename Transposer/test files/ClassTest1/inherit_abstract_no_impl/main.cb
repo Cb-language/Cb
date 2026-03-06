@@ -4,5 +4,5 @@ song prelude() -> degree
 ∮
     Derived d = Derived_call()║
     d\a()║
-    B\ 0║
+    B\0║
 ☉

@@ -40,41 +40,23 @@ std::string ConstractorDeclStmt::translateToCpp() const
     std::ostringstream oss;
     oss << Utils::wstrToStr(constractor.getClassName()) << "::" << constractor.translateToCpp();
 
-    const ConstractorCallStmt* bodyParentCall = nullptr;
-    if (parentCtorCall == nullptr && !body->getStmts().empty())
+    if (parentCtorCall != nullptr)
     {
-        if (auto ctorCall = dynamic_cast<ConstractorCallStmt*>(body->getStmts()[0].get()))
-        {
-            if (currClass->getParent() != nullptr && ctorCall->getClassNode() == currClass->getParent())
-            {
-                bodyParentCall = ctorCall;
-            }
-        }
-    }
-
-    if (parentCtorCall != nullptr || bodyParentCall != nullptr)
-    {
-        std::string str = parentCtorCall ? parentCtorCall->translateToCpp() : bodyParentCall->translateToCpp();
-        
-        // Remove tabs and semicolon for initializer list context
-        str = Utils::removeAllFirstTabs(str);
+        std::string str = parentCtorCall->translateToCpp();
         str.erase(
             std::ranges::remove(str, ';').begin(),
             str.end()
-        ); 
+        ); // removing ;
 
-        oss << " : " << str;
+        oss << " : " << Utils::removeFirstTabs(str);
     }
 
     const std::string tabs = getTabs(-1);
     oss << std::endl << tabs << "{" << std::endl;
 
-    bool skipFirst = (bodyParentCall != nullptr);
-    for (size_t i = 0; i < body->getStmts().size(); ++i)
+    for (const auto& stmt : body->getStmts())
     {
-        if (i == 0 && skipFirst) continue;
-        
-        std::string temp = body->getStmts()[i]->translateToCpp();
+        std::string temp = stmt->translateToCpp();
         oss << getTabs() << Utils::removeFirstTabs(temp) << std::endl;
     }
 

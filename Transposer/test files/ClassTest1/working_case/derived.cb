@@ -12,9 +12,8 @@ instrument Derived | tutti Base
         ∮
             B\ 1║
         ☉ |
-        Derived_call()
+        Derived_call() \ bass()
         ∮
-            Base_call()║
         ☉ ║
      ☉
 ☉

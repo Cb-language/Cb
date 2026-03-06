@@ -1,16 +1,19 @@
-feat "base.cb"║
+feat. "base.cb"║
 
 instrument Derived | tutti Base
 ∮
     conductorScore
     ∮
-        song c() 
-        ∮ 
-            playBar("c") ║
-        ☉ |
-        Derived_call()
+        song c()
         ∮
-            Base_call()║
-        ☉║
-    ☉
+            playBar("Derived a")║
+        ☉ |
+        song d() -> degree
+        ∮
+            B\ 1║
+        ☉ |
+        Derived_call() \ bass()
+        ∮
+        ☉ ║
+     ☉
 ☉

@@ -781,6 +781,12 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
             synchronize();
             continue;
         }
+        else if (match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif") || match(Token::KEYWORD, L"variation"))
+        {
+            addError(new VirtualNonMethod(current()));
+            synchronize();
+            continue;
+        }
         else
         {
             addError(new UnrecognizedToken(current()));
@@ -1803,7 +1809,7 @@ bool Parser::parseMethods(std::vector<Method>& methods)
 
             while (true)
             {
-                if (match(Token::KEYWORD, L"song"))
+                if (match(Token::KEYWORD, L"song") || ((match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif")) && !isAtEnd() && peek().value == L"song"))
                 {
                     auto method = parseFuncDeclStmt(true);
                     if (!method)
@@ -1891,7 +1897,7 @@ bool Parser::parseMethods(std::vector<Method>& methods)
 
             while (true)
             {
-                if (match(Token::KEYWORD, L"song"))
+                if (match(Token::KEYWORD, L"song") || ((match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif")) && !isAtEnd() && peek().value == L"song"))
                 {
                     auto method = parseFuncDeclStmt(true);
                     if (!method)
