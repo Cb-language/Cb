@@ -2,7 +2,7 @@
 #include "BodyStmt.h"
 #include "AST/abstract/IFuncDeclStmt.h"
 #include "AST/abstract/Statement.h"
-#include "expression/ConstractorCallStmt.h"
+#include "ConstractorCallStmt.h"
 #include "symbols/Constractor.h"
 
 class ConstractorDeclStmt : public IFuncDeclStmt

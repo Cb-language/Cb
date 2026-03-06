@@ -2,7 +2,7 @@
 
 #include "other/Utils.h"
 
-Func::Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std::vector<Var>& args) : rType(std::move(rType)), funcName(funcName)
+Func::Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std::vector<Var>& args, const VirtualType vType, const ClassNode* owner) : rType(std::move(rType)), funcName(funcName), virtualType(vType), owner(owner)
 {
     for (const auto& arg : args)
     {
@@ -10,7 +10,7 @@ Func::Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std
     }
 }
 
-Func::Func(const Func& other) : Func(other.rType->copy(), other.funcName, other.args)
+Func::Func(const Func& other) : Func(other.rType->copy(), other.funcName, other.args, other.virtualType, other.owner)
 {
 }
 
@@ -29,10 +29,32 @@ std::unique_ptr<IType> Func::getType() const
     return rType->copy();
 }
 
+void Func::setVirtual(const VirtualType vType)
+{
+    this->virtualType = vType;
+}
+
+VirtualType Func::getVirtual() const
+{
+    return virtualType;
+}
+
+void Func::setOwner(const ClassNode* owner)
+{
+    this->owner = owner;
+}
+
+const ClassNode* Func::getOwner() const
+{
+    return owner;
+}
+
 std::string Func::translateToCpp(const std::wstring& className) const
 {
     std::string funcNameStr = Utils::wstrToStr(funcName);
-    std::string header = rType->translateTypeToCpp() + " ";
+    std::string header;
+
+    header += rType->translateTypeToCpp() + " ";
 
     if (!className.empty())
     {
@@ -53,39 +75,40 @@ std::string Func::translateToCpp(const std::wstring& className) const
     }
 
     header += ")";
+
     return header;
 }
 
 bool Func::operator==(const Func& other) const
 {
-    if (rType->getType() != other.rType->getType() || funcName != other.funcName)
+    if (rType->getType() != other.rType->getType())
     {
         return false;
     }
 
-    for (const auto& arg : other.args)
+    if (owner != other.owner)
     {
-        // arg name doesn't matter for func
-        if (*(arg.getType()) != rType->getType())
-        {
-            return false;
-        }
+        return false;
     }
 
-    return true;
+    return this->isSameNameAndArgs(other);
 }
 
-bool Func::isLegalCall(const Func& other) const
+bool Func::operator!=(const Func& other) const
 {
-    if (funcName != other.funcName)
+    return !(*this == other);
+}
+
+bool Func::isSameNameAndArgs(const Func& other) const
+{
+    if (funcName != other.funcName || args.size() != other.args.size())
     {
         return false;
     }
 
-    for (const auto& arg : other.args)
+    for (size_t i = 0; i < args.size(); ++i)
     {
-        // arg name doesn't matter for func
-        if (*(arg.getType()) != rType->getType())
+        if (*(args[i].getType()) != *(other.args[i].getType()))
         {
             return false;
         }
@@ -101,5 +124,28 @@ Func Func::copy() const
 
 bool Func::operator<(const Func& other) const
 {
-    return funcName < other.funcName;
+    if (owner != other.owner)
+    {
+        return owner < other.owner;
+    }
+
+    if (funcName != other.funcName)
+    {
+        return funcName < other.funcName;
+    }
+
+    if (args.size() != other.args.size())
+    {
+        return args.size() < other.args.size();
+    }
+
+    for (size_t i = 0; i < args.size(); ++i)
+    {
+        if (args[i].getType()->getType() != other.args[i].getType()->getType())
+        {
+            return args[i].getType()->getType() < other.args[i].getType()->getType();
+        }
+    }
+
+    return false;
 }

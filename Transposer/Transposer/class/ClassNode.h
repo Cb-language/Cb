@@ -33,4 +33,6 @@ public:
     const Func* findMethod(const std::wstring& name, const bool isBase = true) const;
 
     const Class& getClass() const;
+    void setAbstract(const bool isAbstract);
+    bool isAbstract() const;
 };

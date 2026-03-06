@@ -1,0 +1,9 @@
+instrument Base
+∮
+    conductorScore
+    ∮
+        rest song a() |
+        rest song b() -> degree |
+        Base_call() ∮☉ ║
+    ☉
+☉

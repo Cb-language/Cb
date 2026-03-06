@@ -1,0 +1,9 @@
+? override without virtual
+instrument Base
+∮
+    conductorScore
+    ∮
+        song a() ∮ playBar("Base a")║ ☉ |
+        Base_call()∮☉║
+    ☉
+☉

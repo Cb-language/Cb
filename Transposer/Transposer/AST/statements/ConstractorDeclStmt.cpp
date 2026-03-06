@@ -6,7 +6,7 @@
 
 #include "errorHandling/classErrors/ParentNotInitialized.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
-#include "expression/ConstractorCallStmt.h"
+#include "ConstractorCallStmt.h"
 #include "other/SymbolTable.h"
 #include "symbols/Type/ClassType.h"
 #include "other/Utils.h"

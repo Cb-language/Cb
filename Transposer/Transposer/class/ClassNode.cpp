@@ -119,6 +119,16 @@ const Class& ClassNode::getClass() const
     return c;
 }
 
+void ClassNode::setAbstract(const bool isAbstract)
+{
+    c.setAbstract(isAbstract);
+}
+
+bool ClassNode::isAbstract() const
+{
+    return c.isAbstract();
+}
+
 
 bool ClassNode::isLegalAccess(const AccessType accessType, const ClassNode* curr) const
 {

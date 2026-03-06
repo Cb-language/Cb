@@ -208,8 +208,8 @@ add_executable(Transposer
         Transposer/AST/statements/expression/DotOpExpr.h
         Transposer/symbols/Type/ClassType.cpp
         Transposer/symbols/Type/ClassType.h
-        Transposer/AST/statements/expression/ConstractorCallStmt.cpp
-        Transposer/AST/statements/expression/ConstractorCallStmt.h
+        Transposer/AST/statements/ConstractorCallStmt.cpp
+        Transposer/AST/statements/ConstractorCallStmt.h
         Transposer/errorHandling/syntaxErrors/IllegalVarName.cpp
         Transposer/errorHandling/syntaxErrors/IllegalVarName.h
         Transposer/errorHandling/classErrors/AccessError.cpp
@@ -231,6 +231,19 @@ add_executable(Transposer
         Transposer/class/ClassTree.cpp
         Transposer/class/ClassTree.h
         Transposer/class/AccessType.h
+        Transposer/errorHandling/classErrors/VirtualNonMethod.h
+        Transposer/errorHandling/classErrors/VirtualNonMethod.cpp
+        Transposer/errorHandling/classErrors/OverrideError.h
+        Transposer/errorHandling/classErrors/OverrideError.cpp
+        Transposer/errorHandling/classErrors/NoOverrideError.h
+        Transposer/errorHandling/classErrors/NoOverrideError.cpp
+        Transposer/errorHandling/classErrors/InvalidOverrideSignature.h
+        Transposer/errorHandling/classErrors/InvalidOverrideSignature.cpp
+        Transposer/errorHandling/classErrors/InstantiateAbstractClass.h
+        Transposer/errorHandling/classErrors/InstantiateAbstractClass.cpp
+        Transposer/errorHandling/classErrors/UnimplementedPureVirtualMethod.h
+        Transposer/errorHandling/classErrors/UnimplementedPureVirtualMethod.cpp
+
 )
 
 # In order to call the exe from the cmd

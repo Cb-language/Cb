@@ -71,11 +71,11 @@ bool SymbolTable::doesFuncExist(const Func& f) const
     return false;
 }
 
-bool SymbolTable::doesFuncExist(const std::wstring& name) const
+bool SymbolTable::doesFuncExist(const std::wstring& name, const ClassNode* owner) const
 {
     for (const auto& func : funcs| std::views::keys)
     {
-        if (func.getFuncName() == name)
+        if (func.getFuncName() == name && func.getOwner() == owner)
         {
             return true;
         }
@@ -96,11 +96,28 @@ bool SymbolTable::isLegalCredit(const FuncCredit& credit) const
     return false;
 }
 
-std::unique_ptr<IType> SymbolTable::getCallType(FuncCallExpr* expr) const
+std::unique_ptr<IType> SymbolTable::getCallType(FuncCallExpr* expr, const ClassNode* callClass) const
 {
+    const ClassNode* current = callClass;
+    while (current != nullptr)
+    {
+        for (const auto& func : funcs | std::views::keys)
+        {
+            if (func.getOwner() == current && expr->isLegalCall(func))
+            {
+                // check access
+                if (current->isLegal(func, callClass))
+                {
+                    return func.getType();
+                }
+            }
+        }
+        current = current->getParent();
+    }
+
     for (const auto& func : funcs| std::views::keys)
     {
-        if (expr->isLegalCall(func))
+        if (func.getOwner() == nullptr && expr->isLegalCall(func))
         {
             return func.getType()->copy();
         }
@@ -144,15 +161,15 @@ IFuncDeclStmt* SymbolTable::getCurrFunc() const
     return currFunc;
 }
 
-std::unique_ptr<Func> SymbolTable::getFunc(const std::wstring& name) const
+std::unique_ptr<Func> SymbolTable::getFunc(const std::wstring& name, const ClassNode* owner) const
 {
-    if (!doesFuncExist(name))
+    if (!doesFuncExist(name, owner))
     {
         return nullptr;
     }
     for (const auto& func : funcs | std::views::keys)
     {
-        if (func.getFuncName() == name)
+        if (func.getFuncName() == name && func.getOwner() == owner)
         {
             return std::make_unique<Func>(func.copy());
         }
@@ -237,8 +254,12 @@ void SymbolTable::clearClasses()
     ClassTree::destroy();
 }
 
-bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token, const ClassNode* curr)
+bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token, const ClassNode* currClass)
 {
+    if (currClass == nullptr)
+    {
+        throw HowDidYouGetHere(token);
+    }
     const ClassNode* res = classTree.find(type->getType());
 
     if (res == nullptr) throw HowDidYouGetHere(token);
@@ -246,7 +267,7 @@ bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const
     const Var* field = res->findField(name);
     if (field != nullptr)
     {
-        if (res->isLegal(*field, curr)) return true;
+        if (res->isLegal(*field, currClass)) return true;
 
         throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
     }
@@ -254,14 +275,14 @@ bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const
     const Func* method = res->findMethod(name);
     if (method != nullptr)
     {
-        if (res->isLegal(*method, curr)) return true;
+        if (res->isLegal(*method, currClass)) return true;
 
         throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
     }
 
-    if (auto parent = curr->getParent())
+    if (auto parent = currClass->getParent())
     {
-        return isLegalFieldOrMethod(std::make_unique<ClassType>(parent), name, token, curr);
+        return isLegalFieldOrMethod(std::make_unique<ClassType>(parent), name, token, currClass->getParent());
     }
 
     return false;

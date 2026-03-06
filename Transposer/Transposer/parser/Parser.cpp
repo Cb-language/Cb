@@ -55,6 +55,9 @@
 #include "../errorHandling/classErrors/MissingClassPipe.h"
 #include "../errorHandling/classErrors/NoCtor.h"
 #include "../errorHandling/classErrors/RedefOfCtor.h"
+#include "../errorHandling/classErrors/InvalidOverrideSignature.h"
+#include "../errorHandling/classErrors/NoOverrideError.h"
+#include "../errorHandling/classErrors/VirtualNonMethod.h"
 
 // ---------- just how ----------
 #include "../errorHandling/how/HowDidYouGetHere.h"
@@ -77,15 +80,22 @@ std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
         while (match(Token::KEYWORD, L"feat"))
         {
             advance();
+
             Token pathToken;
             if (!expectAndGet(Token::CONST_STR, new ExpectedAPath(current()), pathToken)) return {};
+
             std::wstring wstr = pathToken.value;
             wstr.erase(
                 std::ranges::remove(wstr, L'"').begin(),
                 wstr.end()
             );
             std::filesystem::path path = wstr;
-            if (!expect(Token::PUNCTUATION, L"║", new MissingSemicolon(current()))) return {};
+            if (!match(Token::PUNCTUATION, L"║"))
+            {
+                addError(new MissingSemicolon(current()));
+                return {};
+            }
+            advance(); // eat the semicolon
 
             if (path.extension() != ".cb")
             {
@@ -126,7 +136,7 @@ void Parser::analyze()
     while (!callsQ.empty())
     {
         FuncCallExpr* call = callsQ.front();
-        std::unique_ptr<IType> t = symTable.getCallType(call);
+        std::unique_ptr<IType> t = symTable.getCallType(call, call->getCurrClass());
 
         if (t == nullptr)
         {
@@ -212,6 +222,38 @@ const Token& Parser::getLast() const
 const std::vector<std::unique_ptr<Error>>& Parser::getErrors() const
 {
     return errors;
+}
+
+bool Parser::shouldProduceCpp(bool isMain) const
+{
+    if (isMain || hasMain) return true;
+
+    bool hasClasses = false;
+    for (const auto& stmt : stmts)
+    {
+        if (dynamic_cast<IncludeStmt*>(stmt.get())) continue;
+
+        if (auto classStmt = dynamic_cast<ClassDeclStmt*>(stmt.get()))
+        {
+            hasClasses = true;
+            if (classStmt->getCurrClass() && !classStmt->getCurrClass()->isAbstract())
+            {
+                return true; // Found a concrete class
+            }
+        }
+        else if (dynamic_cast<FuncDeclStmt*>(stmt.get()))
+        {
+            return true; // Found a global function implementation
+        }
+        else
+        {
+            // Any other statement in global scope (e.g. VarDeclStmt) needs a .cpp
+            return true;
+        }
+    }
+
+    // If it only has includes or abstract classes, don't produce a .cpp
+    return false;
 }
 
 void Parser::addError(Error* err)
@@ -667,9 +709,13 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         else if (match(Token::IDENTIFIER_CALL))
         {
             stmt = parseConstractorCallStmt();
-            if (stmt && !expect(Token::PUNCTUATION, L"║", new MissingSemicolon(current())))
+            if (stmt)
             {
-                stmt = nullptr;
+                dynamic_cast<ConstractorCallStmt*>(stmt.get())->setIsStmt(true);
+                if (!expect(Token::PUNCTUATION, L"║", new MissingSemicolon(current())))
+                {
+                    stmt = nullptr;
+                }
             }
         }
         else if (match(Token::KEYWORD, L"D"))
@@ -735,6 +781,12 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
             synchronize();
             continue;
         }
+        else if (match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif") || match(Token::KEYWORD, L"variation"))
+        {
+            addError(new VirtualNonMethod(current()));
+            synchronize();
+            continue;
+        }
         else
         {
             addError(new UnrecognizedToken(current()));
@@ -778,6 +830,29 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
     std::vector<std::unique_ptr<FuncCreditStmt>> credited;
     IFuncDeclStmt* currFunc = symTable.getCurrFunc();
     const Token& t = current();
+    VirtualType vType = VirtualType::NONE;
+
+    if ((match(Token::KEYWORD, L"motif") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"variation")) && !isMethod)
+    {
+        addError(new VirtualNonMethod(current()));
+    }
+
+    if (match(Token::KEYWORD, L"motif"))
+    {
+        vType = VirtualType::VIRTUAL;
+        advance();
+    }
+    else if (match(Token::KEYWORD, L"rest"))
+    {
+        vType = VirtualType::PURE;
+        advance();
+    }
+
+    else if (match(Token::KEYWORD, L"variation"))
+    {
+        vType = VirtualType::OVERRIDE;
+        advance();
+    }
 
     if (!expect(Token::KEYWORD, L"song", new HowDidYouGetHere(current()))) return nullptr;
 
@@ -809,7 +884,31 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
         addError(new MainOverride(current()));
     }
 
-    if (symTable.doesFuncExist(funcName))
+    const ClassNode* owner = isMethod ? symTable.getCurrClass() : nullptr;
+
+    if (isMethod)
+    {
+        if (owner->getClass().hasMethod(funcName))
+        {
+            addError(new IdentifierTaken(current()));
+        }
+
+        if (vType == VirtualType::OVERRIDE)
+        {
+            const ClassNode* parent = owner->getParent();
+            const Func* baseMethod = (parent != nullptr) ? parent->findMethod(funcName) : nullptr;
+
+            if (baseMethod == nullptr)
+            {
+                addError(new NoOverrideError(current()));
+            }
+            else if (baseMethod->getVirtual() != VirtualType::VIRTUAL && baseMethod->getVirtual() != VirtualType::PURE)
+            {
+                addError(new NoOverrideError(current()));
+            }
+        }
+    }
+    else if (symTable.doesFuncExist(funcName, nullptr))
     {
         addError(new IdentifierTaken(current()));
     }
@@ -844,6 +943,24 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
         }
     }
 
+    if (isMethod && vType == VirtualType::OVERRIDE)
+    {
+        const ClassNode* parent = owner->getParent();
+        if (parent != nullptr)
+        {
+            const Func* baseMethod = parent->findMethod(funcName);
+            if (baseMethod != nullptr)
+            {
+                Func currentFunc(nullptr, funcName, varArgs, vType, owner); 
+                if (!baseMethod->isSameNameAndArgs(currentFunc))
+                {
+                    addError(new InvalidOverrideSignature(current()));
+                }
+            }
+        }
+    }
+
+
     if (!match(Token::PUNCTUATION, L"->"))
     {
         if (funcName == L"prelude")
@@ -851,13 +968,22 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
             addError(new InvalidMainReturnType(current()));
         }
 
-        auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, std::make_unique<Type>(L"fermata"), varArgs, credited);
-        symTable.addFunc(funcDeclStmt->getFunc());
-        symTable.changeFunc(funcDeclStmt.get());
-        auto body = parseBodyStmt(args);
-        if (!body) return nullptr;
-        funcDeclStmt->setBody(std::move(body));
-        symTable.changeFunc(currFunc);
+        auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), owner, funcName, std::make_unique<Type>(L"fermata"), varArgs, credited, isMethod, vType);
+        funcDeclStmt->getFunc().setOwner(owner);
+
+        if (vType != VirtualType::PURE)
+        {
+            symTable.addFunc(funcDeclStmt->getFunc());
+            symTable.changeFunc(funcDeclStmt.get());
+            auto body = parseBodyStmt(args);
+            if (!body) return nullptr;
+            funcDeclStmt->setBody(std::move(body));
+            symTable.changeFunc(currFunc);
+        }
+        else 
+        {
+             symTable.addFunc(funcDeclStmt->getFunc());
+        }
         return std::move(funcDeclStmt);
     }
     advance(); 
@@ -880,21 +1006,29 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
         hasMain = true;
     }
 
-    auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, rType->copy(), varArgs, credited);
+    auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), owner, funcName, rType->copy(), varArgs, credited, isMethod, vType);
+    funcDeclStmt->getFunc().setOwner(owner);
 
-    if (!isMethod) symTable.addFunc(funcDeclStmt->getFunc());
-    symTable.changeFunc(funcDeclStmt.get());
 
-    auto body = parseBodyStmt(args);
-    if (!body) return nullptr;
-    funcDeclStmt->setBody(std::move(body));
-
-    if (!funcDeclStmt->getHasReturned())
+    if (vType != VirtualType::PURE)
     {
-        addError(new NoReturn(prev()));
+        symTable.addFunc(funcDeclStmt->getFunc());
+        symTable.changeFunc(funcDeclStmt.get());
+        auto body = parseBodyStmt(args);
+        if (!body) return nullptr;
+        funcDeclStmt->setBody(std::move(body));
+
+        if (!funcDeclStmt->getHasReturned())
+        {
+            addError(new NoReturn(prev()));
+        }
+        symTable.changeFunc(currFunc);
+    }
+    else 
+    {
+         symTable.addFunc(funcDeclStmt->getFunc());
     }
 
-    symTable.changeFunc(currFunc);
     return std::move(funcDeclStmt);
 }
 
@@ -1521,7 +1655,8 @@ bool Parser::parseFields(std::vector<Field>& fields)
                 if (match(Token::TYPE) || SymbolTable::getClass(current().value))
                 {
                     auto field = parseVarDecStmt(true);
-                    if (!field) {
+                    if (!field)
+                    {
                         synchronize();
                         continue;
                     }
@@ -1566,7 +1701,8 @@ bool Parser::parseFields(std::vector<Field>& fields)
                 if (match(Token::TYPE) || SymbolTable::getClass(current().value))
                 {
                     auto field = parseVarDecStmt(true);
-                     if (!field) {
+                     if (!field)
+                     {
                         synchronize();
                         continue;
                     }
@@ -1611,7 +1747,8 @@ bool Parser::parseFields(std::vector<Field>& fields)
                 if (match(Token::TYPE) || SymbolTable::getClass(current().value))
                 {
                     auto field = parseVarDecStmt(true);
-                    if (!field) {
+                    if (!field)
+                    {
                         synchronize();
                         continue;
                     }
@@ -1672,10 +1809,11 @@ bool Parser::parseMethods(std::vector<Method>& methods)
 
             while (true)
             {
-                if (match(Token::KEYWORD, L"song"))
+                if (match(Token::KEYWORD, L"song") || ((match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif")) && !isAtEnd() && peek().value == L"song"))
                 {
-                    auto method = parseFuncDeclStmt();
-                    if (!method) {
+                    auto method = parseFuncDeclStmt(true);
+                    if (!method)
+                    {
                         synchronize();
                         continue;
                     }
@@ -1715,10 +1853,11 @@ bool Parser::parseMethods(std::vector<Method>& methods)
 
             while (true)
             {
-                if (match(Token::KEYWORD, L"song"))
+                if ((match(Token::KEYWORD, L"song")) || ((match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif")) && !isAtEnd() && peek().value == L"song"))
                 {
-                    auto method = parseFuncDeclStmt();
-                    if (!method) {
+                    auto method = parseFuncDeclStmt(true);
+                    if (!method)
+                    {
                         synchronize();
                         continue;
                     }
@@ -1758,10 +1897,11 @@ bool Parser::parseMethods(std::vector<Method>& methods)
 
             while (true)
             {
-                if (match(Token::KEYWORD, L"song"))
+                if (match(Token::KEYWORD, L"song") || ((match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif")) && !isAtEnd() && peek().value == L"song"))
                 {
-                    auto method = parseFuncDeclStmt();
-                    if (!method) {
+                    auto method = parseFuncDeclStmt(true);
+                    if (!method)
+                    {
                         synchronize();
                         continue;
                     }
@@ -1823,7 +1963,8 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
                 if (match(Token::IDENTIFIER_CALL))
                 {
                     auto ctor = parseCtor();
-                    if (!ctor) {
+                    if (!ctor)
+                    {
                         synchronize();
                         continue;
                     }
@@ -1866,7 +2007,8 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
                 if (match(Token::IDENTIFIER_CALL))
                 {
                     auto ctor = parseCtor();
-                    if (!ctor) {
+                    if (!ctor)
+                    {
                         synchronize();
                         continue;
                     }
@@ -1909,7 +2051,8 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
                 if (match(Token::IDENTIFIER_CALL))
                 {
                     auto ctor = parseCtor();
-                    if (!ctor) {
+                    if (!ctor)
+                    {
                         synchronize();
                         continue;
                     }

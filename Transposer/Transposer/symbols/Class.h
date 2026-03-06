@@ -12,10 +12,11 @@ private:
     std::vector<std::pair<AccessType, Func>> methods;
     std::vector<std::pair<AccessType, Var>> fields;
     std::vector<std::pair<AccessType, Constractor>> constractors;
+    bool _isAbstract;
 
 public:
     Class(const std::wstring& name, const std::vector<std::pair<AccessType, Func>>& methods,
-        const std::vector<std::pair<AccessType, Var>>& fields, const std::vector<std::pair<AccessType, Constractor>>& constractors);
+        const std::vector<std::pair<AccessType, Var>>& fields, const std::vector<std::pair<AccessType, Constractor>>& constractors, bool isAbstract = false);
 
     Class(const Class& other);
 
@@ -25,6 +26,8 @@ public:
     const std::vector<std::pair<AccessType, Func>>& getMethods() const;
     const std::vector<std::pair<AccessType, Var>>& getFields() const;
     const std::vector<std::pair<AccessType, Constractor>>& getConstractors() const;
+    void setAbstract(const bool isAbstract);
+    bool isAbstract() const;
 
     void addMethod(const AccessType accessType, const Func& method);
     void addField(const AccessType accessType, const Var& field);

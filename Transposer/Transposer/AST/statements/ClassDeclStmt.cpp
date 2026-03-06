@@ -5,6 +5,9 @@
 #include "FuncDeclStmt.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "other/SymbolTable.h"
+#include "errorHandling/classErrors/InvalidOverrideSignature.h"
+#include "errorHandling/classErrors/NoOverrideError.h"
+#include "errorHandling/classErrors/UnimplementedPureVirtualMethod.h"
 
 std::string ClassDeclStmt::generateToString() const
 {
@@ -116,8 +119,97 @@ ClassDeclStmt::ClassDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* fu
 void ClassDeclStmt::analyze() const
 {
     for (const auto& field : fields | std::views::values) field->analyze();
-    for (const auto& method : methods | std::views::values) method->analyze();
     for (const auto& ctor : ctors | std::views::values) ctor->analyze();
+
+    bool isAbstract = false;
+
+    for (const auto& method : methods | std::views::values)
+    {
+        method->analyze();
+        switch (method->getVirtual())
+        {
+        case VirtualType::PURE:
+        {
+            isAbstract = true;
+            break;
+        }
+
+        case VirtualType::OVERRIDE:
+        {
+            const ClassNode* parent = this->currClass->getParent();
+            if (parent == nullptr || parent->getClass().getClassName() == L"Object")
+            {
+                throw NoOverrideError(token);
+            }
+
+            const Func* baseMethod = parent->findMethod(method->getName());
+            if (baseMethod == nullptr)
+            {
+                throw NoOverrideError(token);
+            }
+
+            if (baseMethod->getVirtual() != VirtualType::VIRTUAL && baseMethod->getVirtual() != VirtualType::PURE)
+            {
+                throw NoOverrideError(token);
+            }
+
+            if (!baseMethod->isSameNameAndArgs(method->getFunc()))
+            {
+                throw InvalidOverrideSignature(token);
+            }
+            break;
+        }
+
+        case VirtualType::NONE:
+        {
+            if (const auto parent = currClass->getParent())
+            {
+                if (const auto baseMethod = parent->findMethod(method->getName()))
+                {
+                    if (baseMethod->getVirtual() != VirtualType::NONE)
+                    {
+                        throw NoOverrideError(token);
+                    }
+                }
+            }
+        }
+
+        default: break;
+        }
+    }
+
+    if (const ClassNode* parent = this->currClass->getParent())
+    {
+        for (const auto& baseMethod : parent->getClass().getMethods() | std::views::values)
+        {
+            if (baseMethod.getVirtual() == VirtualType::PURE)
+            {
+                bool implemented = false;
+                for (const auto& method : methods | std::views::values)
+                {
+                    if (method->getFunc().isSameNameAndArgs(baseMethod))
+                    {
+                        if (method->getVirtual() != VirtualType::PURE)
+                        {
+                            implemented = true;
+                        }
+                        break;
+                    }
+                }
+
+                if (!implemented)
+                {
+                    if (!isAbstract)
+                    {
+                        throw UnimplementedPureVirtualMethod(token, Utils::wstrToStr(baseMethod.getFuncName()));
+                    }
+                }
+            }
+        }
+    }
+
+    const_cast<ClassNode*>(this->currClass)->setAbstract(isAbstract);
+
 
     if (isInheriting)
     {

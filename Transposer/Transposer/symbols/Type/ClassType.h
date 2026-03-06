@@ -19,6 +19,7 @@ public:
     bool isStringable() const override;
     bool isPrimitive() const override;
     std::wstring getType() const override;
+    const ClassNode* getClass() const;
     std::string translateTypeToCpp() const override;
     std::unique_ptr<IType> copy() const override;
 };
