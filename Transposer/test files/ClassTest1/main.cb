@@ -1,24 +1,48 @@
 ?feat "class.cb"║
 ?feat "class2.cb"║
 
-
 instrument T
 ∮
     conductorScore
     ∮
-        unison cres mi_x = cres |
-        T_call()
+        motif song a()
         ∮
-            mi_x = dimin║
-        ☉║
-    ☉
+            playBar("Derived a")║
+        ☉ |
+        motif song b() -> degree
+        ∮
+            B\ 1║
+        ☉ |
+        Derived_call()
+        ∮
+        ☉ ║
+     ☉
 ☉
+
+instrument T2
+∮
+    conductorScore
+    ∮
+        motif song a()
+        ∮
+            playBar("Derived a")║
+        ☉ |
+        motif song b() -> degree
+        ∮
+            B\ 1║
+        ☉ |
+        Derived_call()
+        ∮
+        ☉ ║
+     ☉
+☉
+
 
 song prelude() -> degree
 ∮
     T n = T_call()║
-    play(n\mi_x)║
-    n\mi_x = cres║
-    play(n\mi_x)║
+    play(n\do_a)║
+    n\do_a = 6║
+    play(n\do_a)║
     B\0║
 ☉

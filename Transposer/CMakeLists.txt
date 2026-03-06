@@ -245,6 +245,8 @@ add_executable(Transposer
         Transposer/errorHandling/classErrors/UnimplementedPureVirtualMethod.cpp
         Transposer/errorHandling/syntaxErrors/ExpectedKeywordNotFound.cpp
         Transposer/errorHandling/syntaxErrors/ExpectedKeywordNotFound.h
+        Transposer/errorHandling/semanticErrors/StaticFuncCantVirtual.cpp
+        Transposer/errorHandling/semanticErrors/StaticFuncCantVirtual.h
 
 )
 
