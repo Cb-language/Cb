@@ -228,6 +228,14 @@ std::string ClassDeclStmt::translateToCpp() const
 {
     std::ostringstream oss;
 
+    for (const auto& field : fields | std::views::values)
+    {
+        if (field->getVar().getStatic())
+        {
+            oss << field->getVar().getType()->translateTypeToCpp() << " " << Utils::wstrToStr(name) << "::" << Utils::wstrToStr(field->getVar().getName()) << ";" << std::endl;
+        }
+    }
+
     for (const auto& ctor : ctors | std::views::values) oss << Utils::removeAllFirstTabs(ctor->translateToCpp()) << std::endl;
 
     oss << generateEquals() << std::endl;

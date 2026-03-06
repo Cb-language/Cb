@@ -228,14 +228,12 @@ bool Parser::shouldProduceCpp(bool isMain) const
 {
     if (isMain || hasMain) return true;
 
-    bool hasClasses = false;
     for (const auto& stmt : stmts)
     {
         if (dynamic_cast<IncludeStmt*>(stmt.get())) continue;
 
         if (auto classStmt = dynamic_cast<ClassDeclStmt*>(stmt.get()))
         {
-            hasClasses = true;
             if (classStmt->getCurrClass() && !classStmt->getCurrClass()->isAbstract())
             {
                 return true; // Found a concrete class
@@ -499,9 +497,18 @@ bool Parser::isUnaryOpStmtAhead()
 
 std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt(const bool isField)
 {
+    bool isStatic = false;
+    if (match(Token::KEYWORD, L"unison"))
+    {
+        isStatic = true;
+        advance();
+    }
+
     if (match(Token::TYPE, L"riff"))
     {
-        return parseArrayDeclStmt();
+        auto res = parseArrayDeclStmt();
+        if (res && isStatic) const_cast<Var&>(res->getVar()).setStatic(true);
+        return res;
     }
 
     const Token& t = current();
@@ -512,7 +519,7 @@ std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt(const bool isField)
     if (!expectAndGet(Token::IDENTIFIER, new MissingIdentifier(current()), identifierToken)) return nullptr;
     const std::wstring varName = identifierToken.value;
 
-    const Var var(varType->copy(), varName);
+    const Var var(varType->copy(), varName, isStatic);
     
     const bool startsMusical = Utils::startsWithNote(varName);
 
@@ -831,6 +838,13 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
     IFuncDeclStmt* currFunc = symTable.getCurrFunc();
     const Token& t = current();
     VirtualType vType = VirtualType::NONE;
+    bool isStatic = false;
+
+    if (match(Token::KEYWORD, L"unison"))
+    {
+        isStatic = true;
+        advance();
+    }
 
     if ((match(Token::KEYWORD, L"motif") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"variation")) && !isMethod)
     {
@@ -968,7 +982,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
             addError(new InvalidMainReturnType(current()));
         }
 
-        auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), owner, funcName, std::make_unique<Type>(L"fermata"), varArgs, credited, isMethod, vType);
+        auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), owner, funcName, std::make_unique<Type>(L"fermata"), varArgs, credited, isMethod, vType, isStatic);
         funcDeclStmt->getFunc().setOwner(owner);
 
         if (vType != VirtualType::PURE)
@@ -1006,7 +1020,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
         hasMain = true;
     }
 
-    auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), owner, funcName, rType->copy(), varArgs, credited, isMethod, vType);
+    auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), owner, funcName, rType->copy(), varArgs, credited, isMethod, vType, isStatic);
     funcDeclStmt->getFunc().setOwner(owner);
 
 
