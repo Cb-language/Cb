@@ -51,6 +51,11 @@ std::string ConstractorCallStmt::translateToCpp() const
 {
     std::ostringstream oss;
 
+    if (isStmt)
+    {
+        oss << getTabs();
+    }
+
     oss << Utils::wstrToStr(classNode->getClass().getClassName()) << "(";
 
     bool first = true;
@@ -66,7 +71,18 @@ std::string ConstractorCallStmt::translateToCpp() const
     }
 
     oss << ")";
+
+    if (isStmt)
+    {
+        oss << ";";
+    }
+
     return oss.str();
+}
+
+void ConstractorCallStmt::setIsStmt(const bool isStmt)
+{
+    this->isStmt = isStmt;
 }
 
 const ClassNode* ConstractorCallStmt::getClassNode() const

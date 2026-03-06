@@ -709,9 +709,13 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         else if (match(Token::IDENTIFIER_CALL))
         {
             stmt = parseConstractorCallStmt();
-            if (stmt && !expect(Token::PUNCTUATION, L"║", new MissingSemicolon(current())))
+            if (stmt)
             {
-                stmt = nullptr;
+                dynamic_cast<ConstractorCallStmt*>(stmt.get())->setIsStmt(true);
+                if (!expect(Token::PUNCTUATION, L"║", new MissingSemicolon(current())))
+                {
+                    stmt = nullptr;
+                }
             }
         }
         else if (match(Token::KEYWORD, L"D"))

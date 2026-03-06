@@ -6,7 +6,7 @@
 
 #include "errorHandling/classErrors/ParentNotInitialized.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
-#include "expression/ConstractorCallStmt.h"
+#include "ConstractorCallStmt.h"
 #include "other/SymbolTable.h"
 #include "symbols/Type/ClassType.h"
 #include "other/Utils.h"
@@ -40,23 +40,41 @@ std::string ConstractorDeclStmt::translateToCpp() const
     std::ostringstream oss;
     oss << Utils::wstrToStr(constractor.getClassName()) << "::" << constractor.translateToCpp();
 
-    if (parentCtorCall != nullptr)
+    const ConstractorCallStmt* bodyParentCall = nullptr;
+    if (parentCtorCall == nullptr && !body->getStmts().empty())
     {
-        std::string str = parentCtorCall->translateToCpp();
+        if (auto ctorCall = dynamic_cast<ConstractorCallStmt*>(body->getStmts()[0].get()))
+        {
+            if (currClass->getParent() != nullptr && ctorCall->getClassNode() == currClass->getParent())
+            {
+                bodyParentCall = ctorCall;
+            }
+        }
+    }
+
+    if (parentCtorCall != nullptr || bodyParentCall != nullptr)
+    {
+        std::string str = parentCtorCall ? parentCtorCall->translateToCpp() : bodyParentCall->translateToCpp();
+        
+        // Remove tabs and semicolon for initializer list context
+        str = Utils::removeAllFirstTabs(str);
         str.erase(
             std::ranges::remove(str, ';').begin(),
             str.end()
-        ); // removing ;
+        ); 
 
-        oss << " : " << Utils::removeFirstTabs(str);
+        oss << " : " << str;
     }
 
     const std::string tabs = getTabs(-1);
     oss << std::endl << tabs << "{" << std::endl;
 
-    for (const auto& stmt : body->getStmts())
+    bool skipFirst = (bodyParentCall != nullptr);
+    for (size_t i = 0; i < body->getStmts().size(); ++i)
     {
-        std::string temp = stmt->translateToCpp();
+        if (i == 0 && skipFirst) continue;
+        
+        std::string temp = body->getStmts()[i]->translateToCpp();
         oss << getTabs() << Utils::removeFirstTabs(temp) << std::endl;
     }
 

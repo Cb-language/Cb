@@ -2,7 +2,7 @@
 
 #include "VarDeclStmt.h"
 #include "../Transposer/symbols/Class.h"
-#include "expression/ConstractorCallStmt.h"
+#include "ConstractorCallStmt.h"
 
 class ObjCreationStmt : public VarDeclStmt
 {

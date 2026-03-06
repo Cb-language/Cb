@@ -104,5 +104,8 @@ std::string FuncDeclStmt::translateToH() const
 
 std::string FuncDeclStmt::translateToCppClass(const std::wstring& className) const
 {
-    return func.translateToCpp(className) + "\n" + body->translateToCpp() + "\n";
+    if (virtualType != VirtualType::PURE)
+        return func.translateToCpp(className) + "\n" + body->translateToCpp() + "\n";
+
+    return "";
 }

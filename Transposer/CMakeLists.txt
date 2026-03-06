@@ -208,8 +208,8 @@ add_executable(Transposer
         Transposer/AST/statements/expression/DotOpExpr.h
         Transposer/symbols/Type/ClassType.cpp
         Transposer/symbols/Type/ClassType.h
-        Transposer/AST/statements/expression/ConstractorCallStmt.cpp
-        Transposer/AST/statements/expression/ConstractorCallStmt.h
+        Transposer/AST/statements/ConstractorCallStmt.cpp
+        Transposer/AST/statements/ConstractorCallStmt.h
         Transposer/errorHandling/syntaxErrors/IllegalVarName.cpp
         Transposer/errorHandling/syntaxErrors/IllegalVarName.h
         Transposer/errorHandling/classErrors/AccessError.cpp
