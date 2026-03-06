@@ -55,10 +55,12 @@
 #include "../errorHandling/classErrors/MissingClassPipe.h"
 #include "../errorHandling/classErrors/NoCtor.h"
 #include "../errorHandling/classErrors/RedefOfCtor.h"
+#include "../errorHandling/classErrors/InvalidOverrideSignature.h"
+#include "../errorHandling/classErrors/OverrideError.h"
+#include "../errorHandling/classErrors/VirtualNonMethod.h"
 
 // ---------- just how ----------
 #include "../errorHandling/how/HowDidYouGetHere.h"
-#include "errorHandling/classErrors/VirtualNonMethod.h"
 
 #include "files/FileGraph.h"
 #include "symbols/Type/ClassType.h"
@@ -134,7 +136,7 @@ void Parser::analyze()
     while (!callsQ.empty())
     {
         FuncCallExpr* call = callsQ.front();
-        std::unique_ptr<IType> t = symTable.getCallType(call);
+        std::unique_ptr<IType> t = symTable.getCallType(call, call->getCurrClass());
 
         if (t == nullptr)
         {
@@ -220,6 +222,38 @@ const Token& Parser::getLast() const
 const std::vector<std::unique_ptr<Error>>& Parser::getErrors() const
 {
     return errors;
+}
+
+bool Parser::shouldProduceCpp(bool isMain) const
+{
+    if (isMain || hasMain) return true;
+
+    bool hasClasses = false;
+    for (const auto& stmt : stmts)
+    {
+        if (dynamic_cast<IncludeStmt*>(stmt.get())) continue;
+
+        if (auto classStmt = dynamic_cast<ClassDeclStmt*>(stmt.get()))
+        {
+            hasClasses = true;
+            if (classStmt->getCurrClass() && !classStmt->getCurrClass()->isAbstract())
+            {
+                return true; // Found a concrete class
+            }
+        }
+        else if (dynamic_cast<FuncDeclStmt*>(stmt.get()))
+        {
+            return true; // Found a global function implementation
+        }
+        else
+        {
+            // Any other statement in global scope (e.g. VarDeclStmt) needs a .cpp
+            return true;
+        }
+    }
+
+    // If it only has includes or abstract classes, don't produce a .cpp
+    return false;
 }
 
 void Parser::addError(Error* err)
@@ -840,12 +874,33 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
         addError(new MainOverride(current()));
     }
 
-    if (symTable.doesFuncExist(funcName))
+    const ClassNode* owner = isMethod ? symTable.getCurrClass() : nullptr;
+
+    if (isMethod)
     {
-        if ((symTable.getFunc(funcName)->getVirtual() != VirtualType::PURE && symTable.getFunc(funcName)->getVirtual() != VirtualType::VIRTUAL) || vType == VirtualType::OVERRIDE)
+        if (owner->getClass().hasMethod(funcName))
         {
             addError(new IdentifierTaken(current()));
         }
+
+        if (vType == VirtualType::OVERRIDE)
+        {
+            const ClassNode* parent = owner->getParent();
+            const Func* baseMethod = (parent != nullptr) ? parent->findMethod(funcName) : nullptr;
+
+            if (baseMethod == nullptr)
+            {
+                addError(new OverrideError(current()));
+            }
+            else if (baseMethod->getVirtual() != VirtualType::VIRTUAL && baseMethod->getVirtual() != VirtualType::PURE)
+            {
+                addError(new OverrideError(current()));
+            }
+        }
+    }
+    else if (symTable.doesFuncExist(funcName, nullptr))
+    {
+        addError(new IdentifierTaken(current()));
     }
 
     if (!expect(Token::PUNCTUATION, L"(", new MissingParenthesis(current()))) return nullptr;
@@ -878,6 +933,23 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
         }
     }
 
+    if (isMethod && vType == VirtualType::OVERRIDE)
+    {
+        const ClassNode* parent = owner->getParent();
+        if (parent != nullptr)
+        {
+            const Func* baseMethod = parent->findMethod(funcName);
+            if (baseMethod != nullptr)
+            {
+                Func currentFunc(nullptr, funcName, varArgs, vType, owner); 
+                if (!baseMethod->isSameNameAndArgs(currentFunc))
+                {
+                    addError(new InvalidOverrideSignature(current()));
+                }
+            }
+        }
+    }
+
 
     if (!match(Token::PUNCTUATION, L"->"))
     {
@@ -886,7 +958,8 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
             addError(new InvalidMainReturnType(current()));
         }
 
-        auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, std::make_unique<Type>(L"fermata"), varArgs, credited, isMethod, vType);
+        auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), owner, funcName, std::make_unique<Type>(L"fermata"), varArgs, credited, isMethod, vType);
+        funcDeclStmt->getFunc().setOwner(owner);
 
         if (vType != VirtualType::PURE)
         {
@@ -896,6 +969,10 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
             if (!body) return nullptr;
             funcDeclStmt->setBody(std::move(body));
             symTable.changeFunc(currFunc);
+        }
+        else 
+        {
+             symTable.addFunc(funcDeclStmt->getFunc());
         }
         return std::move(funcDeclStmt);
     }
@@ -919,7 +996,8 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
         hasMain = true;
     }
 
-    auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), symTable.getCurrClass(), funcName, rType->copy(), varArgs, credited, isMethod, vType);
+    auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), owner, funcName, rType->copy(), varArgs, credited, isMethod, vType);
+    funcDeclStmt->getFunc().setOwner(owner);
 
 
     if (vType != VirtualType::PURE)
@@ -935,6 +1013,10 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
             addError(new NoReturn(prev()));
         }
         symTable.changeFunc(currFunc);
+    }
+    else 
+    {
+         symTable.addFunc(funcDeclStmt->getFunc());
     }
 
     return std::move(funcDeclStmt);

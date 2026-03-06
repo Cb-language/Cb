@@ -25,6 +25,8 @@ public:
     virtual std::string translateToCpp() const = 0;
     virtual std::string translateToH() const;
 
+    const ClassNode* getCurrClass() const;
+
     void setFuncDecl(IFuncDeclStmt *funcDecl);
 };
 
@@ -35,6 +37,11 @@ inline Stmt::Stmt(const Token& token, Scope* scope, const ClassNode* currClass) 
 
 inline Stmt::Stmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass) : token(token), scope(scope), funcDecl(funcDecl), currClass(currClass)
 {
+}
+
+inline const ClassNode* Stmt::getCurrClass() const
+{
+    return currClass;
 }
 
 inline std::string Stmt::getTabs(const int offset) const

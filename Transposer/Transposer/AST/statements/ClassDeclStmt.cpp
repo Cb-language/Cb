@@ -7,6 +7,7 @@
 #include "other/SymbolTable.h"
 #include "errorHandling/classErrors/InvalidOverrideSignature.h"
 #include "errorHandling/classErrors/OverrideError.h"
+#include "errorHandling/classErrors/UnimplementedPureVirtualMethod.h"
 
 std::string ClassDeclStmt::generateToString() const
 {
@@ -157,28 +158,28 @@ void ClassDeclStmt::analyze() const
 
     if (const ClassNode* parent = this->currClass->getParent())
     {
-        if (parent->isAbstract())
+        for (const auto& baseMethod : parent->getClass().getMethods() | std::views::values)
         {
-            for (const auto& baseMethod : parent->getClass().getMethods() | std::views::values)
+            if (baseMethod.getVirtual() == VirtualType::PURE)
             {
-                if (baseMethod.getVirtual() == VirtualType::PURE)
+                bool implemented = false;
+                for (const auto& method : methods | std::views::values)
                 {
-                    bool implemented = false;
-                    for (const auto& method : methods | std::views::values)
+                    if (method->getFunc().isSameNameAndArgs(baseMethod))
                     {
-                        if (method->getFunc().isSameNameAndArgs(baseMethod))
+                        if (method->getVirtual() != VirtualType::PURE)
                         {
-                            if (method->getVirtual() != VirtualType::PURE)
-                            {
-                                implemented = true;
-                            }
-                            break;
+                            implemented = true;
                         }
+                        break;
                     }
+                }
 
-                    if (!implemented)
+                if (!implemented)
+                {
+                    if (!isAbstract)
                     {
-                        isAbstract = true;
+                        throw UnimplementedPureVirtualMethod(token, Utils::wstrToStr(baseMethod.getFuncName()));
                     }
                 }
             }

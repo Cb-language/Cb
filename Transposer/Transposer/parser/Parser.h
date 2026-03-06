@@ -137,5 +137,7 @@ public:
     bool getHasMain() const;
     const Token& getLast() const;
     const std::vector<std::unique_ptr<Error>>& getErrors() const;
+
+    bool shouldProduceCpp(bool isMain) const;
 };
 

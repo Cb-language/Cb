@@ -71,11 +71,11 @@ bool SymbolTable::doesFuncExist(const Func& f) const
     return false;
 }
 
-bool SymbolTable::doesFuncExist(const std::wstring& name) const
+bool SymbolTable::doesFuncExist(const std::wstring& name, const ClassNode* owner) const
 {
     for (const auto& func : funcs| std::views::keys)
     {
-        if (func.getFuncName() == name)
+        if (func.getFuncName() == name && func.getOwner() == owner)
         {
             return true;
         }
@@ -96,18 +96,28 @@ bool SymbolTable::isLegalCredit(const FuncCredit& credit) const
     return false;
 }
 
-std::unique_ptr<IType> SymbolTable::getCallType(FuncCallExpr* expr) const
+std::unique_ptr<IType> SymbolTable::getCallType(FuncCallExpr* expr, const ClassNode* callClass) const
 {
-    if (currClass != nullptr)
+    const ClassNode* current = callClass;
+    while (current != nullptr)
     {
-        if (const auto funcPtr = currClass->findMethod(expr->getName()))
+        for (const auto& func : funcs | std::views::keys)
         {
-            return funcPtr->getType();
+            if (func.getOwner() == current && expr->isLegalCall(func))
+            {
+                // check access
+                if (current->isLegal(func, callClass))
+                {
+                    return func.getType();
+                }
+            }
         }
+        current = current->getParent();
     }
+
     for (const auto& func : funcs| std::views::keys)
     {
-        if (expr->isLegalCall(func))
+        if (func.getOwner() == nullptr && expr->isLegalCall(func))
         {
             return func.getType()->copy();
         }
@@ -151,15 +161,15 @@ IFuncDeclStmt* SymbolTable::getCurrFunc() const
     return currFunc;
 }
 
-std::unique_ptr<Func> SymbolTable::getFunc(const std::wstring& name) const
+std::unique_ptr<Func> SymbolTable::getFunc(const std::wstring& name, const ClassNode* owner) const
 {
-    if (!doesFuncExist(name))
+    if (!doesFuncExist(name, owner))
     {
         return nullptr;
     }
     for (const auto& func : funcs | std::views::keys)
     {
-        if (func.getFuncName() == name)
+        if (func.getFuncName() == name && func.getOwner() == owner)
         {
             return std::make_unique<Func>(func.copy());
         }

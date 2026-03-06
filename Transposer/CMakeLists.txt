@@ -239,6 +239,9 @@ add_executable(Transposer
         Transposer/errorHandling/classErrors/InvalidOverrideSignature.cpp
         Transposer/errorHandling/classErrors/InstantiateAbstractClass.h
         Transposer/errorHandling/classErrors/InstantiateAbstractClass.cpp
+        Transposer/errorHandling/classErrors/UnimplementedPureVirtualMethod.h
+        Transposer/errorHandling/classErrors/UnimplementedPureVirtualMethod.cpp
+
 )
 
 # In order to call the exe from the cmd

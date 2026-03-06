@@ -2,7 +2,7 @@
 
 #include "other/Utils.h"
 
-Func::Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std::vector<Var>& args, const VirtualType vType) : rType(std::move(rType)), funcName(funcName), virtualType(vType)
+Func::Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std::vector<Var>& args, const VirtualType vType, const ClassNode* owner) : rType(std::move(rType)), funcName(funcName), virtualType(vType), owner(owner)
 {
     for (const auto& arg : args)
     {
@@ -10,7 +10,7 @@ Func::Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std
     }
 }
 
-Func::Func(const Func& other) : Func(other.rType->copy(), other.funcName, other.args, other.virtualType)
+Func::Func(const Func& other) : Func(other.rType->copy(), other.funcName, other.args, other.virtualType, other.owner)
 {
 }
 
@@ -37,6 +37,16 @@ void Func::setVirtual(const VirtualType vType)
 VirtualType Func::getVirtual() const
 {
     return virtualType;
+}
+
+void Func::setOwner(const ClassNode* owner)
+{
+    this->owner = owner;
+}
+
+const ClassNode* Func::getOwner() const
+{
+    return owner;
 }
 
 std::string Func::translateToCpp(const std::wstring& className) const
@@ -91,6 +101,11 @@ bool Func::operator==(const Func& other) const
         return false;
     }
 
+    if (owner != other.owner)
+    {
+        return false;
+    }
+
     return this->isSameNameAndArgs(other);
 }
 
@@ -124,5 +139,28 @@ Func Func::copy() const
 
 bool Func::operator<(const Func& other) const
 {
-    return funcName < other.funcName;
+    if (owner != other.owner)
+    {
+        return owner < other.owner;
+    }
+
+    if (funcName != other.funcName)
+    {
+        return funcName < other.funcName;
+    }
+
+    if (args.size() != other.args.size())
+    {
+        return args.size() < other.args.size();
+    }
+
+    for (size_t i = 0; i < args.size(); ++i)
+    {
+        if (args[i].getType()->getType() != other.args[i].getType()->getType())
+        {
+            return args[i].getType()->getType() < other.args[i].getType()->getType();
+        }
+    }
+
+    return false;
 }

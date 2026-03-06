@@ -27,7 +27,7 @@ public:
     const std::vector<Var>& getArgs() const;
     std::wstring getName() const override;
     std::unique_ptr<IType> getReturnType() const override;
-    const Func& getFunc() const;
+    Func getFunc() const;
     void setVirtual(const VirtualType vType);
     VirtualType getVirtual() const;
 

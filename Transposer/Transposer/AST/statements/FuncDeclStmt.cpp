@@ -30,7 +30,7 @@ std::unique_ptr<IType> FuncDeclStmt::getReturnType() const
     return func.getType();
 }
 
-const Func& FuncDeclStmt::getFunc() const
+Func FuncDeclStmt::getFunc() const
 {
     return func;
 }
