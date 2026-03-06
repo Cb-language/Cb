@@ -6,7 +6,7 @@
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "other/SymbolTable.h"
 #include "errorHandling/classErrors/InvalidOverrideSignature.h"
-#include "errorHandling/classErrors/OverrideError.h"
+#include "errorHandling/classErrors/NoOverrideError.h"
 #include "errorHandling/classErrors/UnimplementedPureVirtualMethod.h"
 
 std::string ClassDeclStmt::generateToString() const
@@ -126,33 +126,55 @@ void ClassDeclStmt::analyze() const
     for (const auto& method : methods | std::views::values)
     {
         method->analyze();
-        if (method->getVirtual() == VirtualType::PURE)
+        switch (method->getVirtual())
+        {
+        case VirtualType::PURE:
         {
             isAbstract = true;
+            break;
         }
-        else if (method->getVirtual() == VirtualType::OVERRIDE)
+
+        case VirtualType::OVERRIDE:
         {
             const ClassNode* parent = this->currClass->getParent();
             if (parent == nullptr || parent->getClass().getClassName() == L"Object")
             {
-                throw OverrideError(token);
+                throw NoOverrideError(token);
             }
 
             const Func* baseMethod = parent->findMethod(method->getName());
             if (baseMethod == nullptr)
             {
-                throw OverrideError(token);
+                throw NoOverrideError(token);
             }
 
             if (baseMethod->getVirtual() != VirtualType::VIRTUAL && baseMethod->getVirtual() != VirtualType::PURE)
             {
-                throw OverrideError(token);
+                throw NoOverrideError(token);
             }
 
             if (!baseMethod->isSameNameAndArgs(method->getFunc()))
             {
                 throw InvalidOverrideSignature(token);
             }
+            break;
+        }
+
+        case VirtualType::NONE:
+        {
+            if (const auto parent = currClass->getParent())
+            {
+                if (const auto baseMethod = parent->findMethod(method->getName()))
+                {
+                    if (baseMethod->getVirtual() != VirtualType::NONE)
+                    {
+                        throw NoOverrideError(token);
+                    }
+                }
+            }
+        }
+
+        default: break;
         }
     }
 

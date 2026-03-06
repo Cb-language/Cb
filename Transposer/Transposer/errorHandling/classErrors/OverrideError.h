@@ -4,5 +4,5 @@
 class OverrideError : public Error
 {
 public:
-    OverrideError(const Token& token);
+    explicit OverrideError(const Token& token);
 };

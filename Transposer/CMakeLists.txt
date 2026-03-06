@@ -235,6 +235,8 @@ add_executable(Transposer
         Transposer/errorHandling/classErrors/VirtualNonMethod.cpp
         Transposer/errorHandling/classErrors/OverrideError.h
         Transposer/errorHandling/classErrors/OverrideError.cpp
+        Transposer/errorHandling/classErrors/NoOverrideError.h
+        Transposer/errorHandling/classErrors/NoOverrideError.cpp
         Transposer/errorHandling/classErrors/InvalidOverrideSignature.h
         Transposer/errorHandling/classErrors/InvalidOverrideSignature.cpp
         Transposer/errorHandling/classErrors/InstantiateAbstractClass.h

@@ -56,7 +56,7 @@
 #include "../errorHandling/classErrors/NoCtor.h"
 #include "../errorHandling/classErrors/RedefOfCtor.h"
 #include "../errorHandling/classErrors/InvalidOverrideSignature.h"
-#include "../errorHandling/classErrors/OverrideError.h"
+#include "../errorHandling/classErrors/NoOverrideError.h"
 #include "../errorHandling/classErrors/VirtualNonMethod.h"
 
 // ---------- just how ----------
@@ -900,11 +900,11 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
 
             if (baseMethod == nullptr)
             {
-                addError(new OverrideError(current()));
+                addError(new NoOverrideError(current()));
             }
             else if (baseMethod->getVirtual() != VirtualType::VIRTUAL && baseMethod->getVirtual() != VirtualType::PURE)
             {
-                addError(new OverrideError(current()));
+                addError(new NoOverrideError(current()));
             }
         }
     }
