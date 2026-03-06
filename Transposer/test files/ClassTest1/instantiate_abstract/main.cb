@@ -4,5 +4,5 @@ song prelude() -> degree
 ∮
     Base b = Base_call()║
     b\a()║
-    B\ 0║
+    B\0║
 ☉

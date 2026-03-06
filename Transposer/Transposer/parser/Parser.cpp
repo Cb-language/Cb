@@ -1960,7 +1960,7 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
 
             while (true)
             {
-                if ((match(Token::IDENTIFIER_CALL)) || ((match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif")) && (!isAtEnd() && peek().type == Token::IDENTIFIER_CALL)))
+                if (match(Token::IDENTIFIER_CALL))
                 {
                     auto ctor = parseCtor();
                     if (!ctor)
@@ -2004,7 +2004,7 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
 
             while (true)
             {
-                if ((match(Token::IDENTIFIER_CALL)) || ((match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif")) && (!isAtEnd() && peek().type == Token::IDENTIFIER_CALL)))
+                if (match(Token::IDENTIFIER_CALL))
                 {
                     auto ctor = parseCtor();
                     if (!ctor)
@@ -2048,7 +2048,7 @@ bool Parser::parseCtors(std::vector<Ctor>& ctors)
 
             while (true)
             {
-                if ((match(Token::IDENTIFIER_CALL)) || ((match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif")) && (!isAtEnd() && peek().type == Token::IDENTIFIER_CALL)))
+                if (match(Token::IDENTIFIER_CALL))
                 {
                     auto ctor = parseCtor();
                     if (!ctor)

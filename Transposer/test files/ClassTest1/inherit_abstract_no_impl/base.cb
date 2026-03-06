@@ -4,6 +4,6 @@ instrument Base
     ∮
         rest song a() |
         rest song b() -> degree |
-        rest Base_call() ║
+        Base_call() ∮☉ ║
     ☉
 ☉

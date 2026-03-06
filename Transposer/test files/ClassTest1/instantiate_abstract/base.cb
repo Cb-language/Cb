@@ -4,6 +4,6 @@ instrument Base
     conductorScore
     ∮
         rest song a() -> degree |
-        rest Base_call()║
+        Base_call() ∮☉ ║
     ☉
 ☉
