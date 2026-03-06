@@ -15,9 +15,10 @@ private:
     std::vector<Var> args;
     VirtualType virtualType;
     const ClassNode* owner;
+    bool isStatic;
 
 public:
-    Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std::vector<Var>& args, const VirtualType vType, const ClassNode* owner = nullptr);
+    Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std::vector<Var>& args, const VirtualType vType, const ClassNode* owner = nullptr, bool isStatic = false);
     Func(const Func& other);
 
     const std::vector<Var>& getArgs() const;
@@ -29,6 +30,9 @@ public:
 
     void setOwner(const ClassNode* owner);
     const ClassNode* getOwner() const;
+
+    bool getStatic() const;
+    void setStatic(bool isStatic);
 
     std::string translateToCpp(const std::wstring& className = L"") const;
 

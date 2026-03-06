@@ -19,7 +19,9 @@ void VarDeclStmt::analyze() const
 
 std::string VarDeclStmt::translateToCpp() const
 {
-    std::string ret = getTabs() + var.getType()->translateTypeToCpp() + " " + Utils::wstrToStr(var.getName());
+    std::string prefix = "";
+    if (var.getStatic()) prefix = "static ";
+    std::string ret = getTabs() + prefix + var.getType()->translateTypeToCpp() + " " + Utils::wstrToStr(var.getName());
 
     if (hasStartingValue && startingValue != nullptr)
     {
