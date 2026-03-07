@@ -27,7 +27,7 @@ void DotOpExpr::analyze() const
         throw IllegalOpOnType(token, leftType->toString());
     }
 
-    const auto rightCasted = static_cast<const Call*>(right.get());
+    const auto rightCasted = dynamic_cast<const Call*>(right.get());
     const auto leftCasted = dynamic_cast<const ClassType*>(leftType.get());
 
     if (rightCasted == nullptr) throw HowDidYouGetHere(token);

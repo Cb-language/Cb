@@ -6,8 +6,10 @@
 #include "other/SymbolTable.h"
 
 StaticDotOpExpr::StaticDotOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-                                 std::unique_ptr<ClassType> left, std::unique_ptr<Call> right) : Expr(token, scope, funcDecl, currClass), left(std::move(left)), right(std::move(right))
+                                 std::unique_ptr<ClassType> left, std::unique_ptr<Call> right,const bool isStmt)
+        : Expr(token, scope, funcDecl, currClass), left(std::move(left)), right(std::move(right))
 {
+    Expr::setIsStmt(isStmt);
 }
 
 std::unique_ptr<IType> StaticDotOpExpr::getType() const

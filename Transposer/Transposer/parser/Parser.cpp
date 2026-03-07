@@ -733,7 +733,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         }
         else if (match(Token::KEYWORD, L"G"))
         {
-            stmt = (parseWhileStmt());
+            stmt = parseWhileStmt();
         }
         else if (match(Token::KEYWORD, L"A"))
         {
@@ -2170,13 +2170,21 @@ std::unique_ptr<Call> Parser::parseFuncCallExpr(const bool isStmt)
     return expr;
 }
 
-std::unique_ptr<Call> Parser::parseCallExpr()
+std::unique_ptr<Call> Parser::parseCallExpr(const ClassNode* staticClassCall)
 {
     const Token& t = current();
     Token varToken;
     if (!expectAndGet(Token::IDENTIFIER, new MissingIdentifier(current()), varToken)) return nullptr;
 
-    const std::optional<Var> var = symTable.getVar(varToken.value);
+    std::optional<Var> var = symTable.getVar(varToken.value);
+
+    if (staticClassCall != nullptr && !var.has_value())
+    {
+        if (const auto v = staticClassCall->findField(varToken.value))
+        {
+            var.emplace(v->copy());
+        }
+    }
 
     if (!var.has_value())
     {
@@ -2369,9 +2377,10 @@ std::unique_ptr<ClassType> Parser::parseClassType()
 
 std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens, const bool isStmt, const bool allowBackslash)
 {
-    if (match(Token::IDENTIFIER) && peek().type == Token::OP_UNARY)
+    if (match(Token::IDENTIFIER))
     {
-        return parseUnaryOpExpr();
+        if (peek().type == Token::OP_UNARY) return parseUnaryOpExpr(isStmt);
+        if (SymbolTable::getClass(current().value) != nullptr && peek().value == L"\\") return parseStaticDotOpExpr(isStmt);
     }
 
     auto left = parsePrimary(isStmt, allowBackslash);
@@ -2512,6 +2521,41 @@ std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<E
             );
         }
     }
+}
+
+std::unique_ptr<StaticDotOpExpr> Parser::parseStaticDotOpExpr(const bool isStmt)
+{
+    const Token& t = current();
+    if (!match(Token::IDENTIFIER))
+    {
+        addError(new HowDidYouGetHere(t));
+        return nullptr;
+    }
+    advance();
+
+    auto type = SymbolTable::getClass(t.value);
+
+    if (type == nullptr)
+    {
+        addError(new UnrecognizedIdentifier(t));
+    }
+
+    if (!expect(Token::PUNCTUATION, L"\\", new UnexpectedToken(current()))) return nullptr;
+
+    std::unique_ptr<Call> right = nullptr;
+
+    if (peek().value == L"(") right = parseFuncCallExpr(isStmt);
+    else right = parseCallExpr(type);
+
+    if (!right) return nullptr;
+
+    return std::make_unique<StaticDotOpExpr>(
+        t,
+        symTable.getCurrScope(),
+        symTable.getCurrFunc(), symTable.getCurrClass(),
+        std::make_unique<ClassType>(type),
+        std::move(right),
+        isStmt);
 }
 
 

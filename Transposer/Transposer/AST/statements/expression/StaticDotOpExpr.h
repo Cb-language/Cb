@@ -10,7 +10,7 @@ private:
     std::unique_ptr<Call> right;
 
 public:
-    StaticDotOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::unique_ptr<ClassType> left, std::unique_ptr<Call> right);
+    StaticDotOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::unique_ptr<ClassType> left, std::unique_ptr<Call> right, const bool isStmt = false);
 
     std::unique_ptr<IType> getType() const override;
     void analyze() const override;

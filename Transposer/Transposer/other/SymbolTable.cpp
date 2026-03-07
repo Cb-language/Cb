@@ -117,7 +117,7 @@ std::unique_ptr<IType> SymbolTable::getCallType(FuncCallExpr* expr, const ClassN
 
     for (const auto& func : funcs| std::views::keys)
     {
-        if (func.getOwner() == nullptr && expr->isLegalCall(func))
+        if (expr->isLegalCall(func))
         {
             return func.getType()->copy();
         }
