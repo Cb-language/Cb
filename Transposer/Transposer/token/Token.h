@@ -20,7 +20,6 @@ enum class TokenType : byte
 
 	// keywords
 	KEYWORD_UNISON,         // static
-	KEYWORD_ROOT,           //
 	KEYWORD_BASS,           // ctor in initialize line
 	KEYWORD_INSTRUMENT,     // class
 	KEYWORD_PLAYERSCORE,    // private
@@ -31,7 +30,6 @@ enum class TokenType : byte
 	KEYWORD_SECTION,        // protected
 	KEYWORD_PAUSE,          // break
 	KEYWORD_RESUME,         // continue
-	KEYWORD_BREAK,          //
 	KEYWORD_PLAY,           // std::cout
 	KEYWORD_PLAYBAR,        // std::cout << std::endl
 	KEYWORD_HEAR,           // std::cin
@@ -51,26 +49,28 @@ enum class TokenType : byte
 	KEYWORD_C_CLEF,         // 𝄡 (dosent compile)
 
 	// punctuation
-	PUNCTUATION_ARROW,              // 𝅘𝅥=
-	PUNCTUATION_PIPE,               // |
-	PUNCTUATION_HASHTAG,            // #
-	PUNCTUATION_COMMA,              // ,
-	PUNCTUATION_COPYRIGHT,          // ©
-	PUNCTUATION_OPEN_SQUARE_BRACE,  // [
-	PUNCTUATION_CLOSE_SQUARE_BRACE, // ]
-	PUNCTUATION_LOOP_OPEN,          // 𝄕
-	PUNCTUATION_LOOP_CLOSE,         // 𝄇
-	PUNCTUATION_DOUBLE_LINE,        // 𝄁
-	PUNCTUATION_COLON,              // :
-	PUNCTUATION_BACKSLASH,          // 𝄍
-	PUNCTUATION_DOUBLE_BACKSLASH,   // 𝄓,
-	PUNCTUATION_OPEN_PARENTHESIS,   // (
-	PUNCTUATION_CLOSE_PARENTHESIS,  // )
-	PUNCTUATION_REST,               // 𝄽 (does nothing)
-	PUNCTUATION_OPEN_LINE,          // 𝄞
-	PUNCTUATION_CLOSE_LINE,         // 𝄀
-	PUNCTUATION_CLOSE_FILE,         // 𝄂
-	PUNCTUATION_NEW_LINE,           // \n
+	PUNCTUATION_ARROW,               // 𝅘𝅥=
+	PUNCTUATION_PIPE,                // |
+	PUNCTUATION_HASHTAG,             // #
+	PUNCTUATION_COMMA,               // ,
+	PUNCTUATION_COPYRIGHT,           // ©
+	PUNCTUATION_OPEN_SQUARE_BRACE,   // [
+	PUNCTUATION_CLOSE_SQUARE_BRACE,  // ]
+	PUNCTUATION_OPEN_CURLY_BRACKET,  // 𝄋
+	PUNCTUATION_CLOSE_CURLY_BRACKET, // 𝄌
+	PUNCTUATION_LOOP_OPEN,           // 𝄕
+	PUNCTUATION_LOOP_CLOSE,          // 𝄇
+	PUNCTUATION_DOUBLE_LINE,         // 𝄁
+	PUNCTUATION_COLON,               // :
+	PUNCTUATION_BACKSLASH,           // 𝄍
+	PUNCTUATION_DOUBLE_BACKSLASH,    // 𝄓
+	PUNCTUATION_OPEN_PARENTHESIS,    // (
+	PUNCTUATION_CLOSE_PARENTHESIS,   // )
+	PUNCTUATION_REST,                // 𝄽 (does nothing)
+	PUNCTUATION_OPEN_LINE,           // 𝄞
+	PUNCTUATION_CLOSE_LINE,          // 𝄀
+	PUNCTUATION_CLOSE_FILE,          // 𝄂
+	PUNCTUATION_NEW_LINE,            // \n
 
 	// unary operations
 	UNARY_OP_SHARP,        // ♯    ++
@@ -81,8 +81,8 @@ enum class TokenType : byte
 	UNARY_OP_NOT,          // !     !
 
 	// binary operation
-	BINARY_OP_EQUIAL,        //==
-	BINARY_OP_NOT_EQUAL,     //!=
+	BINARY_OP_EQUIAL,        // ==
+	BINARY_OP_NOT_EQUAL,     // !=
 	BINARY_OP_LESSER_EQUAL,  // <=
 	BINARY_OP_GREATER_EQUAL, // >=
 	BINARY_OP_LESS_THAN,     // <
@@ -103,18 +103,23 @@ enum class TokenType : byte
 	ASSIGNMENT_OP_MULTIPLY_EQUAL, // *=
 	ASSIGNMENT_OP_MODULUS_EQUAL,  // %=
 
-	COMMENT_SINGLE, // ?
-	COMMENT_MULTI,  // ?* *?
+	// comments
+	COMMENT_SINGLE,       // ?
+	COMMENT_MULTI_START,  // ?*
 
-	UNDEFINED_TOKEN,
+	// identifiers
 	IDENTIFIER,
 	IDENTIFIER_CALL,
+
+	// const values
 	CONST_INT,
 	CONST_FLOAT,
 	CONST_CHAR,
 	CONST_BOOL,
 	CONST_STR,
 
+	// unidentified
+	UNDEFINED_TOKEN
 };
 struct Token
 {
