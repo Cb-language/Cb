@@ -2,5 +2,7 @@ feat "class.cb"║
 
 song prelude() -> degree
 ∮
+    Class c = Class_call()║
+    playBar(Class\getX())║
     B\0║
 ☉

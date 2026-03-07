@@ -2,6 +2,7 @@ instrument Class
 ∮
     conductorScore
     ∮
-        unison degree do_x = 1║
+        unison degree do_x = 1 |
+        unison song getX() -> degree ∮ B\do_x║☉║
     ☉
 ☉
