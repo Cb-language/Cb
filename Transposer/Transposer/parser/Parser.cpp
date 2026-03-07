@@ -606,6 +606,10 @@ std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
             return nullptr;
         }
     }
+    else
+    {
+        call = parseCallExpr();
+    }
 
 
     if (!call) return nullptr;
