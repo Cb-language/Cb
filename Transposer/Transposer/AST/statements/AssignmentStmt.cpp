@@ -50,6 +50,6 @@ std::string AssignmentStmt::translateToCpp() const
     }
 
 
-    return getTabs() + varName + " "
+    return getTabs() + Utils::removeAllFirstTabs(varName) + " "
      + Utils::wstrToStr(assignmentOp) + " " + expr->translateToCpp() + ";";
 }
