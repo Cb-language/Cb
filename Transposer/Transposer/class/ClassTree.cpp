@@ -26,7 +26,7 @@ void ClassTree::addClass(const Class& c, ClassNode* p)
     classes.push_back(std::move(temp));
 }
 
-ClassNode* ClassTree::find(const std::wstring& name)
+ClassNode* ClassTree::find(const std::string& name)
 {
     for (const auto& cl : classes)
     {
@@ -45,8 +45,8 @@ void ClassTree::init()
         {
             PUBLIC,
             Func(
-                std::make_unique<Type>(L"bar"),
-                L"toString",
+                std::make_unique<Type>("bar"),
+                "toString",
                 std::vector<Var>(),
                 VirtualType::NONE)
             }
@@ -56,11 +56,11 @@ void ClassTree::init()
     {
         {
             PUBLIC,
-            Constractor(std::vector<Var>{}, L"Object")
+            Constractor(std::vector<Var>{}, "Object")
         }
     };
 
-    Class obj = Class(L"Object", methods, args, ctors);
+    Class obj = Class("Object", methods, args, ctors);
 
     instance().addClass(obj, nullptr);
 

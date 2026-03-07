@@ -9,7 +9,7 @@
 std::filesystem::path File::mainPath = "C\\:";
 std::filesystem::path File::outDir = "C\\:";
 
-File::File(const std::wstring& inFilename, const std::wstring& outFilename)
+File::File(const std::string& inFilename, const std::string& outFilename)
     : inPath(mainPath / inFilename), outPathH((outDir / outFilename).replace_extension("h")),
     outPathCpp((outDir / outFilename).replace_extension("cpp")), parser(Parser(tokenize()))
 {
@@ -76,7 +76,7 @@ void File::write(const bool isMain)
 
         if(!fileH || !fileH.is_open())
         {
-            throw CouldntOpenFile(Token(TokenType::UNDEFINED_TOKEN, inPath.wstring(),0,0, outPathH), outPathH);
+            throw CouldntOpenFile(Token(TokenType::UNDEFINED_TOKEN, inPath.string(),0,0, outPathH), outPathH);
         }
         fileH << parser.translateToH();
 
@@ -87,7 +87,7 @@ void File::write(const bool isMain)
 
     if(!fileCpp || !fileCpp.is_open())
     {
-        throw CouldntOpenFile(Token(TokenType::UNDEFINED_TOKEN, inPath.wstring(),0,0, outPathCpp), outPathCpp);
+        throw CouldntOpenFile(Token(TokenType::UNDEFINED_TOKEN, inPath.string(),0,0, outPathCpp), outPathCpp);
     }
     fileCpp << parser.translateToCpp(outPathH, isMain);
 
@@ -105,14 +105,14 @@ std::vector<Token> File::tokenize() const
 
     if(!file || !file.is_open())
     {
-        throw CouldntOpenFile(Token(TokenType::COMMENT_SINGLE, inPath.wstring(),0,0, inPath), inPath);
+        throw CouldntOpenFile(Token(TokenType::COMMENT_SINGLE, inPath.string(),0,0, inPath), inPath);
     }
     file.imbue(std::locale(file.getloc(), new std::codecvt_utf8<wchar_t>));
 
     file.clear();
     file.seekg(0);
 
-    const std::wstring data = std::wstring((std::istreambuf_iterator<wchar_t>(file)),
+    const std::string data = std::string((std::istreambuf_iterator<wchar_t>(file)),
                              std::istreambuf_iterator<wchar_t>());
 
     file.close();

@@ -5,7 +5,7 @@ FuncCreditStmt::FuncCreditStmt(const Token& token, Scope* scope, IFuncDeclStmt* 
 {
 }
 
-const std::wstring& FuncCreditStmt::getName() const
+const std::string& FuncCreditStmt::getName() const
 {
     return funcCredit.getName();
 }

@@ -13,7 +13,7 @@ private:
     std::unique_ptr<ConstractorCallStmt> parentCtorCall;
 
 public:
-    ConstractorDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass, const std::wstring& className, const std::vector<Var>& args);
+    ConstractorDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass, const std::string& className, const std::vector<Var>& args);
 
     void setParentCtorCall(std::vector<std::unique_ptr<Expr>> args);
 
@@ -23,7 +23,7 @@ public:
     std::string translateToCpp() const override;
     std::string translateToH() const override;
 
-    std::wstring getName() const override;
+    std::string getName() const override;
     std::unique_ptr<IType> getReturnType() const override;
 
     const Constractor& getConstractor() const;

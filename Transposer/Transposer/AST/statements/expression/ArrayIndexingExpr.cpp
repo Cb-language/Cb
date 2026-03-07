@@ -33,7 +33,7 @@ void ArrayIndexingExpr::analyze() const
     index->analyze();
 }
 
-std::wstring ArrayIndexingExpr::toString() const
+std::string ArrayIndexingExpr::toString() const
 {
     return call->toString();
 }

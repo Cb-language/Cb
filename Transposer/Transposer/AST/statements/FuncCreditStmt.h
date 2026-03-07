@@ -10,7 +10,7 @@ private:
 public:
     FuncCreditStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const FuncCredit& funcCredit);
 
-    const std::wstring& getName() const;
+    const std::string& getName() const;
 
     void analyze() const override;
     std::string translateToCpp() const override;

@@ -7,8 +7,8 @@
 #include "errorHandling/semanticErrors/CallWithoutCopyright.h"
 
 FuncCallExpr::FuncCallExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-    const std::wstring& name,std::vector<std::unique_ptr<Expr>> args, const bool isStmt)
-    : Call(token, scope, funcDecl, currClass), name(name), type(std::make_unique<Type>(L"fermata")), isStmt(isStmt)
+    const std::string& name,std::vector<std::unique_ptr<Expr>> args, const bool isStmt)
+    : Call(token, scope, funcDecl, currClass), name(name), type(std::make_unique<Type>("fermata")), isStmt(isStmt)
 {
     for (auto& arg : args)
     {
@@ -28,7 +28,7 @@ void FuncCallExpr::analyze() const
         throw HowDidYouGetHere(token);
     }
 
-    if (funcDecl->getName() == L"prelude")
+    if (funcDecl->getName() == "prelude")
     {
         return; // main doesnt have to copy right
     }
@@ -45,7 +45,7 @@ void FuncCallExpr::analyze() const
             return;
         }
     }
-   throw CallWithoutCopyright(token, Utils::wstrToStr(name));
+   throw CallWithoutCopyright(token, name);
 }
 
 std::string FuncCallExpr::translateToCpp() const
@@ -58,7 +58,7 @@ std::string FuncCallExpr::translateToCpp() const
         oss << getTabs();
     }
 
-    oss << Utils::wstrToStr(name) << "(";
+    oss << name << "(";
 
     for (const auto& arg : args)
     {
@@ -108,12 +108,12 @@ const Token& FuncCallExpr::getToken() const
     return token;
 }
 
-const std::wstring& FuncCallExpr::getName() const
+const std::string& FuncCallExpr::getName() const
 {
     return name;
 }
 
-std::wstring FuncCallExpr::toString() const
+std::string FuncCallExpr::toString() const
 {
     return name;
 }

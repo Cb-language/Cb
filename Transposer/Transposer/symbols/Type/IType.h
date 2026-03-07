@@ -6,23 +6,23 @@
 class IType
 {
 protected:
-    const std::wstring type;
+    const std::string type;
     
 public:
-    explicit IType(const std::wstring& type) : type(type) {};
+    explicit IType(const std::string& type) : type(type) {};
     explicit IType(IType* other) : type(other->getType()) {};
     virtual ~IType() = default;
     virtual bool operator==(const IType& other) const = 0;
     virtual bool operator!=(const IType& other) const = 0;
-    virtual bool operator==(const std::wstring &other) const = 0;
-    virtual bool operator!=(const std::wstring &other) const = 0;
+    virtual bool operator==(const std::string &other) const = 0;
+    virtual bool operator!=(const std::string &other) const = 0;
 
     virtual bool isNumberable() const = 0;
     virtual bool isStringable() const = 0;
 
     virtual bool isPrimitive() const = 0;
 
-    virtual std::wstring getType() const = 0;
+    virtual std::string getType() const = 0;
 
     virtual std::string translateTypeToCpp() const = 0;
 
@@ -34,6 +34,6 @@ public:
 
     std::string toString() const
     {
-        return Utils::wstrToStr(this->getType());
+        return this->getType();
     }
 };

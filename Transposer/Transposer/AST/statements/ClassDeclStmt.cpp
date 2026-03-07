@@ -12,7 +12,7 @@
 std::string ClassDeclStmt::generateToString() const
 {
     std::ostringstream oss;
-    const std::string className = Utils::wstrToStr(name);
+    const std::string className = name;
 
     // Function signature
     oss << "std::string " << className << "::toString(int indents) const" << std::endl;
@@ -25,7 +25,7 @@ std::string ClassDeclStmt::generateToString() const
     for (auto& field : fields | std::views::values)
     {
         if (field->getVar().getStatic()) continue;
-        const std::string fieldName = Utils::wstrToStr(field->getVar().getName());
+        const std::string fieldName = field->getVar().getName();
         oss << "\tstr += getIndents(indents + 1) + \"" << fieldName << " = ";
         if (field->getVar().isPrimitive())
             oss << "\" + " << fieldName << ".toString() + \"\\n\";" << std::endl;
@@ -36,9 +36,9 @@ std::string ClassDeclStmt::generateToString() const
     // Include parent class toString if applicable
     if (const auto parent = currClass->getParent())
     {
-        if (parent->getClass().getClassName() != L"Object")
+        if (parent->getClass().getClassName() != "Object")
         {
-            oss << "\tstr += getIndents(indents + 1) + " << Utils::wstrToStr(parent->getClass().getClassName())
+            oss << "\tstr += getIndents(indents + 1) + " << parent->getClass().getClassName()
                 << "::toString(indents + 1) + \"\\n\";" << std::endl;
         }
     }
@@ -54,7 +54,7 @@ std::string ClassDeclStmt::generateToString() const
 std::string ClassDeclStmt::generateEquals() const
 {
     std::ostringstream oss;
-    const std::string strName = Utils::wstrToStr(name);
+    const std::string strName = name;
     oss << "Primitive<bool> " << strName << "::equals(const Object& other) const" << std::endl <<
     "{" << std::endl <<
         "\tif (this == &other) return Primitive<bool>(true);" << std::endl <<
@@ -63,27 +63,27 @@ std::string ClassDeclStmt::generateEquals() const
         "\t{" << std::endl <<
             "\t\tif (";
 
-    if (auto parent = currClass->getParent()) oss << Utils::wstrToStr(parent->getClass().getClassName()) << "::equals(other)";
+    if (auto parent = currClass->getParent()) oss << parent->getClass().getClassName() << "::equals(other)";
     else oss << "true"; // shouldn't get here tho
 
     for (const auto& field : fields | std::views::values)
     {
         if (field->getVar().getStatic()) continue;
-        const std::string fieldName = Utils::wstrToStr(field->getVar().getName());
+        const std::string fieldName = field->getVar().getName();
         oss << " && ";
         oss << fieldName << " == otherPtr->" << fieldName;
     }
-    oss << ") return Primitive<bool>(true);" << std::endl <<
-        "\t}" << std::endl <<
-        "\treturn Primitive<bool>(false);" << std::endl <<
-        "}" << std::endl;
+    oss << ") return Primitive<bool>(true);" << std::endl;
+    oss << "\t}" << std::endl;
+    oss << "\treturn Primitive<bool>(false);" << std::endl;
+    oss << "}" << std::endl;
 
     return oss.str();
 }
 
 ClassDeclStmt::ClassDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-                             const std::wstring& name, std::vector<Field>& fields, std::vector<Method>& methods, std::vector<Ctor>& ctors,
-                             const bool isInheriting, const std::wstring& inheritingPublic, const std::wstring& inheritingName)
+                             const std::string& name, std::vector<Field>& fields, std::vector<Method>& methods, std::vector<Ctor>& ctors,
+                             const bool isInheriting, const std::string& inheritingPublic, const std::string& inheritingName)
     : Stmt(token, scope, funcDecl, currClass), name(name), isInheriting(isInheriting), inheritingPublic(inheritingPublic), inheritingName(inheritingName)
 {
     for (auto& [isPublic, func] : fields) this->fields.emplace_back(isPublic, std::move(func));
@@ -139,7 +139,7 @@ void ClassDeclStmt::analyze() const
         case VirtualType::OVERRIDE:
         {
             const ClassNode* parent = this->currClass->getParent();
-            if (parent == nullptr || parent->getClass().getClassName() == L"Object")
+            if (parent == nullptr || parent->getClass().getClassName() == "Object")
             {
                 throw NoOverrideError(token);
             }
@@ -203,7 +203,7 @@ void ClassDeclStmt::analyze() const
                 {
                     if (!isAbstract)
                     {
-                        throw UnimplementedPureVirtualMethod(token, Utils::wstrToStr(baseMethod.getFuncName()));
+                        throw UnimplementedPureVirtualMethod(token, baseMethod.getFuncName());
                     }
                 }
             }
@@ -219,7 +219,7 @@ void ClassDeclStmt::analyze() const
         {
             throw HowDidYouGetHere(token);
         }
-        if (inheritingPublic != L"tutti" && inheritingPublic != L"section" && inheritingPublic != L"sordino")
+        if (inheritingPublic != "tutti" && inheritingPublic != "section" && inheritingPublic != "sordino")
         {
             throw HowDidYouGetHere(token);
         }
@@ -234,7 +234,7 @@ std::string ClassDeclStmt::translateToCpp() const
     {
         if (field->getVar().getStatic())
         {
-            oss << field->getVar().getType()->translateTypeToCpp() << " " << Utils::wstrToStr(name) << "::" << Utils::wstrToStr(field->getVar().getName());
+            oss << field->getVar().getType()->translateTypeToCpp() << " " << name << "::" << field->getVar().getName();
             if (const auto expr = field->getStartingValue())
             {
                 oss << " = " << expr->translateToCpp();
@@ -264,15 +264,15 @@ std::string ClassDeclStmt::translateToH() const
     publics << "public:";
     protecteds << "protected: ";
 
-    oss << "class " << Utils::wstrToStr(name);
+    oss << "class " << name;
     if (isInheriting)
     {
         oss << " : ";
-        if (inheritingPublic == L"tutti")
+        if (inheritingPublic == "tutti")
         {
             oss << "public ";
         }
-        else if (inheritingPublic == L"section")
+        else if (inheritingPublic == "section")
         {
             oss << "protected ";
         }
@@ -281,7 +281,7 @@ std::string ClassDeclStmt::translateToH() const
             oss << "private ";
         }
 
-        oss << Utils::wstrToStr(inheritingName);
+        oss << inheritingName;
     }
     else
     {

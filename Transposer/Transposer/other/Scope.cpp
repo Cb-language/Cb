@@ -28,7 +28,7 @@ Scope::~Scope()
     children.clear();
 }
 
-std::optional<Var> Scope::getVar(const std::wstring& name, const ClassNode* c) const
+std::optional<Var> Scope::getVar(const std::string& name, const ClassNode* c) const
 {
     for (const auto& var : vars | std::views::keys)
     {

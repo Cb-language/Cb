@@ -124,7 +124,7 @@ enum class TokenType : byte
 struct Token
 {
 	TokenType type;
-	std::wstring value;
+	std::string value;
 
 	size_t line;
 	size_t column;
@@ -133,7 +133,7 @@ struct Token
 
 	Token();
 
-	Token(TokenType type, const std::wstring &value, size_t line, size_t column, const std::filesystem::path& path);
+	Token(TokenType type, const std::string &value, size_t line, size_t column, const std::filesystem::path& path);
 
 	bool isConst() const;
 };

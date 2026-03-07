@@ -1,6 +1,6 @@
 #include "FuncCredit.h"
 
-FuncCredit::FuncCredit(const std::wstring& name, const Token& token) : name(name), token(token)
+FuncCredit::FuncCredit(const std::string& name, const Token& token) : name(name), token(token)
 {
 }
 
@@ -13,7 +13,7 @@ const Token& FuncCredit::getToken() const
     return token;
 }
 
-const std::wstring& FuncCredit::getName() const
+const std::string& FuncCredit::getName() const
 {
     return name;
 }

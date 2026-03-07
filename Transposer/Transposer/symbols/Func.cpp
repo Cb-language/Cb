@@ -2,7 +2,7 @@
 
 #include "other/Utils.h"
 
-Func::Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std::vector<Var>& args, const VirtualType vType, const ClassNode* owner, bool isStatic) : rType(std::move(rType)), funcName(funcName), virtualType(vType), owner(owner), isStatic(isStatic)
+Func::Func(std::unique_ptr<IType> rType, const std::string& funcName, const std::vector<Var>& args, const VirtualType vType, const ClassNode* owner, bool isStatic) : rType(std::move(rType)), funcName(funcName), virtualType(vType), owner(owner), isStatic(isStatic)
 {
     for (const auto& arg : args)
     {
@@ -19,7 +19,7 @@ const std::vector<Var>& Func::getArgs() const
     return args;
 }
 
-const std::wstring& Func::getFuncName() const
+const std::string& Func::getFuncName() const
 {
     return funcName;
 }
@@ -49,16 +49,16 @@ const ClassNode* Func::getOwner() const
     return owner;
 }
 
-std::string Func::translateToCpp(const std::wstring& className) const
+std::string Func::translateToCpp(const std::string& className) const
 {
-    std::string funcNameStr = Utils::wstrToStr(funcName);
+    std::string funcNameStr = funcName;
     std::string header;
 
     header += rType->translateTypeToCpp() + " ";
 
     if (!className.empty())
     {
-        header += Utils::wstrToStr(className) + "::";
+        header += className + "::";
     }
 
     header += funcNameStr + "(";
@@ -70,7 +70,7 @@ std::string Func::translateToCpp(const std::wstring& className) const
         {
             header += ", ";
         }
-        header += arg.getType()->translateTypeToCpp() + " " + Utils::wstrToStr(arg.getName());
+        header += arg.getType()->translateTypeToCpp() + " " + arg.getName();
         first = false;
     }
 

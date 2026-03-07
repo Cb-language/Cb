@@ -5,7 +5,7 @@
 #include "../../errorHandling/classErrors/VirtualNonMethod.h"
 
 FuncDeclStmt::FuncDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass,
-    const std::wstring& funcName, std::unique_ptr<IType> returnType, const std::vector<Var>& args,
+    const std::string& funcName, std::unique_ptr<IType> returnType, const std::vector<Var>& args,
     std::vector<std::unique_ptr<FuncCreditStmt>>& credited, bool isMethod, const VirtualType& virtualType, bool isStatic)
         : IFuncDeclStmt(token, scope, currClass), func(Func(std::move(returnType), funcName, args, virtualType, currClass, isStatic)), body(nullptr), hasReturned(false), isMethod(isMethod), virtualType(virtualType)
 {
@@ -20,7 +20,7 @@ const std::vector<Var>& FuncDeclStmt::getArgs() const
     return func.getArgs();
 }
 
-std::wstring FuncDeclStmt::getName() const
+std::string FuncDeclStmt::getName() const
 {
     return func.getFuncName();
 }
@@ -73,7 +73,7 @@ void FuncDeclStmt::analyze() const
         throw VirtualNonMethod(token);
     }
 
-    if (func.getType()->getType() != L"fermata" && !hasReturned && virtualType != VirtualType::PURE)
+    if (func.getType()->getType() != "fermata" && !hasReturned && virtualType != VirtualType::PURE)
     {
         throw NoReturn(token);
     }
@@ -97,7 +97,7 @@ std::string FuncDeclStmt::translateToCpp() const
 
 std::string FuncDeclStmt::translateToH() const
 {
-    if (func.getFuncName() == L"prelude") return "";
+    if (func.getFuncName() == "prelude") return "";
 
     const std::string fStr = func.translateToCpp();
     std::string prefix = "";
@@ -112,7 +112,7 @@ std::string FuncDeclStmt::translateToH() const
     }
 }
 
-std::string FuncDeclStmt::translateToCppClass(const std::wstring& className) const
+std::string FuncDeclStmt::translateToCppClass(const std::string& className) const
 {
     if (virtualType != VirtualType::PURE)
         return func.translateToCpp(className) + "\n" + body->translateToCpp() + "\n";
