@@ -8,9 +8,9 @@
 #include "other/SymbolTable.h"
 #include "symbols/Type/ClassType.h"
 
+
 DotOpExpr::DotOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-                     const std::wstring& op, std::unique_ptr<Call> left, std::unique_ptr<Call> right, const bool hasParens)
-        : BinaryOpExpr(token, scope, funcDecl, currClass, op, std::move(left), std::move(right), hasParens)
+    std::unique_ptr<Call> left, std::unique_ptr<Call> right, const bool hasParens) : Call(token, scope, funcDecl, currClass, hasParens), left(std::move(left)), right(std::move(right))
 {
 }
 
@@ -41,4 +41,9 @@ void DotOpExpr::analyze() const
 std::string DotOpExpr::translateToCpp() const
 {
     return getTabs() + left->translateToCpp() + "->" + right->translateToCpp();
+}
+
+std::wstring DotOpExpr::toString() const
+{
+    return left->toString() + L"\\" + right->toString();
 }

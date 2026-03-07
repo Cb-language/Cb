@@ -1,9 +1,8 @@
 #pragma once
 #include "AST/abstract/Call.h"
-#include "AST/abstract/Expression.h"
 #include "symbols/Type/ClassType.h"
 
-class StaticDotOpExpr : public Expr
+class StaticDotOpExpr : public Call
 {
 private:
     std::unique_ptr<ClassType> left;
@@ -15,4 +14,5 @@ public:
     std::unique_ptr<IType> getType() const override;
     void analyze() const override;
     std::string translateToCpp() const override;
+    std::wstring toString() const override;
 };

@@ -594,11 +594,16 @@ std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
     {
         auto left = parseCallExpr();
         const auto leftTypeWstr = left->getType()->getType();
-        auto expr = parseBinaryOpRight(BinaryOpExpr::getPrecedence(L"\\"), std::move(left), false, true, SymbolTable::getClass(leftTypeWstr));
+        auto expr = parseBinaryOpRight(0, std::move(left), false, true, SymbolTable::getClass(leftTypeWstr));
 
         if (const auto callTemp = dynamic_cast<Call*>(expr.release()))
         {
             call = std::unique_ptr<Call>(callTemp);
+        }
+        else
+        {
+            addError(new HowDidYouGetHere(t));
+            return nullptr;
         }
     }
 
@@ -2538,7 +2543,6 @@ std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<E
                 symTable.getCurrScope(),
                 symTable.getCurrFunc(),
                 symTable.getCurrClass(),
-                op,
                 std::move(callLeft),
                 std::move(callRight)
             );

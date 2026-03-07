@@ -8,7 +8,7 @@
 
 StaticDotOpExpr::StaticDotOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
                                  std::unique_ptr<ClassType> left, std::unique_ptr<Call> right,const bool isStmt)
-        : Expr(token, scope, funcDecl, currClass), left(std::move(left)), right(std::move(right))
+        : Call(token, scope, funcDecl, currClass), left(std::move(left)), right(std::move(right))
 {
     Expr::setIsStmt(isStmt);
 }
@@ -29,4 +29,9 @@ void StaticDotOpExpr::analyze() const
 std::string StaticDotOpExpr::translateToCpp() const
 {
     return getTabs() + left->toString() + "::" + right->translateToCpp();
+}
+
+std::wstring StaticDotOpExpr::toString() const
+{
+    return left->getType() + L"\\" + right->toString();
 }
