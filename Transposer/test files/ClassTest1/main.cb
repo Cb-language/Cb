@@ -2,10 +2,10 @@ feat "class.cb"║
 
 song prelude() -> degree
 ∮
-    Test t1 = Test_call(3)║
-    Test t2║
+    Test t1 = Test_call()║
 
-    playBar(t1\g(5))║
-    playBar(t1\fa_n)║
+    playBar(t1\do_x)║
+    t1\do_x = 2║
+    playBar(t1\do_x)║
     B\0║
 ☉
