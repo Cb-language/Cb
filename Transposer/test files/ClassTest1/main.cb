@@ -1,48 +1,11 @@
-?feat "class.cb"║
-?feat "class2.cb"║
-
-instrument T
-∮
-    conductorScore
-    ∮
-        motif song a()
-        ∮
-            playBar("Derived a")║
-        ☉ |
-        motif song b() -> degree
-        ∮
-            B\ 1║
-        ☉ |
-        Derived_call()
-        ∮
-        ☉ ║
-     ☉
-☉
-
-instrument T2
-∮
-    conductorScore
-    ∮
-        motif song a()
-        ∮
-            playBar("Derived a")║
-        ☉ |
-        motif song b() -> degree
-        ∮
-            B\ 1║
-        ☉ |
-        Derived_call()
-        ∮
-        ☉ ║
-     ☉
-☉
-
+feat "class.cb"║
 
 song prelude() -> degree
 ∮
-    T n = T_call()║
-    play(n\do_a)║
-    n\do_a = 6║
-    play(n\do_a)║
+    Test t1 = Test_call(3)║
+    Test t2║
+
+    playBar(t1\g(5))║
+    playBar(t1\fa_n)║
     B\0║
 ☉

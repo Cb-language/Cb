@@ -12,41 +12,20 @@ instrument Test
     conductorScore
     ∮
         mute mi_m = cres |
-        unison mute mi_x = cres |
+        song ©(f) g(degree z) -> degree
+        ∮
+            f()║
+            B\z*z║
+        ☉ |
+        freq fa_n |
         Test_call(degree x)
         ∮
             do_x = x║
-            playBar("entered ctor")║
+            fa_n = x*x + .01║
         ☉ |
-        song ©(f) g()
+        Test_call()
         ∮
-            f()║
-        ☉║
-    ☉
-☉
-
-instrument Test2 | tutti Test
-∮
-    playerScore
-    ∮
-        degree do_y║
-    ☉
-    conductorScore
-    ∮
-        Test2_call() \ bass(1)
-        ∮
-            do_y = 2║
-            mi_m = demen║
-        ☉ |
-
-        Test2_call(degree x) \ bass(x)
-        ∮
-            do_y = x║
-        ☉ |
-
-        Test2_call(degree y, mute m)
-        ∮
-            do_y = y║
+            do_x=1║
         ☉║
     ☉
 ☉

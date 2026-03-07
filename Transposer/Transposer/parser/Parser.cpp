@@ -1721,8 +1721,8 @@ bool Parser::parseFields(std::vector<Field>& fields)
                 if (match(Token::TYPE) || SymbolTable::getClass(current().value) || (match(Token::KEYWORD, L"unison") && peek().type == Token::TYPE))
                 {
                     auto field = parseVarDecStmt(true);
-                     if (!field)
-                     {
+                    if (!field)
+                    {
                         synchronize();
                         continue;
                     }
@@ -1879,8 +1879,10 @@ bool Parser::parseMethods(std::vector<Method>& methods)
             while (true)
             {
                 if (match(Token::KEYWORD, L"song") ||
-                    (match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif") && (!isAtEnd() && peek().value == L"song")) ||
-                    (!isAtEnd() && (match(Token::KEYWORD, L"unison") && (peek().value == L"variation" || peek().value == L"rest" || peek().value == L"motif"))))
+                    (match(Token::KEYWORD, L"variation") ||
+                    match(Token::KEYWORD, L"rest") ||
+                    match(Token::KEYWORD, L"motif") ||
+                    match(Token::KEYWORD, L"unison")) && (!isAtEnd() && peek().value == L"song"))
                 {
                     auto method = parseFuncDeclStmt(true);
                     if (!method)
@@ -1925,8 +1927,10 @@ bool Parser::parseMethods(std::vector<Method>& methods)
             while (true)
             {
                 if (match(Token::KEYWORD, L"song") ||
-                    (match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif") && (!isAtEnd() && peek().value == L"song")) ||
-                    (!isAtEnd() && (match(Token::KEYWORD, L"unison") && (peek().value == L"variation" || peek().value == L"rest" || peek().value == L"motif"))))
+                    (match(Token::KEYWORD, L"variation") ||
+                    match(Token::KEYWORD, L"rest") ||
+                    match(Token::KEYWORD, L"motif") ||
+                    match(Token::KEYWORD, L"unison")) && (!isAtEnd() && peek().value == L"song"))
                 {
                     auto method = parseFuncDeclStmt(true);
                     if (!method)
