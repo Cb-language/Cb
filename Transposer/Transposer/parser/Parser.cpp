@@ -432,24 +432,44 @@ bool Parser::isAssignmentStmtAhead()
 
     advance(); // consume IDENTIFIER
 
-    // Skip any number of indexing / slicing brackets
-    while (match(Token::PUNCTUATION, L"["))
+    while (true)
     {
-        advance(); // consume '['
-
-        int depth = 1;
-        while (depth > 0)
+        // Handle member access: \identifier
+        if (match(Token::PUNCTUATION, L"\\"))
         {
-            if (match(Token::PUNCTUATION, L"["))
+            advance(); // consume '\'
+
+            if (!match(Token::IDENTIFIER))
             {
-                depth++;
-            }
-            else if (match(Token::PUNCTUATION, L"]"))
-            {
-                depth--;
+                pos = startPos;
+                return false;
             }
 
-            advance();
+            advance(); // consume IDENTIFIER
+        }
+        // Handle indexing: [...]
+        else if (match(Token::PUNCTUATION, L"["))
+        {
+            advance(); // consume '['
+
+            int depth = 1;
+            while (depth > 0)
+            {
+                if (match(Token::PUNCTUATION, L"["))
+                {
+                    depth++;
+                }
+                else if (match(Token::PUNCTUATION, L"]"))
+                {
+                    depth--;
+                }
+
+                advance();
+            }
+        }
+        else
+        {
+            break;
         }
     }
 
@@ -568,7 +588,21 @@ std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt(const bool isField)
 std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
 {
     const Token& t = current();
-    std::unique_ptr<Call> call = parseCallExpr();
+    std::unique_ptr<Call> call = nullptr;
+
+    if (peek().value == L"\\")
+    {
+        auto left = parseCallExpr();
+        const auto leftTypeWstr = left->getType()->getType();
+        auto expr = parseBinaryOpRight(BinaryOpExpr::getPrecedence(L"\\"), std::move(left), false, true, SymbolTable::getClass(leftTypeWstr));
+
+        if (const auto callTemp = dynamic_cast<Call*>(expr.release()))
+        {
+            call = std::unique_ptr<Call>(callTemp);
+        }
+    }
+
+
     if (!call) return nullptr;
 
     Token opToken;
@@ -2171,7 +2205,7 @@ std::unique_ptr<Call> Parser::parseFuncCallExpr(const bool isStmt)
     return expr;
 }
 
-std::unique_ptr<Call> Parser::parseCallExpr(const ClassNode* staticClassCall)
+std::unique_ptr<Call> Parser::parseCallExpr(const ClassNode* classCall)
 {
     const Token& t = current();
     Token varToken;
@@ -2179,9 +2213,9 @@ std::unique_ptr<Call> Parser::parseCallExpr(const ClassNode* staticClassCall)
 
     std::optional<Var> var = symTable.getVar(varToken.value);
 
-    if (staticClassCall != nullptr && !var.has_value())
+    if (classCall != nullptr && !var.has_value())
     {
-        if (const auto v = staticClassCall->findField(varToken.value, staticClassCall, true))
+        if (const auto v = classCall->findField(varToken.value, classCall, true))
         {
             var.emplace(v->copy());
         }
@@ -2387,7 +2421,7 @@ std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens, const bool isStmt,
     auto left = parsePrimary(isStmt, allowBackslash);
     if (!left) return nullptr;
 
-    auto expr = parseBinaryOpRight(0, std::move(left), isStmt, allowBackslash);
+    auto expr = parseBinaryOpRight(0, std::move(left), isStmt, allowBackslash, SymbolTable::getClass(left->getType()->getType()));
     if (!expr) return nullptr;
 
     if (hasParens)
@@ -2398,7 +2432,7 @@ std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens, const bool isStmt,
     return expr;
 }
 
-std::unique_ptr<Expr> Parser::parsePrimary(const bool isStmt, const bool allowBackslash)
+std::unique_ptr<Expr> Parser::parsePrimary(const bool isStmt, const bool allowBackslash, const ClassNode* classCall)
 {
     const Token& t = current();
 
@@ -2435,7 +2469,7 @@ std::unique_ptr<Expr> Parser::parsePrimary(const bool isStmt, const bool allowBa
         {
             return parseFuncCallExpr(isStmt);
         }
-        return parseCallExpr();
+        return parseCallExpr(classCall);
     }
 
 
@@ -2452,7 +2486,7 @@ std::unique_ptr<Expr> Parser::parsePrimary(const bool isStmt, const bool allowBa
     return nullptr;
 }
 
-std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<Expr> left, const bool isStmt, const bool allowBackslash)
+std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<Expr> left, const bool isStmt, const bool allowBackslash, const ClassNode* classCall)
 {
     while (true)
     {
@@ -2468,7 +2502,7 @@ std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<E
 
         advance();
 
-        auto right = parsePrimary(isStmt, allowBackslash);
+        auto right = parsePrimary(isStmt, allowBackslash, classCall);
         if (!right) return nullptr;
 
         if (match(Token::OP_BINARY) || (allowBackslash && match(Token::PUNCTUATION, L"\\")))
