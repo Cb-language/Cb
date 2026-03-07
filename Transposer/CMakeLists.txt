@@ -253,9 +253,10 @@ add_executable(Transposer
         Transposer/errorHandling/classErrors/IllegalDotOpError.h
         Transposer/token/TrieTree/TrieNode.cpp
         Transposer/token/TrieTree/TrieNode.h
-        Transposer/token/TrieTree/KeywordInfo.cpp
         Transposer/token/TrieTree/KeywordInfo.h
         Transposer/token/TrieTree/WordBoundary.h
+        Transposer/token/TrieTree/Keywords.cpp
+        Transposer/token/TrieTree/Keywords.h
 
 )
 

@@ -1,8 +1,8 @@
 ﻿#include "Tokenizer.h"
 
-boost::wregex Tokenizer::token_regex;
+boost::wregex Tokenizer::tokenRegex;
 
-const std::vector<std::wstring> Tokenizer::capture_blocks = {
+const std::vector<std::wstring> Tokenizer::captureBlocks = {
     LR"((?<CommentMulti>\?\*(.|\n)*?\*\?))",
     LR"((?<CommentSingle>\?\s?[^\n]*))",
     LR"((?<ConstBool>\b(cres|demen)\b))",
@@ -41,6 +41,11 @@ std::vector<Token> Tokenizer::clean(std::vector<Token>& tokens)
     return cleaned;
 }
 
+void Tokenizer::initTrieTree()
+{
+
+}
+
 void Tokenizer::init()
 {
     if (inited)
@@ -51,7 +56,7 @@ void Tokenizer::init()
     std::wstring regex = LR"()";
 
     bool first = true;
-    for (auto& block : capture_blocks)
+    for (auto& block : captureBlocks)
     {
         if (!first)
         {
@@ -61,7 +66,7 @@ void Tokenizer::init()
         first = false;
     }
 
-    token_regex = boost::wregex(regex, boost::regex::perl | boost::regex::optimize);
+    tokenRegex = boost::wregex(regex, boost::regex::perl | boost::regex::optimize);
 
     inited = true;
 }
@@ -72,7 +77,7 @@ std::vector<Token> Tokenizer::tokenize(const std::wstring& code, const std::file
     size_t current_line = 1;
     size_t current_col = 1;
 
-    boost::wsregex_iterator it(code.begin(), code.end(), token_regex);
+    boost::wsregex_iterator it(code.begin(), code.end(), tokenRegex);
     boost::wsregex_iterator end;
 
     for (; it != end; ++it)
