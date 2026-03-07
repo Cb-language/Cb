@@ -20,10 +20,10 @@ std::string PlayStmt::translateToCpp() const
     {
         if (var->getType()->getType() == L"mute")
         {
-            ret += " << (" + (var->translateToCpp()) + R"( ? "cres" : "demen"))";
+            ret += " << (" + Utils::removeAllFirstTabs(var->translateToCpp()) + R"( ? "cres" : "demen"))";
             continue;
         }
-        ret += " << " + (var->translateToCpp());
+        ret += " << " + Utils::removeAllFirstTabs(var->translateToCpp());
     }
     if (printLine)
     {

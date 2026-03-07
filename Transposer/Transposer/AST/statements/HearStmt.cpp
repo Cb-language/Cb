@@ -38,7 +38,7 @@ std::string HearStmt::translateToCpp() const
 
     for (const auto& call : calls)
     {
-        oss << " >> " << call->translateToCpp();
+        oss << " >> " << Utils::removeAllFirstTabs(call->translateToCpp());
     }
 
     oss << ";";
