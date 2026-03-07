@@ -7,14 +7,14 @@
 class TrieNode
 {
 private:
-    std::pmr::unordered_map<char, TrieNode*> children;
-    const std::optional<KeywordInfo> keyword;
+    std::pmr::unordered_map<char, std::unique_ptr<TrieNode>> children;
+    std::optional<std::reference_wrapper<const KeywordInfo>> keyword;
 public:
     TrieNode();
 
     std::optional<KeywordInfo> getKeyword() const;
-    void setKeyword(std::optional<KeywordInfo> keyword);
-    void getOrCreateCild(const char& str);
+    void setKeyword(const KeywordInfo& keyword);
+    TrieNode& getOrCreateCild(char c);
 
-    const std::optional<std::reference_wrapper<KeywordInfo>> getChild(const std::string& str) const;
+    std::optional<std::reference_wrapper<TrieNode>> getChild(const char c) const;
 };
