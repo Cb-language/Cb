@@ -74,7 +74,7 @@ Scope* Scope::getParent() const
 
 void Scope::addVar(std::unique_ptr<IType> type, const Token& token)
 {
-    if (token.type != Token::IDENTIFIER)
+    if (token.type != TokenType::IDENTIFIER)
     {
         throw UnexpectedToken(token);
     }

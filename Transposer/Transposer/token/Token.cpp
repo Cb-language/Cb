@@ -11,5 +11,5 @@ Token::Token(const TokenType type, const std::wstring &value, const size_t line,
 
 bool Token::isConst() const
 {
-	return type == Token::CONST_STR || type == Token::CONST_CHAR || type == CONST_BOOL || type == Token::CONST_INT || type == Token::CONST_FLOAT;
+	return type == TokenType::CONST_STR || type == TokenType::CONST_CHAR || type == TokenType::CONST_BOOL || type == TokenType::CONST_INT || type == TokenType::CONST_FLOAT;
 }

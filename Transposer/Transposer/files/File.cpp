@@ -76,7 +76,7 @@ void File::write(const bool isMain)
 
         if(!fileH || !fileH.is_open())
         {
-            throw CouldntOpenFile(Token(Token::UNDEFINED_TOKEN, inPath.wstring(),0,0, outPathH), outPathH);
+            throw CouldntOpenFile(Token(TokenType::UNDEFINED_TOKEN, inPath.wstring(),0,0, outPathH), outPathH);
         }
         fileH << parser.translateToH();
 
@@ -87,7 +87,7 @@ void File::write(const bool isMain)
 
     if(!fileCpp || !fileCpp.is_open())
     {
-        throw CouldntOpenFile(Token(Token::UNDEFINED_TOKEN, inPath.wstring(),0,0, outPathCpp), outPathCpp);
+        throw CouldntOpenFile(Token(TokenType::UNDEFINED_TOKEN, inPath.wstring(),0,0, outPathCpp), outPathCpp);
     }
     fileCpp << parser.translateToCpp(outPathH, isMain);
 
@@ -105,7 +105,7 @@ std::vector<Token> File::tokenize() const
 
     if(!file || !file.is_open())
     {
-        throw CouldntOpenFile(Token(Token::COMMENT_SINGLE, inPath.wstring(),0,0, inPath), inPath);
+        throw CouldntOpenFile(Token(TokenType::COMMENT_SINGLE, inPath.wstring(),0,0, inPath), inPath);
     }
     file.imbue(std::locale(file.getloc(), new std::codecvt_utf8<wchar_t>));
 
