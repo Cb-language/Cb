@@ -492,23 +492,44 @@ bool Parser::isUnaryOpStmtAhead()
 
     advance(); // consume IDENTIFIER
 
-    // Skip indexing / slicing
-    while (match(Token::PUNCTUATION, L"["))
+    while (true)
     {
-        advance();
-
-        int depth = 1;
-        while (depth > 0)
+        // Handle member access: \identifier
+        if (match(Token::PUNCTUATION, L"\\"))
         {
-            if (match(Token::PUNCTUATION, L"["))
+            advance(); // consume '\'
+
+            if (!match(Token::IDENTIFIER))
             {
-                depth++;
+                pos = startPos;
+                return false;
             }
-            else if (match(Token::PUNCTUATION, L"]"))
+
+            advance(); // consume IDENTIFIER
+        }
+        // Handle indexing: [...]
+        else if (match(Token::PUNCTUATION, L"["))
+        {
+            advance(); // consume '['
+
+            int depth = 1;
+            while (depth > 0)
             {
-                depth--;
+                if (match(Token::PUNCTUATION, L"["))
+                {
+                    depth++;
+                }
+                else if (match(Token::PUNCTUATION, L"]"))
+                {
+                    depth--;
+                }
+
+                advance();
             }
-            advance();
+        }
+        else
+        {
+            break;
         }
     }
 
@@ -2637,7 +2658,29 @@ std::unique_ptr<ConstValueExpr> Parser::parseConstValueExpr()
 std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOpExpr(const bool isStmt)
 {
     const Token& t = current();
-    std::unique_ptr<Call> call = parseCallExpr();
+    std::unique_ptr<Call> call = nullptr;
+
+    if (peek().value == L"\\")
+    {
+        auto left = parseCallExpr();
+        const auto leftTypeWstr = left->getType()->getType();
+        auto expr = parseBinaryOpRight(0, std::move(left), false, true, SymbolTable::getClass(leftTypeWstr));
+
+        if (const auto callTemp = dynamic_cast<Call*>(expr.release()))
+        {
+            call = std::unique_ptr<Call>(callTemp);
+        }
+        else
+        {
+            addError(new HowDidYouGetHere(t));
+            return nullptr;
+        }
+    }
+    else
+    {
+        call = parseCallExpr();
+    }
+
     if (!call) return nullptr;
     UnaryOp op;
 
