@@ -10,13 +10,12 @@ class Tokenizer
 private:
 	static boost::wregex tokenRegex;
 	static const std::vector<std::wstring> captureBlocks;
-	static bool inited;
-
-	static std::vector<Token> clean(std::vector<Token>& tokens);
-
 	std::unique_ptr<TrieNode> trieTree;
-	void initTrieTree();
+
+
+	void initTrieTree() const;
+	std::vector<Token> tokenizeByTrieTree(const std::wstring& code, const std::filesystem::path& path);
 public:
-	static void init();
-	static std::vector<Token> tokenize(const std::wstring& code, const std::filesystem::path& path);
+	Tokenizer();
+	std::vector<Token> tokenize(const std::wstring& code, const std::filesystem::path& path);
 };

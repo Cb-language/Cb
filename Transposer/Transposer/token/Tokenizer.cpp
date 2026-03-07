@@ -1,57 +1,46 @@
 ﻿#include "Tokenizer.h"
 
+#include "TrieTree/Keywords.h"
+
 boost::wregex Tokenizer::tokenRegex;
 
 const std::vector<std::wstring> Tokenizer::captureBlocks = {
-    LR"((?<CommentMulti>\?\*(.|\n)*?\*\?))",
-    LR"((?<CommentSingle>\?\s?[^\n]*))",
-    LR"((?<ConstBool>\b(cres|demen)\b))",
-    LR"((?<ConstFloat>\d*\.\d+))",
-    LR"((?<ConstInt>\d+))",
-    LR"((?<ConstChar>'(\\.|[^\\'\n])'))",
-    LR"((?<ConstStr>"(\\.|[\s\S])*?"))",
-    LR"((?<Type>\b((flat|sharp)[\s\r\n]*(degree|freq|note))\b)|(?<Type>\b(degree|freq|note)\b)|(?<Type>\b(mute|bar|riff|fermata)\b))",
-    LR"((?<Keyword>(unison|root|bass|instrument|playerScore|conductorScore|sectionScore|tutti|sordino|section|pause|resume|break|playBar|play|hear|F(?:maj|min)|[A-EG]|song|feat|motif|rest|variation)(?![A-Za-z])))",
-    LR"((?<Punctuation>->))",
-    LR"((?<UnaryOp>♯|♭|♮))",
-    LR"((?<AssignmentOp>\+=|-=|//=|/=|\*=|%=))",
-    LR"((?<BinaryOp>==|!=|>=|<=|<|>|\+|-|//|/|\*|%|\b(divis|chord)\b))",
-    LR"((?<AssignmentOp>=))",
-    LR"((?<UnaryOp>!))",
-    LR"((?<Punctuation>(\||#|,|∮|☉|©|\[|\]|║\:|\:║|║|\:|\\|\(|\)|\|)))",
     LR"((?<IdentifierCall>[a-zA-Z_][a-zA-Z_0-9]*_call))",
-    LR"((?<Identifier>[a-zA-Z_][a-zA-Z_0-9]*))",
-    LR"((?<Newline>\n))"
+    LR"((?<Identifier>[a-zA-Z_][a-zA-Z_0-9]*))"
 };
 
-bool Tokenizer::inited = false;
-
-std::vector<Token> Tokenizer::clean(std::vector<Token>& tokens)
+void Tokenizer::initTrieTree() const
 {
-    std::vector<Token> cleaned;
-
-    for (auto& token : tokens)
+    for (const auto& keyword : KEYWORDS)
     {
-        if (token.type != TokenType::COMMENT_SINGLE && token.type != TokenType::COMMENT_MULTI)
+        auto current = trieTree.get();
+
+        for (const auto& c : keyword.keyword)
         {
-            cleaned.push_back(token);
+            current = &current->getOrCreateCild(c);
         }
+        current->setKeyword(keyword);
     }
-
-    return cleaned;
 }
 
-void Tokenizer::initTrieTree()
+std::vector<Token> Tokenizer::tokenizeByTrieTree(const std::wstring& code, const std::filesystem::path& path)
 {
+    std::vector<Token> tokens;
+    size_t current_line = 1;
+    size_t current_col = 1;
+    int i = 0;
 
-}
-
-void Tokenizer::init()
-{
-    if (inited)
+    while (i < code.size())
     {
-        return;
+        current_col++;
+
+        if (code[i] == " ")
     }
+}
+
+Tokenizer::Tokenizer()
+{
+    initTrieTree();
 
     std::wstring regex = LR"()";
 
@@ -67,8 +56,6 @@ void Tokenizer::init()
     }
 
     tokenRegex = boost::wregex(regex, boost::regex::perl | boost::regex::optimize);
-
-    inited = true;
 }
 
 std::vector<Token> Tokenizer::tokenize(const std::wstring& code, const std::filesystem::path& path)
