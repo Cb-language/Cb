@@ -1,51 +1,11 @@
 instrument Test
 ∮
-    playerScore
+    conductorScore
     ∮
         degree do_x |
-        song f()
+        Test_call()
         ∮
-            playBar("Hello World!")║
-        ☉ |
-        bar re_b = "sdadasd"║
-    ☉
-    conductorScore
-    ∮
-        mute mi_m = cres |
-        Test_call(degree x)
-        ∮
-            do_x = x║
-            playBar("entered ctor")║
-        ☉ |
-        song ©(f) g()
-        ∮
-            f()║
-        ☉║
-    ☉
-☉
-
-instrument Test2 | tutti Test
-∮
-    playerScore
-    ∮
-        degree do_y║
-    ☉
-    conductorScore
-    ∮
-        Test2_call() \ bass(1)
-        ∮
-            do_y = 2║
-            mi_m = demen║
-        ☉ |
-
-        Test2_call(degree x) \ bass(x)
-        ∮
-            do_y = x║
-        ☉ |
-
-        Test2_call(degree y, mute m)
-        ∮
-            do_y = y║
+            do_x=1║
         ☉║
     ☉
 ☉

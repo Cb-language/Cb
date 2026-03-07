@@ -24,6 +24,7 @@ std::string ClassDeclStmt::generateToString() const
     // Loop over fields
     for (auto& field : fields | std::views::values)
     {
+        if (field->getVar().getStatic()) continue;
         const std::string fieldName = Utils::wstrToStr(field->getVar().getName());
         oss << "\tstr += getIndents(indents + 1) + \"" << fieldName << " = ";
         if (field->getVar().isPrimitive())
@@ -67,6 +68,7 @@ std::string ClassDeclStmt::generateEquals() const
 
     for (const auto& field : fields | std::views::values)
     {
+        if (field->getVar().getStatic()) continue;
         const std::string fieldName = Utils::wstrToStr(field->getVar().getName());
         oss << " && ";
         oss << fieldName << " == otherPtr->" << fieldName;
@@ -227,6 +229,19 @@ void ClassDeclStmt::analyze() const
 std::string ClassDeclStmt::translateToCpp() const
 {
     std::ostringstream oss;
+
+    for (const auto& field : fields | std::views::values)
+    {
+        if (field->getVar().getStatic())
+        {
+            oss << field->getVar().getType()->translateTypeToCpp() << " " << Utils::wstrToStr(name) << "::" << Utils::wstrToStr(field->getVar().getName());
+            if (const auto expr = field->getStartingValue())
+            {
+                oss << " = " << expr->translateToCpp();
+            }
+            oss << ";" << std::endl;
+        }
+    }
 
     for (const auto& ctor : ctors | std::views::values) oss << Utils::removeAllFirstTabs(ctor->translateToCpp()) << std::endl;
 

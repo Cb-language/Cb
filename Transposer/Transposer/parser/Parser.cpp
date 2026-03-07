@@ -26,6 +26,7 @@
 #include "../errorHandling/syntaxErrors/IncludeNotInTop.h"
 #include "../errorHandling/syntaxErrors/ExpectedAPath.h"
 #include "../errorHandling/syntaxErrors/IllegalVarName.h"
+#include "../errorHandling/syntaxErrors/ExpectedKeywordNotFound.h"
 
 // ---------- semantic errors ----------
 #include "../errorHandling/semanticErrors/IdentifierTaken.h"
@@ -37,6 +38,7 @@
 #include "../errorHandling/semanticErrors/IllegalCredit.h"
 #include "../errorHandling/semanticErrors/IllegalCall.h"
 #include "../errorHandling/semanticErrors/InvalidPathExtension.h"
+#include "../errorHandling/semanticErrors/StaticFuncCantVirtual.h"
 
 // ---------- entry point errors ----------
 #include "../errorHandling/entryPointErrors/InvalidMainReturnType.h"
@@ -150,7 +152,8 @@ void Parser::analyze()
 
     for (const auto& stmt : stmts)
     {
-        stmt->analyze();
+        try {stmt->analyze();}
+        catch (Error& e) {addError(e.copy());}
     }
 }
 
@@ -228,14 +231,12 @@ bool Parser::shouldProduceCpp(bool isMain) const
 {
     if (isMain || hasMain) return true;
 
-    bool hasClasses = false;
     for (const auto& stmt : stmts)
     {
         if (dynamic_cast<IncludeStmt*>(stmt.get())) continue;
 
         if (auto classStmt = dynamic_cast<ClassDeclStmt*>(stmt.get()))
         {
-            hasClasses = true;
             if (classStmt->getCurrClass() && !classStmt->getCurrClass()->isAbstract())
             {
                 return true; // Found a concrete class
@@ -431,24 +432,44 @@ bool Parser::isAssignmentStmtAhead()
 
     advance(); // consume IDENTIFIER
 
-    // Skip any number of indexing / slicing brackets
-    while (match(Token::PUNCTUATION, L"["))
+    while (true)
     {
-        advance(); // consume '['
-
-        int depth = 1;
-        while (depth > 0)
+        // Handle member access: \identifier
+        if (match(Token::PUNCTUATION, L"\\"))
         {
-            if (match(Token::PUNCTUATION, L"["))
+            advance(); // consume '\'
+
+            if (!match(Token::IDENTIFIER))
             {
-                depth++;
-            }
-            else if (match(Token::PUNCTUATION, L"]"))
-            {
-                depth--;
+                pos = startPos;
+                return false;
             }
 
-            advance();
+            advance(); // consume IDENTIFIER
+        }
+        // Handle indexing: [...]
+        else if (match(Token::PUNCTUATION, L"["))
+        {
+            advance(); // consume '['
+
+            int depth = 1;
+            while (depth > 0)
+            {
+                if (match(Token::PUNCTUATION, L"["))
+                {
+                    depth++;
+                }
+                else if (match(Token::PUNCTUATION, L"]"))
+                {
+                    depth--;
+                }
+
+                advance();
+            }
+        }
+        else
+        {
+            break;
         }
     }
 
@@ -471,23 +492,44 @@ bool Parser::isUnaryOpStmtAhead()
 
     advance(); // consume IDENTIFIER
 
-    // Skip indexing / slicing
-    while (match(Token::PUNCTUATION, L"["))
+    while (true)
     {
-        advance();
-
-        int depth = 1;
-        while (depth > 0)
+        // Handle member access: \identifier
+        if (match(Token::PUNCTUATION, L"\\"))
         {
-            if (match(Token::PUNCTUATION, L"["))
+            advance(); // consume '\'
+
+            if (!match(Token::IDENTIFIER))
             {
-                depth++;
+                pos = startPos;
+                return false;
             }
-            else if (match(Token::PUNCTUATION, L"]"))
+
+            advance(); // consume IDENTIFIER
+        }
+        // Handle indexing: [...]
+        else if (match(Token::PUNCTUATION, L"["))
+        {
+            advance(); // consume '['
+
+            int depth = 1;
+            while (depth > 0)
             {
-                depth--;
+                if (match(Token::PUNCTUATION, L"["))
+                {
+                    depth++;
+                }
+                else if (match(Token::PUNCTUATION, L"]"))
+                {
+                    depth--;
+                }
+
+                advance();
             }
-            advance();
+        }
+        else
+        {
+            break;
         }
     }
 
@@ -499,9 +541,18 @@ bool Parser::isUnaryOpStmtAhead()
 
 std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt(const bool isField)
 {
+    bool isStatic = false;
+    if (match(Token::KEYWORD, L"unison"))
+    {
+        isStatic = true;
+        advance();
+    }
+
     if (match(Token::TYPE, L"riff"))
     {
-        return parseArrayDeclStmt();
+        auto res = parseArrayDeclStmt();
+        if (res && isStatic) const_cast<Var&>(res->getVar()).setStatic(true);
+        return res;
     }
 
     const Token& t = current();
@@ -512,7 +563,7 @@ std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt(const bool isField)
     if (!expectAndGet(Token::IDENTIFIER, new MissingIdentifier(current()), identifierToken)) return nullptr;
     const std::wstring varName = identifierToken.value;
 
-    const Var var(varType->copy(), varName);
+    const Var var(varType->copy(), varName, isStatic);
     
     const bool startsMusical = Utils::startsWithNote(varName);
 
@@ -558,7 +609,8 @@ std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt(const bool isField)
 std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
 {
     const Token& t = current();
-    std::unique_ptr<Call> call = parseCallExpr();
+    std::unique_ptr<Call> call = parseVarCallExpr(false);
+
     if (!call) return nullptr;
 
     Token opToken;
@@ -668,7 +720,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             stmt = parseVarDecStmt();
         }
-        else if (match(Token::IDENTIFIER) && SymbolTable::isClass(current().value))
+        else if (match(Token::IDENTIFIER) && peek().type == Token::IDENTIFIER && SymbolTable::isClass(current().value))
         {
             stmt = parseObjCreationStmt();
             if (!stmt)
@@ -724,7 +776,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         }
         else if (match(Token::KEYWORD, L"G"))
         {
-            stmt = (parseWhileStmt());
+            stmt = parseWhileStmt();
         }
         else if (match(Token::KEYWORD, L"A"))
         {
@@ -831,10 +883,21 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
     IFuncDeclStmt* currFunc = symTable.getCurrFunc();
     const Token& t = current();
     VirtualType vType = VirtualType::NONE;
+    bool isStatic = false;
+
+    if (match(Token::KEYWORD, L"unison"))
+    {
+        isStatic = true;
+        advance();
+    }
 
     if ((match(Token::KEYWORD, L"motif") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"variation")) && !isMethod)
     {
         addError(new VirtualNonMethod(current()));
+    }
+    if ((match(Token::KEYWORD, L"motif") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"variation")) && isStatic)
+    {
+        addError(new StaticFuncCantVirtual(current()));
     }
 
     if (match(Token::KEYWORD, L"motif"))
@@ -854,7 +917,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
         advance();
     }
 
-    if (!expect(Token::KEYWORD, L"song", new HowDidYouGetHere(current()))) return nullptr;
+    if (!expect(Token::KEYWORD, L"song", new ExpectedKeywordNotFound(current(), "song"))) return nullptr;
 
     if (match(Token::PUNCTUATION, L"©"))
     {
@@ -968,7 +1031,7 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
             addError(new InvalidMainReturnType(current()));
         }
 
-        auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), owner, funcName, std::make_unique<Type>(L"fermata"), varArgs, credited, isMethod, vType);
+        auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), owner, funcName, std::make_unique<Type>(L"fermata"), varArgs, credited, isMethod, vType, isStatic);
         funcDeclStmt->getFunc().setOwner(owner);
 
         if (vType != VirtualType::PURE)
@@ -1006,9 +1069,8 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
         hasMain = true;
     }
 
-    auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), owner, funcName, rType->copy(), varArgs, credited, isMethod, vType);
+    auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), owner, funcName, rType->copy(), varArgs, credited, isMethod, vType, isStatic);
     funcDeclStmt->getFunc().setOwner(owner);
-
 
     if (vType != VirtualType::PURE)
     {
@@ -1045,7 +1107,7 @@ std::unique_ptr<ReturnStmt> Parser::parseReturnStmt()
         if (!expect(Token::PUNCTUATION, L"\\", new ExpectedAnExpression(current()))) return nullptr;
         expr = parseExpr();
         if (!expr) return nullptr;
-        if (*(currFunc->getReturnType()) != *(expr->getType()))
+        if (*(currFunc->getReturnType()) != *(expr->getType()) && expr->getType()->getType() != L"fermata")
         {
             addError(new WrongReturnType(current()));
         }
@@ -1055,7 +1117,8 @@ std::unique_ptr<ReturnStmt> Parser::parseReturnStmt()
 
     currFunc->setHasReturned(true);
 
-    return std::make_unique<ReturnStmt>(t, symTable.getCurrScope(), currFunc, symTable.getCurrClass(), expr);
+    return std::make_unique<ReturnStmt>(t, symTable.getCurrScope(), currFunc,
+        symTable.getCurrClass(), expr, std::move(currFunc->getReturnType()->copy()));
 }
 
 std::unique_ptr<FuncCreditStmt> Parser::parseFuncCreditStmt()
@@ -1652,7 +1715,7 @@ bool Parser::parseFields(std::vector<Field>& fields)
 
             while (true)
             {
-                if (match(Token::TYPE) || SymbolTable::getClass(current().value))
+                if (match(Token::TYPE) || SymbolTable::getClass(current().value) || (match(Token::KEYWORD, L"unison") && peek().type == Token::TYPE))
                 {
                     auto field = parseVarDecStmt(true);
                     if (!field)
@@ -1698,11 +1761,11 @@ bool Parser::parseFields(std::vector<Field>& fields)
 
             while (true)
             {
-                if (match(Token::TYPE) || SymbolTable::getClass(current().value))
+                if (match(Token::TYPE) || SymbolTable::getClass(current().value) || (match(Token::KEYWORD, L"unison") && peek().type == Token::TYPE))
                 {
                     auto field = parseVarDecStmt(true);
-                     if (!field)
-                     {
+                    if (!field)
+                    {
                         synchronize();
                         continue;
                     }
@@ -1744,7 +1807,7 @@ bool Parser::parseFields(std::vector<Field>& fields)
 
             while (true)
             {
-                if (match(Token::TYPE) || SymbolTable::getClass(current().value))
+                if (match(Token::TYPE) || SymbolTable::getClass(current().value) || (match(Token::KEYWORD, L"unison") && peek().type == Token::TYPE))
                 {
                     auto field = parseVarDecStmt(true);
                     if (!field)
@@ -1809,7 +1872,12 @@ bool Parser::parseMethods(std::vector<Method>& methods)
 
             while (true)
             {
-                if (match(Token::KEYWORD, L"song") || ((match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif")) && !isAtEnd() && peek().value == L"song"))
+                if (match(Token::KEYWORD, L"song") ||
+                    (match(Token::KEYWORD, L"variation") ||
+                    match(Token::KEYWORD, L"rest") ||
+                    match(Token::KEYWORD, L"motif") ||
+                    match(Token::KEYWORD, L"unison")) && (!isAtEnd() && peek().value == L"song"))
+
                 {
                     auto method = parseFuncDeclStmt(true);
                     if (!method)
@@ -1853,7 +1921,11 @@ bool Parser::parseMethods(std::vector<Method>& methods)
 
             while (true)
             {
-                if ((match(Token::KEYWORD, L"song")) || ((match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif")) && !isAtEnd() && peek().value == L"song"))
+                if (match(Token::KEYWORD, L"song") ||
+                    (match(Token::KEYWORD, L"variation") ||
+                    match(Token::KEYWORD, L"rest") ||
+                    match(Token::KEYWORD, L"motif") ||
+                    match(Token::KEYWORD, L"unison")) && (!isAtEnd() && peek().value == L"song"))
                 {
                     auto method = parseFuncDeclStmt(true);
                     if (!method)
@@ -1897,7 +1969,11 @@ bool Parser::parseMethods(std::vector<Method>& methods)
 
             while (true)
             {
-                if (match(Token::KEYWORD, L"song") || ((match(Token::KEYWORD, L"variation") || match(Token::KEYWORD, L"rest") || match(Token::KEYWORD, L"motif")) && !isAtEnd() && peek().value == L"song"))
+                if (match(Token::KEYWORD, L"song") ||
+                    (match(Token::KEYWORD, L"variation") ||
+                    match(Token::KEYWORD, L"rest") ||
+                    match(Token::KEYWORD, L"motif") ||
+                    match(Token::KEYWORD, L"unison")) && (!isAtEnd() && peek().value == L"song"))
                 {
                     auto method = parseFuncDeclStmt(true);
                     if (!method)
@@ -2137,13 +2213,21 @@ std::unique_ptr<Call> Parser::parseFuncCallExpr(const bool isStmt)
     return expr;
 }
 
-std::unique_ptr<Call> Parser::parseCallExpr()
+std::unique_ptr<Call> Parser::parseCallExpr(const ClassNode* classCall)
 {
     const Token& t = current();
     Token varToken;
     if (!expectAndGet(Token::IDENTIFIER, new MissingIdentifier(current()), varToken)) return nullptr;
 
-    const std::optional<Var> var = symTable.getVar(varToken.value);
+    std::optional<Var> var = symTable.getVar(varToken.value);
+
+    if (classCall != nullptr && !var.has_value())
+    {
+        if (const auto v = classCall->findField(varToken.value, classCall, true))
+        {
+            var.emplace(v->copy());
+        }
+    }
 
     if (!var.has_value())
     {
@@ -2336,15 +2420,16 @@ std::unique_ptr<ClassType> Parser::parseClassType()
 
 std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens, const bool isStmt, const bool allowBackslash)
 {
-    if (match(Token::IDENTIFIER) && peek().type == Token::OP_UNARY)
+    if (match(Token::IDENTIFIER))
     {
-        return parseUnaryOpExpr();
+        if (peek().type == Token::OP_UNARY) return parseUnaryOpExpr(isStmt);
+        if (SymbolTable::getClass(current().value) != nullptr && peek().value == L"\\") return parseStaticDotOpExpr(isStmt);
     }
 
     auto left = parsePrimary(isStmt, allowBackslash);
     if (!left) return nullptr;
 
-    auto expr = parseBinaryOpRight(0, std::move(left), isStmt, allowBackslash);
+    auto expr = parseBinaryOpRight(0, std::move(left), isStmt, allowBackslash, SymbolTable::getClass(left->getType()->getType()));
     if (!expr) return nullptr;
 
     if (hasParens)
@@ -2355,7 +2440,7 @@ std::unique_ptr<Expr> Parser::parseExpr(const bool hasParens, const bool isStmt,
     return expr;
 }
 
-std::unique_ptr<Expr> Parser::parsePrimary(const bool isStmt, const bool allowBackslash)
+std::unique_ptr<Expr> Parser::parsePrimary(const bool isStmt, const bool allowBackslash, const ClassNode* classCall)
 {
     const Token& t = current();
 
@@ -2392,7 +2477,7 @@ std::unique_ptr<Expr> Parser::parsePrimary(const bool isStmt, const bool allowBa
         {
             return parseFuncCallExpr(isStmt);
         }
-        return parseCallExpr();
+        return parseCallExpr(classCall);
     }
 
 
@@ -2409,7 +2494,7 @@ std::unique_ptr<Expr> Parser::parsePrimary(const bool isStmt, const bool allowBa
     return nullptr;
 }
 
-std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<Expr> left, const bool isStmt, const bool allowBackslash)
+std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<Expr> left, const bool isStmt, const bool allowBackslash, const ClassNode* classCall)
 {
     while (true)
     {
@@ -2425,7 +2510,7 @@ std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<E
 
         advance();
 
-        auto right = parsePrimary(isStmt, allowBackslash);
+        auto right = parsePrimary(isStmt, allowBackslash, classCall);
         if (!right) return nullptr;
 
         if (match(Token::OP_BINARY) || (allowBackslash && match(Token::PUNCTUATION, L"\\")))
@@ -2461,7 +2546,6 @@ std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<E
                 symTable.getCurrScope(),
                 symTable.getCurrFunc(),
                 symTable.getCurrClass(),
-                op,
                 std::move(callLeft),
                 std::move(callRight)
             );
@@ -2479,6 +2563,41 @@ std::unique_ptr<Expr> Parser::parseBinaryOpRight(int exprPrec, std::unique_ptr<E
             );
         }
     }
+}
+
+std::unique_ptr<StaticDotOpExpr> Parser::parseStaticDotOpExpr(const bool isStmt)
+{
+    const Token& t = current();
+    if (!match(Token::IDENTIFIER))
+    {
+        addError(new HowDidYouGetHere(t));
+        return nullptr;
+    }
+    advance();
+
+    auto type = SymbolTable::getClass(t.value);
+
+    if (type == nullptr)
+    {
+        addError(new UnrecognizedIdentifier(t));
+    }
+
+    if (!expect(Token::PUNCTUATION, L"\\", new UnexpectedToken(current()))) return nullptr;
+
+    std::unique_ptr<Call> right = nullptr;
+
+    if (peek().value == L"(") right = parseFuncCallExpr(isStmt);
+    else right = parseCallExpr(type);
+
+    if (!right) return nullptr;
+
+    return std::make_unique<StaticDotOpExpr>(
+        t,
+        symTable.getCurrScope(),
+        symTable.getCurrFunc(), symTable.getCurrClass(),
+        std::make_unique<ClassType>(type),
+        std::move(right),
+        isStmt);
 }
 
 
@@ -2517,7 +2636,8 @@ std::unique_ptr<ConstValueExpr> Parser::parseConstValueExpr()
 std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOpExpr(const bool isStmt)
 {
     const Token& t = current();
-    std::unique_ptr<Call> call = parseCallExpr();
+    std::unique_ptr<Call> call = parseVarCallExpr(false);
+
     if (!call) return nullptr;
     UnaryOp op;
 
@@ -2551,4 +2671,31 @@ std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOpExpr(const bool isStmt)
     if (!expect(Token::PUNCTUATION, L"║", new MissingSemicolon(current()))) return nullptr;
 
     return std::make_unique<UnaryOpExpr>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), std::move(call), op, isStmt);
+}
+
+std::unique_ptr<Call> Parser::parseVarCallExpr(const bool isStmt)
+{
+    const Token& t = current();
+
+    if (auto cls = SymbolTable::getClass(t.value))
+    {
+        return parseStaticDotOpExpr(false);
+    }
+
+    if(peek().value == L"\\")
+    {
+        auto left = parseCallExpr();
+        const auto leftTypeWstr = left->getType()->getType();
+        auto expr = parseBinaryOpRight(0, std::move(left), false, true, SymbolTable::getClass(leftTypeWstr));
+
+        if (const auto callTemp = dynamic_cast<Call*>(expr.release()))
+        {
+            return std::unique_ptr<Call>(callTemp);
+        }
+
+        addError(new HowDidYouGetHere(t));
+        return nullptr;
+    }
+
+    return parseCallExpr();
 }

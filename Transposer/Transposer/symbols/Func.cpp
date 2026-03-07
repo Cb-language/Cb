@@ -2,7 +2,7 @@
 
 #include "other/Utils.h"
 
-Func::Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std::vector<Var>& args, const VirtualType vType, const ClassNode* owner) : rType(std::move(rType)), funcName(funcName), virtualType(vType), owner(owner)
+Func::Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std::vector<Var>& args, const VirtualType vType, const ClassNode* owner, bool isStatic) : rType(std::move(rType)), funcName(funcName), virtualType(vType), owner(owner), isStatic(isStatic)
 {
     for (const auto& arg : args)
     {
@@ -10,7 +10,7 @@ Func::Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std
     }
 }
 
-Func::Func(const Func& other) : Func(other.rType->copy(), other.funcName, other.args, other.virtualType, other.owner)
+Func::Func(const Func& other) : Func(other.rType ? other.rType->copy() : nullptr, other.funcName, other.args, other.virtualType, other.owner, other.isStatic)
 {
 }
 
@@ -115,6 +115,16 @@ bool Func::isSameNameAndArgs(const Func& other) const
     }
 
     return true;
+}
+
+bool Func::getStatic() const
+{
+    return isStatic;
+}
+
+void Func::setStatic(const bool isStatic)
+{
+    this->isStatic = isStatic;
 }
 
 Func Func::copy() const

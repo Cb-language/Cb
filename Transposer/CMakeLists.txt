@@ -243,6 +243,14 @@ add_executable(Transposer
         Transposer/errorHandling/classErrors/InstantiateAbstractClass.cpp
         Transposer/errorHandling/classErrors/UnimplementedPureVirtualMethod.h
         Transposer/errorHandling/classErrors/UnimplementedPureVirtualMethod.cpp
+        Transposer/errorHandling/syntaxErrors/ExpectedKeywordNotFound.cpp
+        Transposer/errorHandling/syntaxErrors/ExpectedKeywordNotFound.h
+        Transposer/errorHandling/semanticErrors/StaticFuncCantVirtual.cpp
+        Transposer/errorHandling/semanticErrors/StaticFuncCantVirtual.h
+        Transposer/AST/statements/expression/StaticDotOpExpr.cpp
+        Transposer/AST/statements/expression/StaticDotOpExpr.h
+        Transposer/errorHandling/classErrors/IllegalDotOpError.cpp
+        Transposer/errorHandling/classErrors/IllegalDotOpError.h
 
 )
 

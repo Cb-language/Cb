@@ -21,4 +21,5 @@ public:
     std::string translateToCpp() const override;
 
     const Var& getVar() const;
+    const Expr* getStartingValue() const;
 };

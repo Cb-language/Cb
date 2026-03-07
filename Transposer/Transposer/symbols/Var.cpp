@@ -2,11 +2,11 @@
 
 #include <algorithm>
 
-Var::Var(std::unique_ptr<IType> type, const std::wstring& name) : type(std::move(type)), name(name)
+Var::Var(std::unique_ptr<IType> type, const std::wstring& name, bool isStatic) : type(std::move(type)), name(name), isStatic(isStatic)
 {
 }
 
-Var::Var(const Var& other) : Var(other.type->copy(), other.name)
+Var::Var(const Var& other) : Var(other.type->copy(), other.name, other.isStatic)
 {
 }
 
@@ -20,9 +20,19 @@ std::wstring Var::getName() const
     return name;
 }
 
+bool Var::getStatic() const
+{
+    return isStatic;
+}
+
+void Var::setStatic(bool isStatic)
+{
+    this->isStatic = isStatic;
+}
+
 bool Var::operator==(const Var& other) const
 {
-    return this->name == other.name && *(this->type) == *(other.type);
+    return this->name == other.name && *(this->type) == *(other.type) && this->isStatic == other.isStatic;
 }
 
 bool Var::operator==(const std::wstring& other) const

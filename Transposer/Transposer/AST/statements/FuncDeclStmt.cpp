@@ -6,8 +6,8 @@
 
 FuncDeclStmt::FuncDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass,
     const std::wstring& funcName, std::unique_ptr<IType> returnType, const std::vector<Var>& args,
-    std::vector<std::unique_ptr<FuncCreditStmt>>& credited, bool isMethod, const VirtualType& virtualType)
-        : IFuncDeclStmt(token, scope, currClass), func(Func(std::move(returnType), funcName, args, virtualType)), body(nullptr), hasReturned(false), isMethod(isMethod), virtualType(virtualType)
+    std::vector<std::unique_ptr<FuncCreditStmt>>& credited, bool isMethod, const VirtualType& virtualType, bool isStatic)
+        : IFuncDeclStmt(token, scope, currClass), func(Func(std::move(returnType), funcName, args, virtualType, currClass, isStatic)), body(nullptr), hasReturned(false), isMethod(isMethod), virtualType(virtualType)
 {
     for (auto& c : credited)
     {
@@ -100,13 +100,15 @@ std::string FuncDeclStmt::translateToH() const
     if (func.getFuncName() == L"prelude") return "";
 
     const std::string fStr = func.translateToCpp();
+    std::string prefix = "";
+    if (func.getStatic()) prefix = "static ";
 
     switch (virtualType)
     {
         case VirtualType::PURE: return "virtual " + fStr + " = 0;";
         case VirtualType::VIRTUAL: return "virtual " + fStr + ";";
         case VirtualType::OVERRIDE: return fStr + " override;";
-        default: return fStr + ";";
+        default: return prefix + fStr + ";";
     }
 }
 
