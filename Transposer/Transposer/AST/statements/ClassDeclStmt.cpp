@@ -24,6 +24,7 @@ std::string ClassDeclStmt::generateToString() const
     // Loop over fields
     for (auto& field : fields | std::views::values)
     {
+        if (field->getVar().getStatic()) continue;
         const std::string fieldName = Utils::wstrToStr(field->getVar().getName());
         oss << "\tstr += getIndents(indents + 1) + \"" << fieldName << " = ";
         if (field->getVar().isPrimitive())
@@ -67,6 +68,7 @@ std::string ClassDeclStmt::generateEquals() const
 
     for (const auto& field : fields | std::views::values)
     {
+        if (field->getVar().getStatic()) continue;
         const std::string fieldName = Utils::wstrToStr(field->getVar().getName());
         oss << " && ";
         oss << fieldName << " == otherPtr->" << fieldName;
