@@ -232,7 +232,12 @@ std::string ClassDeclStmt::translateToCpp() const
     {
         if (field->getVar().getStatic())
         {
-            oss << field->getVar().getType()->translateTypeToCpp() << " " << Utils::wstrToStr(name) << "::" << Utils::wstrToStr(field->getVar().getName()) << ";" << std::endl;
+            oss << field->getVar().getType()->translateTypeToCpp() << " " << Utils::wstrToStr(name) << "::" << Utils::wstrToStr(field->getVar().getName());
+            if (const auto expr = field->getStartingValue())
+            {
+                oss << " = " << expr->translateToCpp();
+            }
+            oss << ";" << std::endl;
         }
     }
 

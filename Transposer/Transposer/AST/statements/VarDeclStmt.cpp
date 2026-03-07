@@ -23,7 +23,7 @@ std::string VarDeclStmt::translateToCpp() const
     if (var.getStatic()) prefix = "static ";
     std::string ret = getTabs() + prefix + var.getType()->translateTypeToCpp() + " " + Utils::wstrToStr(var.getName());
 
-    if (hasStartingValue && startingValue != nullptr)
+    if (hasStartingValue && startingValue != nullptr && !var.getStatic())
     {
         ret += " = ";
         if (var.getType()->getType() != startingValue->getType()->getType()) ret += var.getType()->translateTypeToCpp() + "(" + startingValue->translateToCpp() + ")";
@@ -37,4 +37,9 @@ std::string VarDeclStmt::translateToCpp() const
 const Var& VarDeclStmt::getVar() const
 {
     return var;
+}
+
+const Expr* VarDeclStmt::getStartingValue() const
+{
+    return startingValue.get();
 }
