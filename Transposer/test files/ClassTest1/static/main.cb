@@ -1,8 +1,10 @@
 feat "class.cb"║
+feat "derived.cb"║
 
 song prelude() -> degree
 ∮
     Class c = Class_call()║
-    playBar(c\bla(), ", ", Class\getX(), ", ", Class\do_x)║
+    playBar(c\bla())║
+    playBar(Derived\getX())║
     B\0║
 ☉

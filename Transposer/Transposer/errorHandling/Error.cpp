@@ -2,13 +2,13 @@
 
 #include "other/Utils.h"
 
-Error::Error(const Token &token, const std::string& errorMessage) : token(token), errorMessage(std::move(errorMessage))
+Error::Error(const Token &token, const std::string& errorMessage) : token(token), errorMessage(errorMessage)
 {
     fullMessage = (this->errorMessage +
                    " in file: \"" + token.path.string() + "\"" +
                    " at line: " + std::to_string(token.line) +
                    " at column: " + std::to_string(token.column) +
-                   " near token: " + Utils::wstrToStr(token.value) + "\n");
+                   " near token: \"" + Utils::wstrToStr(token.value) + "\"\n");
 
 }
 
@@ -30,4 +30,9 @@ const Token& Error::getToken() const
 const std::string& Error::getErrorMessage() const
 {
     return errorMessage;
+}
+
+Error* Error::copy() const
+{
+    return new Error(token, errorMessage);
 }

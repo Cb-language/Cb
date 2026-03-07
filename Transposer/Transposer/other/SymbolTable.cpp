@@ -256,15 +256,11 @@ void SymbolTable::clearClasses()
 
 bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token, const ClassNode* currClass)
 {
-    if (currClass == nullptr)
-    {
-        throw HowDidYouGetHere(token);
-    }
     const ClassNode* res = classTree.find(type->getType());
 
     if (res == nullptr) throw HowDidYouGetHere(token);
 
-    const Var* field = res->findField(name);
+    const Var* field = res->findField(name, currClass);
     if (field != nullptr)
     {
         if (res->isLegal(*field, currClass)) return true;
@@ -272,7 +268,7 @@ bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const
         throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
     }
 
-    const Func* method = res->findMethod(name);
+    const Func* method = res->findMethod(name, currClass);
     if (method != nullptr)
     {
         if (res->isLegal(*method, currClass)) return true;
@@ -280,9 +276,12 @@ bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const
         throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
     }
 
-    if (auto parent = currClass->getParent())
+    if (currClass != nullptr)
     {
-        return isLegalFieldOrMethod(std::make_unique<ClassType>(parent), name, token, currClass->getParent());
+        if (auto parent = currClass->getParent())
+        {
+            return isLegalFieldOrMethod(std::make_unique<ClassType>(parent), name, token, currClass->getParent());
+        }
     }
 
     return false;

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "errorHandling/classErrors/IllegalDotOpError.h"
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 #include "other/SymbolTable.h"
 
@@ -19,9 +20,9 @@ std::unique_ptr<IType> StaticDotOpExpr::getType() const
 
 void StaticDotOpExpr::analyze() const
 {
-    if (!SymbolTable::isLegalFieldOrMethod(left->copy(), right->toString(), token, left->getClass()))
+    if (!SymbolTable::isLegalFieldOrMethod(left->copy(), right->toString(), token, currClass))
     {
-        throw IllegalOpOnType(token, left->toString());
+        throw IllegalDotOpError(token, left->toString(), Utils::wstrToStr(right->toString()));
     }
 }
 

@@ -152,7 +152,8 @@ void Parser::analyze()
 
     for (const auto& stmt : stmts)
     {
-        stmt->analyze();
+        try {stmt->analyze();}
+        catch (Error& e) {addError(e.copy());}
     }
 }
 
@@ -1029,7 +1030,6 @@ std::unique_ptr<FuncDeclStmt> Parser::parseFuncDeclStmt(const bool isMethod)
     auto funcDeclStmt = std::make_unique<FuncDeclStmt>(t, symTable.getCurrScope(), owner, funcName, rType->copy(), varArgs, credited, isMethod, vType, isStatic);
     funcDeclStmt->getFunc().setOwner(owner);
 
-
     if (vType != VirtualType::PURE)
     {
         symTable.addFunc(funcDeclStmt->getFunc());
@@ -1065,7 +1065,7 @@ std::unique_ptr<ReturnStmt> Parser::parseReturnStmt()
         if (!expect(Token::PUNCTUATION, L"\\", new ExpectedAnExpression(current()))) return nullptr;
         expr = parseExpr();
         if (!expr) return nullptr;
-        if (*(currFunc->getReturnType()) != *(expr->getType()))
+        if (*(currFunc->getReturnType()) != *(expr->getType()) && expr->getType()->getType() != L"fermata")
         {
             addError(new WrongReturnType(current()));
         }
@@ -1075,7 +1075,8 @@ std::unique_ptr<ReturnStmt> Parser::parseReturnStmt()
 
     currFunc->setHasReturned(true);
 
-    return std::make_unique<ReturnStmt>(t, symTable.getCurrScope(), currFunc, symTable.getCurrClass(), expr);
+    return std::make_unique<ReturnStmt>(t, symTable.getCurrScope(), currFunc,
+        symTable.getCurrClass(), expr, std::move(currFunc->getReturnType()->copy()));
 }
 
 std::unique_ptr<FuncCreditStmt> Parser::parseFuncCreditStmt()
@@ -2180,7 +2181,7 @@ std::unique_ptr<Call> Parser::parseCallExpr(const ClassNode* staticClassCall)
 
     if (staticClassCall != nullptr && !var.has_value())
     {
-        if (const auto v = staticClassCall->findField(varToken.value))
+        if (const auto v = staticClassCall->findField(varToken.value, staticClassCall, true))
         {
             var.emplace(v->copy());
         }

@@ -1,9 +1,12 @@
 instrument Class
 ∮
+    sectionScore
+    ∮
+        unison song getX() -> degree ∮ B\do_x║☉║
+    ☉
     conductorScore
     ∮
-        unison degree do_x = 1 |
-        unison song getX() -> degree ∮ B\do_x║☉|
+        unison degree do_x = 1|
         song bla() -> degree ∮B\2║☉║
     ☉
 ☉

@@ -1,0 +1,9 @@
+feat "class.cb"║
+
+instrument Derived | tutti Class
+∮
+    conductorScore
+    ∮
+        unison song getX() -> degree ∮ B\Class\getX()║☉║
+    ☉
+☉

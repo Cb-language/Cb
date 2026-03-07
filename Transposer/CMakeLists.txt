@@ -249,6 +249,8 @@ add_executable(Transposer
         Transposer/errorHandling/semanticErrors/StaticFuncCantVirtual.h
         Transposer/AST/statements/expression/StaticDotOpExpr.cpp
         Transposer/AST/statements/expression/StaticDotOpExpr.h
+        Transposer/errorHandling/classErrors/IllegalDotOpError.cpp
+        Transposer/errorHandling/classErrors/IllegalDotOpError.h
 
 )
 

@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "errorHandling/classErrors/IllegalDotOpError.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 #include "other/SymbolTable.h"
@@ -28,13 +29,12 @@ void DotOpExpr::analyze() const
     }
 
     const auto rightCasted = dynamic_cast<const Call*>(right.get());
-    const auto leftCasted = dynamic_cast<const ClassType*>(leftType.get());
 
     if (rightCasted == nullptr) throw HowDidYouGetHere(token);
 
-    if (!SymbolTable::isLegalFieldOrMethod(leftType, rightCasted->toString(), token, leftCasted->getClass()))
+    if (!SymbolTable::isLegalFieldOrMethod(leftType, rightCasted->toString(), token, currClass))
     {
-        throw IllegalOpOnType(token, leftType->toString());
+        throw IllegalDotOpError(token, left->translateToCpp(), Utils::wstrToStr(rightCasted->toString()), leftType->toString());
     }
 }
 

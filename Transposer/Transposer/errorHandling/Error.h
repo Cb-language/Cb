@@ -18,4 +18,5 @@ public:
     const char* what() const noexcept override;
     const Token& getToken() const;
     const std::string& getErrorMessage() const;
+    Error* copy() const;
 };
