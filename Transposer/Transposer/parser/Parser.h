@@ -113,6 +113,7 @@ private:
     std::unique_ptr<StaticDotOpExpr> parseStaticDotOpExpr(const bool isStmt = false);
     std::unique_ptr<ConstValueExpr> parseConstValueExpr();
     std::unique_ptr<UnaryOpExpr> parseUnaryOpExpr(const bool isStmt = false);
+    std::unique_ptr<Call> parseVarCallExpr(const bool isStmt = false);
     std::unique_ptr<Call> parseFuncCallExpr(const bool isStmt = false);
     std::unique_ptr<Call> parseCallExpr(const ClassNode* classCall = nullptr);
     std::unique_ptr<Call> parseArrayAccess(std::unique_ptr<Call> call);

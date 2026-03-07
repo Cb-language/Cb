@@ -609,29 +609,7 @@ std::unique_ptr<VarDeclStmt> Parser::parseVarDecStmt(const bool isField)
 std::unique_ptr<AssignmentStmt> Parser::parseAssignmentStmt()
 {
     const Token& t = current();
-    std::unique_ptr<Call> call = nullptr;
-
-    if (peek().value == L"\\")
-    {
-        auto left = parseCallExpr();
-        const auto leftTypeWstr = left->getType()->getType();
-        auto expr = parseBinaryOpRight(0, std::move(left), false, true, SymbolTable::getClass(leftTypeWstr));
-
-        if (const auto callTemp = dynamic_cast<Call*>(expr.release()))
-        {
-            call = std::unique_ptr<Call>(callTemp);
-        }
-        else
-        {
-            addError(new HowDidYouGetHere(t));
-            return nullptr;
-        }
-    }
-    else
-    {
-        call = parseCallExpr();
-    }
-
+    std::unique_ptr<Call> call = parseVarCallExpr(false);
 
     if (!call) return nullptr;
 
@@ -742,7 +720,7 @@ std::unique_ptr<BodyStmt> Parser::parseBodyStmt(const std::vector<std::pair<Var,
         {
             stmt = parseVarDecStmt();
         }
-        else if (match(Token::IDENTIFIER) && SymbolTable::isClass(current().value))
+        else if (match(Token::IDENTIFIER) && peek().type == Token::IDENTIFIER && SymbolTable::isClass(current().value))
         {
             stmt = parseObjCreationStmt();
             if (!stmt)
@@ -2658,28 +2636,7 @@ std::unique_ptr<ConstValueExpr> Parser::parseConstValueExpr()
 std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOpExpr(const bool isStmt)
 {
     const Token& t = current();
-    std::unique_ptr<Call> call = nullptr;
-
-    if (peek().value == L"\\")
-    {
-        auto left = parseCallExpr();
-        const auto leftTypeWstr = left->getType()->getType();
-        auto expr = parseBinaryOpRight(0, std::move(left), false, true, SymbolTable::getClass(leftTypeWstr));
-
-        if (const auto callTemp = dynamic_cast<Call*>(expr.release()))
-        {
-            call = std::unique_ptr<Call>(callTemp);
-        }
-        else
-        {
-            addError(new HowDidYouGetHere(t));
-            return nullptr;
-        }
-    }
-    else
-    {
-        call = parseCallExpr();
-    }
+    std::unique_ptr<Call> call = parseVarCallExpr(false);
 
     if (!call) return nullptr;
     UnaryOp op;
@@ -2714,4 +2671,31 @@ std::unique_ptr<UnaryOpExpr> Parser::parseUnaryOpExpr(const bool isStmt)
     if (!expect(Token::PUNCTUATION, L"║", new MissingSemicolon(current()))) return nullptr;
 
     return std::make_unique<UnaryOpExpr>(t, symTable.getCurrScope(), symTable.getCurrFunc(), symTable.getCurrClass(), std::move(call), op, isStmt);
+}
+
+std::unique_ptr<Call> Parser::parseVarCallExpr(const bool isStmt)
+{
+    const Token& t = current();
+
+    if (auto cls = SymbolTable::getClass(t.value))
+    {
+        return parseStaticDotOpExpr(false);
+    }
+
+    if(peek().value == L"\\")
+    {
+        auto left = parseCallExpr();
+        const auto leftTypeWstr = left->getType()->getType();
+        auto expr = parseBinaryOpRight(0, std::move(left), false, true, SymbolTable::getClass(leftTypeWstr));
+
+        if (const auto callTemp = dynamic_cast<Call*>(expr.release()))
+        {
+            return std::unique_ptr<Call>(callTemp);
+        }
+
+        addError(new HowDidYouGetHere(t));
+        return nullptr;
+    }
+
+    return parseCallExpr();
 }
