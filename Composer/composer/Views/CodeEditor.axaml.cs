@@ -94,6 +94,7 @@ public partial class CodeEditor : UserControl
             case ";": replacement = "𝄀"; break;
             case "~": replacement = "𝄽"; break;
             case "^": replacement = "𝆫"; break;
+            case "\\": replacement = "𝄍"; break;
         }
 
         if (replacement != null)
@@ -225,26 +226,30 @@ public partial class CodeEditor : UserControl
         if (e.KeyModifiers.HasFlag(KeyModifiers.Alt))
         {
             string? replacement = null;
-
-            switch (e.Key)
+            if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
             {
-                case Key.OemTilde: replacement = "𝄡"; break;     // ALT + ~ (or ` key)
-                case Key.D3: replacement = "♯"; break;           // ALT + 3
-                case Key.B: replacement = "♭"; break;            // ALT + B
-                case Key.D0: replacement = "♮"; break;           // ALT + 0
-                case Key.OemMinus: replacement = "𝄫"; break;     // ALT + -
-                case Key.OemSemicolon: replacement = "𝄁"; break; // ALT + : (or ; key)
-                case Key.OemBackslash: replacement = "║"; break; // ALT + \
-                case Key.C: replacement = "©"; break;            // ALT + C
-                case Key.OemQuestion: replacement = "𝄂"; break;  // ALT + / (or ? key)
-                case Key.Divide: replacement = "𝄂"; break;       // ALT + Numpad /
-            
-                case Key.OemPlus: 
-                    replacement = e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? "𝄪" : // ALT + Shift + = (ALT + +)
-                        "𝅘𝅥="; // ALT + =
-                    break;
-                
-                case Key.Add: replacement = "𝄪"; break;          // ALT + Numpad +
+                switch (e.Key)
+                {
+                    case Key.D3: replacement = "𝄪"; break;  // ALT + SHIFT + #
+                    case Key.B: replacement = "𝄫"; break;       // ALT + SHIFT + B
+                }
+            }
+            else
+            {
+                switch (e.Key)
+                {
+                    case Key.OemTilde: replacement = "𝄡"; break; // ALT + ~ (or ` key)
+                    case Key.D0: replacement = "♮"; break; // ALT + 0
+                    case Key.OemSemicolon: replacement = "𝄁"; break; // ALT + : (or ; key)
+                    case Key.OemBackslash: replacement = "║"; break; // ALT + \
+                    case Key.C: replacement = "©"; break; // ALT + C
+                    case Key.OemQuestion: replacement = "𝄂"; break; // ALT + / (or ? key)
+                    case Key.Divide: replacement = "𝄂"; break; // ALT + Numpad /
+                    case Key.OemPlus: replacement = "𝅘𝅥="; break; // ALT + Numpad +
+                    case Key.D3: replacement = "♯"; break; // ALT + 3
+                    case Key.B: replacement = "♭"; break; // ALT + B
+
+                }
             }
 
             if (replacement != null)
