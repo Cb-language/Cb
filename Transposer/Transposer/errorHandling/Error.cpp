@@ -8,7 +8,7 @@ Error::Error(const Token &token, const std::string& errorMessage) : token(token)
                    " in file: \"" + token.path.string() + "\"" +
                    " at line: " + std::to_string(token.line) +
                    " at column: " + std::to_string(token.column) +
-                   " near token: \"" + token.value + "\"\n");
+                   " near token: \"" + token.value.value() + "\"\n");
 
 }
 
