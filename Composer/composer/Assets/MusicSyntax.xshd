@@ -24,11 +24,9 @@
         <Rule color="Method">
             \b(song|prelude)\b
         </Rule>
-
-            (𝄞|𝄀|𝄂|║|𝄋|𝄌|©|𝄽)
-        </Rule>
+        
         <Rule color="MusicalSymbols">
-            (♯|𝄪|♭|𝄫|♮)
+            (𝄞|𝄀|𝄂|║|𝄋|𝄌|©|𝄽|♯|𝄪|♭|𝄫|♮)
         </Rule>
 
         <Rule color="CClef">
