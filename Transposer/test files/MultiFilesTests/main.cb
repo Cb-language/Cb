@@ -1,9 +1,9 @@
-feat "A.cb"║
-feat "B.cb"║
-song prelude() -> degree
-∮
-    playBar("Hello World!")║
-    a()║
-    b()║
-    B\0║
-☉
+song prelude() 𝅘𝅥=degree
+𝄞 play ("hi mom") |
+𝄞 degree x = 2 |
+𝄞 𝄽 |
+𝄞 G 𝄕 x == 2 𝄇 𝄋
+𝄞    x += 1 |
+𝄞 𝄌
+𝄞 𝄽 |
+𝄞 B𝄍x 𝄂

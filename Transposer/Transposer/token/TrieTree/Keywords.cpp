@@ -59,7 +59,6 @@ const std::vector<KeywordInfo> KEYWORDS =
 	{TokenType::PUNCTUATION_DOUBLE_LINE, "𝄁", WordBoundary::NONE},
 	{TokenType::PUNCTUATION_COLON, ":", WordBoundary::NONE},
 	{TokenType::PUNCTUATION_BACKSLASH, "𝄍", WordBoundary::NONE},
-	{TokenType::PUNCTUATION_DOUBLE_BACKSLASH, "𝄓,", WordBoundary::NONE},
 	{TokenType::PUNCTUATION_OPEN_PARENTHESIS, "(", WordBoundary::NONE},
 	{TokenType::PUNCTUATION_CLOSE_PARENTHESIS, ")", WordBoundary::NONE},
 	{TokenType::PUNCTUATION_REST, "𝄽", WordBoundary::NONE},

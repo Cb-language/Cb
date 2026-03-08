@@ -65,7 +65,6 @@ enum class TokenType : byte
 	PUNCTUATION_DOUBLE_LINE,         // 𝄁
 	PUNCTUATION_COLON,               // :
 	PUNCTUATION_BACKSLASH,           // 𝄍
-	PUNCTUATION_DOUBLE_BACKSLASH,    // 𝄓
 	PUNCTUATION_OPEN_PARENTHESIS,    // (
 	PUNCTUATION_CLOSE_PARENTHESIS,   // )
 	PUNCTUATION_REST,                // 𝄽 (does nothing)
