@@ -1,4 +1,5 @@
-﻿<SyntaxDefinition name="MusicLang"
+<?xml version="1.0" encoding="utf-8"?>
+<SyntaxDefinition name="MusicLang"
         xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
 
     <Color name="Types" foreground="#569CD6" />
@@ -11,7 +12,7 @@
     <Color name="Numbers" foreground="#B5CEA8" />
     <Color name="CClef" foreground="#FF0000" />         
             
-    <RuleSet>
+    <RuleSet ignoreCase="true">
         <Span color="Comment" begin="\?\*" end="\*\?" />
         <Span color="Comment" begin="\?" />
 
@@ -21,17 +22,19 @@
         </Span>
 
         <Rule color="Method">
-            \b(?:song|prelude)\b
+            \b(song|prelude)\b
         </Rule>
 
-        <Rule color="MusicalSymbols">
-            [♯𝄪♭𝄫♮𝄞𝄀𝄂║𝄋𝄌©𝄽]
+            (𝄞|𝄀|𝄂|║|𝄋|𝄌|©|𝄽)
         </Rule>
-        
+        <Rule color="MusicalSymbols">
+            (♯|𝄪|♭|𝄫|♮)
+        </Rule>
+
         <Rule color="CClef">
             𝄡
         </Rule>
-
+        
         <Keywords color="Types">
             <Word>flat</Word>
             <Word>sharp</Word>
@@ -42,7 +45,6 @@
             <Word>bar</Word>
             <Word>riff</Word>
             <Word>fermata</Word>
-            
             <Word>cres</Word>
             <Word>demen</Word>
         </Keywords>
@@ -82,7 +84,7 @@
         </Rule>
 
         <Rule color="ControlFlow">
-            [\|\#𝄍𝄓𝄇𝄕𝄁𝅘𝅥=]
+            (\||\#|𝄍|𝄓|𝄇|𝄕|𝄁|𝅘𝅥=)
         </Rule>
 
         <Rule color="Numbers">
