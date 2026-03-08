@@ -10,7 +10,7 @@ ReturnStmt::ReturnStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl
 
 void ReturnStmt::analyze() const
 {
-    if (rExpr == nullptr && rType->getType() != L"fermata")
+    if (rExpr == nullptr && rType->getType() != "fermata")
     {
         throw WrongReturnType(token);
     }

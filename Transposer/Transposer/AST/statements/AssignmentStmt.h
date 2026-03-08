@@ -10,12 +10,12 @@ class AssignmentStmt : public Stmt
 {
 private:
     const std::unique_ptr<Call> call;
-    const std::wstring assignmentOp;
+    const std::string assignmentOp;
     const std::unique_ptr<Expr> expr;
 
 public:
     AssignmentStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-        std::unique_ptr<Call> call, const std::wstring& assignmentOp, std::unique_ptr<Expr> expr);
+        std::unique_ptr<Call> call, const std::string& assignmentOp, std::unique_ptr<Expr> expr);
     void analyze() const override;
     std::string translateToCpp() const override;
 };

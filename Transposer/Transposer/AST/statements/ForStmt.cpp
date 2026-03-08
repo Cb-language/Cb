@@ -4,7 +4,7 @@
 
 ForStmt::ForStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
                  std::unique_ptr<BodyStmt> body, const bool isIncreasing,
-                 std::unique_ptr<Expr> startExpr, std::unique_ptr<Expr> stepExpr, std::unique_ptr<Expr> stopExpr, const std::wstring& varName)
+                 std::unique_ptr<Expr> startExpr, std::unique_ptr<Expr> stepExpr, std::unique_ptr<Expr> stopExpr, const std::string& varName)
     : Stmt(token, scope, funcDecl, currClass), body(std::move(body)), isIncreasing(isIncreasing),
     startExpr(std::move(startExpr)), stepExpr(std::move(stepExpr)), stopExpr(std::move(stopExpr)), varName(varName)
 {
@@ -42,7 +42,7 @@ std::string ForStmt::translateToCpp() const
     const std::string startStr = startExpr->translateToCpp();
     const std::string stepStr = stepExpr != nullptr ? stepExpr->translateToCpp() : "Primitive<int>(1)";
     const std::string stopStr = stopExpr != nullptr ? stopExpr->translateToCpp() : "Primitive<int>(0)";
-    const std::string nameStr = Utils::wstrToStr(varName);
+    const std::string nameStr = varName;
     std::string stepFullStr;
 
     if (stepStr == "1")

@@ -2,7 +2,7 @@
 
 #include <ranges>
 
-Class::Class(const std::wstring& name, const std::vector<std::pair<AccessType, Func>>& methods,
+Class::Class(const std::string& name, const std::vector<std::pair<AccessType, Func>>& methods,
              const std::vector<std::pair<AccessType, Var>>& fields, const std::vector<std::pair<AccessType, Constractor>>& constractors, bool isAbstract) : name(name), _isAbstract(isAbstract)
 {
     for (const auto& [accessType, method] : methods) this->methods.emplace_back(accessType, method.copy());
@@ -14,11 +14,11 @@ Class::Class(const Class& other) : Class(other.name, other.methods, other.fields
 {
 }
 
-Class::Class(const std::wstring& name) : name(name), _isAbstract(false)
+Class::Class(const std::string& name) : name(name), _isAbstract(false)
 {
 }
 
-const std::wstring& Class::getClassName() const
+const std::string& Class::getClassName() const
 {
     return name;
 }
@@ -90,7 +90,7 @@ bool Class::hasConstractor(const Constractor& constractor) const
     return false;
 }
 
-bool Class::hasMethod(const std::wstring& name) const
+bool Class::hasMethod(const std::string& name) const
 {
     for (const auto& m : methods | std::views::values)
     {
@@ -99,7 +99,7 @@ bool Class::hasMethod(const std::wstring& name) const
     return false;
 }
 
-bool Class::hasField(const std::wstring& name) const
+bool Class::hasField(const std::string& name) const
 {
     for (const auto& f : fields | std::views::values)
     {

@@ -40,7 +40,7 @@ void ConstractorCallStmt::analyze() const
         {
             if (classNode->isLegalAccess(accessType, currClass)) return;
 
-            throw AccessError(token, Utils::wstrToStr(classNode->getClass().getClassName()), Utils::wstrToStr(classNode->getClass().getClassName()) + "_call");
+            throw AccessError(token, classNode->getClass().getClassName(), classNode->getClass().getClassName() + "_call");
         }
     }
 
@@ -56,7 +56,7 @@ std::string ConstractorCallStmt::translateToCpp() const
         oss << getTabs();
     }
 
-    oss << Utils::wstrToStr(classNode->getClass().getClassName()) << "(";
+    oss << classNode->getClass().getClassName() << "(";
 
     bool first = true;
     for (const auto& arg : args)

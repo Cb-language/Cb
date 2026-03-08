@@ -15,7 +15,7 @@ public:
     IFuncDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass) : Stmt(token, scope, currClass) {}
     ~IFuncDeclStmt() override = default;
 
-    virtual std::wstring getName() const = 0;
+    virtual std::string getName() const = 0;
     virtual const std::vector<std::unique_ptr<FuncCreditStmt>>& getCredited() const {return emptyCredits;}
     virtual std::unique_ptr<IType> getReturnType() const = 0;
     virtual void setHasReturned(const bool hasReturned) {}

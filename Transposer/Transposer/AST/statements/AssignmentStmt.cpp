@@ -4,14 +4,14 @@
 
 
 AssignmentStmt::AssignmentStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-    std::unique_ptr<Call> call, const std::wstring& assignmentOp, std::unique_ptr<Expr> expr)
+    std::unique_ptr<Call> call, const std::string& assignmentOp, std::unique_ptr<Expr> expr)
         : Stmt(token, scope, funcDecl, currClass), call(std::move(call)), assignmentOp(assignmentOp), expr(std::move(expr))
 {
 }
 
 void AssignmentStmt::analyze() const
 {
-    if (assignmentOp == L"-=" || assignmentOp == L"*=" || assignmentOp == L"/=" || assignmentOp == L"//=" || assignmentOp == L"%=")
+    if (assignmentOp == "-=" || assignmentOp == "*=" || assignmentOp == "/=" || assignmentOp == "//=" || assignmentOp == "%=")
     {
         if (!call->getType()->copy()->isNumberable())
         {
@@ -33,23 +33,23 @@ void AssignmentStmt::analyze() const
 std::string AssignmentStmt::translateToCpp() const
 {
     const std::string varName = call->translateToCpp();
-    if (assignmentOp == L"+=" || assignmentOp == L"=")
+    if (assignmentOp == "+=" || assignmentOp == "=")
     {
-        const bool isVarStr = call->getType()->getType() == L"bar";
-        const bool isExprStr = expr->getType()->getType() == L"bar" || expr->getType()->getType() == L"note";
+        const bool isVarStr = call->getType()->getType() == "bar";
+        const bool isExprStr = expr->getType()->getType() == "bar" || expr->getType()->getType() == "note";
 
         if (isVarStr && !isExprStr)
         {
-            return getTabs() + varName + " " + Utils::wstrToStr(assignmentOp) + " std::to_string(" + expr->translateToCpp() + ");";
+            return getTabs() + varName + " " + assignmentOp + " std::to_string(" + expr->translateToCpp() + ");";
         }
     }
 
-    if (assignmentOp == L"//=")
+    if (assignmentOp == "//=")
     {
         return getTabs() + varName + " = " + "static_cast<double>(" + varName +") / static_cast<double>(" + expr->translateToCpp() + ");";
     }
 
 
     return getTabs() + Utils::removeAllFirstTabs(varName) + " "
-     + Utils::wstrToStr(assignmentOp) + " " + expr->translateToCpp() + ";";
+     + assignmentOp + " " + expr->translateToCpp() + ";";
 }

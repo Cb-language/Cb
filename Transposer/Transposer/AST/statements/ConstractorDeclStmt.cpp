@@ -11,7 +11,7 @@
 #include "symbols/Type/ClassType.h"
 #include "other/Utils.h"
 
-ConstractorDeclStmt::ConstractorDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass, const std::wstring& className,
+ConstractorDeclStmt::ConstractorDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass, const std::string& className,
                                          const std::vector<Var>& args) : IFuncDeclStmt(token, scope, currClass),
     constractor(Constractor(args,  className)), parentCtorCall(nullptr)
 {
@@ -38,7 +38,7 @@ void ConstractorDeclStmt::analyze() const
 std::string ConstractorDeclStmt::translateToCpp() const
 {
     std::ostringstream oss;
-    oss << Utils::wstrToStr(constractor.getClassName()) << "::" << constractor.translateToCpp();
+    oss << constractor.getClassName() << "::" << constractor.translateToCpp();
 
     if (parentCtorCall != nullptr)
     {
@@ -70,7 +70,7 @@ std::string ConstractorDeclStmt::translateToH() const
     return constractor.translateToCpp() + ";";
 }
 
-std::wstring ConstractorDeclStmt::getName() const
+std::string ConstractorDeclStmt::getName() const
 {
     return constractor.getClassName();
 }

@@ -6,7 +6,7 @@
 class Utils
 {
 public:
-    static std::string wstrToStr(const std::wstring& wstr);
+    static std::string wstrToStr(const std::string& wstr);
 
     static void logMsg(const std::string& msg);
 
@@ -15,7 +15,7 @@ public:
 
     static std::string normalizePath(const std::filesystem::path& path);
 
-    static bool startsWithNote(const std::wstring& wstr);
+    static bool startsWithNote(const std::string& wstr);
     static std::string escapeJson(const std::string& str);
 
     static std::string getAllObjIncludes();

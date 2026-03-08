@@ -2,7 +2,7 @@
 
 #include "errorHandling/how/HowDidYouGetHere.h"
 
-ClassType::ClassType(const ClassNode* c) : IType(c != nullptr ? c->getClass().getClassName() : L""), c(c)
+ClassType::ClassType(const ClassNode* c) : IType(c != nullptr ? c->getClass().getClassName() : ""), c(c)
 {
     if (c == nullptr) throw HowDidYouGetHere(Token());
 }
@@ -22,12 +22,12 @@ bool ClassType::operator!=(const IType& other) const
     return getType() != other.getType();
 }
 
-bool ClassType::operator==(const std::wstring& other) const
+bool ClassType::operator==(const std::string& other) const
 {
     return getType() == other;
 }
 
-bool ClassType::operator!=(const std::wstring& other) const
+bool ClassType::operator!=(const std::string& other) const
 {
     return getType() != other;
 }
@@ -47,7 +47,7 @@ bool ClassType::isPrimitive() const
     return false;
 }
 
-std::wstring ClassType::getType() const
+std::string ClassType::getType() const
 {
     return type;
 }
@@ -59,7 +59,7 @@ const ClassNode* ClassType::getClass() const
 
 std::string ClassType::translateTypeToCpp() const
 {
-    return "SafePtr<" + Utils::wstrToStr(type) + ">";
+    return "SafePtr<" + type + ">";
 }
 
 std::unique_ptr<IType> ClassType::copy() const

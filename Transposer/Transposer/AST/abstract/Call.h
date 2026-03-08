@@ -11,7 +11,7 @@ protected:
 public:
     Call(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass) : Expr(token, scope, funcDecl, currClass) {}
 
-    virtual std::wstring toString() const = 0;
+    virtual std::string toString() const = 0;
 
     bool getIsClassItem() const;
     void setIsClassItem(bool value);

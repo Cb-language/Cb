@@ -28,7 +28,7 @@ Scope::~Scope()
     children.clear();
 }
 
-std::optional<Var> Scope::getVar(const std::wstring& name, const ClassNode* c) const
+std::optional<Var> Scope::getVar(const std::string& name, const ClassNode* c) const
 {
     for (const auto& var : vars | std::views::keys)
     {
@@ -74,7 +74,7 @@ Scope* Scope::getParent() const
 
 void Scope::addVar(std::unique_ptr<IType> type, const Token& token)
 {
-    if (token.type != Token::IDENTIFIER)
+    if (token.type != TokenType::IDENTIFIER)
     {
         throw UnexpectedToken(token);
     }

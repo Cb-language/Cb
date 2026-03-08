@@ -27,12 +27,12 @@ public:
     ~SymbolTable();
 
     // std::nullopt when not found
-    std::optional<Var> getVar(const std::wstring& name) const;
+    std::optional<Var> getVar(const std::string& name) const;
     void addVar(std::unique_ptr<IType> type, const Token& token) const;
     void addVar(const Var& var, const Token& token) const;
 
     bool doesFuncExist(const Func& f) const;
-    bool doesFuncExist(const std::wstring& name, const ClassNode* owner = nullptr) const;
+    bool doesFuncExist(const std::string& name, const ClassNode* owner = nullptr) const;
     bool isLegalCredit(const FuncCredit& credit) const;
     std::unique_ptr<IType> getCallType(FuncCallExpr* expr, const ClassNode* callClass = nullptr) const;
     void addFunc(const Func& f, const bool isIncluded = false);
@@ -46,7 +46,7 @@ public:
 
     Scope* getCurrScope() const;
     IFuncDeclStmt* getCurrFunc() const;
-    std::unique_ptr<Func> getFunc(const std::wstring& name, const ClassNode* owner = nullptr) const;
+    std::unique_ptr<Func> getFunc(const std::string& name, const ClassNode* owner = nullptr) const;
 
     std::string getFuncsHeaders() const;
 
@@ -61,7 +61,7 @@ public:
     SymbolTable& operator+=(const SymbolTable& other);
 
     static void clearClasses();
-    static bool isClass(const std::wstring& name);
-    static ClassNode* getClass(const std::wstring& name);
-    static bool isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token, const ClassNode* currClass);
+    static bool isClass(const std::string& name);
+    static ClassNode* getClass(const std::string& name);
+    static bool isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::string& name, const Token& token, const ClassNode* currClass);
 };

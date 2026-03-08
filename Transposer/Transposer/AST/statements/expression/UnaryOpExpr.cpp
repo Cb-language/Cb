@@ -15,7 +15,7 @@ UnaryOpExpr::UnaryOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDe
 
 void UnaryOpExpr::analyze() const
 {
-    if (op == UnaryOp::Not && *(call->getType()) != L"mute")
+    if (op == UnaryOp::Not && *(call->getType()) != "mute")
     {
         throw IllegalTypeCast(token, call->getType()->toString(), "mute");
     }
@@ -32,7 +32,7 @@ std::string UnaryOpExpr::translateToCpp() const
     switch (op)
     {
     case UnaryOp::Zero:
-        if (call->getType()->getType() == L"bar")
+        if (call->getType()->getType() == "bar")
         {
             ret += " = \"\"";
         }

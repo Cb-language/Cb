@@ -16,14 +16,14 @@ void SwitchStmt::analyze() const
 
     if (!var.isNumberable())
     {
-        throw IllegalSwitchVar(token, Utils::wstrToStr(var.getName()));
+        throw IllegalSwitchVar(token, var.getName());
     }
 }
 
 std::string SwitchStmt::translateToCpp() const
 {
     std::ostringstream os;
-    os << getTabs() << "switch (" << Utils::wstrToStr(var.getName()) << ")\n";
+    os << getTabs() << "switch (" << var.getName() << ")\n";
     os << getTabs() << "{\n";
     for (const auto& c : cases)
     {

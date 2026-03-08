@@ -1,27 +1,27 @@
 #include "Type.h"
 #include <utility>
 
-const std::unordered_map<std::wstring, std::string> Type::typeMap = {
-    {L"bar",     "std::string"}, // String
-    {L"note",    "char"},        // Char
-    {L"mute",    "bool"},        // Bool
-    {L"freq",    "double"},      // Double
-    {L"degree",  "int"},         // Int
-    //{L"scale",   ""}, // Array - TODO: add this in sprint 3
-    {L"fermata", "void"}         // Void
+const std::unordered_map<std::string, std::string> Type::typeMap = {
+    {"bar",     "std::string"}, // String
+    {"note",    "char"},        // Char
+    {"mute",    "bool"},        // Bool
+    {"freq",    "double"},      // Double
+    {"degree",  "int"},         // Int
+    //{"scale",   ""}, // Array - TODO: add this in sprint 3
+    {"fermata", "void"}         // Void
 };
 
-const std::unordered_map<std::wstring, std::unordered_set<std::wstring>> Type::castMap = {
-    {L"bar",     {L"bar"}},                   // String -> only String
-    {L"note",    {L"note", L"degree", L"freq"}}, // Char -> Int, Double
-    {L"mute",    {L"mute", L"degree", L"freq"}}, // Bool -> Int, Double
-    {L"degree",  {L"degree", L"note", L"freq"}}, // Int -> Char, Double
-    {L"freq",    {L"freq", L"degree", L"note"}}, // Double -> Int, Char
-    //{L"scale",   {L"scale"}},               // Array - TODO: add this in sprint 3
-    {L"fermata", {}}                          // Void -> nothing
+const std::unordered_map<std::string, std::unordered_set<std::string>> Type::castMap = {
+    {"bar",     {"bar"}},                   // String -> only String
+    {"note",    {"note", "degree", "freq"}}, // Char -> Int, Double
+    {"mute",    {"mute", "degree", "freq"}}, // Bool -> Int, Double
+    {"degree",  {"degree", "note", "freq"}}, // Int -> Char, Double
+    {"freq",    {"freq", "degree", "note"}}, // Double -> Int, Char
+    //{"scale",   {"scale"}},               // Array - TODO: add this in sprint 3
+    {"fermata", {}}                          // Void -> nothing
 };
 
-Type::Type(const std::wstring& type) : IType(getNormalType(type)), extra(getNormalExtra(type))
+Type::Type(const std::string& type) : IType(getNormalType(type)), extra(getNormalExtra(type))
 {
 }
 
@@ -29,17 +29,17 @@ Type::Type(Type* other) : IType(other), extra(other->extra)
 {
 }
 
-Type::Type(const std::wstring& type, const std::string& extra) : IType(type), extra(extra)
+Type::Type(const std::string& type, const std::string& extra) : IType(type), extra(extra)
 {
 }
 
-std::wstring Type::getNormalType(const std::wstring& type)
+std::string Type::getNormalType(const std::string& type)
 {
-    if (type.rfind(L"flat ", 0) == 0)
+    if (type.rfind("flat ", 0) == 0)
     {
         return type.substr(5);
     }
-    if (type.rfind(L"sharp ", 0) == 0)
+    if (type.rfind("sharp ", 0) == 0)
     {
         return type.substr(6);
     }
@@ -47,13 +47,13 @@ std::wstring Type::getNormalType(const std::wstring& type)
     return type;
 }
 
-std::string Type::getNormalExtra(const std::wstring& type)
+std::string Type::getNormalExtra(const std::string& type)
 {
-    if (type.rfind(L"flat ", 0) == 0)
+    if (type.rfind("flat ", 0) == 0)
     {
         return "signed";
     }
-    if (type.rfind(L"sharp ", 0) == 0)
+    if (type.rfind("sharp ", 0) == 0)
     {
         return "unsigned";
     }
@@ -63,7 +63,7 @@ std::string Type::getNormalExtra(const std::wstring& type)
 
 bool Type::operator==(const IType& other) const
 {
-    const std::wstring type = other.getType();
+    const std::string type = other.getType();
     const auto it = castMap.find(type);
     if (it == castMap.end()) return this->type == type; // for future (class)
     return it->second.contains(this->type);
@@ -74,26 +74,26 @@ bool Type::operator!=(const IType& other) const
     return !(*this == other);
 }
 
-bool Type::operator==(const std::wstring& other) const
+bool Type::operator==(const std::string& other) const
 {
     const auto it = castMap.find(this->type);
     if (it == castMap.end()) return this->type == other;
     return it->second.contains(other);
 }
 
-bool Type::operator!=(const std::wstring& other) const
+bool Type::operator!=(const std::string& other) const
 {
     return !(*this == other);
 }
 
 bool Type::isNumberable() const
 {
-    return *this == L"degree";
+    return *this == "degree";
 }
 
 bool Type::isStringable() const
 {
-    return *this == L"bar";
+    return *this == "bar";
 }
 
 bool Type::isPrimitive() const
@@ -101,7 +101,7 @@ bool Type::isPrimitive() const
     return true;
 }
 
-std::wstring Type::getType() const
+std::string Type::getType() const
 {
     return type;
 }
@@ -110,11 +110,11 @@ std::string Type::translateTypeToCpp() const
 {
     std::string ret;
 
-    if (type == L"bar")
+    if (type == "bar")
     {
         ret = "String";
     }
-    else if (type == L"fermata")
+    else if (type == "fermata")
     {
         return "void";
     }

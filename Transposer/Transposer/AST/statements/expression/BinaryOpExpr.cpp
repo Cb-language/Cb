@@ -6,7 +6,7 @@
 #include "other/SymbolTable.h"
 
 BinaryOpExpr::BinaryOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-                           const std::wstring& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, const bool hasParens)
+                           const std::string& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, const bool hasParens)
         : Expr(token, scope, funcDecl, currClass, hasParens), op(op), left(std::move(left)), right(std::move(right))
 {
 }
@@ -22,55 +22,55 @@ std::unique_ptr<IType> BinaryOpExpr::getType() const
     auto rightType = right->getType()->copy();
 
     // Comparison operators
-    if (op == L"==" || op == L"!=" ||
-        op == L"<"  || op == L">"  ||
-        op == L"<=" || op == L">=")
+    if (op == "==" || op == "!=" ||
+        op == "<"  || op == ">"  ||
+        op == "<=" || op == ">=")
     {
-        return std::make_unique<Type>(L"mute");
+        return std::make_unique<Type>("mute");
     }
 
     // Logical operators
-    if (op == L"chord" || op == L"divis")
+    if (op == "chord" || op == "divis")
     {
-        return std::make_unique<Type>(L"mute");
+        return std::make_unique<Type>("mute");
     }
 
     // the // op
-    if (op == L"//")
+    if (op == "//")
     {
-        return std::make_unique<Type>(L"freq");
+        return std::make_unique<Type>("freq");
     }
 
     // Arithmetic operators
-    if (op == L"+")
+    if (op == "+")
     {
-        if (leftType->getType() == L"bar" || rightType->getType() == L"bar")
-            return std::make_unique<Type>(L"bar");
-        if (*leftType == L"freq" || *rightType == L"freq")
-            return std::make_unique<Type>(L"freq");
-        if (*leftType == L"note" || *rightType == L"note")
-            return std::make_unique<Type>(L"note");
+        if (leftType->getType() == "bar" || rightType->getType() == "bar")
+            return std::make_unique<Type>("bar");
+        if (*leftType == "freq" || *rightType == "freq")
+            return std::make_unique<Type>("freq");
+        if (*leftType == "note" || *rightType == "note")
+            return std::make_unique<Type>("note");
     }
 
-    if (op == L"-" ||
-        op == L"*"  || op == L"/" ||
-        op == L"%")
+    if (op == "-" ||
+        op == "*"  || op == "/" ||
+        op == "%")
     {
         // If both types are identical → return that type
         if (*leftType == *rightType)
             return leftType;
 
         // Otherwise: promote
-        if (*leftType == L"freq" || *rightType == L"freq")
-            return std::make_unique<Type>(L"freq");
-        if (*leftType == L"note" || *rightType == L"note")
-            return std::make_unique<Type>(L"note");
+        if (*leftType == "freq" || *rightType == "freq")
+            return std::make_unique<Type>("freq");
+        if (*leftType == "note" || *rightType == "note")
+            return std::make_unique<Type>("note");
 
         // Otherwise int
-        return std::make_unique<Type>(L"degree");
+        return std::make_unique<Type>("degree");
     }
 
-    return std::make_unique<Type>(L"fermata");
+    return std::make_unique<Type>("fermata");
 }
 
 void BinaryOpExpr::analyze() const
@@ -79,22 +79,22 @@ void BinaryOpExpr::analyze() const
     auto rightType = right->getType();
 
     // Comparison operators
-    if (op == L"==" || op == L"!=" ||
-        op == L"<"  || op == L">"  ||
-        op == L"<=" || op == L">=")
+    if (op == "==" || op == "!=" ||
+        op == "<"  || op == ">"  ||
+        op == "<=" || op == ">=")
     {
         if (*leftType != *rightType)
         {
-            throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), Utils::wstrToStr(op));
+            throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), op);
         }
     }
 
     // Logical operators
-    if (op == L"chord" || op == L"divis")
+    if (op == "chord" || op == "divis")
     {
         if (*leftType != *rightType)
         {
-            throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), Utils::wstrToStr(op));
+            throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), op);
         }
     }
 
@@ -107,7 +107,7 @@ void BinaryOpExpr::analyze() const
     }
 
     // the + op
-    if (op == L"+")
+    if (op == "+")
     {
         if (!(leftType->isNumberable() && rightType->isNumberable()) || (leftType->isStringable() && rightType->isStringable()))
         {
@@ -116,13 +116,13 @@ void BinaryOpExpr::analyze() const
     }
 
     // Arithmetic operators
-    if (op == L"//"  || op == L"-" ||
-        op == L"*"  || op == L"/" ||
-        op == L"%")
+    if (op == "//"  || op == "-" ||
+        op == "*"  || op == "/" ||
+        op == "%")
     {
         if (!(leftType->isNumberable() && rightType->isNumberable()))
         {
-            throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), Utils::wstrToStr(op));
+            throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), op);
         }
     }
 }
@@ -132,12 +132,12 @@ std::string BinaryOpExpr::translateToCpp() const
     const bool isLeftNull = left == nullptr;
     const std::string leftStr = !isLeftNull ? left->translateToCpp() : "";
     const std::string rightStr = right->translateToCpp();
-    const std::wstring leftType = !isLeftNull ? left->getType()->getType() : L"degree";
-    const std::wstring rightType = right->getType()->getType();
-    const std::string opStr = Utils::wstrToStr(op);
+    const std::string leftType = !isLeftNull ? left->getType()->getType() : "degree";
+    const std::string rightType = right->getType()->getType();
+    const std::string opStr = op;
     std::ostringstream oss;
 
-    if (op == L"//")
+    if (op == "//")
     {
         std::string leftStrClean = leftStr;
         std::string rightStrClean = rightStr;
@@ -162,11 +162,11 @@ std::string BinaryOpExpr::translateToCpp() const
            << " / static_cast<double>(" << rightStrClean << ")";
         }
     }
-    else if (opStr == "+" && leftType == L"bar" && rightType != L"bar")
+    else if (opStr == "+" && leftType == "bar" && rightType != "bar")
     {
         oss << leftStr << " " << opStr << " std::to_string(" << rightStr << ")";
     }
-    else if (opStr == "+" && leftType != L"bar" && rightType == L"bar")
+    else if (opStr == "+" && leftType != "bar" && rightType == "bar")
     {
         oss << "std::to_string(" << leftStr << ") " << opStr << " " << rightStr;
     }
@@ -192,28 +192,28 @@ std::string BinaryOpExpr::translateToCpp() const
     return oss.str();
 }
 
-int BinaryOpExpr::getPrecedence(const std::wstring& op)
+int BinaryOpExpr::getPrecedence(const std::string& op)
 {
     // Dot op
-    if (op == L"\\")
+    if (op == "\\")
         return 4;
 
     // Multiplicative
-    if (op == L"*" || op == L"/" || op == L"%" || op == L"//")
+    if (op == "*" || op == "/" || op == "%" || op == "//")
         return 3;
 
     // Additive
-    if (op == L"+" || op == L"-")
+    if (op == "+" || op == "-")
         return 2;
 
     // Relational & Boolean
-    if (op == L"<"  || op == L">" ||
-        op == L"<=" || op == L">=" ||
-        op == L"chord" || op == L"divis")
+    if (op == "<"  || op == ">" ||
+        op == "<=" || op == ">=" ||
+        op == "chord" || op == "divis")
         return 1;
 
     // Equality
-    if (op == L"==" || op == L"!=")
+    if (op == "==" || op == "!=")
         return 1;
 
     return 0;

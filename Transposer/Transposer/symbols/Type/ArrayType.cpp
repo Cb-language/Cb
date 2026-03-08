@@ -1,6 +1,6 @@
 #include "ArrayType.h"
 
-ArrayType::ArrayType(std::unique_ptr<IType> valueType) : IType(L"riff"),  valueType(std::move(valueType))
+ArrayType::ArrayType(std::unique_ptr<IType> valueType) : IType("riff"),  valueType(std::move(valueType))
 {
     arrayLevel = this->valueType->getArrLevel() + 1;
 }
@@ -27,9 +27,9 @@ bool ArrayType::operator!=(const IType& other) const
     return !(*this == other);
 }
 
-bool ArrayType::operator==(const std::wstring& other) const
+bool ArrayType::operator==(const std::string& other) const
 {
-    if (!other.starts_with(L"riff "))
+    if (!other.starts_with("riff "))
     {
         return false;
     }
@@ -37,7 +37,7 @@ bool ArrayType::operator==(const std::wstring& other) const
     return *this == other.substr(0, 5);
 }
 
-bool ArrayType::operator!=(const std::wstring& other) const
+bool ArrayType::operator!=(const std::string& other) const
 {
     return !(*this == other);
 }
@@ -57,9 +57,9 @@ bool ArrayType::isPrimitive() const
     return false;
 }
 
-std::wstring ArrayType::getType() const
+std::string ArrayType::getType() const
 {
-    return L"riff " + valueType->getType();
+    return "riff " + valueType->getType();
 }
 
 std::string ArrayType::translateTypeToCpp() const

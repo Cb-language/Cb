@@ -7,27 +7,27 @@
 
 std::string ConstValueExpr::getValueStr() const
 {
-    if (*type == L"freq" && value.starts_with(L"."))
+    if (*type == "freq" && value.starts_with("."))
     {
-        return Utils::wstrToStr(L"0" + value);
+        return "0" + value;
     }
 
-    if (*type == L"bar")
+    if (*type == "bar")
     {
-        std::string content = Utils::wstrToStr(value);
+        std::string content = value;
         std::ranges::replace(content, '\n', ' ');
         return content;
     }
 
-    if (*type == L"mute")
+    if (*type == "mute")
     {
-        return value == L"cres" ? "true" : "false";
+        return value == "cres" ? "true" : "false";
     }
 
-    return Utils::wstrToStr(value);
+    return value;
 }
 
-ConstValueExpr::ConstValueExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::unique_ptr<IType> type, const std::wstring &value)
+ConstValueExpr::ConstValueExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::unique_ptr<IType> type, const std::string &value)
     : Expr(token, scope, funcDecl, currClass), type(std::move(type)), value(value)
 {
 }
@@ -50,7 +50,7 @@ std::unique_ptr<IType> ConstValueExpr::getType() const
     return type->copy();
 }
 
-std::wstring ConstValueExpr::getValue() const
+std::string ConstValueExpr::getValue() const
 {
     return value;
 }

@@ -59,20 +59,20 @@ private:
     const Token& prev() const;
     bool isAtEnd() const;
 
-    bool match(Token::TokenType type) const;
-    bool match(Token::TokenType type, const std::wstring& value) const;
+    bool match(TokenType type) const;
+    bool match(TokenType type, const std::string& value) const;
 
-    bool expect(Token::TokenType type);
-    bool expect(Token::TokenType type, const std::wstring& value);
+    bool expect(TokenType type);
+    bool expect(TokenType type, const std::string& value);
 
-    bool expect(Token::TokenType type, Error* err);
-    bool expect(Token::TokenType type, const std::wstring& value, Error* err);
+    bool expect(TokenType type, Error* err);
+    bool expect(TokenType type, const std::string& value, Error* err);
 
-    bool expectAndGet(Token::TokenType type, Token& out);
-    bool expectAndGet(Token::TokenType type, const std::wstring& value, Token& out);
+    bool expectAndGet(TokenType type, Token& out);
+    bool expectAndGet(TokenType type, const std::string& value, Token& out);
 
-    bool expectAndGet(Token::TokenType type, Error* err, Token& out);
-    bool expectAndGet(Token::TokenType type, const std::wstring& value, Error* err, Token& out);
+    bool expectAndGet(TokenType type, Error* err, Token& out);
+    bool expectAndGet(TokenType type, const std::string& value, Error* err, Token& out);
 
     bool isAssignmentStmtAhead();
     bool isUnaryOpStmtAhead();

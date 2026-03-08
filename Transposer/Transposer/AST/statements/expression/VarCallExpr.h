@@ -12,6 +12,6 @@ public:
     void analyze() const override;
     std::string translateToCpp() const override;
     std::unique_ptr<IType> getType() const override;
-    std::wstring getName() const;
-    std::wstring toString() const override;
+    std::string getName() const;
+    std::string toString() const override;
 };

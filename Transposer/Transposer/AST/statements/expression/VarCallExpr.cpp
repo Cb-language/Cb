@@ -11,7 +11,7 @@ void VarCallExpr::analyze() const
 
 std::string VarCallExpr::translateToCpp() const
 {
-    return Utils::wstrToStr(var.getName());
+    return var.getName();
 }
 
 std::unique_ptr<IType> VarCallExpr::getType() const
@@ -19,12 +19,12 @@ std::unique_ptr<IType> VarCallExpr::getType() const
     return var.getType()->copy();
 }
 
-std::wstring VarCallExpr::getName() const
+std::string VarCallExpr::getName() const
 {
     return var.getName();
 }
 
-std::wstring VarCallExpr::toString() const
+std::string VarCallExpr::toString() const
 {
     return var.getName();
 }

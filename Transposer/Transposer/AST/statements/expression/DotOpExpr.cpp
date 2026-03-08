@@ -34,7 +34,7 @@ void DotOpExpr::analyze() const
 
     if (!SymbolTable::isLegalFieldOrMethod(leftType, rightCasted->toString(), token, currClass))
     {
-        throw IllegalDotOpError(token, left->translateToCpp(), Utils::wstrToStr(rightCasted->toString()), leftType->toString());
+        throw IllegalDotOpError(token, left->translateToCpp(), rightCasted->toString()), leftType->toString();
     }
 }
 
@@ -43,7 +43,7 @@ std::string DotOpExpr::translateToCpp() const
     return getTabs() + left->translateToCpp() + "->" + right->translateToCpp();
 }
 
-std::wstring DotOpExpr::toString() const
+std::string DotOpExpr::toString() const
 {
-    return left->toString() + L"\\" + right->toString();
+    return left->toString() + "\\" + right->toString();
 }

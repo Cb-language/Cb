@@ -26,7 +26,7 @@ SymbolTable::~SymbolTable()
     currClass = nullptr;
 }
 
-std::optional<Var> SymbolTable::getVar(const std::wstring &name) const
+std::optional<Var> SymbolTable::getVar(const std::string &name) const
 {
     if (currClass != nullptr)
     {
@@ -48,12 +48,12 @@ void SymbolTable::addVar(const Var& var, const Token& token) const
     currScope->addVar(var, token);
 }
 
-ClassNode* SymbolTable::getClass(const std::wstring& name)
+ClassNode* SymbolTable::getClass(const std::string& name)
 {
     return classTree.find(name);
 }
 
-bool SymbolTable::isClass(const std::wstring& name)
+bool SymbolTable::isClass(const std::string& name)
 {
      return getClass(name) != nullptr;
 }
@@ -71,7 +71,7 @@ bool SymbolTable::doesFuncExist(const Func& f) const
     return false;
 }
 
-bool SymbolTable::doesFuncExist(const std::wstring& name, const ClassNode* owner) const
+bool SymbolTable::doesFuncExist(const std::string& name, const ClassNode* owner) const
 {
     for (const auto& func : funcs| std::views::keys)
     {
@@ -161,7 +161,7 @@ IFuncDeclStmt* SymbolTable::getCurrFunc() const
     return currFunc;
 }
 
-std::unique_ptr<Func> SymbolTable::getFunc(const std::wstring& name, const ClassNode* owner) const
+std::unique_ptr<Func> SymbolTable::getFunc(const std::string& name, const ClassNode* owner) const
 {
     if (!doesFuncExist(name, owner))
     {
@@ -183,7 +183,7 @@ std::string SymbolTable::getFuncsHeaders() const
     for (const auto& [func, isIncluded] : funcs)
     {
         // convention to note write the main's header
-        if (func.getFuncName() != L"prelude" && !isIncluded)
+        if (func.getFuncName() != "prelude" && !isIncluded)
         {
             oss << func.translateToCpp() << ";" << std::endl;
         }
@@ -254,7 +254,7 @@ void SymbolTable::clearClasses()
     ClassTree::destroy();
 }
 
-bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token, const ClassNode* currClass)
+bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::string& name, const Token& token, const ClassNode* currClass)
 {
     const ClassNode* res = classTree.find(type->getType());
 
@@ -265,7 +265,7 @@ bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const
     {
         if (res->isLegal(*field, currClass)) return true;
 
-        throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
+        throw AccessError(token, res->getClass().getClassName(), name);
     }
 
     const Func* method = res->findMethod(name, currClass);
@@ -273,7 +273,7 @@ bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const
     {
         if (res->isLegal(*method, currClass)) return true;
 
-        throw AccessError(token, Utils::wstrToStr(res->getClass().getClassName()), Utils::wstrToStr(name));
+        throw AccessError(token, res->getClass().getClassName(), name);
     }
 
     if (currClass != nullptr)

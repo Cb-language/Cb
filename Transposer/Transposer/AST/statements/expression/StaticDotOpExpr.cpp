@@ -22,7 +22,7 @@ void StaticDotOpExpr::analyze() const
 {
     if (!SymbolTable::isLegalFieldOrMethod(left->copy(), right->toString(), token, currClass))
     {
-        throw IllegalDotOpError(token, left->toString(), Utils::wstrToStr(right->toString()));
+        throw IllegalDotOpError(token, left->toString(), right->toString());
     }
 }
 
@@ -31,7 +31,7 @@ std::string StaticDotOpExpr::translateToCpp() const
     return getTabs() + left->toString() + "::" + right->translateToCpp();
 }
 
-std::wstring StaticDotOpExpr::toString() const
+std::string StaticDotOpExpr::toString() const
 {
-    return left->getType() + L"\\" + right->toString();
+    return left->getType() + "\\" + right->toString();
 }

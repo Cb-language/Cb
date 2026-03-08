@@ -19,7 +19,7 @@ void ArrayDeclStmt::analyzeSizes() const
         size->analyze();
         if (!size->getType()->isNumberable())
         {
-            throw IllegalTypeCast(token, Utils::wstrToStr(size->getType()->getType()), "degree");
+            throw IllegalTypeCast(token, size->getType()->getType(), "degree");
         }
     }
 }
@@ -114,7 +114,7 @@ std::string ArrayDeclStmt::translateToCpp() const
 {
     std::ostringstream oss;
 
-    const std::string name = Utils::wstrToStr(var.getName());
+    const std::string name = var.getName();
 
 
     oss << getTabs()
