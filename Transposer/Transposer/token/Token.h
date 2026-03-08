@@ -47,6 +47,7 @@ enum class TokenType : byte
 	KEYWORD_MOTIF,          // virtual
 	KEYWORD_REST,           // pure virtual
 	KEYWORD_VARIATION,      // override
+	KEYWORD_CTOR_CALL,      // ctor call
 	KEYWORD_C_CLEF,         // 𝄡 (dosent compile)
 
 	// punctuation

@@ -41,6 +41,7 @@ const std::vector<KeywordInfo> KEYWORDS =
 	{TokenType::KEYWORD_MOTIF, "motif", WordBoundary::BOTH},
 	{TokenType::KEYWORD_REST, "rest", WordBoundary::BOTH},
 	{TokenType::KEYWORD_VARIATION, "variation", WordBoundary::BOTH},
+	{TokenType::KEYWORD_CTOR_CALL, "𝆫", WordBoundary::NONE}
 	{TokenType::KEYWORD_C_CLEF, "𝄡", WordBoundary::NONE},
 
 	// punctuation

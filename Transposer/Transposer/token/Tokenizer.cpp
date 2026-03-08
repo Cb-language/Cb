@@ -5,7 +5,10 @@
 boost::regex Tokenizer::tokenRegex;
 
 const std::vector<std::string> Tokenizer::captureBlocks = {
-    R"((?<IdentifierCall>[a-zA-Z_][a-zA-Z_0-9]*_call))",
+    R"((?<ConstFloat>\d*\.\d+))",
+    R"((?<ConstInt>\d+))",
+    R"((?<ConstChar>'(\\.|[^\\'\n])'))",
+    R"((?<ConstStr>"(\\.|[\s\S])*?"))",
     R"((?<Identifier>[a-zA-Z_][a-zA-Z_0-9]*))"
 };
 
@@ -23,7 +26,7 @@ void Tokenizer::initTrieTree() const
     }
 }
 
-std::vector<Token> Tokenizer::tokenizeByTrieTree(const std::string& code, const std::filesystem::path& path)
+std::vector<Token> Tokenizer::tokenizeByTrieTree(const std::string& code, const std::filesystem::path& path) const
 {
     std::vector<Token> tokens;
     size_t row = 1;
@@ -66,7 +69,24 @@ std::vector<Token> Tokenizer::tokenizeByTrieTree(const std::string& code, const 
             continue;
         }
 
+        // If not a keyword, resort word a REGEX const/identifier check.
+        const auto match = *boost::regex_iterator(code.c_str() + i, code.c_str() + code.length(), LEXER_RGX);
+        bool matched = false;
 
+        for (int j = 1; j <= TOKEN_GROUP_RGX_COUNT; ++j)
+        {
+            if (const auto &match_info = match[j]; match_info.matched)
+            {
+                std::unique_ptr<token> token = token::from_regex_group_id(current_code_position, j, match_info);
+
+                on_regex_token(token.get());
+                tokens.push(std::move(token));
+
+                i += match_info.length();
+                matched = true;
+                break;
+            }
+        }
     }
     return tokens;
 }
@@ -99,7 +119,7 @@ bool Tokenizer::checkBoundary(const std::string& code, const KeywordInfo* keywor
     return true;
 }
 
-size_t Tokenizer::handleKeywordMatch(const std::string& code, const size_t row, const size_t col, const TokenType tokenType,
+size_t Tokenizer::handleKeywordMatch(const std::string& code, size_t& row, size_t& col, const TokenType tokenType,
     std::vector<Token>& tokens, const size_t keywordEnd, const std::filesystem::path& path)
 {
     switch (tokenType)
@@ -125,12 +145,51 @@ size_t Tokenizer::handleKeywordMatch(const std::string& code, const size_t row, 
             tokens.emplace_back(TokenType::ERROR_TOKEN, std::nullopt, row, col, path);
         }
 
+        case TokenType::PUNCTUATION_NEW_LINE:
+        {
+            row += 1;
+            col = 0;
+        }
+
         default:
         {
             tokens.emplace_back(tokenType, std::nullopt, row, col, path);
             return keywordEnd;
         }
     }
+}
+
+void Tokenizer::on_regex_token(Token* token)
+{
+    switch (token->type)
+    {
+        case TokenType::CONST_STR:
+        {
+            auto *iden_token = static_cast<codesh::identifier_token *>(token); // NOLINT(*-pro-type-static-cast-downcast)
+            std::string content = iden_token->get_content();
+
+            // Handle newline
+            // We want to replace "newline" but not "no newline".
+            // To not create a conflict and unnecessary spaghetti code, will simply resort to REGEX:
+            content = boost::regex_replace(content, NEWLINE_REPLACE_RGX, " \n ");
+
+            // Remove string enclose
+            content = content
+                .substr(
+                    trie::keyword::STRING_OPEN.length(),
+                    content.length() - trie::keyword::STRING_OPEN.length() - trie::keyword::STRING_END.length()
+                );
+
+            // Replace escaped characters
+            escape_characters(content, trie::keyword::STRING_END.substr(1));
+            escape_characters(content, trie::keyword::STRING_NEWLINE.substr(1));
+
+            iden_token->set_content(content);
+        }
+
+        default:
+            break;
+        }
 }
 
 Tokenizer::Tokenizer()
