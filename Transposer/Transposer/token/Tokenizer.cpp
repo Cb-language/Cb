@@ -70,23 +70,32 @@ std::vector<Token> Tokenizer::tokenizeByTrieTree(const std::string& code, const 
         }
 
         // If not a keyword, resort word a REGEX const/identifier check.
-        const auto match = *boost::regex_iterator(code.c_str() + i, code.c_str() + code.length(), LEXER_RGX);
-        bool matched = false;
-
-        for (int j = 1; j <= TOKEN_GROUP_RGX_COUNT; ++j)
+        boost::smatch match;
+        std::string search_target = code.substr(codePos);
+        if (boost::regex_search(search_target, match, tokenRegex, boost::regex_constants::match_continuous))
         {
-            if (const auto &match_info = match[j]; match_info.matched)
+            auto type = TokenType::ERROR_TOKEN;
+            if (match["ConstFloat"].matched) type = TokenType::CONST_FLOAT;
+            else if (match["ConstInt"].matched) type = TokenType::CONST_INT;
+            else if (match["ConstChar"].matched) type = TokenType::CONST_CHAR_OPEN;
+            else if (match["ConstStr"].matched) type = TokenType::CONST_STR_OPEN;
+            else if (match["Identifier"].matched) type = TokenType::IDENTIFIER;
+
+            if (type != TokenType::ERROR_TOKEN)
             {
-                std::unique_ptr<token> token = token::from_regex_group_id(current_code_position, j, match_info);
+                std::string match_str = match.str();
+                Token token(type, match_str, row, col, path);
+                onRegexToken(&token);
+                tokens.emplace_back(token);
 
-                on_regex_token(token.get());
-                tokens.push(std::move(token));
-
-                i += match_info.length();
-                matched = true;
-                break;
+                codePos += match_str.length();
+                col += match_str.length() - 1; // col will be incremented at the start of next loop
+                continue;
             }
         }
+
+        // If nothing matched, skip one character or handle as error
+        codePos++;
     }
     return tokens;
 }
@@ -159,37 +168,44 @@ size_t Tokenizer::handleKeywordMatch(const std::string& code, size_t& row, size_
     }
 }
 
-void Tokenizer::on_regex_token(Token* token)
+void Tokenizer::onRegexToken(Token* token)
 {
+    if (!token->value.has_value()) return;
+
     switch (token->type)
     {
-        case TokenType::CONST_STR:
+        case TokenType::CONST_STR_OPEN:
         {
-            auto *iden_token = static_cast<codesh::identifier_token *>(token); // NOLINT(*-pro-type-static-cast-downcast)
-            std::string content = iden_token->get_content();
+            std::string content = token->value.value();
 
             // Handle newline
             // We want to replace "newline" but not "no newline".
             // To not create a conflict and unnecessary spaghetti code, will simply resort to REGEX:
+            static const boost::regex NEWLINE_REPLACE_RGX(R"((?<!no )newline)");
             content = boost::regex_replace(content, NEWLINE_REPLACE_RGX, " \n ");
 
             // Remove string enclose
-            content = content
-                .substr(
-                    trie::keyword::STRING_OPEN.length(),
-                    content.length() - trie::keyword::STRING_OPEN.length() - trie::keyword::STRING_END.length()
-                );
+            if (content.length() >= 2 && content.front() == '\"' && content.back() == '\"')
+            {
+                content = content.substr(1, content.length() - 2);
+            }
 
             // Replace escaped characters
-            escape_characters(content, trie::keyword::STRING_END.substr(1));
-            escape_characters(content, trie::keyword::STRING_NEWLINE.substr(1));
+            static const boost::regex escapedQuote(R"(\\")");
+            content = boost::regex_replace(content, escapedQuote, "\"");
 
-            iden_token->set_content(content);
+            static const boost::regex escapedNewline(R"(\\n)");
+            content = boost::regex_replace(content, escapedNewline, "\n");
+
+            static const boost::regex escapedBackslash(R"(\\\\)");
+            content = boost::regex_replace(content, escapedBackslash, "\\");
+
+            token->value = content;
         }
 
         default:
             break;
-        }
+    }
 }
 
 Tokenizer::Tokenizer()
@@ -210,94 +226,4 @@ Tokenizer::Tokenizer()
     }
 
     tokenRegex = boost::regex(regex, boost::regex::perl | boost::regex::optimize);
-}
-
-std::vector<Token> Tokenizer::tokenize(const std::string& code, const std::filesystem::path& path)
-{
-    std::vector<Token> tokens;
-    size_t current_line = 1;
-    size_t current_col = 1;
-
-    boost::sregex_iterator it(code.begin(), code.end(), tokenRegex);
-    boost::sregex_iterator end;
-
-    for (; it != end; ++it)
-    {
-        const boost::smatch& match = *it;
-
-        if (match["Newline"].matched) { current_line++; current_col = 0; }
-        else if (match["CommentSingle"].matched) { tokens.push_back(Token(TokenType::COMMENT_SINGLE, match.str(), current_line, current_col, path)); }
-        else if (match["CommentMulti"].matched) { tokens.push_back(Token(TokenType::COMMENT_MULTI, match.str(), current_line, current_col, path)); }
-        else if (match["ConstBoo"].matched) { tokens.push_back(Token(TokenType::CONST_BOOL, match.str(), current_line, current_col, path)); }
-        else if (match["ConstFloat"].matched) { tokens.push_back(Token(TokenType::CONST_FLOAT, match.str(), current_line, current_col, path)); }
-        else if (match["ConstInt"].matched) { tokens.push_back(Token(TokenType::CONST_INT, match.str(), current_line, current_col, path)); }
-        else if (match["ConstChar"].matched) { tokens.push_back(Token(TokenType::CONST_CHAR, match.str(), current_line, current_col, path)); }
-        else if (match["ConstStr"].matched)
-        {
-            std::string txt = match.str();
-            tokens.push_back(Token(TokenType::CONST_STR, txt, current_line, current_col, path));
-
-            size_t newlines = std::ranges::count(txt, L'\n');
-
-            if (newlines > 0)
-            {
-                current_col = 0;
-                current_line += newlines;
-            }
-        }
-        else if (match["Type"].matched)
-        {
-            std::string typeText = match.str();
-
-            // Remove all extra whitespace/newlines between words
-            std::string cleanedType;
-            bool lastWasSpace = false;
-            for (wchar_t ch : typeText) 
-            {
-                if (iswspace(ch)) 
-                {
-                    if (!lastWasSpace) 
-                    {
-                        cleanedType += L' '; // replace any whitespace sequence with single space
-                        lastWasSpace = true;
-                    }
-                }
-                else 
-                {
-                    cleanedType += ch;
-                    lastWasSpace = false;
-                }
-            }
-
-            // trim leading/trailing space
-            if (!cleanedType.empty() && cleanedType.front() == L' ')
-            {
-                cleanedType.erase(0, 1);
-            }
-            if (!cleanedType.empty() && cleanedType.back() == L' ')
-            {
-                cleanedType.pop_back();
-            }
-
-            tokens.push_back(Token(TokenType::TYPE, match.str(), current_line, current_col, path));
-            size_t newlines = std::ranges::count(typeText, L'\n');
-
-            if (newlines > 0)
-            {
-                current_col = 0;
-                current_line += newlines;
-            }
-        }
-        else if (match["Keyword"].matched) { tokens.push_back(Token(TokenType::KEYWORD, match.str(), current_line, current_col, path)); }
-        else if (match["UnaryOp"].matched) { tokens.push_back(Token(TokenType::OP_UNARY, match.str(), current_line, current_col, path)); }
-        else if (match["AssignmentOp"].matched) { tokens.push_back(Token(TokenType::OP_ASSIGNMENT, match.str(), current_line, current_col, path)); }
-        else if (match["BinaryOp"].matched) { tokens.push_back(Token(TokenType::OP_BINARY, match.str(), current_line, current_col, path)); }
-        else if (match["Punctuation"].matched) { tokens.push_back(Token(TokenType::PUNCTUATION, match.str(), current_line, current_col, path)); }
-        else if (match["IdentifierCal"].matched) { tokens.push_back(Token(TokenType::IDENTIFIER_CALL, match.str(), current_line, current_col, path)); }
-        else if (match["Identifier"].matched) { tokens.push_back(Token(TokenType::IDENTIFIER, match.str(), current_line, current_col, path)); }
-
-        current_col++;
-    }
-
-    return clean(tokens);
 }

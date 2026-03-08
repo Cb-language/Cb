@@ -116,9 +116,9 @@ enum class TokenType : byte
 	// const values
 	CONST_INT,
 	CONST_FLOAT,
-	CONST_CHAR,
 	CONST_BOOL,
-	CONST_STR,
+	CONST_CHAR_OPEN, // '
+	CONST_STR_OPEN, // "
 
 	// unidentified
 	ERROR_TOKEN
