@@ -9,6 +9,7 @@ class File
 private:
     friend class FileNode;
     friend class FileGraph;
+    Tokenizer tokenizer;
 
     const std::filesystem::path inPath;
     const std::filesystem::path outPathH;
@@ -21,7 +22,6 @@ private:
     bool analyzed = false;
     bool writen = false;
 
-    Tokenizer tokenizer;
     std::vector<Token> tokenize() const;
 
     static std::filesystem::path mainPath;

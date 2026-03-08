@@ -28,8 +28,6 @@ private:
     static FileNode* getNode(const std::filesystem::path& path);
     static FileNode* getNode(const std::filesystem::path& inPath, const std::filesystem::path& outPath);
 
-    static void deleteNode(FileNode* node);
-
     static FileNode* build(const std::filesystem::path& path);
     static FileNode* build(const std::filesystem::path& inPath, const std::filesystem::path& outPath);
 

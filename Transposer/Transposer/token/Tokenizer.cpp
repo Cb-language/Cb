@@ -100,12 +100,34 @@ void Tokenizer::onRegexToken(Token* token)
     // for post analysis if needed
     switch (token->type)
     {
-        default:
+        case TokenType::CONST_STR:
+        {
+            std::string content = token->value.value();
+            if (content.length() >= 2 && content.front() == '\"' && content.back() == '\"')
+            {
+                content = content.substr(1, content.length() - 2);
+            }
+            token->value = content;
             break;
+        }
+
+        case TokenType::CONST_CHAR:
+        {
+            std::string content = token->value.value();
+            if (content.length() >= 2 && content.front() == '\'' && content.back() == '\"')
+            {
+                content = content.substr(1, content.length() - 2);
+            }
+            token->value = content;
+            break;
+        }
+
+    default:
+        break;
     }
 }
 
-Tokenizer::Tokenizer()
+Tokenizer::Tokenizer() : trieTree(std::make_unique<TrieNode>())
 {
     initTrieTree();
 
@@ -136,7 +158,7 @@ std::vector<Token> Tokenizer::tokenize(const std::string& code, const std::files
     {
         col++;
 
-        if (code[codePos] == ' ')
+        if (isspace(code[codePos]) && code[codePos] != '\n')
         {
             codePos++;
             continue;
