@@ -4,9 +4,9 @@ TrieNode::TrieNode()
 {
 }
 
-std::optional<KeywordInfo> TrieNode::getKeyword() const
+std::optional<std::reference_wrapper<const KeywordInfo>> TrieNode::getKeyword() const
 {
-    return keyword;
+    return this->keyword;
 }
 
 void TrieNode::setKeyword(const KeywordInfo& keyword)

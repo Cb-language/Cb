@@ -12,7 +12,7 @@ private:
 public:
     TrieNode();
 
-    std::optional<KeywordInfo> getKeyword() const;
+    std::optional<std::reference_wrapper<const KeywordInfo>> getKeyword() const;
     void setKeyword(const KeywordInfo& keyword);
     TrieNode& getOrCreateCild(char c);
 

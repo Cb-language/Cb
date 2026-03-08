@@ -1,6 +1,7 @@
 #pragma once
 #include <filesystem>
 #include <iostream>
+#include <optional>
 #include <string>
 
 typedef unsigned char byte;
@@ -119,12 +120,12 @@ enum class TokenType : byte
 	CONST_STR,
 
 	// unidentified
-	UNDEFINED_TOKEN
+	ERROR_TOKEN
 };
 struct Token
 {
 	TokenType type;
-	std::string value;
+	std::optional<std::string> value;
 
 	size_t line;
 	size_t column;
@@ -133,7 +134,7 @@ struct Token
 
 	Token();
 
-	Token(TokenType type, const std::string &value, size_t line, size_t column, const std::filesystem::path& path);
+	Token(const TokenType type, const std::optional<std::string> &value, const size_t line, const size_t column, const std::filesystem::path& path);
 
 	bool isConst() const;
 };
