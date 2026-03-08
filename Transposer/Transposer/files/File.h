@@ -2,6 +2,7 @@
 #include <filesystem>
 
 #include "parser/Parser.h"
+#include "token/Tokenizer.h"
 
 class File
 {
@@ -20,6 +21,7 @@ private:
     bool analyzed = false;
     bool writen = false;
 
+    Tokenizer tokenizer;
     std::vector<Token> tokenize() const;
 
     static std::filesystem::path mainPath;
@@ -43,4 +45,6 @@ public:
 
     static void setOutDir(const std::filesystem::path& outDir);
     static const std::filesystem::path& getOutDir();
+
+    Parser& getParser();
 };

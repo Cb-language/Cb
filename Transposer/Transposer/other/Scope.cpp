@@ -79,7 +79,7 @@ void Scope::addVar(std::unique_ptr<IType> type, const Token& token)
         throw UnexpectedToken(token);
     }
 
-    Var v = Var(std::move(type) , token.value);
+    Var v = Var(std::move(type) , token.value.value());
     for (const auto& var : vars | std::views::keys)
     {
         if (v == var)

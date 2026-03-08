@@ -37,7 +37,7 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/InvalidExpression.h
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.cpp
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.h
-        Transposer/parser/Parser.cpp
+        Transposer/parser/Parser_org.cpp
         Transposer/parser/Parser.h
         Transposer/symbols/Type/Type.cpp
         Transposer/symbols/Type/Type.h
@@ -257,6 +257,9 @@ add_executable(Transposer
         Transposer/token/TrieTree/WordBoundary.h
         Transposer/token/TrieTree/Keywords.cpp
         Transposer/token/TrieTree/Keywords.h
+        Transposer/parser/Parser.cpp
+        Transposer/parser/ParserContext.h
+        Transposer/parser/ParserContext.cpp
 
 )
 

@@ -76,7 +76,7 @@ void File::write(const bool isMain)
 
         if(!fileH || !fileH.is_open())
         {
-            throw CouldntOpenFile(Token(TokenType::UNDEFINED_TOKEN, inPath.string(),0,0, outPathH), outPathH);
+            throw CouldntOpenFile(Token(TokenType::ERROR_TOKEN, inPath.string(),0,0, outPathH), outPathH);
         }
         fileH << parser.translateToH();
 
@@ -87,7 +87,7 @@ void File::write(const bool isMain)
 
     if(!fileCpp || !fileCpp.is_open())
     {
-        throw CouldntOpenFile(Token(TokenType::UNDEFINED_TOKEN, inPath.string(),0,0, outPathCpp), outPathCpp);
+        throw CouldntOpenFile(Token(TokenType::ERROR_TOKEN, inPath.string(),0,0, outPathCpp), outPathCpp);
     }
     fileCpp << parser.translateToCpp(outPathH, isMain);
 
@@ -96,28 +96,24 @@ void File::write(const bool isMain)
 
 const std::vector<std::unique_ptr<Error>>& File::getErrors() const
 {
-    return parser.getErrors();
+    return parser.getContext().getErrors();
 }
 
 std::vector<Token> File::tokenize() const
 {
-    std::wifstream file(inPath, std::ios::binary);
+    std::ifstream file(inPath, std::ios::binary);
 
     if(!file || !file.is_open())
     {
         throw CouldntOpenFile(Token(TokenType::COMMENT_SINGLE, inPath.string(),0,0, inPath), inPath);
     }
-    file.imbue(std::locale(file.getloc(), new std::codecvt_utf8<wchar_t>));
 
-    file.clear();
-    file.seekg(0);
-
-    const std::string data = std::string((std::istreambuf_iterator<wchar_t>(file)),
-                             std::istreambuf_iterator<wchar_t>());
+    const std::string data = std::string((std::istreambuf_iterator<char>(file)),
+                             std::istreambuf_iterator<char>());
 
     file.close();
 
-    return Tokenizer::tokenize(data, inPath);
+    return tokenizer.tokenize(data, inPath);
 }
 
 void File::setMainPath(const std::filesystem::path& mainPath)
@@ -138,4 +134,9 @@ void File::setOutDir(const std::filesystem::path& outDir)
 const std::filesystem::path& File::getOutDir()
 {
     return outDir;
+}
+
+Parser& File::getParser()
+{
+    return parser;
 }

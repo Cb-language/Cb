@@ -26,76 +26,6 @@ void Tokenizer::initTrieTree() const
     }
 }
 
-std::vector<Token> Tokenizer::tokenizeByTrieTree(const std::string& code, const std::filesystem::path& path) const
-{
-    std::vector<Token> tokens;
-    size_t row = 1;
-    size_t col = 0;
-    int codePos = 0;
-
-    while (codePos < code.size())
-    {
-        col++;
-
-        if (code[codePos] == ' ')
-        {
-            codePos++;
-            continue;
-        }
-
-        const TrieNode* current = trieTree.get();
-        const KeywordInfo* lastMatch = nullptr;
-        size_t lastMatchEnd = codePos;
-
-        for (size_t i = codePos; i < code.size() && current->getChild(code[i]); i++)
-        {
-            current = &current->getChild(code[i])->get();
-
-            if (const auto keyword = current->getKeyword())
-            {
-                lastMatch = &keyword->get();
-                lastMatchEnd = i + 1;
-            }
-
-            while (code[i] == ' ')
-            {
-                i++;
-            }
-        }
-
-        if (lastMatch && checkBoundary(code, lastMatch, codePos, lastMatchEnd))
-        {
-            codePos = handleKeywordMatch(code, row, col, lastMatch->type, tokens, lastMatchEnd, path);
-            continue;
-        }
-
-        // If not a keyword, resort word a REGEX const/identifier check.
-        std::string search_target = code.substr(codePos);
-        if (boost::smatch match; boost::regex_search(search_target, match, tokenRegex, boost::regex_constants::match_continuous))
-        {
-            auto type = TokenType::ERROR_TOKEN;
-            if (match["ConstFloat"].matched) type = TokenType::CONST_FLOAT;
-            else if (match["ConstInt"].matched) type = TokenType::CONST_INT;
-            else if (match["ConstChar"].matched) type = TokenType::CONST_CHAR;
-            else if (match["ConstStr"].matched) type = TokenType::CONST_STR;
-            else if (match["Identifier"].matched) type = TokenType::IDENTIFIER;
-
-            std::string match_str = match.str();
-            Token token(type, match_str, row, col, path);
-            onRegexToken(&token);
-            tokens.emplace_back(token);
-
-            codePos += match_str.length();
-            col += match_str.length() - 1; // col will be incremented at the start of next loop
-            continue;
-        }
-
-        tokens.emplace_back(TokenType::ERROR_TOKEN, std::nullopt, row, col, path); // if didnt match throw error
-        codePos++;
-    }
-    return tokens;
-}
-
 bool Tokenizer::checkBoundary(const std::string& code, const KeywordInfo* keyword, const size_t start, const size_t end)
 {
     if (!keyword)
@@ -193,4 +123,74 @@ Tokenizer::Tokenizer()
     }
 
     tokenRegex = boost::regex(regex, boost::regex::perl | boost::regex::optimize);
+}
+
+std::vector<Token> Tokenizer::tokenize(const std::string& code, const std::filesystem::path& path) const
+{
+    std::vector<Token> tokens;
+    size_t row = 1;
+    size_t col = 0;
+    int codePos = 0;
+
+    while (codePos < code.size())
+    {
+        col++;
+
+        if (code[codePos] == ' ')
+        {
+            codePos++;
+            continue;
+        }
+
+        const TrieNode* current = trieTree.get();
+        const KeywordInfo* lastMatch = nullptr;
+        size_t lastMatchEnd = codePos;
+
+        for (size_t i = codePos; i < code.size() && current->getChild(code[i]); i++)
+        {
+            current = &current->getChild(code[i])->get();
+
+            if (const auto keyword = current->getKeyword())
+            {
+                lastMatch = &keyword->get();
+                lastMatchEnd = i + 1;
+            }
+
+            while (code[i] == ' ')
+            {
+                i++;
+            }
+        }
+
+        if (lastMatch && checkBoundary(code, lastMatch, codePos, lastMatchEnd))
+        {
+            codePos = handleKeywordMatch(code, row, col, lastMatch->type, tokens, lastMatchEnd, path);
+            continue;
+        }
+
+        // If not a keyword, resort word a REGEX const/identifier check.
+        std::string search_target = code.substr(codePos);
+        if (boost::smatch match; boost::regex_search(search_target, match, tokenRegex, boost::regex_constants::match_continuous))
+        {
+            auto type = TokenType::ERROR_TOKEN;
+            if (match["ConstFloat"].matched) type = TokenType::CONST_FLOAT;
+            else if (match["ConstInt"].matched) type = TokenType::CONST_INT;
+            else if (match["ConstChar"].matched) type = TokenType::CONST_CHAR;
+            else if (match["ConstStr"].matched) type = TokenType::CONST_STR;
+            else if (match["Identifier"].matched) type = TokenType::IDENTIFIER;
+
+            std::string match_str = match.str();
+            Token token(type, match_str, row, col, path);
+            onRegexToken(&token);
+            tokens.emplace_back(token);
+
+            codePos += match_str.length();
+            col += match_str.length() - 1; // col will be incremented at the start of next loop
+            continue;
+        }
+
+        tokens.emplace_back(TokenType::ERROR_TOKEN, std::nullopt, row, col, path); // if didnt match throw error
+        codePos++;
+    }
+    return tokens;
 }

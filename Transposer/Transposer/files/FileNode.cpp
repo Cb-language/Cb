@@ -158,7 +158,7 @@ void FileNode::start()
     for (auto& child : children)
     {
         child->start();
-        file.parser.addToSymTable(child->file.parser.getSymTable());
+        file.getParser().getContext().addToSymTable(child->file.parser.getContext().getSymTable());
     }
 
     file.parse();
@@ -173,7 +173,7 @@ void FileNode::write(const bool isMain)
 
 bool FileNode::hasMain() const
 {
-    return file.parser.getHasMain();
+    return file.parser.getContext().getHasMain();
 }
 
 void FileNode::clear(const FileNode* main)

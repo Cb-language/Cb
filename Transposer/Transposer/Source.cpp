@@ -1,4 +1,5 @@
-﻿#include <iostream>
+﻿// ReSharper disable CppDFAUnreachableCode
+#include <iostream>
 #include <sstream>
 #include <filesystem>
 #include <vector>
@@ -25,8 +26,6 @@ int main(int argc, char* argv[])
     std::unique_ptr<CMD> cmd = CMDFactory::createCMD();
 
     cmd->setupConsole();
-
-    Tokenizer::init();
 
     if (argc != 4)
     {

@@ -14,11 +14,10 @@ private:
 
 
 	void initTrieTree() const;
-	std::vector<Token> tokenizeByTrieTree(const std::string& code, const std::filesystem::path& path) const;
 	static bool checkBoundary(const std::string &code, const KeywordInfo *keyword, const size_t start, const size_t end);
 	static size_t handleKeywordMatch(const std::string &code, size_t& row, size_t& col, const TokenType tokenType, std::vector<Token> &tokens, const size_t keywordEnd, const std::filesystem::path& path);
 	static void onRegexToken(Token *token);
 public:
 	Tokenizer();
-	std::vector<Token> tokenize(const std::string& code, const std::filesystem::path& path);
+	std::vector<Token> tokenize(const std::string& code, const std::filesystem::path& path) const;
 };
