@@ -7,10 +7,10 @@
 #include "errorHandling/syntaxErrors/MissingIdentifier.h"
 #include "errorHandling/syntaxErrors/MissingSemicolon.h"
 
-#include "errorHandling/semanticErrors/UnrecognizedIdentifier.h"
-
 #include "errorHandling/how/HowDidYouGetHere.h"
-
+#include "AST/statements/expression/VarCallExpr.h"
+#include "symbols/Type/ClassType.h"
+#include "symbols/Type/PrimitiveType.h"
 
 
 ExprParser::ExprParser(ParserContext& c, TypeParser& typeParser) : c(c), typeParser(typeParser)
@@ -53,19 +53,17 @@ static UnaryOp strToUnaryOp(const std::string& str)
     if (str == "𝄫") return UnaryOp::MinusMinusMinusMinus;
     if (str == "♮") return UnaryOp::Zero;
     if (str == "!") return UnaryOp::Not;
+    return UnaryOp::Zero;
 }
 
 std::unique_ptr<Expr> ExprParser::parseExpr(const bool needsSemicolon, const bool allowBackslash)
 {
     if (c.matchNonConsume(TokenType::IDENTIFIER))
     {
-        auto identifier = c.current();
-        c.advance();
-
         if (c.isUnaryOp())
                 return parseUnaryOpExpr(needsSemicolon);
 
-        if (c.current().type == TokenType::PUNCTUATION_BACKSLASH)
+        if (c.peek().type == TokenType::PUNCTUATION_BACKSLASH)
             return parseStaticDotOpExpr(needsSemicolon);
     }
 
@@ -94,10 +92,11 @@ std::unique_ptr<Expr> ExprParser::parsePrimary(const bool needsSemicolon, const 
 
         return std::make_unique<BinaryOpExpr>(
             t,
-
+            c.getFuncDecl(),
             op,
             nullptr,
-            std::move(right)
+            std::move(right),
+            c.getClassDecl()
         );
     }
 
@@ -180,19 +179,21 @@ std::unique_ptr<Expr> ExprParser::parseBinaryOpRight(const int exprPrec, std::un
 
             left = std::make_unique<DotOpExpr>(
                 t,
-
+                c.getFuncDecl(),
                 std::move(callLeft),
-                std::move(callRight)
+                std::move(callRight),
+                c.getClassDecl()
             );
         }
         else
         {
             left = std::make_unique<BinaryOpExpr>(
                 t,
-
+                c.getFuncDecl(),
                 op,
                 std::move(left),
-                std::move(right)
+                std::move(right),
+                c.getClassDecl()
             );
         }
     }
@@ -201,59 +202,50 @@ std::unique_ptr<Expr> ExprParser::parseBinaryOpRight(const int exprPrec, std::un
 std::unique_ptr<StaticDotOpExpr> ExprParser::parseStaticDotOpExpr(const bool needsSemicolon)
 {
     const Token& t = c.current();
-    c.advance();
-
-    auto type = c.getSymTable().getClass(t.value.value_or(""));
-
-    if (type == nullptr)
-    {
-        c.addError(std::make_unique<UnrecognizedIdentifier>(t));
-    }
+    c.advance(); // consume Identifier (Class Name)
 
     if (!c.expect(TokenType::PUNCTUATION_BACKSLASH, std::make_unique<UnexpectedToken>(c.current()))) return nullptr;
 
     std::unique_ptr<Call> right = nullptr;
 
-    try {
-        if (c.current().type == TokenType::PUNCTUATION_PARENTHESIS_OPEN) right = parseFuncCallExpr(needsSemicolon);
-        else right = parseCallExpr();
-    } catch (...) {
+    if (c.current().type == TokenType::IDENTIFIER && c.peek().type == TokenType::PUNCTUATION_PARENTHESIS_OPEN) 
+        right = parseFuncCallExpr(needsSemicolon);
+    else 
         right = parseCallExpr();
-    }
 
     if (!right) return nullptr;
 
     return std::make_unique<StaticDotOpExpr>(
         t,
-
-
-        std::make_unique<ClassType>(type),
+        c.getFuncDecl(),
+        std::make_unique<ClassType>(t.value.value()),
         std::move(right),
-        needsSemicolon);
+        needsSemicolon,
+        c.getClassDecl());
 }
 
 std::unique_ptr<ConstValueExpr> ExprParser::parseConstValueExpr() const
 {
     const Token& t = c.current();
     c.advance();
-    std::string type;
+    Primitive type;
 
     switch (t.type)
     {
     case TokenType::CONST_BOOL:
-        type = "mute";
+        type = Primitive::TYPE_MUTE;
         break;
     case TokenType::CONST_STR:
-        type = "bar";
+        type = Primitive::TYPE_BAR;
         break;
     case TokenType::CONST_CHAR:
-        type = "note";
+        type = Primitive::TYPE_NOTE;
         break;
     case TokenType::CONST_FLOAT:
-        type = "freq";
+        type = Primitive::TYPE_FREQ;
         break;
     case TokenType::CONST_INT:
-        type = "degree";
+        type = Primitive::TYPE_DEGREE;
         break;
     default:
         c.addError(std::make_unique<InvalidExpression>(t));
@@ -262,11 +254,10 @@ std::unique_ptr<ConstValueExpr> ExprParser::parseConstValueExpr() const
 
     return std::make_unique<ConstValueExpr>(
         t,
-
-
-
+        c.getFuncDecl(),
         std::make_unique<PrimitiveType>(type),
-        t.value.value()
+        t.value.value(),
+        c.getClassDecl()
     );
 }
 
@@ -274,7 +265,7 @@ std::unique_ptr<UnaryOpExpr> ExprParser::parseUnaryOpExpr(const bool needsSemico
 {
     const Token& t = c.current();
 
-    std::unique_ptr<Call> call = parseVarCallExpr(false);
+    std::unique_ptr<Call> call = parseCallExpr();
     if (!call) return nullptr;
 
     Token opToken;
@@ -290,37 +281,20 @@ std::unique_ptr<UnaryOpExpr> ExprParser::parseUnaryOpExpr(const bool needsSemico
 
     return std::make_unique<UnaryOpExpr>(
         t,
-
-
-
+        c.getFuncDecl(),
         std::move(call),
         strToUnaryOp(tokenToOp(opToken.type)),
-        needsSemicolon
+        needsSemicolon,
+        c.getClassDecl()
     );
 }
 
-std::unique_ptr<Call> ExprParser::parseVarCallExpr(const bool needsSemicolon)
+std::unique_ptr<Call> ExprParser::parseVarCallExpr(const bool needsSemicolon) const
 {
     const Token& t = c.current();
-
-    if (SymbolTable::getClass(t.value.value()))
-    {
-        return parseStaticDotOpExpr(false);
-    }
-
-    if(c.peek().value == "\\")
-    {
-        auto left = parseCallExpr();
-        const auto leftTypeWstr = left->getType()->getType();
-        auto expr = parseBinaryOpRight(0, std::move(left), false, true, SymbolTable::getClass(leftTypeWstr));
-        if (const auto callTemp = dynamic_cast<Call*>(expr.release()))
-        {
-            return std::unique_ptr<Call>(callTemp);
-        }
-        c.addError(std::make_unique<HowDidYouGetHere>(t));
-        return nullptr;
-    }
-    return parseCallExpr();
+    c.advance();
+    
+    return std::make_unique<VarCallExpr>(t, c.getFuncDecl(), Var(nullptr, t.value.value()), c.getClassDecl());
 }
 
 std::unique_ptr<Call> ExprParser::parseFuncCallExpr(const bool needsSemicolon)
@@ -354,15 +328,12 @@ std::unique_ptr<Call> ExprParser::parseFuncCallExpr(const bool needsSemicolon)
 
     auto call = std::make_unique<FuncCallExpr>(
         t,
-
-
-
+        c.getFuncDecl(),
         name,
         std::move(args),
-        needsSemicolon
+        needsSemicolon,
+        c.getClassDecl()
     );
-
-    c.getCallsQ().push(call.get());
 
     return call;
 }
@@ -438,13 +409,12 @@ std::unique_ptr<Call> ExprParser::parseArraySlicingExpr(std::unique_ptr<Call> ca
 
     return std::make_unique<ArraySlicingExpr>(
         t,
-
-
-
+        c.getFuncDecl(),
         std::move(call),
         std::move(start),
         std::move(stop),
-        std::move(step)
+        std::move(step),
+        c.getClassDecl()
     );
 }
 
@@ -460,10 +430,9 @@ std::unique_ptr<Call> ExprParser::parseArrayIndexingExpr(std::unique_ptr<Call> c
 
     return std::make_unique<ArrayIndexingExpr>(
         t,
-
-
-
+        c.getFuncDecl(),
         std::move(call),
-        std::move(index)
+        std::move(index),
+        c.getClassDecl()
     );
 }

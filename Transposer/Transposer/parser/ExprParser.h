@@ -34,7 +34,7 @@ public:
     std::unique_ptr<StaticDotOpExpr> parseStaticDotOpExpr(const bool needsSemicolon = false);
     std::unique_ptr<ConstValueExpr> parseConstValueExpr() const;
     std::unique_ptr<UnaryOpExpr> parseUnaryOpExpr(const bool needsSemicolon = false);
-    std::unique_ptr<Call> parseVarCallExpr(const bool needsSemicolon = false);
+    std::unique_ptr<Call> parseVarCallExpr(const bool needsSemicolon = false) const;
     std::unique_ptr<Call> parseFuncCallExpr(const bool needsSemicolon = false);
     std::unique_ptr<Call> parseCallExpr();
     std::unique_ptr<Call> parseArrayAccess(std::unique_ptr<Call> call);

@@ -31,7 +31,6 @@ public:
 
 
     void addError(std::unique_ptr<Error> err);
-    void synchronize();
 
     const Token& current() const;
     Token advance();
@@ -61,6 +60,7 @@ public:
     std::vector<std::unique_ptr<Error>>& getErrors();
     std::vector<std::unique_ptr<IncludeStmt>>& getIncludes();
     size_t getPos() const;
-    std::queue<FuncCredit>& getCreditsQ();
-    std::queue<FuncCallExpr*>& getCallsQ();
+
+    IFuncDeclStmt* getFuncDecl() const;
+    ClassDeclStmt* getClassDecl() const;
 };

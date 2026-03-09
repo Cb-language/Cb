@@ -241,6 +241,16 @@ size_t ParserContext::getPos() const
     return pos;
 }
 
+IFuncDeclStmt* ParserContext::getFuncDecl() const
+{
+    return funcDecl;
+}
+
+ClassDeclStmt* ParserContext::getClassDecl() const
+{
+    return classDecl;
+}
+
 std::vector<std::unique_ptr<Stmt>>& ParserContext::getStmts()
 {
     return stmts;
