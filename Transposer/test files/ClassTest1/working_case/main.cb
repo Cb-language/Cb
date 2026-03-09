@@ -2,7 +2,7 @@ feat. "derived.cb"║
 
 song prelude() -> degree
 ∮
-    Base d = Derived_call()║
+    Derived d = Derived_call()║
     d\a()║
     playBar(d\b())║
     B\ 0║
