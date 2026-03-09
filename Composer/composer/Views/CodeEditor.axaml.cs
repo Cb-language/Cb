@@ -240,7 +240,7 @@ public partial class CodeEditor : UserControl
                     case Key.OemTilde: replacement = "𝄡"; break; // ALT + ~ (or ` key)
                     case Key.D0: replacement = "♮"; break; // ALT + 0
                     case Key.C: replacement = "©"; break; // ALT + C
-                    case Key.OemQuestion: replacement = "𝄂"; break; // ALT + / (or ? key)
+                    case Key.OemQuestion: // ALT + / (or ? key)
                     case Key.Divide: replacement = "𝄂"; break; // ALT + Numpad /
                     case Key.OemPlus: replacement = "𝅘𝅥="; break; // ALT + Numpad +
                     case Key.D3: replacement = "𝄪"; break;  // ALT+ #
