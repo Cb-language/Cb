@@ -319,7 +319,7 @@ std::unique_ptr<Call> ExprParser::parseVarCallExpr(const bool isStmt)
 {
     const Token& t = c.current();
 
-    if (auto cls = SymbolTable::getClass(t.value.value()))
+    if (SymbolTable::getClass(t.value.value()))
     {
         return parseStaticDotOpExpr(false);
     }

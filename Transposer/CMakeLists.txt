@@ -266,6 +266,12 @@ add_executable(Transposer
         Transposer/parser/ExprParser.h
         Transposer/parser/TypeParser.cpp
         Transposer/parser/TypeParser.h
+        Transposer/errorHandling/syntaxErrors/NoLineOpener.cpp
+        Transposer/errorHandling/syntaxErrors/NoLineOpener.h
+        Transposer/errorHandling/how/HowDareYou.cpp
+        Transposer/errorHandling/how/HowDareYou.h
+        Transposer/errorHandling/syntaxErrors/NoNewLine.cpp
+        Transposer/errorHandling/syntaxErrors/NoNewLine.h
 
 )
 
