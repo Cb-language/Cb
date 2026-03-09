@@ -3,6 +3,7 @@
 #include "class/ClassNode.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "../../errorHandling/classErrors/InstantiateAbstractClass.h"
+#include "symbols/Type/ClassType.h"
 
 ObjCreationStmt::ObjCreationStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
                                  const ClassNode* classNode, const bool hasStartingValue, std::unique_ptr<ConstractorCallStmt> startingValue,
@@ -15,9 +16,16 @@ ObjCreationStmt::ObjCreationStmt(const Token& token, Scope* scope, IFuncDeclStmt
 
 void ObjCreationStmt::analyze() const
 {
-    if (classNode->getClass().isAbstract())
+    if (startingValue != nullptr)
     {
-        throw InstantiateAbstractClass(token);
+        const auto type = startingValue->getType()->copy();
+        if (const auto clsPtr = dynamic_cast<ClassType*>(type.get()))
+        {
+            if (clsPtr->getClass()->isAbstract())
+            {
+                throw InstantiateAbstractClass(token);
+            }
+        }
     }
     VarDeclStmt::analyze();
 }
