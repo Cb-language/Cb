@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 
-#include "Type/Type.h"
+#include "Type/PrimitiveType.h"
 #include "Var.h"
 #include "AST/abstract/VirtualType.h"
 

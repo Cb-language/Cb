@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include <string>
-#include "Type/Type.h"
+#include "Type/PrimitiveType.h"
 
 class Var
 {

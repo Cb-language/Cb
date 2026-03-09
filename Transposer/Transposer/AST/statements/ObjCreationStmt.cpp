@@ -21,7 +21,7 @@ void ObjCreationStmt::analyze() const
         const auto type = startingValue->getType()->copy();
         if (const auto clsPtr = dynamic_cast<ClassType*>(type.get()))
         {
-            if (clsPtr->getClass()->isAbstract())
+            if (clsPtr->getClassNode()->isAbstract())
             {
                 throw InstantiateAbstractClass(token);
             }

@@ -45,7 +45,7 @@ void ClassTree::init()
         {
             PUBLIC,
             Func(
-                std::make_unique<Type>("bar"),
+                std::make_unique<PrimitiveType>("bar"),
                 "toString",
                 std::vector<Var>(),
                 VirtualType::NONE)

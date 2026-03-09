@@ -3,9 +3,8 @@
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "other/SymbolTable.h"
 
-ClassType::ClassType(const ClassNode* c) : IType(c != nullptr ? c->getClass().getClassName() : ""), c(c)
+ClassType::ClassType(const std::string& name) : name(name), c(nullptr)
 {
-    if (c == nullptr) throw HowDidYouGetHere(Token());
 }
 
 ClassType::~ClassType()
@@ -20,16 +19,6 @@ bool ClassType::operator==(const IType& other) const
 }
 
 bool ClassType::operator!=(const IType& other) const
-{
-    return !(*this == other);
-}
-
-bool ClassType::operator==(const std::string& other) const
-{
-    return *this == ClassType(SymbolTable::getClass(other));
-}
-
-bool ClassType::operator!=(const std::string& other) const
 {
     return !(*this == other);
 }
@@ -49,22 +38,22 @@ bool ClassType::isPrimitive() const
     return false;
 }
 
-std::string ClassType::getType() const
-{
-    return type;
-}
-
-const ClassNode* ClassType::getClass() const
+const ClassNode* ClassType::getClassNode() const
 {
     return c;
 }
 
+void ClassType::setClassNode(const ClassNode& node)
+{
+    c = &node;
+}
+
 std::string ClassType::translateTypeToCpp() const
 {
-    return "SafePtr<" + type + ">";
+    return "SafePtr<" + name + ">";
 }
 
 std::unique_ptr<IType> ClassType::copy() const
 {
-    return std::make_unique<ClassType>(c);
+    return std::make_unique<ClassType>(name);
 }

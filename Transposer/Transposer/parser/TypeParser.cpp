@@ -1,5 +1,5 @@
 #include "TypeParser.h"
-#include "symbols/Type/Type.h"
+#include "symbols/Type/PrimitiveType.h"
 #include "symbols/Type/ArrayType.h"
 #include "symbols/Type/ClassType.h"
 #include "errorHandling/lexicalErrors/UnrecognizedToken.h"
@@ -23,9 +23,7 @@ std::unique_ptr<IType> TypeParser::parseIType()
         return parseArrayType();
     } // if not array try primitive types
 
-    if (c.isType()) return parseType();
-
-    return parseClassType(); // if not array and not primitive parse class
+    return parseType();
 }
 
 std::unique_ptr<IType> TypeParser::parseType() const
@@ -57,12 +55,12 @@ std::unique_ptr<IType> TypeParser::parseType() const
     std::string value = "";
     switch (typeToken.type)
     {
-        case TokenType::TYPE_DEGREE: value = "degree"; break;
-        case TokenType::TYPE_FREQ:   value = "freq";   break;
-        case TokenType::TYPE_NOTE:   value = "note";   break;
-        case TokenType::TYPE_MUTE:   value = "mute";   break;
-        case TokenType::TYPE_BAR:    value = "bar";    break;
-        case TokenType::TYPE_FERMATA:value = "fermata";break;
+        case TokenType::TYPE_DEGREE:  value = "degree";  break;
+        case TokenType::TYPE_FREQ:    value = "freq";    break;
+        case TokenType::TYPE_NOTE:    value = "note";    break;
+        case TokenType::TYPE_MUTE:    value = "mute";    break;
+        case TokenType::TYPE_BAR:     value = "bar";     break;
+        case TokenType::TYPE_FERMATA: value = "fermata"; break;
         default: break;
     }
 
@@ -72,7 +70,7 @@ std::unique_ptr<IType> TypeParser::parseType() const
         return nullptr;
     }
 
-    return std::make_unique<Type>(prefix + value);
+    return std::make_unique<PrimitiveType>(prefix + value);
 }
 
 std::unique_ptr<IType> TypeParser::parseArrayType()
@@ -81,18 +79,4 @@ std::unique_ptr<IType> TypeParser::parseArrayType()
     if (!arrType) return nullptr;
 
     return std::make_unique<ArrayType>(std::move(arrType));
-}
-
-std::unique_ptr<IType> TypeParser::parseClassType() const
-{
-    const std::string classname = c.current().value.value_or("");
-    Token classToken;
-    if (!c.expect(TokenType::IDENTIFIER, std::make_unique<MissingBrace>(c.current()), classToken)) return nullptr;
-
-    if (auto cls = c.getSymTable().getClass(classname))
-    {
-        return std::make_unique<ClassType>(cls);
-    }
-
-    return nullptr;
 }

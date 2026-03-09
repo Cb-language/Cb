@@ -206,16 +206,6 @@ bool ParserContext::isType() const
     return (current().type >= TokenType::TYPE_FLAT && current().type <= TokenType::TYPE_FERMATA);
 }
 
-void ParserContext::addToSymTable(const SymbolTable& symTable)
-{
-    this->symTable += symTable;
-}
-
-const SymbolTable& ParserContext::getSymTable() const
-{
-    return symTable;
-}
-
 bool ParserContext::getHasMain() const
 {
     return hasMain;
@@ -244,11 +234,6 @@ const std::vector<Token>& ParserContext::getTokens() const
 size_t ParserContext::getPos() const
 {
     return pos;
-}
-
-SymbolTable& ParserContext::getSymTable()
-{
-    return symTable;
 }
 
 std::vector<std::unique_ptr<Stmt>>& ParserContext::getStmts()

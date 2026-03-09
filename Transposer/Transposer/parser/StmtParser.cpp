@@ -398,7 +398,7 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
     }
     else
     {
-        retType = std::make_unique<Type>("fermata");
+        retType = std::make_unique<PrimitiveType>("fermata");
     }
 
     // Handle copyright/credits if any?

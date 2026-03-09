@@ -26,30 +26,30 @@ std::unique_ptr<IType> BinaryOpExpr::getType() const
         op == "<"  || op == ">"  ||
         op == "<=" || op == ">=")
     {
-        return std::make_unique<Type>("mute");
+        return std::make_unique<PrimitiveType>("mute");
     }
 
     // Logical operators
     if (op == "chord" || op == "divis")
     {
-        return std::make_unique<Type>("mute");
+        return std::make_unique<PrimitiveType>("mute");
     }
 
     // the // op
     if (op == "//")
     {
-        return std::make_unique<Type>("freq");
+        return std::make_unique<PrimitiveType>("freq");
     }
 
     // Arithmetic operators
     if (op == "+")
     {
         if (leftType->getType() == "bar" || rightType->getType() == "bar")
-            return std::make_unique<Type>("bar");
+            return std::make_unique<PrimitiveType>("bar");
         if (*leftType == "freq" || *rightType == "freq")
-            return std::make_unique<Type>("freq");
+            return std::make_unique<PrimitiveType>("freq");
         if (*leftType == "note" || *rightType == "note")
-            return std::make_unique<Type>("note");
+            return std::make_unique<PrimitiveType>("note");
     }
 
     if (op == "-" ||
@@ -62,15 +62,15 @@ std::unique_ptr<IType> BinaryOpExpr::getType() const
 
         // Otherwise: promote
         if (*leftType == "freq" || *rightType == "freq")
-            return std::make_unique<Type>("freq");
+            return std::make_unique<PrimitiveType>("freq");
         if (*leftType == "note" || *rightType == "note")
-            return std::make_unique<Type>("note");
+            return std::make_unique<PrimitiveType>("note");
 
         // Otherwise int
-        return std::make_unique<Type>("degree");
+        return std::make_unique<PrimitiveType>("degree");
     }
 
-    return std::make_unique<Type>("fermata");
+    return std::make_unique<PrimitiveType>("fermata");
 }
 
 void BinaryOpExpr::analyze() const

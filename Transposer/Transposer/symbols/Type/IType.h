@@ -1,28 +1,21 @@
 #pragma once
 #include <string>
 
+#include "PrimitiveType.h"
+#include "PrimitiveType.h"
 #include "other/Utils.h"
 
 class IType
 {
-protected:
-    const std::string type;
-    
 public:
-    explicit IType(const std::string& type) : type(type) {};
-    explicit IType(IType* other) : type(other->getType()) {};
     virtual ~IType() = default;
     virtual bool operator==(const IType& other) const = 0;
     virtual bool operator!=(const IType& other) const = 0;
-    virtual bool operator==(const std::string &other) const = 0;
-    virtual bool operator!=(const std::string &other) const = 0;
 
     virtual bool isNumberable() const = 0;
     virtual bool isStringable() const = 0;
 
     virtual bool isPrimitive() const = 0;
-
-    virtual std::string getType() const = 0;
 
     virtual std::string translateTypeToCpp() const = 0;
 
@@ -32,8 +25,5 @@ public:
 
     virtual std::unique_ptr<IType> getArrType() const {return nullptr;}
 
-    std::string toString() const
-    {
-        return this->getType();
-    }
+    virtual std::string toString() const = 0;
 };

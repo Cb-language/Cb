@@ -39,8 +39,8 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.h
         Transposer/parser/Parser_org.cpp
         Transposer/parser/Parser.h
-        Transposer/symbols/Type/Type.cpp
-        Transposer/symbols/Type/Type.h
+        Transposer/symbols/Type/PrimitiveType.cpp
+        Transposer/symbols/Type/PrimitiveType.h
         Transposer/AST/abstract/Expression.h
         Transposer/AST/statements/expression/ConstValueExpr.cpp
         Transposer/AST/statements/expression/ConstValueExpr.h

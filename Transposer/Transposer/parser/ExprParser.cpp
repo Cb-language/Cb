@@ -277,7 +277,7 @@ std::unique_ptr<ConstValueExpr> ExprParser::parseConstValueExpr() const
         c.getSymTable().getCurrScope(),
         c.getSymTable().getCurrFunc(),
         c.getSymTable().getCurrClass(),
-        std::make_unique<Type>(type),
+        std::make_unique<PrimitiveType>(type),
         t.value.value()
     );
 }

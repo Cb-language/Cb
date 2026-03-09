@@ -4,7 +4,7 @@
 #include <vector>
 #include <memory>
 
-#include "../../../symbols/Type/Type.h"
+#include "../../../symbols/Type/PrimitiveType.h"
 #include "AST/abstract/Call.h"
 #include "symbols/Func.h"
 
