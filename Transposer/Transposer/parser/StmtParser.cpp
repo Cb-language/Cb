@@ -83,7 +83,7 @@ void StmtParser::parse()
 
 std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBreakable, const bool isContinueAble)
 {
-    if (c.matchConsume(TokenType::PUNCTUATION_NEW_LINE))
+    if (c.matchNonConsume(TokenType::PUNCTUATION_NEW_LINE))
     {
         c.advance();
 
@@ -91,14 +91,14 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
             c.expect(TokenType::PUNCTUATION_OPEN_LINE, std::make_unique<NoLineOpener>(c.current()));
     }
 
-    if (c.matchConsume(TokenType::KEYWORD_C_CLEF))
+    if (c.matchNonConsume(TokenType::KEYWORD_C_CLEF))
     {
         throw HowDareYou(c.current());
     }
 
-    if (c.matchConsume(TokenType::PUNCTUATION_REST))
+    if (c.matchNonConsume(TokenType::PUNCTUATION_REST))
     {
-        while (c.matchConsume(TokenType::PUNCTUATION_REST))
+        while (c.matchNonConsume(TokenType::PUNCTUATION_REST))
         {
             c.advance();
             c.expect(TokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.current()));
@@ -107,7 +107,7 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
         }
     }
 
-    if (c.matchConsume(TokenType::TYPE_RIFF))
+    if (c.matchNonConsume(TokenType::TYPE_RIFF))
     {
         return parseArrayDeclStmt();
     }
@@ -115,76 +115,70 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
     {
         return parseVarDecStmt();
     }
-    if (c.matchConsume(TokenType::IDENTIFIER) && c.getSymTable().isClass(c.current().value.value_or("")))
+    if (c.matchNonConsume(TokenType::IDENTIFIER))
     {
-        // Check if it's obj creation or something else
-        return parseObjCreationStmt();
+        if (c.peek().type == TokenType::IDENTIFIER)
+        {
+            return parseObjCreationStmt();
+        }
+        // Check if it's obj creation or something else4
+        //TODO be magniv
     }
-    if (c.matchConsume(TokenType::IDENTIFIER) && c.isUnaryOpStmtAhead())
+    if (c.matchNonConsume(TokenType::IDENTIFIER) && c.isUnaryOpStmtAhead())
     {
         auto expr = exprParser.parseUnaryOpExpr(true);
         return std::unique_ptr<Stmt>(dynamic_cast<Stmt*>(expr.release()));
     }
-    if (c.matchConsume(TokenType::IDENTIFIER) && c.isAssignmentStmtAhead())
+    if (c.matchNonConsume(TokenType::IDENTIFIER) && c.isAssignmentStmtAhead())
     {
         return parseAssignmentStmt();
     }
-    if (c.matchConsume(TokenType::KEYWORD_HEAR))
+    if (c.matchNonConsume(TokenType::KEYWORD_HEAR))
     {
         return parseHearStmt();
     }
-    if (c.matchConsume(TokenType::KEYWORD_PLAY) || c.matchConsume(TokenType::KEYWORD_PLAYBAR))
+    if (c.matchNonConsume(TokenType::KEYWORD_PLAY) || c.matchNonConsume(TokenType::KEYWORD_PLAYBAR))
     {
         return parsePlayStmt();
     }
-    if (c.matchConsume(TokenType::KEYWORD_SONG))
+    if (c.matchNonConsume(TokenType::KEYWORD_SONG))
     {
         return parseFuncDeclStmt();
     }
-    if (c.matchConsume(TokenType::KEYWORD_RETURN))
+    if (c.matchNonConsume(TokenType::KEYWORD_RETURN))
     {
         return parseReturnStmt();
     }
-    if (c.matchConsume(TokenType::KEYWORD_IF))
+    if (c.matchNonConsume(TokenType::KEYWORD_IF))
     {
         return parseIfStmt();
     }
-    if (c.matchConsume(TokenType::KEYWORD_WHILE))
+    if (c.matchNonConsume(TokenType::KEYWORD_WHILE))
     {
         return parseWhileStmt();
     }
-    if (c.matchConsume(TokenType::KEYWORD_SWITCH))
+    if (c.matchNonConsume(TokenType::KEYWORD_SWITCH))
     {
         return parseSwitchStmt();
     }
-    if (c.matchConsume(TokenType::KEYWORD_PAUSE))
+    if (c.matchNonConsume(TokenType::KEYWORD_PAUSE))
     {
-        if (!c.getSymTable().getCurrScope()->getIsBreakable())
-        {
-            c.addError(std::make_unique<StmtNotBreakable>(c.current()));
-            return nullptr;
-        }
         return parseBreakStmt();
     }
-    if (c.matchConsume(TokenType::KEYWORD_RESUME))
+    if (c.matchNonConsume(TokenType::KEYWORD_RESUME))
     {
-        if (!c.getSymTable().getCurrScope()->getIsContinueAble())
-        {
-            c.addError(std::make_unique<StmtNotContinueAble>(c.current()));
-            return nullptr;
-        }
         return parseContinueStmt();
     }
-    if (c.matchConsume(TokenType::KEYWORD_FMAJ) || c.matchConsume(TokenType::KEYWORD_FMIN))
+    if (c.matchNonConsume(TokenType::KEYWORD_FMAJ) || c.matchNonConsume(TokenType::KEYWORD_FMIN))
     {
         return parseForStmt();
     }
-    if (c.matchConsume(TokenType::KEYWORD_INSTRUMENT))
+    if (c.matchNonConsume(TokenType::KEYWORD_INSTRUMENT))
     {
         return parseClassDeclStmt();
     }
 
-    if (c.matchConsume(TokenType::IDENTIFIER))
+    if (c.matchNonConsume(TokenType::IDENTIFIER))
     {
         // Might be a function call as a statement
         if (c.peek().type == TokenType::PUNCTUATION_PARENTHESIS_OPEN)
@@ -209,7 +203,7 @@ std::unique_ptr<VarDeclStmt> StmtParser::parseVarDecStmt(const bool isField) con
     const std::string name = nameToken.value.value();
 
     std::unique_ptr<Expr> init = nullptr;
-    if (c.matchConsume(TokenType::ASSIGNMENT_OP_EQUAL))
+    if (c.matchNonConsume(TokenType::ASSIGNMENT_OP_EQUAL))
     {
         c.advance();
         init = exprParser.parseExpr();
@@ -220,9 +214,9 @@ std::unique_ptr<VarDeclStmt> StmtParser::parseVarDecStmt(const bool isField) con
 
     auto stmt = std::make_unique<VarDeclStmt>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         init != nullptr,
         std::move(init),
         Var(std::move(type), name)
@@ -254,9 +248,9 @@ std::unique_ptr<AssignmentStmt> StmtParser::parseAssignmentStmt() const
 
     return std::make_unique<AssignmentStmt>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         std::unique_ptr<Call>(dynamic_cast<Call*>(left.release())),
         opToken.value.value_or("="),
         std::move(right)
@@ -280,9 +274,9 @@ std::unique_ptr<HearStmt> StmtParser::parseHearStmt()
 
     return std::make_unique<HearStmt>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         std::move(var)
     );
 }
@@ -290,7 +284,7 @@ std::unique_ptr<HearStmt> StmtParser::parseHearStmt()
 std::unique_ptr<PlayStmt> StmtParser::parsePlayStmt()
 {
     const Token& t = c.current();
-    bool isBar = c.matchConsume(TokenType::KEYWORD_PLAYBAR);
+    bool isBar = c.matchNonConsume(TokenType::KEYWORD_PLAYBAR);
     c.advance();
 
     if (!c.expect(TokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.current()))) return nullptr;
@@ -305,9 +299,9 @@ std::unique_ptr<PlayStmt> StmtParser::parsePlayStmt()
 
     return std::make_unique<PlayStmt>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         std::move(expr),
         isBar
     );
@@ -328,11 +322,11 @@ std::unique_ptr<BodyStmt> StmtParser::parseBodyStmt(const std::vector<std::pair<
     }
 
     std::vector<std::unique_ptr<Stmt>> bodyStmts;
-    while (!c.isAtEnd() && (!hasBrace || !c.matchConsume(TokenType::PUNCTUATION_CLOSE_CURLY_BRACKET)))
+    while (!c.isAtEnd() && (!hasBrace || !c.matchNonConsume(TokenType::PUNCTUATION_CLOSE_CURLY_BRACKET)))
     {
-        if (c.matchConsume(TokenType::PUNCTUATION_REST)) {
+        if (c.matchNonConsume(TokenType::PUNCTUATION_REST)) {
             c.advance();
-            if (c.matchConsume(TokenType::PUNCTUATION_SEMICOLON) || c.matchConsume(TokenType::PUNCTUATION_CLOSE_FILE)) c.advance();
+            if (c.matchNonConsume(TokenType::PUNCTUATION_SEMICOLON) || c.matchNonConsume(TokenType::PUNCTUATION_CLOSE_FILE)) c.advance();
             continue;
         }
 
@@ -354,8 +348,8 @@ std::unique_ptr<BodyStmt> StmtParser::parseBodyStmt(const std::vector<std::pair<
     return std::make_unique<BodyStmt>(
         t,
         scope,
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
         bodyStmts,
         isGlobal
     );
@@ -373,7 +367,7 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
     if (!c.expect(TokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.current()))) return nullptr;
 
     std::vector<std::pair<Var, const Token>> args;
-    while (!c.matchConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+    while (!c.matchNonConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE))
     {
         auto type = typeParser.parseIType();
         if (!type) return nullptr;
@@ -383,7 +377,7 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
 
         args.emplace_back(Var(std::move(type), argNameToken.value.value_or("")), argNameToken);
 
-        if (!c.matchConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+        if (!c.matchNonConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE))
         {
             if (!c.expect(TokenType::PUNCTUATION_COMMA, std::make_unique<UnexpectedToken>(c.current()))) return nullptr;
         }
@@ -391,7 +385,7 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
     c.advance();
 
     std::unique_ptr<IType> retType = nullptr;
-    if (c.matchConsume(TokenType::PUNCTUATION_RET_TYPE_ARROW))
+    if (c.matchNonConsume(TokenType::PUNCTUATION_RET_TYPE_ARROW))
     {
         c.advance();
         retType = typeParser.parseIType();
@@ -403,14 +397,14 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
 
     // Handle copyright/credits if any?
     std::vector<std::unique_ptr<FuncCreditStmt>> credited;
-    if (c.matchConsume(TokenType::PUNCTUATION_COPYRIGHT)) {
+    if (c.matchNonConsume(TokenType::PUNCTUATION_COPYRIGHT)) {
         c.advance();
-        if (c.matchConsume(TokenType::PUNCTUATION_PARENTHESIS_OPEN)) {
+        if (c.matchNonConsume(TokenType::PUNCTUATION_PARENTHESIS_OPEN)) {
             c.advance();
-            while (!c.matchConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE)) {
+            while (!c.matchNonConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE)) {
                 auto credit = parseFuncCreditStmt();
                 if (credit) credited.push_back(std::move(credit));
-                if (!c.matchConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(TokenType::PUNCTUATION_COMMA);
+                if (!c.matchNonConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(TokenType::PUNCTUATION_COMMA);
             }
             c.advance();
         }
@@ -418,9 +412,9 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
 
     auto funcStmt = std::make_unique<FuncDeclStmt>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         name,
         std::move(retType),
         args,
@@ -444,9 +438,9 @@ std::unique_ptr<ReturnStmt> StmtParser::parseReturnStmt()
     c.advance();
 
     std::unique_ptr<Expr> expr = nullptr;
-    if (!c.matchConsume(TokenType::PUNCTUATION_SEMICOLON) && !c.matchConsume(TokenType::PUNCTUATION_CLOSE_FILE))
+    if (!c.matchNonConsume(TokenType::PUNCTUATION_SEMICOLON) && !c.matchNonConsume(TokenType::PUNCTUATION_CLOSE_FILE))
     {
-        if (c.matchConsume(TokenType::PUNCTUATION_BACKSLASH)) c.advance();
+        if (c.matchNonConsume(TokenType::PUNCTUATION_BACKSLASH)) c.advance();
         expr = exprParser.parseExpr();
     }
 
@@ -455,9 +449,9 @@ std::unique_ptr<ReturnStmt> StmtParser::parseReturnStmt()
 
     return std::make_unique<ReturnStmt>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         std::move(expr)
     );
 }
@@ -470,9 +464,9 @@ std::unique_ptr<FuncCreditStmt> StmtParser::parseFuncCreditStmt()
 
     return std::make_unique<FuncCreditStmt>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         nameToken.value.value_or("")
     );
 }
@@ -490,18 +484,18 @@ std::unique_ptr<IfStmt> StmtParser::parseIfStmt()
     auto thenBody = parseBodyStmt({}, false, false, false, true);
 
     std::unique_ptr<Stmt> elseBody = nullptr;
-    if (c.matchConsume(TokenType::KEYWORD_ELSE))
+    if (c.matchNonConsume(TokenType::KEYWORD_ELSE))
     {
         c.advance();
-        if (c.matchConsume(TokenType::KEYWORD_IF)) elseBody = parseIfStmt();
+        if (c.matchNonConsume(TokenType::KEYWORD_IF)) elseBody = parseIfStmt();
         else elseBody = parseBodyStmt({}, false, false, false, true);
     }
 
     return std::make_unique<IfStmt>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         std::move(cond),
         std::move(thenBody),
         std::move(elseBody)
@@ -518,7 +512,7 @@ std::unique_ptr<ArrayDeclStmt> StmtParser::parseArrayDeclStmt()
     if (!c.expect(TokenType::IDENTIFIER, std::make_unique<MissingIdentifier>(c.current()), nameToken)) return nullptr;
 
     std::unique_ptr<Expr> size = nullptr;
-    if (c.matchConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE)) {
+    if (c.matchNonConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE)) {
         c.advance();
         size = exprParser.parseExpr();
         c.expect(TokenType::PUNCTUATION_CLOSE_SQUARE_BRACE);
@@ -529,9 +523,9 @@ std::unique_ptr<ArrayDeclStmt> StmtParser::parseArrayDeclStmt()
 
     auto stmt = std::make_unique<ArrayDeclStmt>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         Var(std::move(type), nameToken.value.value_or("")),
         std::move(size)
     );
@@ -553,9 +547,9 @@ std::unique_ptr<WhileStmt> StmtParser::parseWhileStmt()
 
     return std::make_unique<WhileStmt>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         std::move(cond),
         std::move(body)
     );
@@ -567,7 +561,7 @@ std::unique_ptr<BreakStmt> StmtParser::parseBreakStmt()
     c.advance();
     if (!c.expect(TokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.current())) &&
         !c.expect(TokenType::PUNCTUATION_CLOSE_FILE, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
-    return std::make_unique<BreakStmt>(t, c.getSymTable().getCurrScope(), c.getSymTable().getCurrFunc(), c.getSymTable().getCurrClass());
+    return std::make_unique<BreakStmt>(t,  c.getSymTable().getCurrClass());
 }
 
 std::unique_ptr<CaseStmt> StmtParser::parseCaseStmt()
@@ -582,9 +576,9 @@ std::unique_ptr<CaseStmt> StmtParser::parseCaseStmt()
 
     return std::make_unique<CaseStmt>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         std::move(val),
         nullptr // body set by switch
     );
@@ -603,9 +597,9 @@ std::unique_ptr<SwitchStmt> StmtParser::parseSwitchStmt()
     if (!c.expect(TokenType::PUNCTUATION_OPEN_CURLY_BRACKET, std::make_unique<MissingBrace>(c.current()))) return nullptr;
 
     std::vector<std::unique_ptr<CaseStmt>> cases;
-    while (!c.matchConsume(TokenType::PUNCTUATION_CLOSE_CURLY_BRACKET))
+    while (!c.matchNonConsume(TokenType::PUNCTUATION_CLOSE_CURLY_BRACKET))
     {
-        if (c.matchConsume(TokenType::KEYWORD_CASE))
+        if (c.matchNonConsume(TokenType::KEYWORD_CASE))
         {
             auto cs = parseCaseStmt();
             if (cs) cases.push_back(std::move(cs));
@@ -616,9 +610,9 @@ std::unique_ptr<SwitchStmt> StmtParser::parseSwitchStmt()
 
     return std::make_unique<SwitchStmt>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         std::move(expr),
         cases
     );
@@ -630,42 +624,42 @@ std::unique_ptr<ContinueStmt> StmtParser::parseContinueStmt()
     c.advance();
     if (!c.expect(TokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.current())) &&
         !c.expect(TokenType::PUNCTUATION_CLOSE_FILE, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
-    return std::make_unique<ContinueStmt>(t, c.getSymTable().getCurrScope(), c.getSymTable().getCurrFunc(), c.getSymTable().getCurrClass());
+    return std::make_unique<ContinueStmt>(t,  c.getSymTable().getCurrClass());
 }
 
 std::unique_ptr<ForStmt> StmtParser::parseForStmt()
 {
     const Token& t = c.current();
-    bool isUp = c.matchConsume(TokenType::KEYWORD_FMAJ);
+    bool isUp = c.matchNonConsume(TokenType::KEYWORD_FMAJ);
     c.advance();
 
     if (!c.expect(TokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.current()))) return nullptr;
-    
+
     auto type = typeParser.parseIType();
     Token varToken;
     c.expect(TokenType::IDENTIFIER, nullptr, varToken);
-    
+
     c.expect(TokenType::ASSIGNMENT_OP_EQUAL);
     auto start = exprParser.parseExpr();
-    
+
     c.expect(TokenType::PUNCTUATION_COLON);
     auto stop = exprParser.parseExpr();
-    
+
     std::unique_ptr<Expr> step = nullptr;
-    if (c.matchConsume(TokenType::PUNCTUATION_COLON)) {
+    if (c.matchNonConsume(TokenType::PUNCTUATION_COLON)) {
         c.advance();
         step = exprParser.parseExpr();
     }
-    
+
     c.expect(TokenType::PUNCTUATION_PARENTHESIS_CLOSE);
 
     auto body = parseBodyStmt({}, false, true, true, true);
 
     return std::make_unique<ForStmt>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         Var(std::move(type), varToken.value.value_or("")),
         std::move(start),
         std::move(stop),
@@ -682,9 +676,9 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
 
     Token nameToken;
     c.expect(TokenType::IDENTIFIER, nullptr, nameToken);
-    
+
     std::string parentName = "";
-    if (c.matchConsume(TokenType::PUNCTUATION_COLON)) {
+    if (c.matchNonConsume(TokenType::PUNCTUATION_COLON)) {
         c.advance();
         Token pToken;
         c.expect(TokenType::IDENTIFIER, nullptr, pToken);
@@ -693,32 +687,32 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
 
     auto stmt = std::make_unique<ClassDeclStmt>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         nameToken.value.value_or(""),
         parentName
     );
-    
+
     c.getSymTable().addClass(stmt->getCurrClass(), nameToken);
     c.getSymTable().setCurrClass(stmt.get());
-    
+
     c.expect(TokenType::PUNCTUATION_OPEN_CURLY_BRACKET);
-    
+
     std::vector<Field> fields;
     std::vector<Method> methods;
     std::vector<Ctor> ctors;
-    
-    while (!c.matchConsume(TokenType::PUNCTUATION_CLOSE_CURLY_BRACKET)) {
-        if (c.matchConsume(TokenType::KEYWORD_PLAYERSCORE) || c.matchConsume(TokenType::KEYWORD_CONDUCTORSCORE) || c.matchConsume(TokenType::KEYWORD_SECTIONSCORE)) {
+
+    while (!c.matchNonConsume(TokenType::PUNCTUATION_CLOSE_CURLY_BRACKET)) {
+        if (c.matchNonConsume(TokenType::KEYWORD_PLAYERSCORE) || c.matchNonConsume(TokenType::KEYWORD_CONDUCTORSCORE) || c.matchNonConsume(TokenType::KEYWORD_SECTIONSCORE)) {
              // handle access
              c.advance();
         }
-        
-        if (c.matchConsume(TokenType::KEYWORD_BASS)) {
+
+        if (c.matchNonConsume(TokenType::KEYWORD_BASS)) {
             auto ctor = parseCtor();
             if (ctor) ctors.emplace_back(AccessType::PRIVATE, std::move(ctor));
-        } else if (c.matchConsume(TokenType::KEYWORD_SONG)) {
+        } else if (c.matchNonConsume(TokenType::KEYWORD_SONG)) {
             auto method = parseFuncDeclStmt(true);
             if (method) methods.emplace_back(AccessType::PRIVATE, std::move(method));
         } else if (c.isType()) {
@@ -729,11 +723,11 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
         }
     }
     c.advance();
-    
+
     stmt->setFields(fields);
     stmt->setMethods(methods);
     stmt->setCtors(ctors);
-    
+
     c.getSymTable().setCurrClass(nullptr);
     return stmt;
 }
@@ -742,27 +736,27 @@ std::unique_ptr<ConstractorDeclStmt> StmtParser::parseCtor()
 {
     const Token& t = c.current();
     c.advance();
-    
+
     c.expect(TokenType::PUNCTUATION_PARENTHESIS_OPEN);
     // parse args...
     std::vector<std::pair<Var, const Token>> args;
-    while (!c.matchConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE)) {
+    while (!c.matchNonConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE)) {
         auto type = typeParser.parseIType();
         Token n;
         c.expect(TokenType::IDENTIFIER, nullptr, n);
         args.emplace_back(Var(std::move(type), n.value.value_or("")), n);
-        if (!c.matchConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(TokenType::PUNCTUATION_COMMA);
+        if (!c.matchNonConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(TokenType::PUNCTUATION_COMMA);
     }
     c.advance();
-    
+
     auto stmt = std::make_unique<ConstractorDeclStmt>(
         t,
-        c.getSymTable().getCurrScope(),
+
         nullptr,
-        c.getSymTable().getCurrClass(),
+
         args
     );
-    
+
     stmt->setBody(parseBodyStmt(args, false, false, false, true));
     return stmt;
 }
@@ -781,13 +775,13 @@ std::unique_ptr<ObjCreationStmt> StmtParser::parseObjCreationStmt()
     auto type = typeParser.parseIType();
     Token name;
     c.expect(TokenType::IDENTIFIER, nullptr, name);
-    
+
     std::vector<std::unique_ptr<Expr>> args;
-    if (c.matchConsume(TokenType::PUNCTUATION_PARENTHESIS_OPEN)) {
+    if (c.matchNonConsume(TokenType::PUNCTUATION_PARENTHESIS_OPEN)) {
         c.advance();
-        while (!c.matchConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE)) {
+        while (!c.matchNonConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE)) {
             args.push_back(exprParser.parseExpr());
-            if (!c.matchConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(TokenType::PUNCTUATION_COMMA);
+            if (!c.matchNonConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(TokenType::PUNCTUATION_COMMA);
         }
         c.advance();
     }
@@ -796,9 +790,9 @@ std::unique_ptr<ObjCreationStmt> StmtParser::parseObjCreationStmt()
     
     return std::make_unique<ObjCreationStmt>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         Var(std::move(type), name.value.value_or("")),
         args
     );

@@ -12,7 +12,7 @@ TypeParser::TypeParser(ParserContext& c) : c(c)
 
 std::unique_ptr<IType> TypeParser::parseIType() const
 {
-    if (c.matchConsume(TokenType::TYPE_RIFF))
+    if (c.matchNonConsume(TokenType::TYPE_RIFF))
     {
         return parseArrayType();
     } // if not array try primitive types
@@ -22,9 +22,9 @@ std::unique_ptr<IType> TypeParser::parseIType() const
 
 std::unique_ptr<IType> TypeParser::parseType() const
 {
-    if (c.matchConsume(TokenType::IDENTIFIER))
+    if (Token name; c.matchConsume(TokenType::IDENTIFIER, name))
     {
-        return std::make_unique<ClassType>(c.current().value.value());
+        return std::make_unique<ClassType>(name.value.value());
     }
 
     auto signType = SignType::SIGNED;
@@ -32,6 +32,7 @@ std::unique_ptr<IType> TypeParser::parseType() const
     if (c.matchConsume(TokenType::TYPE_FLAT))
     {
     }
+
     else if (c.matchConsume(TokenType::TYPE_SHARP))
     {
         signType = SignType::UNSIGNED;

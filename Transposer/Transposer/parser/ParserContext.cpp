@@ -2,22 +2,13 @@
 
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
 
-ParserContext::ParserContext(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), hasMain(false)
+ParserContext::ParserContext(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), hasMain(false), funcDecl(nullptr), classDecl(nullptr)
 {
 }
 
 void ParserContext::addError(std::unique_ptr<Error> err)
 {
     errors.emplace_back(std::move(err));
-}
-
-void ParserContext::synchronize()
-{
-    advance();
-
-    // Clear callsQ and creditsQ to prevent dangling pointers from incomplete statements/expressions
-    while (!callsQ.empty()) callsQ.pop();
-    while (!creditsQ.empty()) creditsQ.pop();
 }
 
 const Token& ParserContext::current() const
@@ -41,24 +32,28 @@ bool ParserContext::isAtEnd() const
     return pos >= len;
 }
 
-bool ParserContext::matchNonConsume(const TokenType type) const
-{
-    return current().type == type;
-}
-
-bool ParserContext::matchConsume(const TokenType type)
+bool ParserContext::matchConsume(const TokenType type, const std::optional<std::reference_wrapper<Token>> out)
 {
     if (current().type == type)
     {
+        if (out.has_value())
+        {
+            out.value().get() = current();
+        }
         advance();
         return true;
     }
     return false;
 }
 
+bool ParserContext::matchNonConsume(const TokenType type) const
+{
+    return current().type == type;
+}
+
 bool ParserContext::expect(const TokenType type, std::unique_ptr<Error> err, const std::optional<std::reference_wrapper<Token>> out)
 {
-    if (!matchConsume(type))
+    if (!matchNonConsume(type))
     {
         if (err)
             addError(std::move(err));
@@ -78,7 +73,7 @@ bool ParserContext::isAssignmentStmtAhead()
     const size_t startPos = pos;
 
     // Must start with identifier
-    if (!matchConsume(TokenType::IDENTIFIER))
+    if (!matchNonConsume(TokenType::IDENTIFIER))
     {
         return false;
     }
@@ -88,11 +83,11 @@ bool ParserContext::isAssignmentStmtAhead()
     while (true)
     {
         // Handle member access: \identifier
-        if (matchConsume(TokenType::PUNCTUATION_BACKSLASH))
+        if (matchNonConsume(TokenType::PUNCTUATION_BACKSLASH))
         {
             advance(); // consume '\'
 
-            if (!matchConsume(TokenType::IDENTIFIER))
+            if (!matchNonConsume(TokenType::IDENTIFIER))
             {
                 pos = startPos;
                 return false;
@@ -101,18 +96,18 @@ bool ParserContext::isAssignmentStmtAhead()
             advance(); // consume IDENTIFIER
         }
         // Handle indexing: [...]
-        else if (matchConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
+        else if (matchNonConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
         {
             advance(); // consume '['
 
             int depth = 1;
             while (depth > 0)
             {
-                if (matchConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
+                if (matchNonConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
                 {
                     depth++;
                 }
-                else if (matchConsume(TokenType::PUNCTUATION_CLOSE_SQUARE_BRACE))
+                else if (matchNonConsume(TokenType::PUNCTUATION_CLOSE_SQUARE_BRACE))
                 {
                     depth--;
                 }
@@ -128,7 +123,7 @@ bool ParserContext::isAssignmentStmtAhead()
 
     const bool result =
         isAssignmentOp() ||
-        matchConsume(TokenType::PUNCTUATION_SEMICOLON);
+        matchNonConsume(TokenType::PUNCTUATION_SEMICOLON);
 
     pos = startPos;
     return result;
@@ -138,7 +133,7 @@ bool ParserContext::isUnaryOpStmtAhead()
 {
     const size_t startPos = pos;
 
-    if (!matchConsume(TokenType::IDENTIFIER))
+    if (!matchNonConsume(TokenType::IDENTIFIER))
     {
         return false;
     }
@@ -148,11 +143,11 @@ bool ParserContext::isUnaryOpStmtAhead()
     while (true)
     {
         // Handle member access: \identifier
-        if (matchConsume(TokenType::PUNCTUATION_BACKSLASH))
+        if (matchNonConsume(TokenType::PUNCTUATION_BACKSLASH))
         {
             advance(); // consume '\'
 
-            if (!matchConsume(TokenType::IDENTIFIER))
+            if (!matchNonConsume(TokenType::IDENTIFIER))
             {
                 pos = startPos;
                 return false;
@@ -162,7 +157,7 @@ bool ParserContext::isUnaryOpStmtAhead()
         }
 
         // Handle indexing: [...]
-        else if (matchConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
+        else if (matchNonConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
         {
             advance(); // consume '['
 
@@ -170,12 +165,12 @@ bool ParserContext::isUnaryOpStmtAhead()
 
             while (depth > 0)
             {
-                if (matchConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
+                if (matchNonConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
                 {
                     depth++;
                 }
 
-                else if (matchConsume(TokenType::PUNCTUATION_CLOSE_SQUARE_BRACE))
+                else if (matchNonConsume(TokenType::PUNCTUATION_CLOSE_SQUARE_BRACE))
                 {
                     depth--;
                 }
@@ -259,14 +254,4 @@ std::vector<std::unique_ptr<Error>>& ParserContext::getErrors()
 std::vector<std::unique_ptr<IncludeStmt>>& ParserContext::getIncludes()
 {
     return includes;
-}
-
-std::queue<FuncCredit>& ParserContext::getCreditsQ()
-{
-    return creditsQ;
-}
-
-std::queue<FuncCallExpr*>& ParserContext::getCallsQ()
-{
-    return callsQ;
 }

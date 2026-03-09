@@ -35,7 +35,7 @@ std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
     std::vector<std::pair<std::filesystem::path, Token>> v;
     if (c.getIncludes().empty() && c.getPos() == 0)
     {
-        while (c.matchConsume(TokenType::KEYWORD_FEAT))
+        while (c.matchNonConsume(TokenType::KEYWORD_FEAT))
         {
             c.advance();
 
@@ -48,7 +48,7 @@ std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
                 str.end()
             );
             std::filesystem::path path = str;
-            if (!c.matchConsume(TokenType::PUNCTUATION_SEMICOLON))
+            if (!c.matchNonConsume(TokenType::PUNCTUATION_SEMICOLON))
             {
                 c.addError(std::make_unique<MissingSemicolon>(c.current()));
                 return {};
@@ -64,9 +64,9 @@ std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
             c.getIncludes().emplace_back(
                 std::make_unique<IncludeStmt>(
                     pathToken,
-                    c.getSymTable().getCurrScope(),
-                    c.getSymTable().getCurrFunc(),
-                    c.getSymTable().getCurrClass(),
+
+
+
                     path
                 )
             );

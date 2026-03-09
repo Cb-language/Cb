@@ -18,10 +18,12 @@ private:
     const size_t len;
     size_t pos;
     std::vector<std::unique_ptr<Stmt>> stmts;
-    std::queue<FuncCredit> creditsQ;
-    std::queue<FuncCallExpr*> callsQ;
     std::vector<std::unique_ptr<IncludeStmt>> includes;
     std::vector<std::unique_ptr<Error>> errors;
+
+    IFuncDeclStmt* funcDecl;
+    ClassDeclStmt* classDecl;
+
     bool hasMain;
 
 public:
@@ -37,8 +39,8 @@ public:
 
     bool isAtEnd() const;
 
-    bool matchNonConsume(const TokenType type) const;
-    bool matchConsume(TokenType type);
+    bool matchConsume(const TokenType type, const std::optional<std::reference_wrapper<Token>> out = std::nullopt);
+    bool matchNonConsume(TokenType type) const;
 
     bool expect(TokenType type, std::unique_ptr<Error> err = nullptr, std::optional<std::reference_wrapper<Token>> out = std::nullopt);
 

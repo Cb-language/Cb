@@ -17,10 +17,6 @@ ExprParser::ExprParser(ParserContext& c, TypeParser& typeParser) : c(c), typePar
 {
 }
 
-void ExprParser::parse() const
-{
-}
-
 static std::string tokenToOp(const TokenType type)
 {
     switch (type)
@@ -61,16 +57,16 @@ static UnaryOp strToUnaryOp(const std::string& str)
 
 std::unique_ptr<Expr> ExprParser::parseExpr(const bool needsSemicolon, const bool allowBackslash)
 {
-    if (c.matchConsume(TokenType::IDENTIFIER))
+    if (c.matchNonConsume(TokenType::IDENTIFIER))
     {
-        if (c.peek().type >= TokenType::UNARY_OP_SHARP && c.peek().type <= TokenType::UNARY_OP_NATRUAL)
+        auto identifier = c.current();
+        c.advance();
+
+        if (c.isUnaryOp())
                 return parseUnaryOpExpr(needsSemicolon);
 
-        if (c.getSymTable().getClass(c.current().value.value()) != nullptr)
-        {
-            if (c.peek().type == TokenType::PUNCTUATION_BACKSLASH)
-                return parseStaticDotOpExpr(needsSemicolon);
-        }
+        if (c.current().type == TokenType::PUNCTUATION_BACKSLASH)
+            return parseStaticDotOpExpr(needsSemicolon);
     }
 
     auto left = parsePrimary(needsSemicolon, allowBackslash);
@@ -83,7 +79,7 @@ std::unique_ptr<Expr> ExprParser::parseExpr(const bool needsSemicolon, const boo
     return expr;
 }
 
-std::unique_ptr<Expr> ExprParser::parsePrimary(const bool needsSemicolon, const bool allowBackslash, const ClassNode* classCall)
+std::unique_ptr<Expr> ExprParser::parsePrimary(const bool needsSemicolon, const bool allowBackslash)
 {
     const Token& t = c.current();
 
@@ -98,9 +94,7 @@ std::unique_ptr<Expr> ExprParser::parsePrimary(const bool needsSemicolon, const 
 
         return std::make_unique<BinaryOpExpr>(
             t,
-            c.getSymTable().getCurrScope(),
-            c.getSymTable().getCurrFunc(),
-            c.getSymTable().getCurrClass(),
+
             op,
             nullptr,
             std::move(right)
@@ -112,18 +106,16 @@ std::unique_ptr<Expr> ExprParser::parsePrimary(const bool needsSemicolon, const 
         return parseConstValueExpr();
     }
 
-    if (c.matchConsume(TokenType::IDENTIFIER))
+    if (c.matchNonConsume(TokenType::IDENTIFIER))
     {
-        try {
-            if (c.peek().type == TokenType::PUNCTUATION_PARENTHESIS_OPEN)
-            {
-                return parseFuncCallExpr(needsSemicolon);
-            }
-        } catch (...) {}
-        return parseCallExpr(classCall);
+        if (c.peek().type == TokenType::PUNCTUATION_PARENTHESIS_OPEN)
+        {
+            return parseFuncCallExpr(needsSemicolon);
+        }
+        return parseCallExpr();
     }
 
-    if (c.matchConsume(TokenType::PUNCTUATION_PARENTHESIS_OPEN))
+    if (c.matchNonConsume(TokenType::PUNCTUATION_PARENTHESIS_OPEN))
     {
         c.advance();
         auto expr = parseExpr(false, allowBackslash);
@@ -140,7 +132,7 @@ std::unique_ptr<Expr> ExprParser::parseBinaryOpRight(const int exprPrec, std::un
 {
     while (true)
     {
-        if (!(c.isBinaryOp() || (allowBackslash && c.matchConsume(TokenType::PUNCTUATION_BACKSLASH))))
+        if (!(c.isBinaryOp() || (allowBackslash && c.matchNonConsume(TokenType::PUNCTUATION_BACKSLASH))))
             return left;
 
         const Token& t = c.current();
@@ -152,10 +144,10 @@ std::unique_ptr<Expr> ExprParser::parseBinaryOpRight(const int exprPrec, std::un
 
         c.advance();
 
-        auto right = parsePrimary(needsSemicolon, allowBackslash, classCall);
+        auto right = parsePrimary(needsSemicolon, allowBackslash);
         if (!right) return nullptr;
 
-        if (c.isBinaryOp() || (allowBackslash && c.matchConsume(TokenType::PUNCTUATION_BACKSLASH)))
+        if (c.isBinaryOp() || (allowBackslash && c.matchNonConsume(TokenType::PUNCTUATION_BACKSLASH)))
         {
             std::string nextOp = tokenToOp(c.current().type);
 
@@ -188,9 +180,7 @@ std::unique_ptr<Expr> ExprParser::parseBinaryOpRight(const int exprPrec, std::un
 
             left = std::make_unique<DotOpExpr>(
                 t,
-                c.getSymTable().getCurrScope(),
-                c.getSymTable().getCurrFunc(),
-                c.getSymTable().getCurrClass(),
+
                 std::move(callLeft),
                 std::move(callRight)
             );
@@ -199,9 +189,7 @@ std::unique_ptr<Expr> ExprParser::parseBinaryOpRight(const int exprPrec, std::un
         {
             left = std::make_unique<BinaryOpExpr>(
                 t,
-                c.getSymTable().getCurrScope(),
-                c.getSymTable().getCurrFunc(),
-                c.getSymTable().getCurrClass(),
+
                 op,
                 std::move(left),
                 std::move(right)
@@ -228,17 +216,17 @@ std::unique_ptr<StaticDotOpExpr> ExprParser::parseStaticDotOpExpr(const bool nee
 
     try {
         if (c.current().type == TokenType::PUNCTUATION_PARENTHESIS_OPEN) right = parseFuncCallExpr(needsSemicolon);
-        else right = parseCallExpr(type);
+        else right = parseCallExpr();
     } catch (...) {
-        right = parseCallExpr(type);
+        right = parseCallExpr();
     }
 
     if (!right) return nullptr;
 
     return std::make_unique<StaticDotOpExpr>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(), c.getSymTable().getCurrClass(),
+
+
         std::make_unique<ClassType>(type),
         std::move(right),
         needsSemicolon);
@@ -274,9 +262,9 @@ std::unique_ptr<ConstValueExpr> ExprParser::parseConstValueExpr() const
 
     return std::make_unique<ConstValueExpr>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         std::make_unique<PrimitiveType>(type),
         t.value.value()
     );
@@ -302,9 +290,9 @@ std::unique_ptr<UnaryOpExpr> ExprParser::parseUnaryOpExpr(const bool needsSemico
 
     return std::make_unique<UnaryOpExpr>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         std::move(call),
         strToUnaryOp(tokenToOp(opToken.type)),
         needsSemicolon
@@ -346,13 +334,13 @@ std::unique_ptr<Call> ExprParser::parseFuncCallExpr(const bool needsSemicolon)
     if (!c.expect(TokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.current()))) return nullptr;
 
     std::vector<std::unique_ptr<Expr>> args;
-    while (!c.matchConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+    while (!c.matchNonConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE))
     {
         auto arg = parseExpr();
         if (!arg) return nullptr;
         args.push_back(std::move(arg));
 
-        if (!c.matchConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+        if (!c.matchNonConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE))
         {
             if (!c.expect(TokenType::PUNCTUATION_COMMA, std::make_unique<UnexpectedToken>(c.current()))) return nullptr;
         }
@@ -366,9 +354,9 @@ std::unique_ptr<Call> ExprParser::parseFuncCallExpr(const bool needsSemicolon)
 
     auto call = std::make_unique<FuncCallExpr>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         name,
         std::move(args),
         needsSemicolon
@@ -379,12 +367,12 @@ std::unique_ptr<Call> ExprParser::parseFuncCallExpr(const bool needsSemicolon)
     return call;
 }
 
-std::unique_ptr<Call> ExprParser::parseCallExpr(const ClassNode* classCall)
+std::unique_ptr<Call> ExprParser::parseCallExpr()
 {
     auto call = parseVarCallExpr();
     if (!call) return nullptr;
 
-    while (c.matchConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
+    while (c.matchNonConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
     {
         call = parseArrayAccess(std::move(call));
         if (!call) return nullptr;
@@ -395,7 +383,7 @@ std::unique_ptr<Call> ExprParser::parseCallExpr(const ClassNode* classCall)
 
 std::unique_ptr<Call> ExprParser::parseArrayAccess(std::unique_ptr<Call> call)
 {
-    if (c.matchConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
+    if (c.matchNonConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
     {
         // check for slicing vs indexing
         size_t lookahead = c.getPos() + 1;
@@ -428,19 +416,19 @@ std::unique_ptr<Call> ExprParser::parseArraySlicingExpr(std::unique_ptr<Call> ca
     std::unique_ptr<Expr> stop = nullptr;
     std::unique_ptr<Expr> step = nullptr;
 
-    if (!c.matchConsume(TokenType::PUNCTUATION_COLON))
+    if (!c.matchNonConsume(TokenType::PUNCTUATION_COLON))
     {
         start = parseExpr();
     }
 
     if (!c.expect(TokenType::PUNCTUATION_COLON, std::make_unique<UnexpectedToken>(c.current()))) return nullptr;
 
-    if (!c.matchConsume(TokenType::PUNCTUATION_COLON) && !c.matchConsume(TokenType::PUNCTUATION_CLOSE_SQUARE_BRACE))
+    if (!c.matchNonConsume(TokenType::PUNCTUATION_COLON) && !c.matchNonConsume(TokenType::PUNCTUATION_CLOSE_SQUARE_BRACE))
     {
         stop = parseExpr();
     }
 
-    if (c.matchConsume(TokenType::PUNCTUATION_COLON))
+    if (c.matchNonConsume(TokenType::PUNCTUATION_COLON))
     {
         c.advance();
         step = parseExpr();
@@ -450,9 +438,9 @@ std::unique_ptr<Call> ExprParser::parseArraySlicingExpr(std::unique_ptr<Call> ca
 
     return std::make_unique<ArraySlicingExpr>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         std::move(call),
         std::move(start),
         std::move(stop),
@@ -472,9 +460,9 @@ std::unique_ptr<Call> ExprParser::parseArrayIndexingExpr(std::unique_ptr<Call> c
 
     return std::make_unique<ArrayIndexingExpr>(
         t,
-        c.getSymTable().getCurrScope(),
-        c.getSymTable().getCurrFunc(),
-        c.getSymTable().getCurrClass(),
+
+
+
         std::move(call),
         std::move(index)
     );
