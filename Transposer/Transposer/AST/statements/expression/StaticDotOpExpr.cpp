@@ -33,5 +33,5 @@ std::string StaticDotOpExpr::translateToCpp() const
 
 std::string StaticDotOpExpr::toString() const
 {
-    return left->getType() + "\\" + right->toString();
+    return left->toString() + "\\" + right->toString();
 }

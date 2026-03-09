@@ -35,10 +35,9 @@ std::string AssignmentStmt::translateToCpp() const
     const std::string varName = call->translateToCpp();
     if (assignmentOp == "+=" || assignmentOp == "=")
     {
-        const bool isVarStr = call->getType()->getType() == "bar";
-        const bool isExprStr = expr->getType()->getType() == "bar" || expr->getType()->getType() == "note";
+        const bool isVarStr = call->getType()->toString() == "bar";
 
-        if (isVarStr && !isExprStr)
+        if (const bool isExprStr = expr->getType()->toString() == "bar" || expr->getType()->toString() == "note"; isVarStr && !isExprStr)
         {
             return getTabs() + varName + " " + assignmentOp + " std::to_string(" + expr->translateToCpp() + ");";
         }

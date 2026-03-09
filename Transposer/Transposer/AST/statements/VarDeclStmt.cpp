@@ -26,7 +26,7 @@ std::string VarDeclStmt::translateToCpp() const
     if (hasStartingValue && startingValue != nullptr && !var.getStatic())
     {
         ret += " = ";
-        if (var.getType()->getType() != startingValue->getType()->getType()) ret += var.getType()->translateTypeToCpp() + "(" + startingValue->translateToCpp() + ")";
+        if (var.getType()->toString() != startingValue->getType()->toString()) ret += var.getType()->translateTypeToCpp() + "(" + startingValue->translateToCpp() + ")";
         else ret +=  startingValue->translateToCpp();
     }
 

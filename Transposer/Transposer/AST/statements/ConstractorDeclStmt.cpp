@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <iostream>
 
-#include "errorHandling/classErrors/ParentNotInitialized.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "ConstractorCallStmt.h"
 #include "other/SymbolTable.h"
@@ -77,7 +76,7 @@ std::string ConstractorDeclStmt::getName() const
 
 std::unique_ptr<IType> ConstractorDeclStmt::getReturnType() const
 {
-    return std::make_unique<ClassType>(SymbolTable::getClass(constractor.getClassName()));
+    return std::make_unique<ClassType>(constractor.getClassName());
 }
 
 const Constractor& ConstractorDeclStmt::getConstractor() const

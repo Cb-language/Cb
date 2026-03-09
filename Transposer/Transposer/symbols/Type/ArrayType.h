@@ -2,7 +2,6 @@
 #include <memory>
 
 #include "IType.h"
-#include "PrimitiveType.h"
 
 class ArrayType : public IType
 {

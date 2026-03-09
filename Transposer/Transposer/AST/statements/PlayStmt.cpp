@@ -18,7 +18,7 @@ std::string PlayStmt::translateToCpp() const
     std::string ret = getTabs() + "std::cout";
     for (const auto& var : exprs)
     {
-        if (var->getType()->getType() == "mute")
+        if (var->getType()->toString() == "mute")
         {
             ret += " << (" + Utils::removeAllFirstTabs(var->translateToCpp()) + R"( ? "cres" : "demen"))";
             continue;

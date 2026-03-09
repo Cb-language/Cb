@@ -64,10 +64,9 @@ std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
             c.getIncludes().emplace_back(
                 std::make_unique<IncludeStmt>(
                     pathToken,
-
-
-
-                    path
+                    c.getFuncDecl(),
+                    path,
+                    c.getClassDecl()
                 )
             );
 
@@ -105,7 +104,7 @@ std::string Parser::translateToH(const bool isMain) const
     return "";
 }
 
-bool Parser::shouldProduceCpp(bool isMain) const
+bool Parser::shouldProduceCpp(const bool isMain) const
 {
     if (isMain || c.getHasMain()) return true;
 
@@ -113,12 +112,13 @@ bool Parser::shouldProduceCpp(bool isMain) const
     {
         if (dynamic_cast<IncludeStmt*>(stmt.get())) continue;
 
-        if (auto classStmt = dynamic_cast<ClassDeclStmt*>(stmt.get()))
+        if (const auto classStmt = dynamic_cast<ClassDeclStmt*>(stmt.get()))
         {
-            if (classStmt->getCurrClass() && !classStmt->getCurrClass()->isAbstract())
-            {
-                return true; // Found a concrete class
-            }
+            // if (classStmt->getCurrClass() && !classStmt->getCurrClass()->isAbstract())
+            // {
+            // return true; // Found a concrete class
+            // }
+            return true;
         }
         else if (dynamic_cast<FuncDeclStmt*>(stmt.get()))
         {

@@ -17,7 +17,7 @@ ConstractorCallStmt::ConstractorCallStmt(const Token& token, IFuncDeclStmt* func
 
 std::unique_ptr<IType> ConstractorCallStmt::getType() const
 {
-    return std::make_unique<ClassType>(currClass);
+    return std::make_unique<ClassType>(currClass->getClass().getClassName());
 }
 
 void ConstractorCallStmt::analyze() const

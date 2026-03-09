@@ -26,30 +26,30 @@ std::unique_ptr<IType> BinaryOpExpr::getType() const
         op == "<"  || op == ">"  ||
         op == "<=" || op == ">=")
     {
-        return std::make_unique<PrimitiveType>("mute");
+        return std::make_unique<PrimitiveType>(Primitive::TYPE_MUTE);
     }
 
     // Logical operators
     if (op == "chord" || op == "divis")
     {
-        return std::make_unique<PrimitiveType>("mute");
+        return std::make_unique<PrimitiveType>(Primitive::TYPE_MUTE);
     }
 
     // the // op
     if (op == "//")
     {
-        return std::make_unique<PrimitiveType>("freq");
+        return std::make_unique<PrimitiveType>(Primitive::TYPE_FREQ);
     }
 
     // Arithmetic operators
     if (op == "+")
     {
-        if (leftType->getType() == "bar" || rightType->getType() == "bar")
-            return std::make_unique<PrimitiveType>("bar");
-        if (*leftType == "freq" || *rightType == "freq")
-            return std::make_unique<PrimitiveType>("freq");
-        if (*leftType == "note" || *rightType == "note")
-            return std::make_unique<PrimitiveType>("note");
+        if (leftType->toString() == "bar" || rightType->toString() == "bar")
+            return std::make_unique<PrimitiveType>(Primitive::TYPE_BAR);
+        if (leftType->toString() == "freq" || rightType->toString() == "freq")
+            return std::make_unique<PrimitiveType>(Primitive::TYPE_FREQ);
+        if (leftType->toString() == "note" || rightType->toString() == "note")
+            return std::make_unique<PrimitiveType>(Primitive::TYPE_NOTE);
     }
 
     if (op == "-" ||
@@ -61,22 +61,22 @@ std::unique_ptr<IType> BinaryOpExpr::getType() const
             return leftType;
 
         // Otherwise: promote
-        if (*leftType == "freq" || *rightType == "freq")
-            return std::make_unique<PrimitiveType>("freq");
-        if (*leftType == "note" || *rightType == "note")
-            return std::make_unique<PrimitiveType>("note");
+        if (leftType->toString() == "freq" || rightType->toString() == "freq")
+            return std::make_unique<PrimitiveType>(Primitive::TYPE_FREQ);
+        if (leftType->toString() == "note" || rightType->toString() == "note")
+            return std::make_unique<PrimitiveType>(Primitive::TYPE_NOTE);
 
         // Otherwise int
-        return std::make_unique<PrimitiveType>("degree");
+        return std::make_unique<PrimitiveType>(Primitive::TYPE_DEGREE);
     }
 
-    return std::make_unique<PrimitiveType>("fermata");
+    return std::make_unique<PrimitiveType>(Primitive::TYPE_FERMATA);
 }
 
 void BinaryOpExpr::analyze() const
 {
-    auto leftType = left != nullptr ? left->getType() : nullptr;
-    auto rightType = right->getType();
+    const auto leftType = left != nullptr ? left->getType() : nullptr;
+    const auto rightType = right->getType();
 
     // Comparison operators
     if (op == "==" || op == "!=" ||
@@ -132,8 +132,8 @@ std::string BinaryOpExpr::translateToCpp() const
     const bool isLeftNull = left == nullptr;
     const std::string leftStr = !isLeftNull ? left->translateToCpp() : "";
     const std::string rightStr = right->translateToCpp();
-    const std::string leftType = !isLeftNull ? left->getType()->getType() : "degree";
-    const std::string rightType = right->getType()->getType();
+    const std::string leftType = !isLeftNull ? left->getType()->toString() : "degree";
+    const std::string rightType = right->getType()->toString();
     const std::string opStr = op;
     std::ostringstream oss;
 

@@ -8,7 +8,7 @@
 
 FuncCallExpr::FuncCallExpr(const Token& token, IFuncDeclStmt* funcDecl,
     const std::string& name,std::vector<std::unique_ptr<Expr>> args, const bool needsSemicolon, ClassDeclStmt* classDecl)
-    : Call(token, funcDecl, classDecl), name(name), type(std::make_unique<PrimitiveType>("fermata")), needsSemicolon(needsSemicolon)
+    : Call(token, funcDecl, classDecl), name(name), type(std::make_unique<PrimitiveType>(Primitive::TYPE_FERMATA)), needsSemicolon(needsSemicolon)
 {
     for (auto& arg : args)
     {

@@ -1,8 +1,6 @@
 #pragma once
 #include <string>
 
-#include "PrimitiveType.h"
-#include "PrimitiveType.h"
 #include "other/Utils.h"
 
 class IType

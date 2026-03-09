@@ -7,19 +7,19 @@
 
 std::string ConstValueExpr::getValueStr() const
 {
-    if (*type == "freq" && value.starts_with("."))
+    if (type->toString() == "freq" && value.starts_with("."))
     {
         return "0" + value;
     }
 
-    if (*type == "bar")
+    if (type->toString() == "bar")
     {
         std::string content = value;
         std::ranges::replace(content, '\n', ' ');
         return content;
     }
 
-    if (*type == "mute")
+    if (type->toString() == "mute")
     {
         return value == "cres" ? "true" : "false";
     }

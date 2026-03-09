@@ -8,7 +8,7 @@ private:
     std::unique_ptr<Expr> condition;
     std::unique_ptr<Stmt> body;
 public:
-    WhileStmt(const Token& token, IFuncDeclStmt* funcDecl, std::unique_ptr<Expr>& condition, std::unique_ptr<Stmt>& body, ClassDeclStmt* classDecl = nullptr);
+    WhileStmt(const Token& token, IFuncDeclStmt* funcDecl, std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> body, ClassDeclStmt* classDecl = nullptr);
     void analyze() const override;
     std::string translateToCpp() const override;
 };

@@ -37,7 +37,7 @@ bool Var::operator==(const Var& other) const
 
 bool Var::operator==(const std::string& other) const
 {
-    return *type == other;
+    return type->toString() == other;
 }
 
 bool Var::isNumberable() const

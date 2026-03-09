@@ -72,7 +72,7 @@ void FuncDeclStmt::analyze() const
         throw VirtualNonMethod(token);
     }
 
-    if (func.getType()->getType() != "fermata" && !hasReturned && virtualType != VirtualType::PURE)
+    if (func.getType()->toString() != "fermata" && !hasReturned && virtualType != VirtualType::PURE)
     {
         throw NoReturn(token);
     }

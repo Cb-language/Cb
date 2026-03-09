@@ -81,7 +81,7 @@ std::string Func::translateToCpp(const std::string& className) const
 
 bool Func::operator==(const Func& other) const
 {
-    if (rType->getType() != other.rType->getType())
+    if (rType != other.rType)
     {
         return false;
     }
@@ -151,9 +151,9 @@ bool Func::operator<(const Func& other) const
 
     for (size_t i = 0; i < args.size(); ++i)
     {
-        if (args[i].getType()->getType() != other.args[i].getType()->getType())
+        if (args[i].getType()->toString() != other.args[i].getType()->toString())
         {
-            return args[i].getType()->getType() < other.args[i].getType()->getType();
+            return args[i].getType()->toString() < other.args[i].getType()->toString();
         }
     }
 

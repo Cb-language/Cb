@@ -45,7 +45,7 @@ void ClassTree::init()
         {
             PUBLIC,
             Func(
-                std::make_unique<PrimitiveType>("bar"),
+                std::make_unique<PrimitiveType>(Primitive::TYPE_BAR),
                 "toString",
                 std::vector<Var>(),
                 VirtualType::NONE)
@@ -60,7 +60,7 @@ void ClassTree::init()
         }
     };
 
-    Class obj = Class("Object", methods, args, ctors);
+    const auto obj = Class("Object", methods, args, ctors);
 
     instance().addClass(obj, nullptr);
 

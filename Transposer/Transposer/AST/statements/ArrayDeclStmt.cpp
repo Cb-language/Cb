@@ -19,7 +19,7 @@ void ArrayDeclStmt::analyzeSizes() const
         size->analyze();
         if (!size->getType()->isNumberable())
         {
-            throw IllegalTypeCast(token, size->getType()->getType(), "degree");
+            throw IllegalTypeCast(token, size->getType()->toString(), "degree");
         }
     }
 }
