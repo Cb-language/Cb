@@ -1,6 +1,7 @@
 #include "ClassType.h"
 
 #include "errorHandling/how/HowDidYouGetHere.h"
+#include "other/SymbolTable.h"
 
 ClassType::ClassType(const ClassNode* c) : IType(c != nullptr ? c->getClass().getClassName() : ""), c(c)
 {
@@ -14,22 +15,23 @@ ClassType::~ClassType()
 
 bool ClassType::operator==(const IType& other) const
 {
-    return getType() == other.getType();
+    if (const auto otherPtr = dynamic_cast<const ClassType*>(&other)) return c->isDescendantOf(otherPtr->c) || otherPtr->c->isDescendantOf(c);
+    return false;
 }
 
 bool ClassType::operator!=(const IType& other) const
 {
-    return getType() != other.getType();
+    return !(*this == other);
 }
 
 bool ClassType::operator==(const std::string& other) const
 {
-    return getType() == other;
+    return *this == ClassType(SymbolTable::getClass(other));
 }
 
 bool ClassType::operator!=(const std::string& other) const
 {
-    return getType() != other;
+    return !(*this == other);
 }
 
 bool ClassType::isNumberable() const
