@@ -29,32 +29,21 @@ public:
     explicit ParserContext(const std::vector<Token>& tokens);
 
 
-    // void addError(Error* err);
-    // void synchronize();
-    //
-    // const Token& current() const;
-    // Token advance();
-    // const Token& peek() const;
-    // const Token& prev() const;
-    // bool isAtEnd() const;
-    //
-    // bool match(TokenType type) const;
-    // bool match(TokenType type, const std::string& value) const;
-    //
-    // bool expect(TokenType type);
-    // bool expect(TokenType type, const std::string& value);
-    //
-    // bool expect(TokenType type, Error* err);
-    // bool expect(TokenType type, const std::string& value, Error* err);
-    //
-    // bool expectAndGet(TokenType type, Token& out);
-    // bool expectAndGet(TokenType type, const std::string& value, Token& out);
-    //
-    // bool expectAndGet(TokenType type, Error* err, Token& out);
-    // bool expectAndGet(TokenType type, const std::string& value, Error* err, Token& out);
-    //
-    // bool isAssignmentStmtAhead();
-    // bool isUnaryOpStmtAhead();
+    void addError(std::unique_ptr<Error> err);
+    void synchronize();
+
+    const Token& current() const;
+    Token advance();
+    const Token& peek() const;
+
+    bool isAtEnd() const;
+
+    bool match(TokenType type) const;
+
+    bool expect(TokenType type, std::unique_ptr<Error> err = nullptr, std::optional<std::reference_wrapper<Token>> out = std::nullopt);
+
+    bool isAssignmentStmtAhead();
+    bool isUnaryOpStmtAhead();
 
 
     void addToSymTable(const SymbolTable& symTable);
@@ -63,9 +52,13 @@ public:
     const Token& getLast() const;
     const std::vector<std::unique_ptr<Stmt>>& getStmts() const;
     const std::vector<std::unique_ptr<Error>>& getErrors() const;
+    const std::vector<Token>& getTokens() const;
 
     SymbolTable& getSymTable();
     std::vector<std::unique_ptr<Stmt>>& getStmts();
     std::vector<std::unique_ptr<Error>>& getErrors();
-
+    std::vector<std::unique_ptr<IncludeStmt>>& getIncludes();
+    size_t getPos() const;
+    std::queue<FuncCredit>& getCreditsQ();
+    std::queue<FuncCallExpr*>& getCallsQ();
 };

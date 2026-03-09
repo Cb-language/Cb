@@ -260,6 +260,12 @@ add_executable(Transposer
         Transposer/parser/Parser.cpp
         Transposer/parser/ParserContext.h
         Transposer/parser/ParserContext.cpp
+        Transposer/parser/StmtParser.cpp
+        Transposer/parser/StmtParser.h
+        Transposer/parser/ExprParser.cpp
+        Transposer/parser/ExprParser.h
+        Transposer/parser/TypeParser.cpp
+        Transposer/parser/TypeParser.h
 
 )
 

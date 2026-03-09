@@ -34,26 +34,24 @@ enum class TokenType : byte
 	KEYWORD_PLAY,           // std::cout
 	KEYWORD_PLAYBAR,        // std::cout << std::endl
 	KEYWORD_HEAR,           // std::cin
-	KEYWORD_A,              // switch
-	KEYWORD_B,              // return
-	KEYWORD_C,              // case
-	KEYWORD_D,              // if
-	KEYWORD_E,              // else
+	KEYWORD_SWITCH,         // switch
+	KEYWORD_RETURN,         // return
+	KEYWORD_CASE,           // case
+	KEYWORD_IF,             // if
+	KEYWORD_ELSE,           // else
 	KEYWORD_FMAJ,           // for loop going up
 	KEYWORD_FMIN,           // for loop going down
-	KEYWORD_G,              // while
+	KEYWORD_WHILE,          // while
 	KEYWORD_SONG,           // func
 	KEYWORD_FEAT,           // include
 	KEYWORD_MOTIF,          // virtual
 	KEYWORD_REST,           // pure virtual
 	KEYWORD_VARIATION,      // override
 	KEYWORD_CTOR_CALL,      // ctor call
-	KEYWORD_C_CLEF,         // 𝄡 (dosent compile)
+	KEYWORD_C_CLEF,          // 𝄡 (dosent compile)
 
 	// punctuation
-	PUNCTUATION_ARROW,               // 𝅘𝅥=
-	PUNCTUATION_PIPE,                // |
-	PUNCTUATION_HASHTAG,             // #
+	PUNCTUATION_RET_TYPE_ARROW,      // 𝅘𝅥=
 	PUNCTUATION_COMMA,               // ,
 	PUNCTUATION_COPYRIGHT,           // ©
 	PUNCTUATION_OPEN_SQUARE_BRACE,   // [
@@ -62,14 +60,11 @@ enum class TokenType : byte
 	PUNCTUATION_CLOSE_CURLY_BRACKET, // 𝄌
 	PUNCTUATION_LOOP_OPEN,           // 𝄕
 	PUNCTUATION_LOOP_CLOSE,          // 𝄇
-	PUNCTUATION_DOUBLE_LINE,         // 𝄁
 	PUNCTUATION_COLON,               // :
 	PUNCTUATION_BACKSLASH,           // 𝄍
-	PUNCTUATION_OPEN_PARENTHESIS,    // (
-	PUNCTUATION_CLOSE_PARENTHESIS,   // )
 	PUNCTUATION_REST,                // 𝄽 (does nothing)
 	PUNCTUATION_OPEN_LINE,           // 𝄞
-	PUNCTUATION_CLOSE_LINE,          // 𝄀
+	PUNCTUATION_SEMICOLON,           // 𝄀
 	PUNCTUATION_CLOSE_FILE,          // 𝄂
 	PUNCTUATION_NEW_LINE,            // \n
 
