@@ -48,6 +48,11 @@ void ClassType::setClassNode(const ClassNode& node)
     c = &node;
 }
 
+std::string ClassType::getName() const
+{
+    return name;
+}
+
 std::string ClassType::translateTypeToCpp() const
 {
     return "SafePtr<" + name + ">";
@@ -56,4 +61,9 @@ std::string ClassType::translateTypeToCpp() const
 std::unique_ptr<IType> ClassType::copy() const
 {
     return std::make_unique<ClassType>(name);
+}
+
+std::string ClassType::toString() const
+{
+    return name;
 }
