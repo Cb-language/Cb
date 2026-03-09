@@ -68,7 +68,6 @@ const std::vector<KeywordInfo> KEYWORDS =
 	{TokenType::UNARY_OP_FLAT, "♭", WordBoundary::AFTER},
 	{TokenType::UNARY_OP_DOUBLE_FLAT, "𝄫", WordBoundary::AFTER},
 	{TokenType::UNARY_OP_NATRUAL, "♮", WordBoundary::AFTER},
-	{TokenType::UNARY_OP_NOT, "!", WordBoundary::AFTER},
 
 	// binary operation
 	{TokenType::BINARY_OP_EQUIAL, "=", WordBoundary::NONE},

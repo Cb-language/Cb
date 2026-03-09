@@ -59,6 +59,7 @@ bool ParserContext::expect(const TokenType type, std::unique_ptr<Error> err, con
     if (out.has_value())
         out->get() = current();
 
+    advance();
     return true;
 }
 
@@ -77,7 +78,7 @@ bool ParserContext::isAssignmentStmtAhead()
     while (true)
     {
         // Handle member access: \identifier
-        if (match(TokenType::PUNCTUATION, "\\"))
+        if (match(TokenType::PUNCTUATION_BACKSLASH))
         {
             advance(); // consume '\'
 
@@ -90,18 +91,18 @@ bool ParserContext::isAssignmentStmtAhead()
             advance(); // consume IDENTIFIER
         }
         // Handle indexing: [...]
-        else if (match(TokenType::PUNCTUATION, "["))
+        else if (match(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
         {
             advance(); // consume '['
 
             int depth = 1;
             while (depth > 0)
             {
-                if (match(TokenType::PUNCTUATION, "["))
+                if (match(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
                 {
                     depth++;
                 }
-                else if (match(TokenType::PUNCTUATION, "]"))
+                else if (match(TokenType::PUNCTUATION_CLOSE_SQUARE_BRACE))
                 {
                     depth--;
                 }
@@ -116,8 +117,8 @@ bool ParserContext::isAssignmentStmtAhead()
     }
 
     const bool result =
-        match(TokenType::OP_ASSIGNMENT) ||
-        match(TokenType::PUNCTUATION, "║");
+        isAssignmentOp() ||
+        match(TokenType::PUNCTUATION_SEMICOLON);
 
     pos = startPos;
     return result;
@@ -137,7 +138,7 @@ bool ParserContext::isUnaryOpStmtAhead()
     while (true)
     {
         // Handle member access: \identifier
-        if (match(TokenType::PUNCTUATION, "\\"))
+        if (match(TokenType::PUNCTUATION_BACKSLASH))
         {
             advance(); // consume '\'
 
@@ -151,7 +152,7 @@ bool ParserContext::isUnaryOpStmtAhead()
         }
 
         // Handle indexing: [...]
-        else if (match(TokenType::PUNCTUATION, "["))
+        else if (match(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
         {
             advance(); // consume '['
 
@@ -159,12 +160,12 @@ bool ParserContext::isUnaryOpStmtAhead()
 
             while (depth > 0)
             {
-                if (match(TokenType::PUNCTUATION, "["))
+                if (match(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
                 {
                     depth++;
                 }
 
-                else if (match(TokenType::PUNCTUATION, "]"))
+                else if (match(TokenType::PUNCTUATION_CLOSE_SQUARE_BRACE))
                 {
                     depth--;
                 }
@@ -179,10 +180,30 @@ bool ParserContext::isUnaryOpStmtAhead()
         }
     }
 
-    bool result = match(TokenType::OP_UNARY);
+    bool result = isUnaryOp();
     pos = startPos;
 
     return result;
+}
+
+bool ParserContext::isUnaryOp() const
+{
+    return (current().type >= TokenType::UNARY_OP_SHARP && current().type <= TokenType::UNARY_OP_NATRUAL);
+}
+
+bool ParserContext::isAssignmentOp() const
+{
+    return (current().type >= TokenType::ASSIGNMENT_OP_EQUAL && current().type <= TokenType::ASSIGNMENT_OP_MODULUS_EQUAL);
+}
+
+bool ParserContext::isBinaryOp() const
+{
+    return (current().type >= TokenType::BINARY_OP_EQUIAL && current().type <= TokenType::BINARY_OP_AND);
+}
+
+bool ParserContext::isType() const
+{
+    return (current().type >= TokenType::TYPE_FLAT && current().type <= TokenType::TYPE_FERMATA);
 }
 
 void ParserContext::addToSymTable(const SymbolTable& symTable)

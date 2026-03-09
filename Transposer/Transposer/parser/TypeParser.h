@@ -6,13 +6,13 @@ class TypeParser
 private:
     ParserContext& c;
 
-    // std::unique_ptr<IType> parseIType();
-    // std::unique_ptr<Type> parseType();
-    // std::unique_ptr<ArrayType> parseArrayType();
-    // std::unique_ptr<ClassType> parseClassType();
-
 public:
     explicit TypeParser(ParserContext& c);
+
+    std::unique_ptr<IType> parseIType();
+    std::unique_ptr<IType> parseType() const;
+    std::unique_ptr<IType> parseArrayType();
+    std::unique_ptr<IType> parseClassType() const;
 
     void parse() const;
 };

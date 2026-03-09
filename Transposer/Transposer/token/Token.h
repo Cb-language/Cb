@@ -74,7 +74,6 @@ enum class TokenType : byte
 	UNARY_OP_FLAT,         // ♭     --
 	UNARY_OP_DOUBLE_FLAT,  // 𝄫     --)--
 	UNARY_OP_NATRUAL,      // ♮      =0
-	UNARY_OP_NOT,          // !     !
 
 	// binary operation
 	BINARY_OP_EQUIAL,        // ==

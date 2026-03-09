@@ -44,7 +44,10 @@ public:
 
     bool isAssignmentStmtAhead();
     bool isUnaryOpStmtAhead();
-
+    bool isUnaryOp() const;
+    bool isAssignmentOp() const;
+    bool isBinaryOp() const;
+    bool isType() const;
 
     void addToSymTable(const SymbolTable& symTable);
     const SymbolTable& getSymTable() const;

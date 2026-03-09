@@ -6,7 +6,7 @@
 #include "errorHandling/syntaxErrors/ExpectedAPath.h"
 #include "errorHandling/syntaxErrors/MissingSemicolon.h"
 
-Parser::Parser(const std::vector<Token>& tokens) : c(tokens), stmtParser(c), exprParser(c), typeParser(c)
+Parser::Parser(const std::vector<Token>& tokens) : c(tokens), typeParser(c), exprParser(c, typeParser), stmtParser(c, typeParser, exprParser)
 {
 }
 
@@ -70,10 +70,19 @@ std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
 
 void Parser::parse()
 {
+    stmtParser.parse();
 }
 
 void Parser::analyze()
 {
+    for (const auto& stmt : c.getStmts())
+    {
+        try {
+            stmt->analyze();
+        } catch (const Error& e) {
+            // Error handling usually adds to c.errors
+        }
+    }
 }
 
 std::string Parser::translateToCpp(const std::filesystem::path& hPath, const bool isMain) const
