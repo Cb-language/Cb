@@ -35,7 +35,7 @@ std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
     std::vector<std::pair<std::filesystem::path, Token>> v;
     if (c.getIncludes().empty() && c.getPos() == 0)
     {
-        while (c.match(TokenType::KEYWORD_FEAT))
+        while (c.matchConsume(TokenType::KEYWORD_FEAT))
         {
             c.advance();
 
@@ -48,7 +48,7 @@ std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
                 str.end()
             );
             std::filesystem::path path = str;
-            if (!c.match(TokenType::PUNCTUATION_SEMICOLON))
+            if (!c.matchConsume(TokenType::PUNCTUATION_SEMICOLON))
             {
                 c.addError(std::make_unique<MissingSemicolon>(c.current()));
                 return {};

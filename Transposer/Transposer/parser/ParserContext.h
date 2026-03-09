@@ -37,7 +37,8 @@ public:
 
     bool isAtEnd() const;
 
-    bool match(TokenType type) const;
+    bool matchNonConsume(const TokenType type) const;
+    bool matchConsume(TokenType type);
 
     bool expect(TokenType type, std::unique_ptr<Error> err = nullptr, std::optional<std::reference_wrapper<Token>> out = std::nullopt);
 

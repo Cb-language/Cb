@@ -10,16 +10,10 @@ TypeParser::TypeParser(ParserContext& c) : c(c)
 {
 }
 
-void TypeParser::parse() const
+std::unique_ptr<IType> TypeParser::parseIType() const
 {
-    // This sub-parser might not have a standalone parse() if it's always called by others
-}
-
-std::unique_ptr<IType> TypeParser::parseIType()
-{
-    if (c.match(TokenType::TYPE_RIFF))
+    if (c.matchConsume(TokenType::TYPE_RIFF))
     {
-        c.advance();
         return parseArrayType();
     } // if not array try primitive types
 
@@ -28,16 +22,19 @@ std::unique_ptr<IType> TypeParser::parseIType()
 
 std::unique_ptr<IType> TypeParser::parseType() const
 {
-    std::string prefix = "";
-    if (c.match(TokenType::TYPE_FLAT))
+    if (c.matchConsume(TokenType::IDENTIFIER))
     {
-        prefix = "flat ";
-        c.advance();
+        return std::make_unique<ClassType>(c.current().value.value());
     }
-    else if (c.match(TokenType::TYPE_SHARP))
+
+    auto signType = SignType::SIGNED;
+
+    if (c.matchConsume(TokenType::TYPE_FLAT))
     {
-        prefix = "sharp ";
-        c.advance();
+    }
+    else if (c.matchConsume(TokenType::TYPE_SHARP))
+    {
+        signType = SignType::UNSIGNED;
     }
 
     Token typeToken;
@@ -52,30 +49,31 @@ std::unique_ptr<IType> TypeParser::parseType() const
         return nullptr;
     }
 
-    std::string value = "";
+    Primitive value;
     switch (typeToken.type)
     {
-        case TokenType::TYPE_DEGREE:  value = "degree";  break;
-        case TokenType::TYPE_FREQ:    value = "freq";    break;
-        case TokenType::TYPE_NOTE:    value = "note";    break;
-        case TokenType::TYPE_MUTE:    value = "mute";    break;
-        case TokenType::TYPE_BAR:     value = "bar";     break;
-        case TokenType::TYPE_FERMATA: value = "fermata"; break;
-        default: break;
+        case TokenType::TYPE_DEGREE:  value = Primitive::TYPE_DEGREE;  break;
+        case TokenType::TYPE_FREQ:    value = Primitive::TYPE_FREQ;    break;
+        case TokenType::TYPE_NOTE:    value = Primitive::TYPE_NOTE;    break;
+        case TokenType::TYPE_MUTE:    value = Primitive::TYPE_MUTE;    break;
+        case TokenType::TYPE_BAR:     value = Primitive::TYPE_BAR;     break;
+        case TokenType::TYPE_FERMATA: value = Primitive::TYPE_FERMATA; break;
+
+        default: c.addError(std::make_unique<InvalidNumberLiteral>(c.current())); return nullptr;
     }
 
-    if (!prefix.empty() && value == "freq")
+    if (signType == SignType::UNSIGNED && value == Primitive::TYPE_FREQ)
     {
         c.addError(std::make_unique<UnrecognizedToken>(typeToken));
         return nullptr;
     }
 
-    return std::make_unique<PrimitiveType>(prefix + value);
+    return std::make_unique<PrimitiveType>(value, signType);
 }
 
-std::unique_ptr<IType> TypeParser::parseArrayType()
+std::unique_ptr<IType> TypeParser::parseArrayType() const
 {
-    std::unique_ptr<IType> arrType = parseIType();
+    std::unique_ptr<IType> arrType = parseType();
     if (!arrType) return nullptr;
 
     return std::make_unique<ArrayType>(std::move(arrType));

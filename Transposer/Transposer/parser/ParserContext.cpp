@@ -41,14 +41,24 @@ bool ParserContext::isAtEnd() const
     return pos >= len;
 }
 
-bool ParserContext::match(const TokenType type) const
+bool ParserContext::matchNonConsume(const TokenType type) const
 {
     return current().type == type;
 }
 
+bool ParserContext::matchConsume(const TokenType type)
+{
+    if (current().type == type)
+    {
+        advance();
+        return true;
+    }
+    return false;
+}
+
 bool ParserContext::expect(const TokenType type, std::unique_ptr<Error> err, const std::optional<std::reference_wrapper<Token>> out)
 {
-    if (!match(type))
+    if (!matchConsume(type))
     {
         if (err)
             addError(std::move(err));
@@ -68,7 +78,7 @@ bool ParserContext::isAssignmentStmtAhead()
     const size_t startPos = pos;
 
     // Must start with identifier
-    if (!match(TokenType::IDENTIFIER))
+    if (!matchConsume(TokenType::IDENTIFIER))
     {
         return false;
     }
@@ -78,11 +88,11 @@ bool ParserContext::isAssignmentStmtAhead()
     while (true)
     {
         // Handle member access: \identifier
-        if (match(TokenType::PUNCTUATION_BACKSLASH))
+        if (matchConsume(TokenType::PUNCTUATION_BACKSLASH))
         {
             advance(); // consume '\'
 
-            if (!match(TokenType::IDENTIFIER))
+            if (!matchConsume(TokenType::IDENTIFIER))
             {
                 pos = startPos;
                 return false;
@@ -91,18 +101,18 @@ bool ParserContext::isAssignmentStmtAhead()
             advance(); // consume IDENTIFIER
         }
         // Handle indexing: [...]
-        else if (match(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
+        else if (matchConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
         {
             advance(); // consume '['
 
             int depth = 1;
             while (depth > 0)
             {
-                if (match(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
+                if (matchConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
                 {
                     depth++;
                 }
-                else if (match(TokenType::PUNCTUATION_CLOSE_SQUARE_BRACE))
+                else if (matchConsume(TokenType::PUNCTUATION_CLOSE_SQUARE_BRACE))
                 {
                     depth--;
                 }
@@ -118,7 +128,7 @@ bool ParserContext::isAssignmentStmtAhead()
 
     const bool result =
         isAssignmentOp() ||
-        match(TokenType::PUNCTUATION_SEMICOLON);
+        matchConsume(TokenType::PUNCTUATION_SEMICOLON);
 
     pos = startPos;
     return result;
@@ -128,7 +138,7 @@ bool ParserContext::isUnaryOpStmtAhead()
 {
     const size_t startPos = pos;
 
-    if (!match(TokenType::IDENTIFIER))
+    if (!matchConsume(TokenType::IDENTIFIER))
     {
         return false;
     }
@@ -138,11 +148,11 @@ bool ParserContext::isUnaryOpStmtAhead()
     while (true)
     {
         // Handle member access: \identifier
-        if (match(TokenType::PUNCTUATION_BACKSLASH))
+        if (matchConsume(TokenType::PUNCTUATION_BACKSLASH))
         {
             advance(); // consume '\'
 
-            if (!match(TokenType::IDENTIFIER))
+            if (!matchConsume(TokenType::IDENTIFIER))
             {
                 pos = startPos;
                 return false;
@@ -152,7 +162,7 @@ bool ParserContext::isUnaryOpStmtAhead()
         }
 
         // Handle indexing: [...]
-        else if (match(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
+        else if (matchConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
         {
             advance(); // consume '['
 
@@ -160,12 +170,12 @@ bool ParserContext::isUnaryOpStmtAhead()
 
             while (depth > 0)
             {
-                if (match(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
+                if (matchConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
                 {
                     depth++;
                 }
 
-                else if (match(TokenType::PUNCTUATION_CLOSE_SQUARE_BRACE))
+                else if (matchConsume(TokenType::PUNCTUATION_CLOSE_SQUARE_BRACE))
                 {
                     depth--;
                 }

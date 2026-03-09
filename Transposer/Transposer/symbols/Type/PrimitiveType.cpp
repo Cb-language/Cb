@@ -23,7 +23,7 @@ PrimitiveType::PrimitiveType(const Primitive type) : type(type), signType(SignTy
 {
 }
 
-PrimitiveType::PrimitiveType(const Primitive type, const SignType extra) : type(type), signType(extra)
+PrimitiveType::PrimitiveType(const Primitive type, const SignType signType) : type(type), signType(signType)
 {
 }
 
@@ -59,11 +59,6 @@ bool PrimitiveType::isStringable() const
 bool PrimitiveType::isPrimitive() const
 {
     return true;
-}
-
-Primitive PrimitiveType::getType() const
-{
-    return type;
 }
 
 std::string PrimitiveType::translateTypeToCpp() const

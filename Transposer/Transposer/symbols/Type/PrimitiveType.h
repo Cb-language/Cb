@@ -36,7 +36,7 @@ private:
 
 public:
     explicit PrimitiveType(Primitive type);
-    PrimitiveType(Primitive type, SignType extra);
+    PrimitiveType(Primitive type, SignType signType);
 
     bool operator==(const IType& other) const override;
     bool operator!=(const IType& other) const override;
@@ -45,8 +45,6 @@ public:
     bool isStringable() const override;
 
     bool isPrimitive() const override;
-
-    IType* getType() const;
 
     std::string translateTypeToCpp() const override;
 

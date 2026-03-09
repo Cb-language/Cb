@@ -61,7 +61,7 @@ static UnaryOp strToUnaryOp(const std::string& str)
 
 std::unique_ptr<Expr> ExprParser::parseExpr(const bool needsSemicolon, const bool allowBackslash)
 {
-    if (c.match(TokenType::IDENTIFIER))
+    if (c.matchConsume(TokenType::IDENTIFIER))
     {
         if (c.peek().type >= TokenType::UNARY_OP_SHARP && c.peek().type <= TokenType::UNARY_OP_NATRUAL)
                 return parseUnaryOpExpr(needsSemicolon);
@@ -112,7 +112,7 @@ std::unique_ptr<Expr> ExprParser::parsePrimary(const bool needsSemicolon, const 
         return parseConstValueExpr();
     }
 
-    if (c.match(TokenType::IDENTIFIER))
+    if (c.matchConsume(TokenType::IDENTIFIER))
     {
         try {
             if (c.peek().type == TokenType::PUNCTUATION_PARENTHESIS_OPEN)
@@ -123,7 +123,7 @@ std::unique_ptr<Expr> ExprParser::parsePrimary(const bool needsSemicolon, const 
         return parseCallExpr(classCall);
     }
 
-    if (c.match(TokenType::PUNCTUATION_PARENTHESIS_OPEN))
+    if (c.matchConsume(TokenType::PUNCTUATION_PARENTHESIS_OPEN))
     {
         c.advance();
         auto expr = parseExpr(false, allowBackslash);
@@ -140,7 +140,7 @@ std::unique_ptr<Expr> ExprParser::parseBinaryOpRight(const int exprPrec, std::un
 {
     while (true)
     {
-        if (!(c.isBinaryOp() || (allowBackslash && c.match(TokenType::PUNCTUATION_BACKSLASH))))
+        if (!(c.isBinaryOp() || (allowBackslash && c.matchConsume(TokenType::PUNCTUATION_BACKSLASH))))
             return left;
 
         const Token& t = c.current();
@@ -155,7 +155,7 @@ std::unique_ptr<Expr> ExprParser::parseBinaryOpRight(const int exprPrec, std::un
         auto right = parsePrimary(needsSemicolon, allowBackslash, classCall);
         if (!right) return nullptr;
 
-        if (c.isBinaryOp() || (allowBackslash && c.match(TokenType::PUNCTUATION_BACKSLASH)))
+        if (c.isBinaryOp() || (allowBackslash && c.matchConsume(TokenType::PUNCTUATION_BACKSLASH)))
         {
             std::string nextOp = tokenToOp(c.current().type);
 
@@ -346,13 +346,13 @@ std::unique_ptr<Call> ExprParser::parseFuncCallExpr(const bool needsSemicolon)
     if (!c.expect(TokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.current()))) return nullptr;
 
     std::vector<std::unique_ptr<Expr>> args;
-    while (!c.match(TokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+    while (!c.matchConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE))
     {
         auto arg = parseExpr();
         if (!arg) return nullptr;
         args.push_back(std::move(arg));
 
-        if (!c.match(TokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+        if (!c.matchConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE))
         {
             if (!c.expect(TokenType::PUNCTUATION_COMMA, std::make_unique<UnexpectedToken>(c.current()))) return nullptr;
         }
@@ -384,7 +384,7 @@ std::unique_ptr<Call> ExprParser::parseCallExpr(const ClassNode* classCall)
     auto call = parseVarCallExpr();
     if (!call) return nullptr;
 
-    while (c.match(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
+    while (c.matchConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
     {
         call = parseArrayAccess(std::move(call));
         if (!call) return nullptr;
@@ -395,7 +395,7 @@ std::unique_ptr<Call> ExprParser::parseCallExpr(const ClassNode* classCall)
 
 std::unique_ptr<Call> ExprParser::parseArrayAccess(std::unique_ptr<Call> call)
 {
-    if (c.match(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
+    if (c.matchConsume(TokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
     {
         // check for slicing vs indexing
         size_t lookahead = c.getPos() + 1;
@@ -428,19 +428,19 @@ std::unique_ptr<Call> ExprParser::parseArraySlicingExpr(std::unique_ptr<Call> ca
     std::unique_ptr<Expr> stop = nullptr;
     std::unique_ptr<Expr> step = nullptr;
 
-    if (!c.match(TokenType::PUNCTUATION_COLON))
+    if (!c.matchConsume(TokenType::PUNCTUATION_COLON))
     {
         start = parseExpr();
     }
 
     if (!c.expect(TokenType::PUNCTUATION_COLON, std::make_unique<UnexpectedToken>(c.current()))) return nullptr;
 
-    if (!c.match(TokenType::PUNCTUATION_COLON) && !c.match(TokenType::PUNCTUATION_CLOSE_SQUARE_BRACE))
+    if (!c.matchConsume(TokenType::PUNCTUATION_COLON) && !c.matchConsume(TokenType::PUNCTUATION_CLOSE_SQUARE_BRACE))
     {
         stop = parseExpr();
     }
 
-    if (c.match(TokenType::PUNCTUATION_COLON))
+    if (c.matchConsume(TokenType::PUNCTUATION_COLON))
     {
         c.advance();
         step = parseExpr();
