@@ -40,7 +40,6 @@ public partial class CodeEditor : UserControl
     // Auto-Complete Pairs
     private readonly Dictionary<string, string> _bracketPairs = new()
     {
-        { "(", ")" },
         { "[", "]" },
         { "{", "}" },
         { "\"", "\"" },
@@ -86,15 +85,16 @@ public partial class CodeEditor : UserControl
 
         switch (e.Text)
         {
-            case "<": replacement = "𝄕"; break;
-            case ">": replacement = "𝄇"; break;
             case "{": replacement = "𝄋"; break;
             case "}": replacement = "𝄌"; break;
+            case "(": replacement = "𝄕"; break;
+            case ")": replacement = "𝄇"; break;
             case "&": replacement = "𝄞"; break;
             case ";": replacement = "𝄀"; break;
             case "~": replacement = "𝄽"; break;
             case "^": replacement = "𝆫"; break;
             case "\\": replacement = "𝄍"; break;
+            case "#": replacement = "♯"; break;
         }
 
         if (replacement != null)
@@ -230,7 +230,6 @@ public partial class CodeEditor : UserControl
             {
                 switch (e.Key)
                 {
-                    case Key.D3: replacement = "𝄪"; break;  // ALT + SHIFT + #
                     case Key.B: replacement = "𝄫"; break;       // ALT + SHIFT + B
                 }
             }
@@ -240,13 +239,11 @@ public partial class CodeEditor : UserControl
                 {
                     case Key.OemTilde: replacement = "𝄡"; break; // ALT + ~ (or ` key)
                     case Key.D0: replacement = "♮"; break; // ALT + 0
-                    case Key.OemSemicolon: replacement = "𝄁"; break; // ALT + : (or ; key)
-                    case Key.OemBackslash: replacement = "║"; break; // ALT + \
                     case Key.C: replacement = "©"; break; // ALT + C
                     case Key.OemQuestion: replacement = "𝄂"; break; // ALT + / (or ? key)
                     case Key.Divide: replacement = "𝄂"; break; // ALT + Numpad /
                     case Key.OemPlus: replacement = "𝅘𝅥="; break; // ALT + Numpad +
-                    case Key.D3: replacement = "♯"; break; // ALT + 3
+                    case Key.D3: replacement = "𝄪"; break;  // ALT+ #
                     case Key.B: replacement = "♭"; break; // ALT + B
 
                 }
