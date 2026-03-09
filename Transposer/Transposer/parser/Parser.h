@@ -30,6 +30,6 @@ public:
     void analyze();
     std::string translateToCpp(const std::filesystem::path& hPath, const bool isMain = false) const;
     std::string translateToH(const bool isMain = false) const;
-    bool shouldProduceCpp(bool isMain) const;
+    //bool shouldProduceCpp(bool isMain) const;
 };
 

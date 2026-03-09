@@ -37,7 +37,7 @@ const std::vector<KeywordInfo> KEYWORDS =
 	{TokenType::KEYWORD_FMIN, "Fmin", WordBoundary::BOTH},
 	{TokenType::KEYWORD_WHILE, "G", WordBoundary::BOTH},
 	{TokenType::KEYWORD_SONG, "song", WordBoundary::BOTH},
-	{TokenType::KEYWORD_FEAT, "feat", WordBoundary::BOTH},
+	{TokenType::KEYWORD_FEAT, "feat.", WordBoundary::BOTH},
 	{TokenType::KEYWORD_MOTIF, "motif", WordBoundary::BOTH},
 	{TokenType::KEYWORD_REST, "rest", WordBoundary::BOTH},
 	{TokenType::KEYWORD_VARIATION, "variation", WordBoundary::BOTH},

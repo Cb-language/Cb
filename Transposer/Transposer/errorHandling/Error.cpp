@@ -1,14 +1,33 @@
 #include "Error.h"
 
 #include "other/Utils.h"
+#include "token/TrieTree/Keywords.h"
+
+std::unordered_map<TokenType, std::string> Error::tokenToTypeMap = typeToStr();
+
+std::unordered_map<TokenType, std::string> Error::typeToStr()
+{
+    std::unordered_map<TokenType, std::string> result;
+
+    for (const auto &entry : KEYWORDS)
+    {
+        result.emplace(entry.type, entry.keyword);
+    }
+
+    return result;
+}
 
 Error::Error(const Token &token, const std::string& errorMessage) : token(token), errorMessage(errorMessage)
 {
-    fullMessage = (this->errorMessage +
+    fullMessage = this->errorMessage +
                    " in file: \"" + token.path.string() + "\"" +
                    " at line: " + std::to_string(token.line) +
-                   " at column: " + std::to_string(token.column) +
-                   " near token: \"" + token.value.value() + "\"\n");
+                   " at column: " + std::to_string(token.column);
+
+    if (tokenToTypeMap.contains(token.type))
+    {
+        fullMessage += " near token: \"" + tokenToTypeMap.at(token.type) + "\"\n";
+    }
 
 }
 

@@ -35,10 +35,8 @@ std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
     std::vector<std::pair<std::filesystem::path, Token>> v;
     if (c.getIncludes().empty() && c.getPos() == 0)
     {
-        while (c.matchNonConsume(TokenType::KEYWORD_FEAT))
+        while (c.matchConsume(TokenType::KEYWORD_FEAT))
         {
-            c.advance();
-
             Token pathToken;
             if (!c.expect(TokenType::CONST_STR,std::make_unique<ExpectedAPath>(c.current()), pathToken)) return {};
 
@@ -86,10 +84,13 @@ void Parser::analyze()
 {
     for (const auto& stmt : c.getStmts())
     {
-        try {
+        try
+        {
             stmt->analyze();
-        } catch (const Error& e) {
-            // Error handling usually adds to c.errors
+        }
+        catch (const Error& e)
+        {
+            c.addError(std::make_unique<Error>(e.getToken(), e.getErrorMessage()));
         }
     }
 }
@@ -104,33 +105,33 @@ std::string Parser::translateToH(const bool isMain) const
     return "";
 }
 
-bool Parser::shouldProduceCpp(const bool isMain) const
-{
-    if (isMain || c.getHasMain()) return true;
-
-    for (const auto& stmt : c.getStmts())
-    {
-        if (dynamic_cast<IncludeStmt*>(stmt.get())) continue;
-
-        if (const auto classStmt = dynamic_cast<ClassDeclStmt*>(stmt.get()))
-        {
-            // if (classStmt->getCurrClass() && !classStmt->getCurrClass()->isAbstract())
-            // {
-            // return true; // Found a concrete class
-            // }
-            return true;
-        }
-        else if (dynamic_cast<FuncDeclStmt*>(stmt.get()))
-        {
-            return true; // Found a global function implementation
-        }
-        else
-        {
-            // Any other statement in global scope (e.g. VarDeclStmt) needs a .cpp
-            return true;
-        }
-    }
-
-    // If it only has includes or abstract classes, don't produce a .cpp
-    return false;
-}
+// bool Parser::shouldProduceCpp(const bool isMain) const
+// {
+//     if (isMain || c.getHasMain()) return true;
+//
+//     for (const auto& stmt : c.getStmts())
+//     {
+//         if (dynamic_cast<IncludeStmt*>(stmt.get())) continue;
+//
+//         if (const auto classStmt = dynamic_cast<ClassDeclStmt*>(stmt.get()))
+//         {
+//             // if (classStmt->getCurrClass() && !classStmt->getCurrClass()->isAbstract())
+//             // {
+//             // return true; // Found a concrete class
+//             // }
+//             return true;
+//         }
+//         else if (dynamic_cast<FuncDeclStmt*>(stmt.get()))
+//         {
+//             return true; // Found a global function implementation
+//         }
+//         else
+//         {
+//             // Any other statement in global scope (e.g. VarDeclStmt) needs a .cpp
+//             return true;
+//         }
+//     }
+//
+//     // If it only has includes or abstract classes, don't produce a .cpp
+//     return false;
+// } TODO add to output stage

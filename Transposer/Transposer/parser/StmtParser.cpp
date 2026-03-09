@@ -722,6 +722,7 @@ std::unique_ptr<ConstractorDeclStmt> StmtParser::parseCtor()
 
 std::unique_ptr<ConstractorCallStmt> StmtParser::parseConstractorCallStmt() const
 {
+    return nullptr;
     // TODO implement
 }
 
