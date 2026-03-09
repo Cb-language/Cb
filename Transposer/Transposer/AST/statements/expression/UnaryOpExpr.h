@@ -7,6 +7,8 @@ enum class UnaryOp
     Zero = 0,
     PlusPlus,
     MinusMinus,
+    PlusPlusPlusPlus,
+    MinusMinusMinusMinus,
     Not
 };
 

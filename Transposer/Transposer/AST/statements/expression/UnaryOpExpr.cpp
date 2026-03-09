@@ -50,6 +50,14 @@ std::string UnaryOpExpr::translateToCpp() const
         ret += "--";
         break;
 
+    case UnaryOp::PlusPlusPlusPlus:
+        ret += " += 2";
+        break;
+
+    case UnaryOp::MinusMinusMinusMinus:
+        ret += "--2";
+        break;
+        
     case UnaryOp::Not:
         ret += "!";
         break;

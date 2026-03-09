@@ -73,6 +73,7 @@ enum class TokenType : byte
 	UNARY_OP_DOUBLE_SHARP, // 𝄪     ++)++
 	UNARY_OP_FLAT,         // ♭     --
 	UNARY_OP_DOUBLE_FLAT,  // 𝄫     --)--
+	UNARY_OP_NOT,          // !
 	UNARY_OP_NATRUAL,      // ♮      =0
 
 	// binary operation

@@ -1,10 +1,25 @@
 #include "Parser.h"
 
+#include <memory>
+#include <ranges>
+#include <vector>
+#include <filesystem>
 #include <algorithm>
 
-#include "errorHandling/semanticErrors/InvalidPathExtension.h"
-#include "errorHandling/syntaxErrors/ExpectedAPath.h"
-#include "errorHandling/syntaxErrors/MissingSemicolon.h"
+// ---------- AST related ----------
+#include "AST/statements/FuncDeclStmt.h"
+#include "AST/statements/expression/FuncCallExpr.h"
+
+// ---------- syntax errors ----------
+#include "../errorHandling/syntaxErrors/UnexpectedToken.h"
+#include "../errorHandling/syntaxErrors/MissingSemicolon.h"
+#include "../errorHandling/syntaxErrors/ExpectedAPath.h"
+
+// ---------- semantic errors ----------
+#include "../errorHandling/semanticErrors/InvalidPathExtension.h"
+
+#include "files/FileGraph.h"
+#include "symbols/Type/ClassType.h"
 
 Parser::Parser(const std::vector<Token>& tokens) : c(tokens), typeParser(c), exprParser(c, typeParser), stmtParser(c, typeParser, exprParser)
 {
