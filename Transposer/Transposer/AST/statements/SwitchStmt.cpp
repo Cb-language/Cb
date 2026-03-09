@@ -2,8 +2,8 @@
 
 #include "errorHandling/semanticErrors/IllegalSwitchVar.h"
 
-SwitchStmt::SwitchStmt(const Token& token, Scope *scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, Var var, std::vector<std::unique_ptr<CaseStmt>>& cases)
-    : Stmt(token, scope, funcDecl, currClass), var(std::move(var)), cases(std::move(cases))
+SwitchStmt::SwitchStmt(const Token& token, IFuncDeclStmt* funcDecl, Var var, std::vector<std::unique_ptr<CaseStmt>>& cases, ClassDeclStmt* classDecl)
+    : Stmt(token, funcDecl, classDecl), var(std::move(var)), cases(std::move(cases))
 {
 }
 

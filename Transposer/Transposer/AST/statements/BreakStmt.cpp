@@ -2,7 +2,7 @@
 
 #include "errorHandling/semanticErrors/StmtNotBreakable.h"
 
-BreakStmt::BreakStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass) : Stmt(token, scope, funcDecl, currClass)
+BreakStmt::BreakStmt(const Token& token, IFuncDeclStmt* funcDecl, ClassDeclStmt* classDecl) : Stmt(token, funcDecl, classDecl)
 {
 }
 

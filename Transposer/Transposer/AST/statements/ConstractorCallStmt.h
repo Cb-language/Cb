@@ -4,19 +4,17 @@
 class ConstractorCallStmt : public Expr
 {
 private:
-    const ClassNode* classNode;
     std::vector<std::unique_ptr<Expr>> args;
-    bool isStmt = false;
+    bool needsSemicolon = false;
 
 public:
-    ConstractorCallStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-        const ClassNode* classNode, std::vector<std::unique_ptr<Expr>> args);
+    ConstractorCallStmt(const Token& token, IFuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Expr>> args, ClassDeclStmt* classDecl = nullptr);
 
     std::unique_ptr<IType> getType() const override;
     void analyze() const override;
     std::string translateToCpp() const override;
 
-    void setIsStmt(const bool isStmt) override;
+    void setNeedsSemicolon(const bool needsSemicolon) override;
 
     const ClassNode* getClassNode() const;
 };

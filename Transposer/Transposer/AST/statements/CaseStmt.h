@@ -10,8 +10,8 @@ private:
     std::unique_ptr<BodyStmt> body;
     bool isDefault = false;
 public:
-    CaseStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-        std::unique_ptr<Expr> expr, std::unique_ptr<BodyStmt> body, const bool isDefault = false);
+    CaseStmt(const Token& token, IFuncDeclStmt* funcDecl,
+        std::unique_ptr<Expr> expr, std::unique_ptr<BodyStmt> body, const bool isDefault = false, ClassDeclStmt* classDecl = nullptr);
     void analyze() const override;
     std::string translateToCpp() const override;
 

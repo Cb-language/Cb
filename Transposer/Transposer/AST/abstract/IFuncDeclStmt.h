@@ -12,7 +12,7 @@ private:
     // ReSharper disable once CppUseAuto
     inline static const std::vector<std::unique_ptr<FuncCreditStmt>> emptyCredits = std::vector<std::unique_ptr<FuncCreditStmt>>();
 public:
-    IFuncDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass) : Stmt(token, scope, currClass) {}
+    explicit IFuncDeclStmt(const Token& token, ClassDeclStmt* classDecl = nullptr) : Stmt(token, classDecl) {}
     ~IFuncDeclStmt() override = default;
 
     virtual std::string getName() const = 0;

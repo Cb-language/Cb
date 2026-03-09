@@ -3,14 +3,14 @@
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
 
-ArraySlicingExpr::ArraySlicingExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-    std::unique_ptr<Call> call, std::unique_ptr<Expr> start, std::unique_ptr<Expr> stop, std::unique_ptr<Expr> step)
-    : Call(token, scope, funcDecl, currClass), call(std::move(call)), start(std::move(start)), stop(std::move(stop)), step(std::move(step))
+ArraySlicingExpr::ArraySlicingExpr(const Token& token, IFuncDeclStmt* funcDecl,
+    std::unique_ptr<Call> call, std::unique_ptr<Expr> start, std::unique_ptr<Expr> stop, std::unique_ptr<Expr> step, ClassDeclStmt* classDecl)
+    : Call(token, funcDecl, classDecl), call(std::move(call)), start(std::move(start)), stop(std::move(stop)), step(std::move(step))
 {
 }
 
 ArraySlicingExpr::ArraySlicingExpr(const ArraySlicingExpr& other)
-    : Call(other.token, other.scope, other.funcDecl, other.currClass), call(other.call.get()), start(other.start.get()), stop(other.stop.get()), step(other.step.get())
+    : Call(other.token, other.funcDecl, other.classDecl), call(other.call.get()), start(other.start.get()), stop(other.stop.get()), step(other.step.get())
 {
 }
 

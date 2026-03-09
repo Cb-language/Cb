@@ -17,10 +17,10 @@ class UnaryOpExpr : public Expr
 private:
     const std::unique_ptr<Call> call;
     const UnaryOp op;
-    const bool isStmt;
+    const bool needsSemicolon;
 public:
-    UnaryOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-        std::unique_ptr<Call> call, const UnaryOp op, const bool isStmt = false);
+    UnaryOpExpr(const Token& token, IFuncDeclStmt* funcDecl,
+        std::unique_ptr<Call> call, const UnaryOp op, const bool needsSemicolon = false, ClassDeclStmt* classDecl = nullptr);
     void analyze() const override;
     std::string translateToCpp() const override;
     std::unique_ptr<IType> getType() const override;

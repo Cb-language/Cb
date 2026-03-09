@@ -5,11 +5,10 @@ class Call : public Expr
 {
 protected:
     bool isClassItem = false;
-    explicit Call(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const bool hasParens)
-                    : Expr(token, scope, funcDecl, currClass, hasParens) {}
+    Call(const Token& token, IFuncDeclStmt* funcDecl, ClassDeclStmt* classDecl = nullptr)
+                    : Expr(token, funcDecl, classDecl) {}
 
 public:
-    Call(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass) : Expr(token, scope, funcDecl, currClass) {}
 
     virtual std::string toString() const = 0;
 

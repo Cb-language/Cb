@@ -1,7 +1,7 @@
 #include "WhileStmt.h"
 
-WhileStmt::WhileStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::unique_ptr<Expr>& condition, std::unique_ptr<Stmt>& body)
-    : Stmt(token, scope, funcDecl, currClass), condition(std::move(condition)), body(std::move(body))
+WhileStmt::WhileStmt(const Token& token, IFuncDeclStmt* funcDecl, std::unique_ptr<Expr>& condition, std::unique_ptr<Stmt>& body, ClassDeclStmt* classDecl)
+    : Stmt(token, funcDecl, classDecl), condition(std::move(condition)), body(std::move(body))
 {
 }
 

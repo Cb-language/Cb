@@ -235,7 +235,7 @@ std::unique_ptr<VarDeclStmt> StmtParser::parseVarDecStmt(const bool isField) con
 std::unique_ptr<AssignmentStmt> StmtParser::parseAssignmentStmt() const
 {
     const Token& t = c.current();
-    auto left = exprParser.parseExpr(false, true);
+    auto left = exprParser.parseExpr(true);
     if (!left) return nullptr;
 
     const Token opToken = c.current();

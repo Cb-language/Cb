@@ -6,9 +6,9 @@
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/semanticErrors/CallWithoutCopyright.h"
 
-FuncCallExpr::FuncCallExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-    const std::string& name,std::vector<std::unique_ptr<Expr>> args, const bool isStmt)
-    : Call(token, scope, funcDecl, currClass), name(name), type(std::make_unique<Type>("fermata")), isStmt(isStmt)
+FuncCallExpr::FuncCallExpr(const Token& token, IFuncDeclStmt* funcDecl,
+    const std::string& name,std::vector<std::unique_ptr<Expr>> args, const bool needsSemicolon, ClassDeclStmt* classDecl)
+    : Call(token, funcDecl, classDecl), name(name), type(std::make_unique<Type>("fermata")), needsSemicolon(needsSemicolon)
 {
     for (auto& arg : args)
     {
@@ -53,7 +53,7 @@ std::string FuncCallExpr::translateToCpp() const
     std::ostringstream oss;
     bool first = true;
 
-    if (isStmt && !isClassItem)
+    if (needsSemicolon && !isClassItem)
     {
         oss << getTabs();
     }
@@ -73,7 +73,7 @@ std::string FuncCallExpr::translateToCpp() const
 
     oss << ")";
 
-    if (isStmt)
+    if (needsSemicolon)
     {
         oss << ";";
     }
@@ -118,7 +118,7 @@ std::string FuncCallExpr::toString() const
     return name;
 }
 
-void FuncCallExpr::setIsStmt(const bool isStmt)
+void FuncCallExpr::setNeedsSemicolon(const bool needsSemicolon)
 {
-    this->isStmt = isStmt;
+    this->needsSemicolon = needsSemicolon;
 }

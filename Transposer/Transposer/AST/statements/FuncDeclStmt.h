@@ -21,8 +21,7 @@ private:
     bool isMethod;
 
 public:
-    FuncDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass,
-        const std::string &funcName, std::unique_ptr<IType> returnType, const std::vector<Var> &args, std::vector<std::unique_ptr<FuncCreditStmt>>& credited, bool isMethod, const VirtualType& virtualType, bool isStatic = false);
+    FuncDeclStmt(const Token& token, const std::string& funcName, std::unique_ptr<IType> returnType, const std::vector<Var> &args, std::vector<std::unique_ptr<FuncCreditStmt>>& credited, bool isMethod, const VirtualType& virtualType, bool isStatic = false, ClassDeclStmt* classDecl = nullptr);
 
     const std::vector<Var>& getArgs() const;
     std::string getName() const override;

@@ -28,14 +28,14 @@ private:
 public:
     explicit ExprParser(ParserContext& c, TypeParser& typeParser);
 
-    std::unique_ptr<Expr> parseExpr(const bool hasParens = false, const bool isStmt = false, const bool allowBackslash = true);
-    std::unique_ptr<Expr> parsePrimary(const bool isStmt = false, const bool allowBackslash = true, const ClassNode* classCall = nullptr);
-    std::unique_ptr<Expr> parseBinaryOpRight(const int exprPrec, std::unique_ptr<Expr> left, const bool isStmt = false, const bool allowBackslash = true, const ClassNode* classCall = nullptr);
-    std::unique_ptr<StaticDotOpExpr> parseStaticDotOpExpr(const bool isStmt = false);
+    std::unique_ptr<Expr> parseExpr(const bool needsSemicolon = false, const bool allowBackslash = true);
+    std::unique_ptr<Expr> parsePrimary(const bool needsSemicolon = false, const bool allowBackslash = true, const ClassNode* classCall = nullptr);
+    std::unique_ptr<Expr> parseBinaryOpRight(const int exprPrec, std::unique_ptr<Expr> left, const bool needsSemicolon = false, const bool allowBackslash = true, const ClassNode* classCall = nullptr);
+    std::unique_ptr<StaticDotOpExpr> parseStaticDotOpExpr(const bool needsSemicolon = false);
     std::unique_ptr<ConstValueExpr> parseConstValueExpr() const;
-    std::unique_ptr<UnaryOpExpr> parseUnaryOpExpr(const bool isStmt = false);
-    std::unique_ptr<Call> parseVarCallExpr(const bool isStmt = false);
-    std::unique_ptr<Call> parseFuncCallExpr(const bool isStmt = false);
+    std::unique_ptr<UnaryOpExpr> parseUnaryOpExpr(const bool needsSemicolon = false);
+    std::unique_ptr<Call> parseVarCallExpr(const bool needsSemicolon = false);
+    std::unique_ptr<Call> parseFuncCallExpr(const bool needsSemicolon = false);
     std::unique_ptr<Call> parseCallExpr(const ClassNode* classCall = nullptr);
     std::unique_ptr<Call> parseArrayAccess(std::unique_ptr<Call> call);
     std::unique_ptr<Call> parseArraySlicingExpr(std::unique_ptr<Call> call);

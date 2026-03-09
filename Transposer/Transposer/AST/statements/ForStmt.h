@@ -14,9 +14,9 @@ private:
     const std::string varName;
 
 public:
-    ForStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
+    ForStmt(const Token& token, IFuncDeclStmt* funcDecl,
         std::unique_ptr<BodyStmt> body, const bool isIncreasing, std::unique_ptr<Expr> startExpr,
-        std::unique_ptr<Expr> stepExpr, std::unique_ptr<Expr> stopExpr, const std::string& varName);
+        std::unique_ptr<Expr> stepExpr, std::unique_ptr<Expr> stopExpr, const std::string& varName, ClassDeclStmt* classDecl = nullptr);
 
     void analyze() const override;
     std::string translateToCpp() const override;

@@ -3,11 +3,11 @@
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
 
-UnaryOpExpr::UnaryOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-    std::unique_ptr<Call> call, const UnaryOp op, const bool isStmt)
-        : Expr(token, scope, funcDecl, currClass), call(std::move(call)), op(op), isStmt(isStmt)
+UnaryOpExpr::UnaryOpExpr(const Token& token, IFuncDeclStmt* funcDecl,
+    std::unique_ptr<Call> call, const UnaryOp op, const bool needsSemicolon, ClassDeclStmt* classDecl)
+        : Expr(token, funcDecl, classDecl), call(std::move(call)), op(op), needsSemicolon(needsSemicolon)
 {
-    if (!isStmt && op == UnaryOp::Zero)
+    if (!needsSemicolon && op == UnaryOp::Zero)
     {
         hasParens = true;
     }
@@ -55,7 +55,7 @@ std::string UnaryOpExpr::translateToCpp() const
         break;
 
     case UnaryOp::MinusMinusMinusMinus:
-        ret += "--2";
+        ret += "-= 2";
         break;
         
     case UnaryOp::Not:
@@ -63,7 +63,7 @@ std::string UnaryOpExpr::translateToCpp() const
         break;
     }
 
-    if (isStmt)
+    if (needsSemicolon)
     {
         ret += ";";
     }

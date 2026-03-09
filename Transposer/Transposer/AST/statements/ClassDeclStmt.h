@@ -26,8 +26,8 @@ private:
     std::string generateEquals() const;
 
 public:
-    ClassDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const std::string& name, std::vector<Field>& fields,
-        std::vector<Method>& methods, std::vector<Ctor>& ctors, const bool isInheriting, const std::string& inheritingPublic, const std::string& inheritingName);
+    ClassDeclStmt(const Token& token, IFuncDeclStmt* funcDecl, const std::string& name, std::vector<Field>& fields,
+        std::vector<Method>& methods, std::vector<Ctor>& ctors, const bool isInheriting, const std::string& inheritingPublic, const std::string& inheritingName, ClassDeclStmt* classDecl = nullptr);
     void analyze() const override;
     std::string translateToCpp() const override;
     std::string translateToH() const override;

@@ -1,23 +1,24 @@
 #pragma once
 
-#include <locale>
-#include <sstream>
-
 #include "other/Scope.h"
-#include "other/Utils.h"
 
 class IFuncDeclStmt;
+class ClassDeclStmt;
 
 class Stmt
 {
 protected:
     const Token token;
-    Scope* scope;
     IFuncDeclStmt* funcDecl;
+    ClassDeclStmt* classDecl;
+
+    Scope* scope;
     const ClassNode* currClass;
 
-    Stmt(const Token& token, Scope* scope, const ClassNode* currClass);
-    Stmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass);
+    explicit Stmt(const Token& token);
+    explicit Stmt(const Token& token, ClassDeclStmt* classDecl = nullptr);
+    Stmt(const Token& token, IFuncDeclStmt* funcDecl, ClassDeclStmt* classDecl);
+
     std::string getTabs(const int offset = 0) const;
 public:
     virtual ~Stmt();
@@ -26,22 +27,34 @@ public:
     virtual std::string translateToH() const;
 
     const ClassNode* getCurrClass() const;
-
     void setFuncDecl(IFuncDeclStmt *funcDecl);
+    void setScope(Scope* scope);
+    void setClassNode(const ClassNode* currClass);
+
 };
 
-inline Stmt::Stmt(const Token& token, Scope* scope, const ClassNode* currClass) : token(token), scope(scope), currClass(currClass)
+inline Stmt::Stmt(const Token& token) : token(token),
+                                        funcDecl(nullptr),
+                                        classDecl(nullptr),
+                                        scope(nullptr),
+                                        currClass(nullptr)
 {
-    funcDecl = nullptr;
 }
 
-inline Stmt::Stmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass) : token(token), scope(scope), funcDecl(funcDecl), currClass(currClass)
+inline Stmt::Stmt(const Token& token, ClassDeclStmt* classDecl) : token(token),
+                                                                                           funcDecl(nullptr),
+                                                                                           classDecl(classDecl),
+                                                                                           scope(nullptr),
+                                                                                           currClass(nullptr)
 {
 }
 
-inline const ClassNode* Stmt::getCurrClass() const
+inline Stmt::Stmt(const Token& token, IFuncDeclStmt* funcDecl, ClassDeclStmt* classDecl) : token(token),
+                                                                                           funcDecl(funcDecl),
+                                                                                           classDecl(classDecl),
+                                                                                           scope(nullptr),
+                                                                                           currClass(nullptr)
 {
-    return currClass;
 }
 
 inline std::string Stmt::getTabs(const int offset) const
@@ -71,4 +84,14 @@ inline std::string Stmt::translateToH() const
 inline void Stmt::setFuncDecl(IFuncDeclStmt* funcDecl)
 {
     this->funcDecl = funcDecl;
+}
+
+inline void Stmt::setScope(Scope* scope)
+{
+    this->scope = scope;
+}
+
+inline void Stmt::setClassNode(const ClassNode* currClass)
+{
+    this->currClass = currClass;
 }

@@ -30,11 +30,6 @@ const ParserContext& Parser::getContext() const
     return c;
 }
 
-ParserContext& Parser::getContext()
-{
-    return c;
-}
-
 std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
 {
     std::vector<std::pair<std::filesystem::path, Token>> v;

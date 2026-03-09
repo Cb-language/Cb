@@ -59,35 +59,31 @@ static UnaryOp strToUnaryOp(const std::string& str)
     if (str == "!") return UnaryOp::Not;
 }
 
-std::unique_ptr<Expr> ExprParser::parseExpr(const bool hasParens, const bool isStmt, const bool allowBackslash)
+std::unique_ptr<Expr> ExprParser::parseExpr(const bool needsSemicolon, const bool allowBackslash)
 {
     if (c.match(TokenType::IDENTIFIER))
     {
         if (c.peek().type >= TokenType::UNARY_OP_SHARP && c.peek().type <= TokenType::UNARY_OP_NATRUAL)
-                return parseUnaryOpExpr(isStmt);
+                return parseUnaryOpExpr(needsSemicolon);
 
         if (c.getSymTable().getClass(c.current().value.value()) != nullptr)
         {
             if (c.peek().type == TokenType::PUNCTUATION_BACKSLASH)
-                return parseStaticDotOpExpr(isStmt);
+                return parseStaticDotOpExpr(needsSemicolon);
         }
     }
 
-    auto left = parsePrimary(isStmt, allowBackslash);
+    auto left = parsePrimary(needsSemicolon, allowBackslash);
     if (!left) return nullptr;
 
-    auto expr = parseBinaryOpRight(0, std::move(left), isStmt, allowBackslash);
+    auto expr = parseBinaryOpRight(0, std::move(left), needsSemicolon, allowBackslash);
     if (!expr) return nullptr;
 
-    if (hasParens)
-    {
-        expr->setHasParens(true);
-    }
 
     return expr;
 }
 
-std::unique_ptr<Expr> ExprParser::parsePrimary(const bool isStmt, const bool allowBackslash, const ClassNode* classCall)
+std::unique_ptr<Expr> ExprParser::parsePrimary(const bool needsSemicolon, const bool allowBackslash, const ClassNode* classCall)
 {
     const Token& t = c.current();
 
@@ -97,7 +93,7 @@ std::unique_ptr<Expr> ExprParser::parsePrimary(const bool isStmt, const bool all
         std::string op = tokenToOp(type);
         c.advance();
 
-        auto right = parseExpr(false, false, allowBackslash);
+        auto right = parseExpr(false, allowBackslash);
         if (!right) return nullptr;
 
         return std::make_unique<BinaryOpExpr>(
@@ -121,7 +117,7 @@ std::unique_ptr<Expr> ExprParser::parsePrimary(const bool isStmt, const bool all
         try {
             if (c.peek().type == TokenType::PUNCTUATION_PARENTHESIS_OPEN)
             {
-                return parseFuncCallExpr(isStmt);
+                return parseFuncCallExpr(needsSemicolon);
             }
         } catch (...) {}
         return parseCallExpr(classCall);
@@ -130,7 +126,7 @@ std::unique_ptr<Expr> ExprParser::parsePrimary(const bool isStmt, const bool all
     if (c.match(TokenType::PUNCTUATION_PARENTHESIS_OPEN))
     {
         c.advance();
-        auto expr = parseExpr(true, false, allowBackslash);
+        auto expr = parseExpr(false, allowBackslash);
         if (!expr) return nullptr;
         if (!c.expect(TokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.current()))) return nullptr;
         return expr;
@@ -140,7 +136,7 @@ std::unique_ptr<Expr> ExprParser::parsePrimary(const bool isStmt, const bool all
     return nullptr;
 }
 
-std::unique_ptr<Expr> ExprParser::parseBinaryOpRight(const int exprPrec, std::unique_ptr<Expr> left, const bool isStmt, const bool allowBackslash, const ClassNode* classCall)
+std::unique_ptr<Expr> ExprParser::parseBinaryOpRight(const int exprPrec, std::unique_ptr<Expr> left, const bool needsSemicolon, const bool allowBackslash, const ClassNode* classCall)
 {
     while (true)
     {
@@ -156,7 +152,7 @@ std::unique_ptr<Expr> ExprParser::parseBinaryOpRight(const int exprPrec, std::un
 
         c.advance();
 
-        auto right = parsePrimary(isStmt, allowBackslash, classCall);
+        auto right = parsePrimary(needsSemicolon, allowBackslash, classCall);
         if (!right) return nullptr;
 
         if (c.isBinaryOp() || (allowBackslash && c.match(TokenType::PUNCTUATION_BACKSLASH)))
@@ -165,8 +161,8 @@ std::unique_ptr<Expr> ExprParser::parseBinaryOpRight(const int exprPrec, std::un
 
             if (const int nextPrec = BinaryOpExpr::getPrecedence(nextOp); nextPrec > prec)
             {
-                right->setIsStmt(false);
-                right = parseBinaryOpRight(prec + 1, std::move(right), isStmt, allowBackslash);
+                right->setNeedsSemicolon(false);
+                right = parseBinaryOpRight(prec + 1, std::move(right), needsSemicolon, allowBackslash);
 
                 if (!right) return nullptr;
             }
@@ -214,7 +210,7 @@ std::unique_ptr<Expr> ExprParser::parseBinaryOpRight(const int exprPrec, std::un
     }
 }
 
-std::unique_ptr<StaticDotOpExpr> ExprParser::parseStaticDotOpExpr(const bool isStmt)
+std::unique_ptr<StaticDotOpExpr> ExprParser::parseStaticDotOpExpr(const bool needsSemicolon)
 {
     const Token& t = c.current();
     c.advance();
@@ -231,7 +227,7 @@ std::unique_ptr<StaticDotOpExpr> ExprParser::parseStaticDotOpExpr(const bool isS
     std::unique_ptr<Call> right = nullptr;
 
     try {
-        if (c.current().type == TokenType::PUNCTUATION_PARENTHESIS_OPEN) right = parseFuncCallExpr(isStmt);
+        if (c.current().type == TokenType::PUNCTUATION_PARENTHESIS_OPEN) right = parseFuncCallExpr(needsSemicolon);
         else right = parseCallExpr(type);
     } catch (...) {
         right = parseCallExpr(type);
@@ -245,7 +241,7 @@ std::unique_ptr<StaticDotOpExpr> ExprParser::parseStaticDotOpExpr(const bool isS
         c.getSymTable().getCurrFunc(), c.getSymTable().getCurrClass(),
         std::make_unique<ClassType>(type),
         std::move(right),
-        isStmt);
+        needsSemicolon);
 }
 
 std::unique_ptr<ConstValueExpr> ExprParser::parseConstValueExpr() const
@@ -286,7 +282,7 @@ std::unique_ptr<ConstValueExpr> ExprParser::parseConstValueExpr() const
     );
 }
 
-std::unique_ptr<UnaryOpExpr> ExprParser::parseUnaryOpExpr(const bool isStmt)
+std::unique_ptr<UnaryOpExpr> ExprParser::parseUnaryOpExpr(const bool needsSemicolon)
 {
     const Token& t = c.current();
 
@@ -311,11 +307,11 @@ std::unique_ptr<UnaryOpExpr> ExprParser::parseUnaryOpExpr(const bool isStmt)
         c.getSymTable().getCurrClass(),
         std::move(call),
         strToUnaryOp(tokenToOp(opToken.type)),
-        isStmt
+        needsSemicolon
     );
 }
 
-std::unique_ptr<Call> ExprParser::parseVarCallExpr(const bool isStmt)
+std::unique_ptr<Call> ExprParser::parseVarCallExpr(const bool needsSemicolon)
 {
     const Token& t = c.current();
 
@@ -339,7 +335,7 @@ std::unique_ptr<Call> ExprParser::parseVarCallExpr(const bool isStmt)
     return parseCallExpr();
 }
 
-std::unique_ptr<Call> ExprParser::parseFuncCallExpr(const bool isStmt)
+std::unique_ptr<Call> ExprParser::parseFuncCallExpr(const bool needsSemicolon)
 {
     const Token& t = c.current();
 
@@ -363,7 +359,7 @@ std::unique_ptr<Call> ExprParser::parseFuncCallExpr(const bool isStmt)
     }
     c.advance(); // eat close parenthesis
 
-    if (isStmt)
+    if (needsSemicolon)
     {
         if (!c.expect(TokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
     }
@@ -375,7 +371,7 @@ std::unique_ptr<Call> ExprParser::parseFuncCallExpr(const bool isStmt)
         c.getSymTable().getCurrClass(),
         name,
         std::move(args),
-        isStmt
+        needsSemicolon
     );
 
     c.getCallsQ().push(call.get());

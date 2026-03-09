@@ -13,8 +13,8 @@ private:
 
     const bool isElseIf = false;
 public:
-    IfStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-        std::unique_ptr<Expr> expr, std::unique_ptr<Stmt> body, std::unique_ptr<Stmt> elseIfStmt, const bool isElseIf);
+    IfStmt(const Token& token, IFuncDeclStmt* funcDecl,
+        std::unique_ptr<Expr> expr, std::unique_ptr<Stmt> body, std::unique_ptr<Stmt> elseIfStmt, const bool isElseIf, ClassDeclStmt* classDecl = nullptr);
 
     void analyze() const override;
     std::string translateToCpp() const override;

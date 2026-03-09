@@ -4,10 +4,9 @@
 #include "errorHandling/semanticErrors/NoReturn.h"
 #include "../../errorHandling/classErrors/VirtualNonMethod.h"
 
-FuncDeclStmt::FuncDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass,
-    const std::string& funcName, std::unique_ptr<IType> returnType, const std::vector<Var>& args,
-    std::vector<std::unique_ptr<FuncCreditStmt>>& credited, bool isMethod, const VirtualType& virtualType, bool isStatic)
-        : IFuncDeclStmt(token, scope, currClass), func(Func(std::move(returnType), funcName, args, virtualType, currClass, isStatic)), body(nullptr), hasReturned(false), isMethod(isMethod), virtualType(virtualType)
+FuncDeclStmt::FuncDeclStmt(const Token& token,  const std::string& funcName, std::unique_ptr<IType> returnType, const std::vector<Var>& args,
+    std::vector<std::unique_ptr<FuncCreditStmt>>& credited, const bool isMethod, const VirtualType& virtualType, const bool isStatic, ClassDeclStmt* classDecl)
+        : IFuncDeclStmt(token, classDecl), func(Func(std::move(returnType), funcName, args, virtualType, nullptr, isStatic)), body(nullptr), hasReturned(false), virtualType(virtualType), isMethod(isMethod)
 {
     for (auto& c : credited)
     {

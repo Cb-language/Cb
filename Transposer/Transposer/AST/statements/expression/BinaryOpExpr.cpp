@@ -5,9 +5,9 @@
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 #include "other/SymbolTable.h"
 
-BinaryOpExpr::BinaryOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-                           const std::string& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, const bool hasParens)
-        : Expr(token, scope, funcDecl, currClass, hasParens), op(op), left(std::move(left)), right(std::move(right))
+BinaryOpExpr::BinaryOpExpr(const Token& token, IFuncDeclStmt* funcDecl,
+                           const std::string& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, ClassDeclStmt* classDecl)
+        : Expr(token, funcDecl, classDecl), op(op), left(std::move(left)), right(std::move(right))
 {
 }
 

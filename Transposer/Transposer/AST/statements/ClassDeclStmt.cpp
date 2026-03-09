@@ -81,10 +81,10 @@ std::string ClassDeclStmt::generateEquals() const
     return oss.str();
 }
 
-ClassDeclStmt::ClassDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
+ClassDeclStmt::ClassDeclStmt(const Token& token, IFuncDeclStmt* funcDecl,
                              const std::string& name, std::vector<Field>& fields, std::vector<Method>& methods, std::vector<Ctor>& ctors,
-                             const bool isInheriting, const std::string& inheritingPublic, const std::string& inheritingName)
-    : Stmt(token, scope, funcDecl, currClass), name(name), isInheriting(isInheriting), inheritingPublic(inheritingPublic), inheritingName(inheritingName)
+                             const bool isInheriting, const std::string& inheritingPublic, const std::string& inheritingName, ClassDeclStmt* classDecl)
+    : Stmt(token, funcDecl, classDecl), name(name), isInheriting(isInheriting), inheritingPublic(inheritingPublic), inheritingName(inheritingName)
 {
     for (auto& [isPublic, func] : fields) this->fields.emplace_back(isPublic, std::move(func));
     for (auto& [isPublic, method] : methods) this->methods.emplace_back(isPublic, std::move(method));
@@ -100,16 +100,16 @@ ClassDeclStmt::ClassDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* fu
         std::vector<std::unique_ptr<Stmt>> emptyBodyStmts;
         auto ctor = std::make_unique<ConstractorDeclStmt>(
                 token,
-                scope,
-                currClass,
+
+
                 name,
                 std::move(emptyArgs)
             );
         ctor->setBody(std::make_unique<BodyStmt>(
                 token,
-                scope,
+
                 nullptr,
-                currClass,
+
                 emptyBodyStmts
             )
         );

@@ -11,8 +11,8 @@
 #include "symbols/Type/ClassType.h"
 #include "other/Utils.h"
 
-ConstractorDeclStmt::ConstractorDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass, const std::string& className,
-                                         const std::vector<Var>& args) : IFuncDeclStmt(token, scope, currClass),
+ConstractorDeclStmt::ConstractorDeclStmt(const Token& token, const std::string& className,
+                                         const std::vector<Var>& args, ClassDeclStmt* classDecl) : IFuncDeclStmt(token, classDecl),
     constractor(Constractor(args,  className)), parentCtorCall(nullptr)
 {
 }
@@ -20,7 +20,7 @@ ConstractorDeclStmt::ConstractorDeclStmt(const Token& token, Scope* scope, const
 void ConstractorDeclStmt::setParentCtorCall(std::vector<std::unique_ptr<Expr>> args)
 {
     if (parentCtorCall != nullptr) return;
-    parentCtorCall = std::make_unique<ConstractorCallStmt>(token, scope, funcDecl, currClass, currClass->getParent(), std::move(args));
+    parentCtorCall = std::make_unique<ConstractorCallStmt>(token, funcDecl, std::move(args));
 }
 
 void ConstractorDeclStmt::setBody(std::unique_ptr<BodyStmt> body)

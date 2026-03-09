@@ -6,11 +6,11 @@
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 #include "other/SymbolTable.h"
 
-StaticDotOpExpr::StaticDotOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-                                 std::unique_ptr<ClassType> left, std::unique_ptr<Call> right,const bool isStmt)
-        : Call(token, scope, funcDecl, currClass), left(std::move(left)), right(std::move(right))
+StaticDotOpExpr::StaticDotOpExpr(const Token& token, IFuncDeclStmt* funcDecl,
+                                 std::unique_ptr<ClassType> left, std::unique_ptr<Call> right,const bool needsSemicolon, ClassDeclStmt* classDecl)
+        : Call(token, funcDecl, classDecl), left(std::move(left)), right(std::move(right))
 {
-    Expr::setIsStmt(isStmt);
+    Expr::setNeedsSemicolon(needsSemicolon);
 }
 
 std::unique_ptr<IType> StaticDotOpExpr::getType() const

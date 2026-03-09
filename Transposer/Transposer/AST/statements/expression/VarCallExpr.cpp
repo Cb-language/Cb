@@ -1,7 +1,7 @@
 #include "VarCallExpr.h"
 
-VarCallExpr::VarCallExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const Var& var)
-    : Call(token, scope, funcDecl, currClass), var(var.copy())
+VarCallExpr::VarCallExpr(const Token& token, IFuncDeclStmt* funcDecl, const Var& var, ClassDeclStmt* classDecl)
+    : Call(token, funcDecl, classDecl), var(var.copy())
 {
 }
 

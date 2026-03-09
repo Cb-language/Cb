@@ -23,7 +23,6 @@ private:
     std::vector<std::unique_ptr<IncludeStmt>> includes;
     std::vector<std::unique_ptr<Error>> errors;
     bool hasMain;
-    SymbolTable symTable;
 
 public:
     explicit ParserContext(const std::vector<Token>& tokens);
@@ -49,15 +48,12 @@ public:
     bool isBinaryOp() const;
     bool isType() const;
 
-    void addToSymTable(const SymbolTable& symTable);
-    const SymbolTable& getSymTable() const;
     bool getHasMain() const;
     const Token& getLast() const;
     const std::vector<std::unique_ptr<Stmt>>& getStmts() const;
     const std::vector<std::unique_ptr<Error>>& getErrors() const;
     const std::vector<Token>& getTokens() const;
 
-    SymbolTable& getSymTable();
     std::vector<std::unique_ptr<Stmt>>& getStmts();
     std::vector<std::unique_ptr<Error>>& getErrors();
     std::vector<std::unique_ptr<IncludeStmt>>& getIncludes();

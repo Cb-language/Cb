@@ -24,7 +24,6 @@ public:
     explicit Parser(const std::vector<Token>& tokens);
 
     const ParserContext& getContext() const;
-    ParserContext& getContext();
 
     std::vector<std::pair<std::filesystem::path, Token>> readIncludes();
     void parse();

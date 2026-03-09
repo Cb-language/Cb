@@ -9,8 +9,8 @@
 #include "symbols/Type/ClassType.h"
 
 
-DotOpExpr::DotOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-    std::unique_ptr<Call> left, std::unique_ptr<Call> right, const bool hasParens) : Call(token, scope, funcDecl, currClass, hasParens), left(std::move(left)), right(std::move(right))
+DotOpExpr::DotOpExpr(const Token& token, IFuncDeclStmt* funcDecl,
+    std::unique_ptr<Call> left, std::unique_ptr<Call> right, ClassDeclStmt* classDecl) : Call(token, funcDecl, classDecl), left(std::move(left)), right(std::move(right))
 {
 }
 
