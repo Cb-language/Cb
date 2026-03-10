@@ -50,15 +50,61 @@
 #include "errorHandling/how/HowDareYou.h"
 #include "errorHandling/syntaxErrors/NoLineOpener.h"
 #include "errorHandling/syntaxErrors/NoNewLine.h"
+#include "errorHandling/syntaxErrors/NoRest.h"
 
 StmtParser::StmtParser(ParserContext& c, TypeParser& typeParser, ExprParser& exprParser)
     : c(c), typeParser(typeParser), exprParser(exprParser)
 {
 }
 
-bool StmtParser::expectSemiColon() const
+SemiColonEatType StmtParser::expectSemiColon(bool isInFunc) const
 {
-    return c.expect(TokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.current()));
+    if (!isInFunc)
+    {
+        if (!c.matchConsume(TokenType::PUNCTUATION_SEMICOLON))
+        {
+            c.addError(std::make_unique<MissingSemicolon>(c.current()));
+            return SemiColonEatType::IN_SCOPE;
+        }
+        return SemiColonEatType::IN_SCOPE;
+    }
+
+    if (c.matchConsume(TokenType::PUNCTUATION_CLOSE_FUNC))
+    {
+        return SemiColonEatType::OUT_SCOPE;
+    }
+    if (c.matchConsume(TokenType::PUNCTUATION_SEMICOLON))
+    {
+        return SemiColonEatType::IN_SCOPE;
+    }
+
+    c.addError(std::make_unique<MissingSemicolon>(c.current()));
+    return SemiColonEatType::IN_SCOPE;
+}
+
+void StmtParser::eatFuncNewLine() const
+{
+    if (!c.matchConsume(TokenType::PUNCTUATION_NEW_LINE))
+    {
+        return;
+    }
+    c.expect(TokenType::PUNCTUATION_OPEN_LINE, std::make_unique<NoLineOpener>(c.current()));
+
+    if (c.matchConsume(TokenType::PUNCTUATION_SEMICOLON) || c.matchConsume(TokenType::PUNCTUATION_CLOSE_FUNC))
+    {
+        c.addError(std::make_unique<NoRest>(c.current()));
+    }
+    eatRest();
+}
+
+void StmtParser::eatRest() const
+{
+    if (!c.matchConsume(TokenType::PUNCTUATION_REST))
+    {
+        return;
+    }
+    if (expectSemiColon(true) == SemiColonEatType::OUT_SCOPE) return;
+    eatFuncNewLine();
 }
 
 void StmtParser::parse()
@@ -108,6 +154,16 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
         {
             return parseAssignmentStmt();
         }
+
+        if (c.matchConsume(TokenType::IDENTIFIER))
+        {
+            // Might be a function call as a statement
+            if (c.peek().type == TokenType::PUNCTUATION_PARENTHESIS_OPEN)
+            {
+                auto expr = exprParser.parseFuncCallExpr(true);
+                return std::unique_ptr<Stmt>(dynamic_cast<Stmt*>(expr.release()));
+            }
+        }
     }
 
     if (c.matchConsume(TokenType::KEYWORD_HEAR))
@@ -155,16 +211,6 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
         return parseClassDeclStmt();
     }
 
-    if (c.matchConsume(TokenType::IDENTIFIER))
-    {
-        // Might be a function call as a statement
-        if (c.peek().type == TokenType::PUNCTUATION_PARENTHESIS_OPEN)
-        {
-            auto expr = exprParser.parseFuncCallExpr(true);
-            return std::unique_ptr<Stmt>(dynamic_cast<Stmt*>(expr.release()));
-        }
-    }
-
     c.addError(std::make_unique<UnexpectedToken>(c.current()));
     return nullptr;
 }
@@ -186,7 +232,7 @@ std::unique_ptr<VarDeclStmt> StmtParser::parseVarDecStmt(const bool isField) con
     }
 
     if (!c.expect(TokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.current())) &&
-        !c.expect(TokenType::PUNCTUATION_CLOSE_FILE, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
+        !c.expect(TokenType::PUNCTUATION_CLOSE_FUNC, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
 
     auto stmt = std::make_unique<VarDeclStmt>(
         t,
@@ -218,7 +264,7 @@ std::unique_ptr<AssignmentStmt> StmtParser::parseAssignmentStmt() const
     if (!right) return nullptr;
 
     if (!c.expect(TokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.current())) &&
-        !c.expect(TokenType::PUNCTUATION_CLOSE_FILE, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
+        !c.expect(TokenType::PUNCTUATION_CLOSE_FUNC, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
 
     return std::make_unique<AssignmentStmt>(
         t,
@@ -246,7 +292,7 @@ std::unique_ptr<HearStmt> StmtParser::parseHearStmt() const
     if (!c.expect(TokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.current()))) return nullptr;
 
     if (!c.expect(TokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.current())) &&
-        !c.expect(TokenType::PUNCTUATION_CLOSE_FILE, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
+        !c.expect(TokenType::PUNCTUATION_CLOSE_FUNC, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
 
     return std::make_unique<HearStmt>(
         t,
@@ -273,7 +319,7 @@ std::unique_ptr<PlayStmt> StmtParser::parsePlayStmt() const
     if (!c.expect(TokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.current()))) return nullptr;
 
     if (!c.expect(TokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.current())) &&
-        !c.expect(TokenType::PUNCTUATION_CLOSE_FILE, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
+        !c.expect(TokenType::PUNCTUATION_CLOSE_FUNC, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
 
     return std::make_unique<PlayStmt>(
         t,
@@ -298,7 +344,7 @@ std::unique_ptr<BodyStmt> StmtParser::parseBodyStmt(const std::vector<std::pair<
         if (c.matchNonConsume(TokenType::PUNCTUATION_REST))
         {
             c.advance();
-            if (c.matchNonConsume(TokenType::PUNCTUATION_SEMICOLON) || c.matchNonConsume(TokenType::PUNCTUATION_CLOSE_FILE)) c.advance();
+            if (c.matchNonConsume(TokenType::PUNCTUATION_SEMICOLON) || c.matchNonConsume(TokenType::PUNCTUATION_CLOSE_FUNC)) c.advance();
             continue;
         }
 
@@ -404,7 +450,7 @@ std::unique_ptr<ReturnStmt> StmtParser::parseReturnStmt() const
     auto expr = exprParser.parseExpr();
 
     if (!c.expect(TokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.current())) &&
-        !c.expect(TokenType::PUNCTUATION_CLOSE_FILE, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
+        !c.expect(TokenType::PUNCTUATION_CLOSE_FUNC, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
 
     return std::make_unique<ReturnStmt>(
         t,
@@ -478,7 +524,7 @@ std::unique_ptr<ArrayDeclStmt> StmtParser::parseArrayDeclStmt() const
     }
 
     if (!c.expect(TokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.current())) &&
-        !c.expect(TokenType::PUNCTUATION_CLOSE_FILE, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
+        !c.expect(TokenType::PUNCTUATION_CLOSE_FUNC, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
 
     return std::make_unique<ArrayDeclStmt>(
         t,
@@ -517,7 +563,7 @@ std::unique_ptr<BreakStmt> StmtParser::parseBreakStmt() const
     const Token& t = c.current();
     c.advance();
     if (!c.expect(TokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.current())) &&
-        !c.expect(TokenType::PUNCTUATION_CLOSE_FILE, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
+        !c.expect(TokenType::PUNCTUATION_CLOSE_FUNC, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
     return std::make_unique<BreakStmt>(t,
         c.getFuncDecl(), c.getClassDecl());
 }
@@ -578,7 +624,7 @@ std::unique_ptr<ContinueStmt> StmtParser::parseContinueStmt() const
     const Token& t = c.current();
     c.advance();
     if (!c.expect(TokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.current())) &&
-        !c.expect(TokenType::PUNCTUATION_CLOSE_FILE, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
+        !c.expect(TokenType::PUNCTUATION_CLOSE_FUNC, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
     return std::make_unique<ContinueStmt>(t,
         c.getFuncDecl(), c.getClassDecl());
 }

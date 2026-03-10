@@ -272,6 +272,8 @@ add_executable(Transposer
         Transposer/errorHandling/how/HowDareYou.h
         Transposer/errorHandling/syntaxErrors/NoNewLine.cpp
         Transposer/errorHandling/syntaxErrors/NoNewLine.h
+        Transposer/errorHandling/syntaxErrors/NoRest.cpp
+        Transposer/errorHandling/syntaxErrors/NoRest.h
 
 )
 

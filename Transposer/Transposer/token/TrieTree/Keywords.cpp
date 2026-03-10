@@ -59,7 +59,7 @@ const std::vector<KeywordInfo> KEYWORDS =
 	{TokenType::PUNCTUATION_REST, "𝄽", WordBoundary::NONE},
 	{TokenType::PUNCTUATION_OPEN_LINE, "𝄞", WordBoundary::NONE},
 	{TokenType::PUNCTUATION_SEMICOLON, "𝄀", WordBoundary::NONE},
-	{TokenType::PUNCTUATION_CLOSE_FILE, "𝄂", WordBoundary::NONE},
+	{TokenType::PUNCTUATION_CLOSE_FUNC, "𝄂", WordBoundary::NONE},
 	{TokenType::PUNCTUATION_NEW_LINE, "\n", WordBoundary::NONE},
 
 	// unary operations

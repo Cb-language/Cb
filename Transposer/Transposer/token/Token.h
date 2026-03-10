@@ -65,7 +65,7 @@ enum class TokenType : byte
 	PUNCTUATION_REST,                // 𝄽 (does nothing)
 	PUNCTUATION_OPEN_LINE,           // 𝄞
 	PUNCTUATION_SEMICOLON,           // 𝄀
-	PUNCTUATION_CLOSE_FILE,          // 𝄂
+	PUNCTUATION_CLOSE_FUNC,          // 𝄂
 	PUNCTUATION_NEW_LINE,            // \n
 
 	// unary operations

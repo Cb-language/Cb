@@ -19,6 +19,13 @@
 class TypeParser;
 class ExprParser;
 
+
+enum class SemiColonEatType
+{
+    IN_SCOPE,
+    OUT_SCOPE
+};
+
 class StmtParser
 {
 private:
@@ -27,9 +34,11 @@ private:
     ExprParser& exprParser;
 
 public:
-    explicit StmtParser(ParserContext& c, TypeParser& typeParser, ExprParser& exprParser);
+    StmtParser(ParserContext& c, TypeParser& typeParser, ExprParser& exprParser);
 
-    bool expectSemiColon() const;
+    SemiColonEatType expectSemiColon(bool isInFunc = false) const;
+    void eatFuncNewLine() const;
+    void eatRest() const;
 
     std::unique_ptr<Stmt> parseStmt(const bool isGlobal = false, const bool isBreakable = false, const bool isContinueAble = false);
     std::unique_ptr<VarDeclStmt> parseVarDecStmt(const bool isField = false) const;
@@ -52,6 +61,7 @@ public:
     std::unique_ptr<ConstractorDeclStmt> parseCtor();
     std::unique_ptr<ConstractorCallStmt> parseConstractorCallStmt() const;
     std::unique_ptr<ObjCreationStmt> parseObjCreationStmt() const;
+
     bool parseFields(std::vector<Field>& fields);
     bool parseMethods(std::vector<Method>& methods);
     bool parseCtors(std::vector<Ctor>& ctors);
