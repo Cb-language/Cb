@@ -4,5 +4,5 @@
 class InvalidOverrideSignature : public Error
 {
 public:
-    InvalidOverrideSignature(const Token& token);
+    explicit InvalidOverrideSignature(const Token& token);
 };

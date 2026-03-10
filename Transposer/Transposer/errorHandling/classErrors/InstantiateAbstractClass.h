@@ -4,5 +4,5 @@
 class InstantiateAbstractClass : public Error
 {
 public:
-    InstantiateAbstractClass(const Token& token);
+    explicit InstantiateAbstractClass(const Token& token);
 };

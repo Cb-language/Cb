@@ -19,7 +19,7 @@ private:
     std::vector<Ctor> ctors;
 
     bool isInheriting = false;
-    const std::string inheritingPublic;
+    AccessType inheritingPublic;
     const std::string inheritingName;
 
     std::string generateToString() const;
@@ -27,7 +27,7 @@ private:
 
 public:
     ClassDeclStmt(const Token& token, IFuncDeclStmt* funcDecl, const std::string& name, std::vector<Field>& fields,
-        std::vector<Method>& methods, std::vector<Ctor>& ctors, const bool isInheriting, const std::string& inheritingPublic, const std::string& inheritingName, ClassDeclStmt* classDecl = nullptr);
+        std::vector<Method>& methods, std::vector<Ctor>& ctors, const bool isInheriting, AccessType inheritingPublic, const std::string& inheritingName, ClassDeclStmt* classDecl = nullptr);
     void analyze() const override;
     std::string translateToCpp() const override;
     std::string translateToH() const override;

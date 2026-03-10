@@ -65,13 +65,8 @@ public:
     std::unique_ptr<ForStmt> parseForStmt();
 
     std::unique_ptr<ClassDeclStmt> parseClassDeclStmt();
-    std::unique_ptr<ConstractorDeclStmt> parseCtor();
-    std::unique_ptr<ConstractorCallStmt> parseConstractorCallStmt() const;
+    std::unique_ptr<ConstractorDeclStmt> parseCtor(const std::string& className);
     std::unique_ptr<ObjCreationStmt> parseObjCreationStmt() const;
-
-    bool parseFields(std::vector<Field>& fields);
-    bool parseMethods(std::vector<Method>& methods);
-    bool parseCtors(std::vector<Ctor>& ctors);
 
     void parse();
 };

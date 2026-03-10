@@ -274,6 +274,12 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/NoNewLine.h
         Transposer/errorHandling/syntaxErrors/NoRest.cpp
         Transposer/errorHandling/syntaxErrors/NoRest.h
+        Transposer/errorHandling/classErrors/InvalidCtorName.cpp
+        Transposer/errorHandling/classErrors/InvalidCtorName.h
+        Transposer/errorHandling/classErrors/StaticCtor.cpp
+        Transposer/errorHandling/classErrors/StaticCtor.h
+        Transposer/errorHandling/classErrors/VirtualCtor.cpp
+        Transposer/errorHandling/classErrors/VirtualCtor.h
 
 )
 

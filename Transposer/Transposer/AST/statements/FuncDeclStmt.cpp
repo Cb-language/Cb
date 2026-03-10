@@ -45,6 +45,11 @@ VirtualType FuncDeclStmt::getVirtual() const
     return virtualType;
 }
 
+void FuncDeclStmt::setIsStatic(const bool isStatic) const
+{
+    this->getFunc().setStatic(isStatic);
+}
+
 void FuncDeclStmt::setBody(std::unique_ptr<BodyStmt> body)
 {
     this->body = std::move(body);

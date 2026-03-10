@@ -27,8 +27,11 @@ public:
     std::string getName() const override;
     std::unique_ptr<IType> getReturnType() const override;
     Func getFunc() const;
+
     void setVirtual(const VirtualType vType);
     VirtualType getVirtual() const;
+    void setIsStatic(const bool isStatic) const;
+
 
     // is called after the ctor
     void setBody(std::unique_ptr<BodyStmt> body);

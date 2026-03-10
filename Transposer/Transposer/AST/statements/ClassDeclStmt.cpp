@@ -63,7 +63,7 @@ std::string ClassDeclStmt::generateEquals() const
         "\t{" << std::endl <<
             "\t\tif (";
 
-    if (auto parent = currClass->getParent()) oss << parent->getClass().getClassName() << "::equals(other)";
+    if (const auto parent = currClass->getParent()) oss << parent->getClass().getClassName() << "::equals(other)";
     else oss << "true"; // shouldn't get here tho
 
     for (const auto& field : fields | std::views::values)
@@ -83,7 +83,7 @@ std::string ClassDeclStmt::generateEquals() const
 
 ClassDeclStmt::ClassDeclStmt(const Token& token, IFuncDeclStmt* funcDecl,
                              const std::string& name, std::vector<Field>& fields, std::vector<Method>& methods, std::vector<Ctor>& ctors,
-                             const bool isInheriting, const std::string& inheritingPublic, const std::string& inheritingName, ClassDeclStmt* classDecl)
+                             const bool isInheriting, const AccessType inheritingPublic, const std::string& inheritingName, ClassDeclStmt* classDecl)
     : Stmt(token, funcDecl, classDecl), name(name), isInheriting(isInheriting), inheritingPublic(inheritingPublic), inheritingName(inheritingName)
 {
     for (auto& [isPublic, func] : fields) this->fields.emplace_back(isPublic, std::move(func));
@@ -219,7 +219,7 @@ void ClassDeclStmt::analyze() const
         {
             throw HowDidYouGetHere(token);
         }
-        if (inheritingPublic != "tutti" && inheritingPublic != "section" && inheritingPublic != "sordino")
+        if (inheritingPublic != PUBLIC && inheritingPublic != PROTECTED && inheritingPublic != PRIVATE)
         {
             throw HowDidYouGetHere(token);
         }
@@ -268,11 +268,11 @@ std::string ClassDeclStmt::translateToH() const
     if (isInheriting)
     {
         oss << " : ";
-        if (inheritingPublic == "tutti")
+        if (inheritingPublic == PUBLIC)
         {
             oss << "public ";
         }
-        else if (inheritingPublic == "section")
+        else if (inheritingPublic == PROTECTED)
         {
             oss << "protected ";
         }
