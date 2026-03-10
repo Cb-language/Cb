@@ -57,7 +57,7 @@ StmtParser::StmtParser(ParserContext& c, TypeParser& typeParser, ExprParser& exp
 {
 }
 
-SemiColonEatType StmtParser::expectSemiColon(bool isInFunc) const
+SemiColonEatType StmtParser::expectSemiColon(bool isInFunc) const // TODO when match and in func expect new line and call eat func new line ALWAYSS
 {
     if (!isInFunc)
     {
