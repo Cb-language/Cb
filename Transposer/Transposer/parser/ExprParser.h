@@ -1,6 +1,5 @@
 #pragma once
 #include "ParserContext.h"
-
 #include "AST/statements/expression/BinaryOpExpr.h"
 #include "AST/statements/expression/UnaryOpExpr.h"
 #include "AST/statements/expression/ConstValueExpr.h"
@@ -23,21 +22,27 @@ class ExprParser
 {
 private:
     ParserContext& c;
-    TypeParser& typeParser;
+    TypeParser&    typeParser;
+
+    std::unique_ptr<Expr> parseUnaryOrPrimaryExpr(bool needsSemicolon, bool allowQualifiedPaths);
+    std::unique_ptr<Expr> parsePrefixOperatorExpr(bool allowQualifiedPaths);
+    std::unique_ptr<Expr> parsePrimaryExpr(bool needsSemicolon, bool allowQualifiedPaths);
+    std::unique_ptr<Expr> parseIdentifierOrCallExpr(bool needsSemicolon);
+    std::unique_ptr<Expr> parseGroupedExpr(bool allowQualifiedPaths);
+    std::unique_ptr<Expr> parseInfixExpr(int minPrecedence, std::unique_ptr<Expr> left, bool needsSemicolon, bool allowQualifiedPaths, const ClassNode* classCall = nullptr);
+
+    std::unique_ptr<UnaryOpExpr> parsePostfixUnaryExpr(bool needsSemicolon);
+    std::unique_ptr<StaticDotOpExpr> parseScopeResolutionExpr(bool needsSemicolon);
+
+    std::unique_ptr<Call> parseArrayAccess(std::unique_ptr<Call> call);
 
 public:
     explicit ExprParser(ParserContext& c, TypeParser& typeParser);
 
-    std::unique_ptr<Expr> parseExpr(const bool needsSemicolon = false, const bool allowBackslash = true);
-    std::unique_ptr<Expr> parsePrimary(const bool needsSemicolon = false, const bool allowBackslash = true);
-    std::unique_ptr<Expr> parseBinaryOpRight(const int exprPrec, std::unique_ptr<Expr> left, const bool needsSemicolon = false, const bool allowBackslash = true, const ClassNode* classCall = nullptr);
-    std::unique_ptr<StaticDotOpExpr> parseStaticDotOpExpr(const bool needsSemicolon = false);
+    std::unique_ptr<Expr> parseExpr(bool needsSemicolon = false, bool allowQualifiedPaths = true);
+
     std::unique_ptr<ConstValueExpr> parseConstValueExpr() const;
-    std::unique_ptr<UnaryOpExpr> parseUnaryOpExpr(const bool needsSemicolon = false);
-    std::unique_ptr<Call> parseVarCallExpr(const bool needsSemicolon = false) const;
-    std::unique_ptr<Call> parseFuncCallExpr(const bool needsSemicolon = false);
+    std::unique_ptr<Call> parseVarCallExpr(bool needsSemicolon = false) const;
+    std::unique_ptr<Call> parseFuncCallExpr(bool needsSemicolon = false);
     std::unique_ptr<Call> parseCallExpr();
-    std::unique_ptr<Call> parseArrayAccess(std::unique_ptr<Call> call);
-    std::unique_ptr<Call> parseArraySlicingExpr(std::unique_ptr<Call> call);
-    std::unique_ptr<Call> parseArrayIndexingExpr(std::unique_ptr<Call> call);
 };

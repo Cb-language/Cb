@@ -63,7 +63,7 @@ bool StmtParser::expectSemiColon() const
 
 void StmtParser::parse()
 {
-    while (!c.isAtEnd())
+    while (!c.isEmpty())
     {
         if (auto stmt = parseStmt(true))
         {
@@ -78,12 +78,12 @@ void StmtParser::parse()
 
 std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBreakable, const bool isContinueAble)
 {
-    if (c.matchNonConsume(TokenType::KEYWORD_C_CLEF))
+    if (c.matchConsume(TokenType::KEYWORD_C_CLEF))
     {
         throw HowDareYou(c.current());
     }
 
-    if (c.matchNonConsume(TokenType::TYPE_RIFF))
+    if (c.matchConsume(TokenType::TYPE_RIFF))
     {
         return parseArrayDeclStmt();
     }
@@ -99,63 +99,63 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
         }
         // Check if it's obj creation or something else
 
-        if (c.matchNonConsume(TokenType::IDENTIFIER) && c.isUnaryOpStmtAhead())
+        if (c.matchConsume(TokenType::IDENTIFIER) && c.isUnaryOpStmtAhead())
         {
             auto expr = exprParser.parseUnaryOpExpr(true);
             return std::unique_ptr<Stmt>(dynamic_cast<Stmt*>(expr.release()));
         }
-        if (c.matchNonConsume(TokenType::IDENTIFIER) && c.isAssignmentStmtAhead())
+        if (c.matchConsume(TokenType::IDENTIFIER) && c.isAssignmentStmtAhead())
         {
             return parseAssignmentStmt();
         }
     }
 
-    if (c.matchNonConsume(TokenType::KEYWORD_HEAR))
+    if (c.matchConsume(TokenType::KEYWORD_HEAR))
     {
         return parseHearStmt();
     }
-    if (c.matchNonConsume(TokenType::KEYWORD_PLAY) || c.matchNonConsume(TokenType::KEYWORD_PLAYBAR))
+    if (c.matchConsume(TokenType::KEYWORD_PLAY) || c.matchConsume(TokenType::KEYWORD_PLAYBAR))
     {
         return parsePlayStmt();
     }
-    if (c.matchNonConsume(TokenType::KEYWORD_SONG))
+    if (c.matchConsume(TokenType::KEYWORD_SONG))
     {
         return parseFuncDeclStmt();
     }
-    if (c.matchNonConsume(TokenType::KEYWORD_RETURN))
+    if (c.matchConsume(TokenType::KEYWORD_RETURN))
     {
         return parseReturnStmt();
     }
-    if (c.matchNonConsume(TokenType::KEYWORD_IF))
+    if (c.matchConsume(TokenType::KEYWORD_IF))
     {
         return parseIfStmt();
     }
-    if (c.matchNonConsume(TokenType::KEYWORD_WHILE))
+    if (c.matchConsume(TokenType::KEYWORD_WHILE))
     {
         return parseWhileStmt();
     }
-    if (c.matchNonConsume(TokenType::KEYWORD_SWITCH))
+    if (c.matchConsume(TokenType::KEYWORD_SWITCH))
     {
         return parseSwitchStmt();
     }
-    if (c.matchNonConsume(TokenType::KEYWORD_PAUSE))
+    if (c.matchConsume(TokenType::KEYWORD_PAUSE))
     {
         return parseBreakStmt();
     }
-    if (c.matchNonConsume(TokenType::KEYWORD_RESUME))
+    if (c.matchConsume(TokenType::KEYWORD_RESUME))
     {
         return parseContinueStmt();
     }
-    if (c.matchNonConsume(TokenType::KEYWORD_FMAJ) || c.matchNonConsume(TokenType::KEYWORD_FMIN))
+    if (c.matchConsume(TokenType::KEYWORD_FMAJ) || c.matchConsume(TokenType::KEYWORD_FMIN))
     {
         return parseForStmt();
     }
-    if (c.matchNonConsume(TokenType::KEYWORD_INSTRUMENT))
+    if (c.matchConsume(TokenType::KEYWORD_INSTRUMENT))
     {
         return parseClassDeclStmt();
     }
 
-    if (c.matchNonConsume(TokenType::IDENTIFIER))
+    if (c.matchConsume(TokenType::IDENTIFIER))
     {
         // Might be a function call as a statement
         if (c.peek().type == TokenType::PUNCTUATION_PARENTHESIS_OPEN)
@@ -180,9 +180,8 @@ std::unique_ptr<VarDeclStmt> StmtParser::parseVarDecStmt(const bool isField) con
     const std::string name = nameToken.value.value();
 
     std::unique_ptr<Expr> init = nullptr;
-    if (c.matchNonConsume(TokenType::ASSIGNMENT_OP_EQUAL))
+    if (c.matchConsume(TokenType::ASSIGNMENT_OP_EQUAL))
     {
-        c.advance();
         init = exprParser.parseExpr();
     }
 
@@ -294,7 +293,7 @@ std::unique_ptr<BodyStmt> StmtParser::parseBodyStmt(const std::vector<std::pair<
     }
 
     std::vector<std::unique_ptr<Stmt>> bodyStmts;
-    while (!c.isAtEnd() && (!hasBrace || !c.matchNonConsume(TokenType::PUNCTUATION_CLOSE_CURLY_BRACKET)))
+    while (!hasBrace || !c.matchNonConsume(TokenType::PUNCTUATION_CLOSE_CURLY_BRACKET))
     {
         if (c.matchNonConsume(TokenType::PUNCTUATION_REST))
         {
@@ -304,7 +303,7 @@ std::unique_ptr<BodyStmt> StmtParser::parseBodyStmt(const std::vector<std::pair<
         }
 
         if (auto stmt = parseStmt(isGlobal, isBreakable, isContinueAble)) bodyStmts.push_back(std::move(stmt));
-        
+
         if (!hasBrace && isGlobal) break; // In global scope we parse one by one in parse()
     }
 

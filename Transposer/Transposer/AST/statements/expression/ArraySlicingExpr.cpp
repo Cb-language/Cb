@@ -3,9 +3,9 @@
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
 
-ArraySlicingExpr::ArraySlicingExpr(const Token& token, IFuncDeclStmt* funcDecl,
-    std::unique_ptr<Call> call, std::unique_ptr<Expr> start, std::unique_ptr<Expr> stop, std::unique_ptr<Expr> step, ClassDeclStmt* classDecl)
-    : Call(token, funcDecl, classDecl), call(std::move(call)), start(std::move(start)), stop(std::move(stop)), step(std::move(step))
+ArraySlicingExpr::ArraySlicingExpr(const Token& token, IFuncDeclStmt* funcDecl, std::unique_ptr<Call> call,
+    ClassDeclStmt* classDecl)
+    : Call(token, funcDecl, classDecl), call(std::move(call))
 {
 }
 
@@ -58,4 +58,19 @@ std::unique_ptr<IType> ArraySlicingExpr::getType() const
 std::string ArraySlicingExpr::toString() const
 {
     return call->toString();
+}
+
+void ArraySlicingExpr::setStart(std::unique_ptr<Expr> start)
+{
+    this->start = std::move(start);
+}
+
+void ArraySlicingExpr::setStop(std::unique_ptr<Expr> stop)
+{
+    this->stop = std::move(stop);
+}
+
+void ArraySlicingExpr::setStep(std::unique_ptr<Expr> step)
+{
+    this->step = std::move(step);
 }

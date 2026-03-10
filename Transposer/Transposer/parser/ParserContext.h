@@ -7,16 +7,14 @@
 #include "AST/abstract/Statement.h"
 #include "AST/statements/expression/FuncCallExpr.h"
 #include "other/SymbolTable.h"
-#include "symbols/FuncCredit.h"
 #include "AST/statements/IncludeStmt.h"
 
 
 class ParserContext
 {
 private:
-    const std::vector<Token> tokens;
+    std::queue<Token> tokens;
     const size_t len;
-    size_t pos;
     std::vector<std::unique_ptr<Stmt>> stmts;
     std::vector<std::unique_ptr<IncludeStmt>> includes;
     std::vector<std::unique_ptr<Error>> errors;
@@ -27,7 +25,7 @@ private:
     bool hasMain;
 
 public:
-    explicit ParserContext(const std::vector<Token>& tokens);
+    explicit ParserContext(const std::queue<Token>& tokens);
 
 
     void addError(std::unique_ptr<Error> err);
@@ -36,31 +34,26 @@ public:
     Token advance();
     const Token& peek() const;
 
-    bool isAtEnd() const;
-
     bool matchConsume(const TokenType type, const std::optional<std::reference_wrapper<Token>> out = std::nullopt);
     bool matchNonConsume(TokenType type) const;
 
     bool expect(TokenType type, std::unique_ptr<Error> err = nullptr, std::optional<std::reference_wrapper<Token>> out = std::nullopt);
 
-    bool isAssignmentStmtAhead();
-    bool isUnaryOpStmtAhead();
     bool isUnaryOp() const;
     bool isAssignmentOp() const;
     bool isBinaryOp() const;
     bool isType() const;
 
     bool getHasMain() const;
-    const Token& getLast() const;
     const std::vector<std::unique_ptr<Stmt>>& getStmts() const;
     const std::vector<std::unique_ptr<Error>>& getErrors() const;
-    const std::vector<Token>& getTokens() const;
 
     std::vector<std::unique_ptr<Stmt>>& getStmts();
     std::vector<std::unique_ptr<Error>>& getErrors();
     std::vector<std::unique_ptr<IncludeStmt>>& getIncludes();
-    size_t getPos() const;
 
     IFuncDeclStmt* getFuncDecl() const;
     ClassDeclStmt* getClassDecl() const;
+
+    bool isEmpty() const;
 };
