@@ -7,6 +7,11 @@ SwitchStmt::SwitchStmt(const Token& token, IFuncDeclStmt* funcDecl, Var var, std
 {
 }
 
+void SwitchStmt::setVar(const Var& var)
+{
+    this->var = var;
+}
+
 void SwitchStmt::analyze() const
 {
     for (const auto& c : cases)

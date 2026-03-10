@@ -9,10 +9,12 @@
 class SwitchStmt : public Stmt
 {
 private:
-    const Var var;
+    Var var;
     std::vector<std::unique_ptr<CaseStmt>> cases;
 public:
     SwitchStmt(const Token& token, IFuncDeclStmt* funcDecl, Var var, std::vector<std::unique_ptr<CaseStmt>>& cases, ClassDeclStmt* classDecl = nullptr);
+    void setVar(const Var& var);
+
     void analyze() const override;
     std::string translateToCpp() const override;
 };

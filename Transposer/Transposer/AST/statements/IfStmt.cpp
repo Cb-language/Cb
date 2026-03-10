@@ -1,34 +1,37 @@
 #include "IfStmt.h"
 
-IfStmt::IfStmt(const Token& token, IFuncDeclStmt* funcDecl, std::unique_ptr<Expr> expr, std::unique_ptr<Stmt> body,
-               std::unique_ptr<Stmt> elseIfStmt, const bool isElseIf, ClassDeclStmt* classDecl)
-               : Stmt(token, funcDecl, classDecl), expr(std::move(expr)), body(std::move(body)), elseIfStmt(std::move(elseIfStmt)), isElseIf(isElseIf)
+IfStmt::IfStmt(const Token& token, IFuncDeclStmt* funcDecl, StmtWithBody ifStmt, std::vector<StmtWithBody>& elseStmts,
+    ClassDeclStmt* classDecl) : Stmt(token, funcDecl, classDecl), ifStmt(std::move(ifStmt.expr), std::move(ifStmt.body))
 {
+    for (auto& stmt : elseStmts)
+    {
+        this->elseStmts.push_back(std::move(stmt));
+    }
 }
 
 void IfStmt::analyze() const
 {
-    body->analyze();
-    expr->analyze();
+    ifStmt.body->analyze();
+    ifStmt.expr->analyze();
 }
 
 std::string IfStmt::translateToCpp() const
 {
     std::ostringstream oss;
-    oss << getTabs() <<  "if (" << expr->translateToCpp() << ")" << std::endl;
-    oss << body->translateToCpp();
-    if (elseIfStmt != nullptr)
+    oss << getTabs() <<  "if (" << ifStmt.expr->translateToCpp() << ")" << std::endl;
+    oss << ifStmt.body->translateToCpp();
+
+    for (auto& stmt : elseStmts)
     {
-        std::string elseStr = elseIfStmt->translateToCpp();
-        oss << "\n" << getTabs();
-        if (isElseIf)
+        if (stmt.expr != nullptr)
         {
-            oss.clear();
-            oss << "else " << Utils::removeFirstTabs(elseStr);
+            oss << "else if (" << stmt.expr->translateToCpp() << ")" << std::endl;
+            oss << stmt.body->translateToCpp();
         }
         else
         {
-            oss << "else\n" << elseStr;
+            oss << "else " << std::endl;
+            oss << stmt.body->translateToCpp();
         }
     }
 

@@ -4,17 +4,24 @@
 #include "AST/abstract/Statement.h"
 #include <sstream>
 
+struct StmtWithBody
+{
+    std::unique_ptr<Expr> expr;
+    std::unique_ptr<Stmt> body;
+
+    StmtWithBody(std::unique_ptr<Expr> expr, std::unique_ptr<Stmt> body) : expr(std::move(expr)), body(std::move(body)) {}
+};
+
 class IfStmt : public Stmt
 {
 private:
-    std::unique_ptr<Expr> expr;
-    std::unique_ptr<Stmt> body;
-    std::unique_ptr<Stmt> elseIfStmt;
+    StmtWithBody ifStmt;
+    std::vector<StmtWithBody> elseStmts;
 
     const bool isElseIf = false;
 public:
     IfStmt(const Token& token, IFuncDeclStmt* funcDecl,
-        std::unique_ptr<Expr> expr, std::unique_ptr<Stmt> body, std::unique_ptr<Stmt> elseIfStmt, const bool isElseIf, ClassDeclStmt* classDecl = nullptr);
+        StmtWithBody ifStmt, std::vector<StmtWithBody>& elseStmts, ClassDeclStmt* classDecl = nullptr);
 
     void analyze() const override;
     std::string translateToCpp() const override;

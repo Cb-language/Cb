@@ -7,7 +7,7 @@ class Var
 {
 private:
     std::unique_ptr<IType> type;
-    const std::string name;
+    std::string name;
     bool isStatic;
 
 public:
@@ -21,6 +21,7 @@ public:
     bool operator==(const Var& other) const;
 
     bool operator==(const std::string& other) const;
+    void operator=(const Var& other);
 
     bool isNumberable() const;
     bool isStringable() const;

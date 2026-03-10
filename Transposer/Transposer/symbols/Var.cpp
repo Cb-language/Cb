@@ -40,6 +40,13 @@ bool Var::operator==(const std::string& other) const
     return type->toString() == other;
 }
 
+void Var::operator=(const Var& other)
+{
+    this->type = other.type->copy();
+    this->name = other.name;
+    this->isStatic = other.isStatic;
+}
+
 bool Var::isNumberable() const
 {
     return type->isNumberable();
