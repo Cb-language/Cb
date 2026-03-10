@@ -27,6 +27,7 @@ public:
     virtual std::string translateToH() const;
 
     const ClassNode* getCurrClass() const;
+    virtual const Token& getToken() const;
     void setFuncDecl(IFuncDeclStmt *funcDecl);
     void setScope(Scope* scope);
     void setClassNode(const ClassNode* currClass);
@@ -79,6 +80,16 @@ inline Stmt::~Stmt()
 inline std::string Stmt::translateToH() const
 {
     return ""; // not a lot of thing need it
+}
+
+inline const ClassNode* Stmt::getCurrClass() const
+{
+    return currClass;
+}
+
+inline const Token& Stmt::getToken() const
+{
+    return token;
 }
 
 inline void Stmt::setFuncDecl(IFuncDeclStmt* funcDecl)

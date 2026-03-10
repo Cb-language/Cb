@@ -41,7 +41,8 @@ public:
     void eatRest() const;
 
     std::unique_ptr<Stmt> parseStmt(const bool isGlobal = false, const bool isBreakable = false, const bool isContinueAble = false);
-    std::unique_ptr<VarDeclStmt> parseVarDecStmt(const bool isField = false) const;
+
+    std::unique_ptr<VarDeclStmt> parseVarDecStmt() const;
     std::unique_ptr<AssignmentStmt> parseAssignmentStmt() const;
     std::unique_ptr<HearStmt> parseHearStmt() const;
     std::unique_ptr<PlayStmt> parsePlayStmt() const;

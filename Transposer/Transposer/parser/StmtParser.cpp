@@ -48,8 +48,12 @@
 #include "errorHandling/classErrors/MissingClassPipe.h"
 #include "errorHandling/classErrors/NoOverrideError.h"
 #include "errorHandling/how/HowDareYou.h"
+#include "errorHandling/lexicalErrors/UnrecognizedToken.h"
+#include "errorHandling/syntaxErrors/ExpectedAnExpression.h"
+#include "errorHandling/syntaxErrors/InvalidExpression.h"
 #include "errorHandling/syntaxErrors/NoLineOpener.h"
 #include "errorHandling/syntaxErrors/NoNewLine.h"
+#include "errorHandling/syntaxErrors/NoPlacementOperator.h"
 #include "errorHandling/syntaxErrors/NoRest.h"
 
 StmtParser::StmtParser(ParserContext& c, TypeParser& typeParser, ExprParser& exprParser)
@@ -133,10 +137,12 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
     {
         return parseArrayDeclStmt();
     }
+
     if (c.isType())
     {
         return parseVarDecStmt();
     }
+
     if (c.matchNonConsume(TokenType::IDENTIFIER))
     {
         if (c.peek().type == TokenType::IDENTIFIER)
@@ -170,7 +176,7 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
     {
         return parseHearStmt();
     }
-    if (c.matchConsume(TokenType::KEYWORD_PLAY) || c.matchConsume(TokenType::KEYWORD_PLAYBAR))
+    if (c.matchNonConsume(TokenType::KEYWORD_PLAY) || c.matchConsume(TokenType::KEYWORD_PLAYBAR))
     {
         return parsePlayStmt();
     }
@@ -202,7 +208,7 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
     {
         return parseContinueStmt();
     }
-    if (c.matchConsume(TokenType::KEYWORD_FMAJ) || c.matchConsume(TokenType::KEYWORD_FMIN))
+    if (c.matchNonConsume(TokenType::KEYWORD_FMAJ) || c.matchConsume(TokenType::KEYWORD_FMIN))
     {
         return parseForStmt();
     }
@@ -215,11 +221,11 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
     return nullptr;
 }
 
-std::unique_ptr<VarDeclStmt> StmtParser::parseVarDecStmt(const bool isField) const
+std::unique_ptr<VarDeclStmt> StmtParser::parseVarDecStmt() const
 {
     const Token& t = c.current();
     auto type = typeParser.parseIType();
-    if (!type) return nullptr;
+    if (!type) c.addError(std::make_unique<UnrecognizedToken>(t)); return nullptr;
 
     Token nameToken;
     if (!c.expect(TokenType::IDENTIFIER, std::make_unique<MissingIdentifier>(c.current()), nameToken)) return nullptr;
@@ -229,10 +235,13 @@ std::unique_ptr<VarDeclStmt> StmtParser::parseVarDecStmt(const bool isField) con
     if (c.matchConsume(TokenType::ASSIGNMENT_OP_EQUAL))
     {
         init = exprParser.parseExpr();
-    }
 
-    if (!c.expect(TokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.current())) &&
-        !c.expect(TokenType::PUNCTUATION_CLOSE_FUNC, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
+        if (init == nullptr)
+        {
+            c.addError(std::make_unique<InvalidExpression>(c.current()));
+            return nullptr;
+        }
+    }
 
     auto stmt = std::make_unique<VarDeclStmt>(
         t,
@@ -249,28 +258,24 @@ std::unique_ptr<VarDeclStmt> StmtParser::parseVarDecStmt(const bool isField) con
 std::unique_ptr<AssignmentStmt> StmtParser::parseAssignmentStmt() const
 {
     const Token& t = c.current();
-    auto left = exprParser.parseExpr(true);
+    auto left = exprParser.parseVarCallExpr(true);
     if (!left) return nullptr;
 
-    const Token opToken = c.current();
     if (!c.isAssignmentOp())
     {
-        c.addError(std::make_unique<UnexpectedToken>(c.current()));
+        c.addError(std::make_unique<NoPlacementOperator>(c.current()));
         return nullptr;
     }
-    c.advance();
+    const Token opToken = c.advance();
 
     auto right = exprParser.parseExpr();
     if (!right) return nullptr;
 
-    if (!c.expect(TokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.current())) &&
-        !c.expect(TokenType::PUNCTUATION_CLOSE_FUNC, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
-
     return std::make_unique<AssignmentStmt>(
         t,
         c.getFuncDecl(),
-        std::unique_ptr<Call>(dynamic_cast<Call*>(left.release())),
-        opToken.value.value_or("="),
+        std::move(left),
+        opToken.value.value(),
         std::move(right),
         c.getClassDecl()
     );
@@ -279,20 +284,25 @@ std::unique_ptr<AssignmentStmt> StmtParser::parseAssignmentStmt() const
 std::unique_ptr<HearStmt> StmtParser::parseHearStmt() const
 {
     const Token& t = c.current();
-    c.advance();
 
     if (!c.expect(TokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.current()))) return nullptr;
 
     auto var = exprParser.parseCallExpr();
-    if (!var) return nullptr;
+    if (!var) c.addError(std::make_unique<ExpectedAnExpression>(t)); return nullptr;
 
     std::vector<std::unique_ptr<Call>> calls;
     calls.push_back(std::move(var));
 
-    if (!c.expect(TokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.current()))) return nullptr;
+    while (!c.matchConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+    {
+        var = exprParser.parseCallExpr();
+        calls.push_back(std::move(var));
 
-    if (!c.expect(TokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.current())) &&
-        !c.expect(TokenType::PUNCTUATION_CLOSE_FUNC, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
+        if (!c.matchNonConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+        {
+            c.expect(TokenType::PUNCTUATION_COMMA, std::make_unique<InvalidExpression>(c.current()));
+        }
+    }
 
     return std::make_unique<HearStmt>(
         t,
@@ -305,21 +315,27 @@ std::unique_ptr<HearStmt> StmtParser::parseHearStmt() const
 std::unique_ptr<PlayStmt> StmtParser::parsePlayStmt() const
 {
     const Token& t = c.current();
-    bool isBar = c.matchNonConsume(TokenType::KEYWORD_PLAYBAR);
-    c.advance();
+    bool isBar = c.advance().type == TokenType::KEYWORD_PLAYBAR;
 
     if (!c.expect(TokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.current()))) return nullptr;
 
-    auto expr = exprParser.parseExpr();
-    if (!expr) return nullptr;
-
     std::vector<std::unique_ptr<Expr>> exprs;
-    exprs.push_back(std::move(expr));
 
-    if (!c.expect(TokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.current()))) return nullptr;
+    while (!c.matchConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+    {
+        auto expr = exprParser.parseExpr(false, false);
+        if (!expr) {
+            c.addError(std::make_unique<ExpectedAnExpression>(t));
+            return nullptr;
+        }
 
-    if (!c.expect(TokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.current())) &&
-        !c.expect(TokenType::PUNCTUATION_CLOSE_FUNC, std::make_unique<MissingSemicolon>(c.current()))) return nullptr;
+        exprs.push_back(std::move(expr));
+
+        if (!c.matchNonConsume(TokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+        {
+            c.expect(TokenType::PUNCTUATION_COMMA, std::make_unique<InvalidExpression>(c.current()));
+        }
+    }
 
     return std::make_unique<PlayStmt>(
         t,
@@ -712,7 +728,7 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
         }
         else if (c.isType())
         {
-            if (auto field = parseVarDecStmt(true)) fields.emplace_back(access, std::move(field));
+            if (auto field = parseVarDecStmt()) fields.emplace_back(access, std::move(field));
         }
         else
         {
