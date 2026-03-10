@@ -55,16 +55,15 @@ bool Tokenizer::checkBoundary(const std::string& code, const KeywordInfo* keywor
 }
 
 size_t Tokenizer::handleKeywordMatch(const std::string& code, size_t& row, size_t& col, const TokenType tokenType,
-    std::vector<Token>& tokens, const size_t keywordEnd, const std::filesystem::path& path)
+            std::queue<Token>& tokens, const size_t keywordEnd, const std::filesystem::path& path)
 {
     switch (tokenType)
     {
         case TokenType::COMMENT_SINGLE:
         {
             // If it's a one-line comment, look for the end of the line.
-            const size_t end = code.find('\n', keywordEnd);
 
-            if (end != std::string::npos) return end;
+            if (const size_t end = code.find('\n', keywordEnd); end != std::string::npos) return end;
 
             return keywordEnd;
         }
@@ -72,12 +71,11 @@ size_t Tokenizer::handleKeywordMatch(const std::string& code, size_t& row, size_
         case TokenType::COMMENT_MULTI_START:
         {
             // If it's a multiline comment, look for a COMMENT_MULTY_END match.
-            const size_t end = code.find(COMMENT_MULTY_END, keywordEnd);
 
-            if (end != std::string::npos)
+            if (const size_t end = code.find(COMMENT_MULTY_END, keywordEnd); end != std::string::npos)
                 return end + COMMENT_MULTY_END.length();
 
-            tokens.emplace_back(TokenType::ERROR_TOKEN, std::nullopt, row, col, path);
+            tokens.emplace(TokenType::ERROR_TOKEN, std::nullopt, row, col, path);
         }
 
         case TokenType::PUNCTUATION_NEW_LINE:
@@ -88,7 +86,7 @@ size_t Tokenizer::handleKeywordMatch(const std::string& code, size_t& row, size_
 
         default:
         {
-            tokens.emplace_back(tokenType, std::nullopt, row, col, path);
+            tokens.emplace(tokenType, std::nullopt, row, col, path);
             return keywordEnd;
         }
     }
@@ -147,9 +145,9 @@ Tokenizer::Tokenizer() : trieTree(std::make_unique<TrieNode>())
     tokenRegex = boost::regex(regex, boost::regex::perl | boost::regex::optimize);
 }
 
-std::vector<Token> Tokenizer::tokenize(const std::string& code, const std::filesystem::path& path) const
+std::queue<Token> Tokenizer::tokenize(const std::string& code, const std::filesystem::path& path) const
 {
-    std::vector<Token> tokens;
+    std::queue<Token> tokens;
     size_t row = 1;
     size_t col = 0;
     int codePos = 0;
@@ -204,14 +202,14 @@ std::vector<Token> Tokenizer::tokenize(const std::string& code, const std::files
             std::string match_str = match.str();
             Token token(type, match_str, row, col, path);
             onRegexToken(&token);
-            tokens.emplace_back(token);
+            tokens.emplace(token);
 
             codePos += match_str.length();
             col += match_str.length() - 1; // col will be incremented at the start of next loop
             continue;
         }
 
-        tokens.emplace_back(TokenType::ERROR_TOKEN, std::nullopt, row, col, path); // if didnt match throw error
+        tokens.emplace(TokenType::ERROR_TOKEN, std::nullopt, row, col, path); // if didnt match throw error
         codePos++;
     }
     return tokens;

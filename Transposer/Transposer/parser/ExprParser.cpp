@@ -379,11 +379,7 @@ std::unique_ptr<Call> ExprParser::parseArrayAccess(std::unique_ptr<Call> call)
 
     if (!c.matchConsume(TokenType::PUNCTUATION_COLON))
     {
-        if (c.matchConsume(TokenType::PUNCTUATION_CLOSE_SQUARE_BRACE))
-        {
-            return sliceingExpr;
-        }
-        c.addError(std::make_unique<MissingParenthesis>(c.current()));
+        c.addError(std::make_unique<UnexpectedToken>(c.current()));
         return nullptr;
     }
 

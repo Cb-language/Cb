@@ -99,7 +99,7 @@ const std::vector<std::unique_ptr<Error>>& File::getErrors() const
     return parser.getContext().getErrors();
 }
 
-std::vector<Token> File::tokenize() const
+std::queue<Token> File::tokenize() const
 {
     std::ifstream file(inPath, std::ios::binary);
 

@@ -23,7 +23,7 @@ private:
     ClassDeclStmt* classDecl;
 
     bool hasMain;
-
+    Token firstToken;
 public:
     explicit ParserContext(const std::queue<Token>& tokens);
 
@@ -56,4 +56,6 @@ public:
     ClassDeclStmt* getClassDecl() const;
 
     bool isEmpty() const;
+
+    const Token& getFirstToken() const;
 };

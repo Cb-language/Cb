@@ -22,7 +22,7 @@ private:
     bool analyzed = false;
     bool writen = false;
 
-    std::vector<Token> tokenize() const;
+    std::queue<Token> tokenize() const;
 
     static std::filesystem::path mainPath;
     static std::filesystem::path outDir;

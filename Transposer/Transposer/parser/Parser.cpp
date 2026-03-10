@@ -21,7 +21,7 @@
 #include "files/FileGraph.h"
 #include "symbols/Type/ClassType.h"
 
-Parser::Parser(const std::vector<Token>& tokens) : c(tokens), typeParser(c), exprParser(c, typeParser), stmtParser(c, typeParser, exprParser)
+Parser::Parser(const std::queue<Token>& tokens) : c(tokens), stmtParser(c, typeParser, exprParser), exprParser(c, typeParser), typeParser(c)
 {
 }
 
@@ -33,7 +33,7 @@ const ParserContext& Parser::getContext() const
 std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
 {
     std::vector<std::pair<std::filesystem::path, Token>> v;
-    if (c.getIncludes().empty() && c.getPos() == 0)
+    if (c.getIncludes().empty())
     {
         while (c.matchConsume(TokenType::KEYWORD_FEAT))
         {

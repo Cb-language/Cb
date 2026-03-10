@@ -37,7 +37,7 @@ void FileGraph::start() const
 
     if (!main->hasMain())
     {
-        throw NoMain(main->file.parser.getContext().getLast());
+        throw NoMain(main->file.parser.getContext().getFirstToken());
     }
 }
 

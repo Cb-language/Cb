@@ -4,6 +4,14 @@
 
 ParserContext::ParserContext(const std::queue<Token>& tokens) : tokens(tokens), len(tokens.size()), funcDecl(nullptr), classDecl(nullptr), hasMain(false)
 {
+    if (!tokens.empty())
+    {
+        firstToken = tokens.front();
+    }
+    else
+    {
+        firstToken = Token(TokenType::PUNCTUATION_NEW_LINE, std::nullopt, 0, 0, "");
+    }
 }
 
 void ParserContext::addError(std::unique_ptr<Error> err)
@@ -113,6 +121,11 @@ ClassDeclStmt* ParserContext::getClassDecl() const
 bool ParserContext::isEmpty() const
 {
     return tokens.empty();
+}
+
+const Token& ParserContext::getFirstToken() const
+{
+    return firstToken;
 }
 
 std::vector<std::unique_ptr<Stmt>>& ParserContext::getStmts()

@@ -21,7 +21,7 @@ private:
     TypeParser typeParser;
 
 public:
-    explicit Parser(const std::vector<Token>& tokens);
+    explicit Parser(const std::queue<Token>& tokens);
 
     const ParserContext& getContext() const;
 
