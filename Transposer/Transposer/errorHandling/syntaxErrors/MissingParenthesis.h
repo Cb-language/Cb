@@ -4,5 +4,5 @@
 class MissingParenthesis : public Error
 {
 public:
-    MissingParenthesis(const Token &token);
+    explicit MissingParenthesis(const Token &token);
 };

@@ -4,5 +4,5 @@
 class NoLineOpener : public Error
 {
 public:
-    NoLineOpener(const Token& token);
+    explicit NoLineOpener(const Token& token);
 };

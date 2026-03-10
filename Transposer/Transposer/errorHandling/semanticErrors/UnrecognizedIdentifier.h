@@ -4,5 +4,5 @@
 class UnrecognizedIdentifier : public Error
 {
 public:
-    UnrecognizedIdentifier(const Token& token);
+    explicit UnrecognizedIdentifier(const Token& token);
 };

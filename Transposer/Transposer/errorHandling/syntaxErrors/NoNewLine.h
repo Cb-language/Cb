@@ -4,5 +4,5 @@
 class NoNewLine : public Error
 {
 public:
-    NoNewLine(const Token& token);
+    explicit NoNewLine(const Token& token);
 };

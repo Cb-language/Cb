@@ -4,5 +4,5 @@
 class StmtNotContinueAble : public Error
 {
 public:
-    StmtNotContinueAble(const Token& token);
+    explicit StmtNotContinueAble(const Token& token);
 };

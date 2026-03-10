@@ -4,5 +4,5 @@
 class NoRest : public Error
 {
 public:
-    NoRest(const Token& token);
+    explicit NoRest(const Token& token);
 };

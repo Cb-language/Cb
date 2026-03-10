@@ -4,5 +4,5 @@
 class HowDidYouGetHere : public Error
 {
 public:
-    HowDidYouGetHere(const Token &token);
+    explicit HowDidYouGetHere(const Token &token);
 };

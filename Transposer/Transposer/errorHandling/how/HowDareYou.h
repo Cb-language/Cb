@@ -4,5 +4,5 @@
 class HowDareYou : public Error
 {
 public:
-    HowDareYou(const Token& token);
+    explicit HowDareYou(const Token& token);
 };

@@ -4,5 +4,5 @@
 class IncludeNotInTop : public Error
 {
 public:
-    IncludeNotInTop(const Token& token);
+    explicit IncludeNotInTop(const Token& token);
 };
