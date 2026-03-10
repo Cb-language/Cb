@@ -43,3 +43,8 @@ const Expr* VarDeclStmt::getStartingValue() const
 {
     return startingValue.get();
 }
+
+void VarDeclStmt::setIsStatic(const bool isStatic)
+{
+    this->var.setIsStatic(isStatic);
+}

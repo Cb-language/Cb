@@ -62,6 +62,11 @@ bool Var::isPrimitive() const
     return type->isPrimitive();
 }
 
+void Var::setIsStatic(const bool isStatic)
+{
+    this->isStatic = isStatic;
+}
+
 Var Var::copy() const
 {
     return Var(*this);

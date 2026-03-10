@@ -46,11 +46,13 @@
 #include "errorHandling/classErrors/MissingClassPipe.h"
 #include "errorHandling/classErrors/NoOverrideError.h"
 #include "errorHandling/classErrors/StaticCtor.h"
+#include "errorHandling/classErrors/VirtualCtor.h"
 #include "errorHandling/how/HowDareYou.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/lexicalErrors/UnrecognizedToken.h"
 #include "errorHandling/semanticErrors/StaticFuncCantVirtual.h"
 #include "errorHandling/syntaxErrors/ExpectedAnExpression.h"
+#include "errorHandling/syntaxErrors/IncludeNotInTop.h"
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
 #include "errorHandling/syntaxErrors/NoLineOpener.h"
 #include "errorHandling/syntaxErrors/NoNewLine.h"
@@ -222,6 +224,10 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
             c.addError(std::make_unique<StmtNotContinueAble>(c.current()));
         }
         return parseContinueStmt();
+    }
+    if (c.matchConsume(TokenType::KEYWORD_FEAT))
+    {
+        c.addError(std::make_unique<IncludeNotInTop>(c.current()));
     }
 
     c.addError(std::make_unique<UnrecognizedToken>(c.current()));
@@ -849,18 +855,27 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
             }
             if (virtualType != VirtualType::NONE)
             {
-                c.addError()
+                c.addError(std::make_unique<VirtualCtor>(c.current()));
             }
         }
 
         else if (c.matchConsume(TokenType::KEYWORD_SONG))
         {
-            if (auto method = parseFuncDeclStmt(true)) methods.emplace_back(access, std::move(method));
+            if (auto method = parseFuncDeclStmt(true))
+            {
+                method->setIsStatic(isStatic);
+                method->setVirtual(virtualType);
+                methods.emplace_back(access, std::move(method));
+            }
         }
 
         else if (c.isType())
         {
-            if (auto field = parseVarDecStmt()) fields.emplace_back(access, std::move(field));
+            if (auto field = parseVarDecStmt())
+            {
+                field->setIsStatic(isStatic);
+                fields.emplace_back(access, std::move(field));
+            }
         }
 
         else

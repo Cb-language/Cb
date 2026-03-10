@@ -11,7 +11,7 @@ class VarDeclStmt : public Stmt
 protected:
     const bool hasStartingValue;
     const std::unique_ptr<Expr> startingValue;
-    const Var var;
+    Var var;
 
 public:
     VarDeclStmt(const Token& token, IFuncDeclStmt* funcDecl,
@@ -22,4 +22,5 @@ public:
 
     const Var& getVar() const;
     const Expr* getStartingValue() const;
+    void setIsStatic(const bool isStatic);
 };

@@ -27,6 +27,7 @@ public:
     bool isStringable() const;
 
     bool isPrimitive() const;
+    void setIsStatic(const bool isStatic);
 
     Var copy() const;
 };
