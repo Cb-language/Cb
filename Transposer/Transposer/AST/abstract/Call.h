@@ -21,7 +21,7 @@ inline bool Call::getIsClassItem() const
     return isClassItem;
 }
 
-inline void Call::setIsClassItem(bool value)
+inline void Call::setIsClassItem(const bool value)
 {
     isClassItem = value;
 }

@@ -76,7 +76,7 @@ const FQN& ConstractorDeclStmt::getName() const
 
 std::unique_ptr<IType> ConstractorDeclStmt::getReturnType() const
 {
-    return std::make_unique<ClassType>(translateFQNtoString(constractor.getClassName()));
+    return std::make_unique<ClassType>(constractor.getClassName());
 }
 
 const Constractor& ConstractorDeclStmt::getConstractor() const

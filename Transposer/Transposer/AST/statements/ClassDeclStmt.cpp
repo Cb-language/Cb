@@ -83,8 +83,8 @@ std::string ClassDeclStmt::generateEquals() const
 
 ClassDeclStmt::ClassDeclStmt(const Token& token, IFuncDeclStmt* funcDecl, const FQN& name, std::vector<Field>& fields,
     std::vector<Method>& methods, std::vector<Ctor>& ctors, const AccessType inheritingPublic,
-    std::unique_ptr<ClassDeclStmt> father, ClassDeclStmt* classDecl)
-    : Stmt(token, funcDecl, classDecl), name(name), inheritingPublic(inheritingPublic), father(std::move(father))
+    const FQN& parentName, ClassDeclStmt* classDecl)
+    : Stmt(token, funcDecl, classDecl), name(name), inheritingPublic(inheritingPublic), parentName(parentName)
 {
     for (auto& [isPublic, func] : fields) this->fields.emplace_back(isPublic, std::move(func));
     for (auto& [isPublic, method] : methods) this->methods.emplace_back(isPublic, std::move(method));
@@ -209,7 +209,7 @@ void ClassDeclStmt::analyze() const
     const_cast<ClassNode*>(this->currClass)->setAbstract(isAbstract);
 
 
-    if (father != nullptr)
+    if (!parentName.empty())
     {
         if (inheritingPublic == NONE)
         {
@@ -257,7 +257,7 @@ std::string ClassDeclStmt::translateToH() const
     protecteds << "protected: ";
 
     oss << "class " << translateFQNtoString(name);
-    if (father != nullptr)
+    if (!parentName.empty())
     {
         oss << " : ";
         if (inheritingPublic == PUBLIC)
@@ -273,7 +273,7 @@ std::string ClassDeclStmt::translateToH() const
             oss << "private ";
         }
 
-        oss << translateFQNtoString(father->name);
+        oss << translateFQNtoString(parentName);
     }
     else
     {

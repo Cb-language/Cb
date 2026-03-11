@@ -20,7 +20,8 @@ std::unique_ptr<IType> StaticDotOpExpr::getType() const
 
 void StaticDotOpExpr::analyze() const
 {
-    if (!SymbolTable::isLegalFieldOrMethod(left->copy(), right->toString(), token, currClass))
+    const FQN pass = {right->toString()};
+    if (!SymbolTable::isLegalFieldOrMethod(left->copy(), pass, token, currClass))
     {
         throw IllegalDotOpError(token, left->toString(), right->toString());
     }

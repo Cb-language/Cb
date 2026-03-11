@@ -26,7 +26,7 @@ SymbolTable::~SymbolTable()
     currClass = nullptr;
 }
 
-std::optional<Var> SymbolTable::getVar(const std::string &name) const
+std::optional<Var> SymbolTable::getVar(const FQN &name) const
 {
     if (currClass != nullptr)
     {
@@ -48,12 +48,12 @@ void SymbolTable::addVar(const Var& var, const Token& token) const
     currScope->addVar(var, token);
 }
 
-ClassNode* SymbolTable::getClass(const std::string& name)
+ClassNode* SymbolTable::getClass(const FQN& name)
 {
     return classTree.find(name);
 }
 
-bool SymbolTable::isClass(const std::string& name)
+bool SymbolTable::isClass(const FQN& name)
 {
      return getClass(name) != nullptr;
 }
@@ -71,11 +71,11 @@ bool SymbolTable::doesFuncExist(const Func& f) const
     return false;
 }
 
-bool SymbolTable::doesFuncExist(const std::string& name, const ClassNode* owner) const
+bool SymbolTable::doesFuncExist(const FQN& name, const ClassNode* owner) const
 {
     for (const auto& func : funcs| std::views::keys)
     {
-        if (translateFQNtoString(func.getFuncName()) == name && func.getOwner() == owner)
+        if (func.getFuncName() == name && func.getOwner() == owner)
         {
             return true;
         }
@@ -161,7 +161,7 @@ IFuncDeclStmt* SymbolTable::getCurrFunc() const
     return currFunc;
 }
 
-std::unique_ptr<Func> SymbolTable::getFunc(const std::string& name, const ClassNode* owner) const
+std::unique_ptr<Func> SymbolTable::getFunc(const FQN& name, const ClassNode* owner) const
 {
     if (!doesFuncExist(name, owner))
     {
@@ -169,7 +169,7 @@ std::unique_ptr<Func> SymbolTable::getFunc(const std::string& name, const ClassN
     }
     for (const auto& func : funcs | std::views::keys)
     {
-        if (translateFQNtoString(func.getFuncName()) == name && func.getOwner() == owner)
+        if (func.getFuncName() == name && func.getOwner() == owner)
         {
             return std::make_unique<Func>(func.copy());
         }
@@ -195,7 +195,7 @@ std::string SymbolTable::getFuncsHeaders() const
 void SymbolTable::addClass(const Class& cls, ClassNode* parent)
 {
     classTree.addClass(cls, parent);
-    currClass = classTree.find(translateFQNtoString(cls.getClassName()));
+    currClass = classTree.find(cls.getClassName());
 }
 
 void SymbolTable::resetCurrClass()
@@ -254,9 +254,9 @@ void SymbolTable::clearClasses()
     ClassTree::destroy();
 }
 
-bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::string& name, const Token& token, const ClassNode* currClass)
+bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const FQN& name, const Token& token, const ClassNode* currClass)
 {
-    const ClassNode* res = classTree.find(type->toString());
+    const ClassNode* res = nullptr; // classTree.find(type->toString());
 
     if (res == nullptr) throw HowDidYouGetHere(token);
 
@@ -265,14 +265,14 @@ bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const
     {
         if (res->isLegal(*field, currClass)) return true;
 
-        throw AccessError(token, translateFQNtoString(res->getClass().getClassName()), name);
+        throw AccessError(token, translateFQNtoString(res->getClass().getClassName()), translateFQNtoString(name));
     }
 
     if (const Func* method = res->findMethod(name, currClass); method != nullptr)
     {
         if (res->isLegal(*method, currClass)) return true;
 
-        throw AccessError(token, translateFQNtoString(res->getClass().getClassName()), name);
+        throw AccessError(token, translateFQNtoString(res->getClass().getClassName()), translateFQNtoString(name));
     }
 
     if (currClass != nullptr)

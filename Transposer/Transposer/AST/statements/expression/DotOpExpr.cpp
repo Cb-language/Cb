@@ -32,7 +32,7 @@ void DotOpExpr::analyze() const
 
     if (rightCasted == nullptr) throw HowDidYouGetHere(token);
 
-    if (!SymbolTable::isLegalFieldOrMethod(leftType, rightCasted->toString(), token, currClass))
+    if (FQN passing = {rightCasted->toString()}; !SymbolTable::isLegalFieldOrMethod(leftType, passing, token, currClass))
     {
         throw IllegalDotOpError(token, left->translateToCpp(), rightCasted->toString()), leftType->toString();
     }

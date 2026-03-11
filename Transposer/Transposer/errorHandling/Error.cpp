@@ -3,11 +3,11 @@
 #include "other/Utils.h"
 #include "token/TrieTree/Keywords.h"
 
-std::unordered_map<TokenType, std::string> Error::tokenToTypeMap = typeToStr();
+std::unordered_map<CbTokenType, std::string> Error::tokenToTypeMap = typeToStr();
 
-std::unordered_map<TokenType, std::string> Error::typeToStr()
+std::unordered_map<CbTokenType, std::string> Error::typeToStr()
 {
-    std::unordered_map<TokenType, std::string> result;
+    std::unordered_map<CbTokenType, std::string> result;
 
     for (const auto &entry : KEYWORDS)
     {

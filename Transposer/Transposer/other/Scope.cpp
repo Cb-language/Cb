@@ -28,26 +28,24 @@ Scope::~Scope()
     children.clear();
 }
 
-std::optional<Var> Scope::getVar(const std::string& name, const ClassNode* c) const
+std::optional<Var> Scope::getVar(const FQN& name, const ClassNode* c) const
 {
     for (const auto& var : vars | std::views::keys)
     {
-        // if (name == translateFQNtoString(var.getName))
-        // {
+        if (name == var.getName())
+        {
             return var.copy();
-        // }
+        }
     }
 
     if (c != nullptr)
     {
-        for (const auto& [isPublic, field] : c->getClass().getFields())
+        for (const auto& [access, field] : c->getClass().getFields())
         {
-            if (!isPublic) continue;
-
-            // if (name == translateFQNtoString(field.getName))
-            // {
+            if (name == field.getName())
+            {
                 return field.copy();
-            // }
+            }
         }
     }
 
@@ -74,19 +72,19 @@ Scope* Scope::getParent() const
 
 void Scope::addVar(std::unique_ptr<IType> type, const Token& token)
 {
-    if (token.type != TokenType::IDENTIFIER)
+    if (token.type != CbTokenType::IDENTIFIER)
     {
         throw UnexpectedToken(token);
     }
 
-    // auto v = Var(std::move(type) , token.value.value());
-    // for (const auto& var : vars | std::views::keys)
-    // {
-    //     if (v == var)
-    //     {
-    //         throw IdentifierTaken(token);
-    //     }
-    // }
+    Var v = Var(std::move(type), FQN{token.value.value()});
+    for (const auto& var : vars | std::views::keys)
+    {
+        if (v == var)
+        {
+            throw IdentifierTaken(token);
+        }
+    }
 
     vars.emplace_back(std::move(v), token);
 }

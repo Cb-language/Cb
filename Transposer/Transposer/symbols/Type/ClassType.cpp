@@ -3,7 +3,7 @@
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "other/SymbolTable.h"
 
-ClassType::ClassType(const std::string& name) : name(name), c(nullptr)
+ClassType::ClassType(const FQN& name) : name(name), c(nullptr)
 {
 }
 
@@ -50,12 +50,12 @@ void ClassType::setClassNode(const ClassNode& node)
 
 std::string ClassType::getName() const
 {
-    return name;
+    return translateFQNtoString(name);
 }
 
 std::string ClassType::translateTypeToCpp() const
 {
-    return "SafePtr<" + name + ">";
+    return "SafePtr<" + translateFQNtoString(name) + ">";
 }
 
 std::unique_ptr<IType> ClassType::copy() const
@@ -65,5 +65,5 @@ std::unique_ptr<IType> ClassType::copy() const
 
 std::string ClassType::toString() const
 {
-    return name;
+    return translateFQNtoString(name);
 }

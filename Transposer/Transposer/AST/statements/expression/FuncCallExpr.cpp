@@ -7,7 +7,7 @@
 #include "errorHandling/semanticErrors/CallWithoutCopyright.h"
 
 FuncCallExpr::FuncCallExpr(const Token& token, IFuncDeclStmt* funcDecl,
-    const std::string& name,std::vector<std::unique_ptr<Expr>> args, const bool needsSemicolon, ClassDeclStmt* classDecl)
+    const FQN& name, std::vector<std::unique_ptr<Expr>> args, const bool needsSemicolon, ClassDeclStmt* classDecl)
     : Call(token, funcDecl, classDecl), name(name), type(std::make_unique<PrimitiveType>(Primitive::TYPE_FERMATA)), needsSemicolon(needsSemicolon)
 {
     for (auto& arg : args)
@@ -33,19 +33,19 @@ void FuncCallExpr::analyze() const
         return; // main doesnt have to copy right
     }
 
-    if (translateFQNtoString(funcDecl->getName()) == name)
+    if (funcDecl->getName() == name)
     {
         return; // a func doesn't have to copyright itself
     }
 
     for (const auto& credit : funcDecl->getCredited())
     {
-        if (credit->getName() == name)
+        if (credit->getName() == translateFQNtoString(name))
         {
             return;
         }
     }
-   throw CallWithoutCopyright(token, name);
+   throw CallWithoutCopyright(token, translateFQNtoString(name));
 }
 
 std::string FuncCallExpr::translateToCpp() const
@@ -58,7 +58,7 @@ std::string FuncCallExpr::translateToCpp() const
         oss << getTabs();
     }
 
-    oss << name << "(";
+    oss << translateFQNtoString(name) << "(";
 
     for (const auto& arg : args)
     {
@@ -88,7 +88,7 @@ void FuncCallExpr::setType(std::unique_ptr<IType> type)
 
 bool FuncCallExpr::isLegalCall(const Func& func) const
 {
-    if (name != translateFQNtoString(func.getFuncName()) || args.size() != func.getArgs().size())
+    if (name != func.getFuncName() || args.size() != func.getArgs().size())
     {
         return false;
     }
@@ -108,14 +108,14 @@ const Token& FuncCallExpr::getToken() const
     return token;
 }
 
-const std::string& FuncCallExpr::getName() const
+const FQN& FuncCallExpr::getName() const
 {
     return name;
 }
 
 std::string FuncCallExpr::toString() const
 {
-    return name;
+    return translateFQNtoString(name);
 }
 
 void FuncCallExpr::setNeedsSemicolon(const bool needsSemicolon)

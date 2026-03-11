@@ -9,8 +9,8 @@
 class Error : public std::exception
 {
 private:
-    static std::unordered_map<TokenType, std::string> tokenToTypeMap;
-    static std::unordered_map<TokenType, std::string> typeToStr();
+    static std::unordered_map<CbTokenType, std::string> tokenToTypeMap;
+    static std::unordered_map<CbTokenType, std::string> typeToStr();
 protected:
     Token token;
     std::string errorMessage;

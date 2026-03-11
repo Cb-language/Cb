@@ -1,6 +1,7 @@
 #include "ParserContext.h"
 
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
+#include "errorHandling/syntaxErrors/UnexpectedToken.h"
 
 ParserContext::ParserContext(const std::queue<Token>& tokens) : tokens(tokens), len(tokens.size()), funcDecl(nullptr), hasMain(false)
 {
@@ -10,7 +11,7 @@ ParserContext::ParserContext(const std::queue<Token>& tokens) : tokens(tokens), 
     }
     else
     {
-        firstToken = Token(TokenType::PUNCTUATION_NEW_LINE, std::nullopt, 0, 0, "");
+        firstToken = Token(CbTokenType::PUNCTUATION_NEW_LINE, std::nullopt, 0, 0, "");
     }
 }
 
@@ -41,7 +42,7 @@ const Token& ParserContext::peek() const // TODO wrap the parser calling functio
     return tokens.front();
 }
 
-bool ParserContext::matchConsume(const TokenType type, const std::optional<std::reference_wrapper<Token>> out)
+bool ParserContext::matchConsume(const CbTokenType type, const std::optional<std::reference_wrapper<Token>> out)
 {
     if (current().type == type)
     {
@@ -55,12 +56,12 @@ bool ParserContext::matchConsume(const TokenType type, const std::optional<std::
     return false;
 }
 
-bool ParserContext::matchNonConsume(const TokenType type) const
+bool ParserContext::matchNonConsume(const CbTokenType type) const
 {
     return current().type == type;
 }
 
-bool ParserContext::expect(const TokenType type, std::unique_ptr<Error> err, const std::optional<std::reference_wrapper<Token>> out)
+bool ParserContext::expect(const CbTokenType type, std::unique_ptr<Error> err, const std::optional<std::reference_wrapper<Token>> out)
 {
     if (!matchNonConsume(type))
     {
@@ -77,24 +78,41 @@ bool ParserContext::expect(const TokenType type, std::unique_ptr<Error> err, con
     return true;
 }
 
+FQN ParserContext::parseFQN()
+{
+    FQN res;
+    do
+    {
+        Token iden;
+        if (!matchConsume(CbTokenType::IDENTIFIER, iden))
+        {
+            addError(std::make_unique<UnexpectedToken>(current()));
+            return res;
+        }
+        res.emplace_back(iden.value.value());
+
+    } while (matchConsume(CbTokenType::PUNCTUATION_BACKSLASH));
+    return res;
+}
+
 bool ParserContext::isUnaryOp() const
 {
-    return (current().type >= TokenType::UNARY_OP_SHARP && current().type <= TokenType::UNARY_OP_NATRUAL);
+    return (current().type >= CbTokenType::UNARY_OP_SHARP && current().type <= CbTokenType::UNARY_OP_NATRUAL);
 }
 
 bool ParserContext::isAssignmentOp() const
 {
-    return (current().type >= TokenType::ASSIGNMENT_OP_EQUAL && current().type <= TokenType::ASSIGNMENT_OP_MODULUS_EQUAL);
+    return (current().type >= CbTokenType::ASSIGNMENT_OP_EQUAL && current().type <= CbTokenType::ASSIGNMENT_OP_MODULUS_EQUAL);
 }
 
 bool ParserContext::isBinaryOp() const
 {
-    return (current().type >= TokenType::BINARY_OP_EQUIAL && current().type <= TokenType::BINARY_OP_AND);
+    return (current().type >= CbTokenType::BINARY_OP_EQUIAL && current().type <= CbTokenType::BINARY_OP_AND);
 }
 
 bool ParserContext::isType() const
 {
-    return (current().type >= TokenType::TYPE_FLAT && current().type <= TokenType::TYPE_FERMATA);
+    return (current().type >= CbTokenType::TYPE_FLAT && current().type <= CbTokenType::TYPE_FERMATA);
 }
 
 bool ParserContext::getHasMain() const
@@ -117,9 +135,20 @@ IFuncDeclStmt* ParserContext::getFuncDecl() const
     return funcDecl;
 }
 
-std::stack<std::reference_wrapper<ClassDeclStmt>> ParserContext::getClassDecl() const
+ClassDeclStmt* ParserContext::getClassDecl() const
 {
-    return classDecl;
+    if (classDecl.empty()) return nullptr;
+    return &classDecl.top().get();
+}
+
+void ParserContext::pushClassDecl(ClassDeclStmt& decl)
+{
+    classDecl.push(decl);
+}
+
+void ParserContext::popClassDecl()
+{
+    classDecl.pop();
 }
 
 bool ParserContext::isEmpty() const

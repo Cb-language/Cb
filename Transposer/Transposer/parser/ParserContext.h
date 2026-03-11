@@ -10,7 +10,7 @@
 #include "AST/statements/expression/FuncCallExpr.h"
 #include "other/SymbolTable.h"
 #include "AST/statements/IncludeStmt.h"
-
+#include "FQN.h"
 
 class ParserContext
 {
@@ -36,10 +36,12 @@ public:
     Token advance();
     const Token& peek() const;
 
-    bool matchConsume(const TokenType type, const std::optional<std::reference_wrapper<Token>> out = std::nullopt);
-    bool matchNonConsume(TokenType type) const;
+    bool matchConsume(const CbTokenType type, const std::optional<std::reference_wrapper<Token>> out = std::nullopt);
+    bool matchNonConsume(CbTokenType type) const;
 
-    bool expect(TokenType type, std::unique_ptr<Error> err = nullptr, std::optional<std::reference_wrapper<Token>> out = std::nullopt);
+    bool expect(CbTokenType type, std::unique_ptr<Error> err = nullptr, std::optional<std::reference_wrapper<Token>> out = std::nullopt);
+
+    FQN parseFQN();
 
     bool isUnaryOp() const;
     bool isAssignmentOp() const;
@@ -55,7 +57,9 @@ public:
     std::vector<std::unique_ptr<IncludeStmt>>& getIncludes();
 
     IFuncDeclStmt* getFuncDecl() const;
-    std::stack<std::reference_wrapper<ClassDeclStmt>> getClassDecl() const;
+    ClassDeclStmt* getClassDecl() const;
+    void pushClassDecl(ClassDeclStmt& decl);
+    void popClassDecl();
 
     bool isEmpty() const;
 

@@ -35,10 +35,10 @@ std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
     std::vector<std::pair<std::filesystem::path, Token>> v;
     if (c.getIncludes().empty())
     {
-        while (c.matchConsume(TokenType::KEYWORD_FEAT))
+        while (c.matchConsume(CbTokenType::KEYWORD_FEAT))
         {
             Token pathToken;
-            if (!c.expect(TokenType::CONST_STR,std::make_unique<ExpectedAPath>(c.current()), pathToken)) return {};
+            if (!c.expect(CbTokenType::CONST_STR,std::make_unique<ExpectedAPath>(c.current()), pathToken)) return {};
 
             std::string str = pathToken.value.value();
             str.erase(
@@ -46,7 +46,7 @@ std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
                 str.end()
             );
             std::filesystem::path path = str;
-            if (!c.matchNonConsume(TokenType::PUNCTUATION_SEMICOLON))
+            if (!c.matchNonConsume(CbTokenType::PUNCTUATION_SEMICOLON))
             {
                 c.addError(std::make_unique<MissingSemicolon>(c.current()));
                 return {};

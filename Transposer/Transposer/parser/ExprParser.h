@@ -35,8 +35,9 @@ private:
     std::unique_ptr<StaticDotOpExpr> parseScopeResolutionExpr(const Token& classNameToken, bool needsSemicolon);
 
     std::unique_ptr<Call> parseArrayAccess(std::unique_ptr<Call> call);
+    std::unique_ptr<Call> parseIdentifierOrCallExpr(bool needsSemicolon, std::optional<Token> firstToken = std::nullopt);
+    std::unique_ptr<Call> parseFuncCallExprInternal(const Token& t, const FQN& name, const bool needsSemicolon);
 
-    FQN parseFQN() const;
 public:
     explicit ExprParser(ParserContext& c, TypeParser& typeParser);
 

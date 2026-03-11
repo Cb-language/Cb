@@ -6,7 +6,7 @@
 
 typedef unsigned char byte;
 
-enum class TokenType : byte
+enum class CbTokenType : byte
 {
 	// types
 	TYPE_FLAT,    // signed
@@ -119,7 +119,7 @@ enum class TokenType : byte
 };
 struct Token
 {
-	TokenType type;
+	CbTokenType type;
 	std::optional<std::string> value;
 
 	size_t line;
@@ -129,7 +129,7 @@ struct Token
 
 	Token();
 
-	Token(const TokenType type, const std::optional<std::string> &value, const size_t line, const size_t column, const std::filesystem::path& path);
+	Token(const CbTokenType type, const std::optional<std::string> &value, const size_t line, const size_t column, const std::filesystem::path& path);
 
 	bool isConst() const;
 };

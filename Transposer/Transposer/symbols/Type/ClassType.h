@@ -1,15 +1,16 @@
 #pragma once
 #include "IType.h"
 #include "class/ClassNode.h"
+#include "parser/FQN.h"
 
 class ClassType : public IType
 {
 private:
-    const std::string name;
+    const FQN name;
     const ClassNode* c;
 
 public:
-    explicit ClassType(const std::string& name);
+    explicit ClassType(const FQN& name);
     ~ClassType() override;
 
     bool operator==(const IType& other) const override;

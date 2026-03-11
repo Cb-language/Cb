@@ -24,7 +24,7 @@ public:
     ~Scope();
 
     // std::nullopt when not found
-    std::optional<Var> getVar(const std::string& name, const ClassNode* c) const;
+    std::optional<Var> getVar(const FQN& name, const ClassNode* c) const;
 
     Scope* makeNewScope(bool isBreakable, bool isContinueAble);
     Scope* getParent() const;

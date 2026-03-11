@@ -19,14 +19,14 @@ private:
     std::vector<Ctor> ctors;
 
     AccessType inheritingPublic;
-    std::unique_ptr<ClassDeclStmt> father;
+    FQN parentName;
 
     std::string generateToString() const;
     std::string generateEquals() const;
 
 public:
     ClassDeclStmt(const Token& token, IFuncDeclStmt* funcDecl, const FQN& name, std::vector<Field>& fields,
-        std::vector<Method>& methods, std::vector<Ctor>& ctors, AccessType inheritingPublic, std::unique_ptr<ClassDeclStmt> father, ClassDeclStmt* classDecl = nullptr);
+        std::vector<Method>& methods, std::vector<Ctor>& ctors, AccessType inheritingPublic, const FQN& parentName, ClassDeclStmt* classDecl = nullptr);
     void analyze() const override;
     std::string translateToCpp() const override;
     std::string translateToH() const override;

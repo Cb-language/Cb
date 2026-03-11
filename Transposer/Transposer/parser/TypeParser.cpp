@@ -12,7 +12,7 @@ TypeParser::TypeParser(ParserContext& c) : c(c)
 
 std::unique_ptr<IType> TypeParser::parseIType() const
 {
-    if (c.matchNonConsume(TokenType::TYPE_RIFF))
+    if (c.matchNonConsume(CbTokenType::TYPE_RIFF))
     {
         return parseArrayType();
     } // if not array try primitive types
@@ -22,29 +22,29 @@ std::unique_ptr<IType> TypeParser::parseIType() const
 
 std::unique_ptr<IType> TypeParser::parseType() const
 {
-    if (Token name; c.matchConsume(TokenType::IDENTIFIER, name))
+    if (c.matchNonConsume(CbTokenType::IDENTIFIER))
     {
-        return std::make_unique<ClassType>(name.value.value());
+        return std::make_unique<ClassType>(c.parseFQN());
     }
 
     auto signType = SignType::SIGNED;
 
-    if (c.matchConsume(TokenType::TYPE_FLAT))
+    if (c.matchConsume(CbTokenType::TYPE_FLAT))
     {
     }
 
-    else if (c.matchConsume(TokenType::TYPE_SHARP))
+    else if (c.matchConsume(CbTokenType::TYPE_SHARP))
     {
         signType = SignType::UNSIGNED;
     }
 
     Token typeToken;
-    if (!c.expect(TokenType::TYPE_DEGREE, nullptr, typeToken) &&
-        !c.expect(TokenType::TYPE_FREQ, nullptr, typeToken) &&
-        !c.expect(TokenType::TYPE_NOTE, nullptr, typeToken) &&
-        !c.expect(TokenType::TYPE_MUTE, nullptr, typeToken) &&
-        !c.expect(TokenType::TYPE_BAR, nullptr, typeToken) &&
-        !c.expect(TokenType::TYPE_FERMATA, nullptr, typeToken))
+    if (!c.expect(CbTokenType::TYPE_DEGREE, nullptr, typeToken) &&
+        !c.expect(CbTokenType::TYPE_FREQ, nullptr, typeToken) &&
+        !c.expect(CbTokenType::TYPE_NOTE, nullptr, typeToken) &&
+        !c.expect(CbTokenType::TYPE_MUTE, nullptr, typeToken) &&
+        !c.expect(CbTokenType::TYPE_BAR, nullptr, typeToken) &&
+        !c.expect(CbTokenType::TYPE_FERMATA, nullptr, typeToken))
     {
         c.addError(std::make_unique<InvalidNumberLiteral>(c.current()));
         return nullptr;
@@ -53,12 +53,12 @@ std::unique_ptr<IType> TypeParser::parseType() const
     Primitive value;
     switch (typeToken.type)
     {
-        case TokenType::TYPE_DEGREE:  value = Primitive::TYPE_DEGREE;  break;
-        case TokenType::TYPE_FREQ:    value = Primitive::TYPE_FREQ;    break;
-        case TokenType::TYPE_NOTE:    value = Primitive::TYPE_NOTE;    break;
-        case TokenType::TYPE_MUTE:    value = Primitive::TYPE_MUTE;    break;
-        case TokenType::TYPE_BAR:     value = Primitive::TYPE_BAR;     break;
-        case TokenType::TYPE_FERMATA: value = Primitive::TYPE_FERMATA; break;
+        case CbTokenType::TYPE_DEGREE:  value = Primitive::TYPE_DEGREE;  break;
+        case CbTokenType::TYPE_FREQ:    value = Primitive::TYPE_FREQ;    break;
+        case CbTokenType::TYPE_NOTE:    value = Primitive::TYPE_NOTE;    break;
+        case CbTokenType::TYPE_MUTE:    value = Primitive::TYPE_MUTE;    break;
+        case CbTokenType::TYPE_BAR:     value = Primitive::TYPE_BAR;     break;
+        case CbTokenType::TYPE_FERMATA: value = Primitive::TYPE_FERMATA; break;
 
         default: c.addError(std::make_unique<InvalidNumberLiteral>(c.current())); return nullptr;
     }
