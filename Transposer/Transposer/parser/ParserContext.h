@@ -76,6 +76,7 @@ public:
     void popClassDecl();
     void setFuncDecl(IFuncDeclStmt* funcDecl);
     void setIsInFunc(const bool isInFunc);
+    bool getIsInFunc() const;
 
 
     bool isEmpty() const;

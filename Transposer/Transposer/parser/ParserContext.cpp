@@ -80,6 +80,7 @@ SemiColonEatType ParserContext::expectSemiColon(const bool isInFunc)
 
     if (matchConsume(CbTokenType::PUNCTUATION_CLOSE_FUNC))
     {
+        setIsInFunc(false);
         return SemiColonEatType::OUT_SCOPE;
     }
     if (matchConsume(CbTokenType::PUNCTUATION_SEMICOLON))
@@ -228,6 +229,11 @@ void ParserContext::setFuncDecl(IFuncDeclStmt* funcDecl)
 void ParserContext::setIsInFunc(const bool isInFunc)
 {
     this->isInFunc = isInFunc;
+}
+
+bool ParserContext::getIsInFunc() const
+{
+    return isInFunc;
 }
 
 bool ParserContext::isEmpty() const

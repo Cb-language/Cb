@@ -298,7 +298,7 @@ std::unique_ptr<BodyStmt> StmtParser::parseBodyStmt(const bool isGlobal, const b
     {
         if (auto stmt = parseStmt(isGlobal, isBreakable, isContinueAble)) bodyStmts.push_back(std::move(stmt));
 
-        if (c.expectSemiColon(true) == SemiColonEatType::OUT_SCOPE)
+        if (!c.getIsInFunc())
         {
             break;
         }
