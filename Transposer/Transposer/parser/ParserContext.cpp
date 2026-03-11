@@ -1,5 +1,7 @@
 #include "ParserContext.h"
 
+#include <functional>
+
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 
@@ -22,10 +24,7 @@ void ParserContext::addError(std::unique_ptr<Error> err)
 
 const Token& ParserContext::current() const
 {
-    if (tokens.empty())
-    {
-        throw UnexpectedEOF(getFirstToken());
-    }
+    if (tokens.empty()) throw UnexpectedEOF(getFirstToken());
     return tokens.front();
 }
 
@@ -36,7 +35,7 @@ Token ParserContext::advance()
     return std::move(t);
 }
 
-const Token& ParserContext::peek() const // TODO wrap the parser calling function in try catch
+Token ParserContext::copyCurrent()
 {
     if (tokens.empty()) throw UnexpectedEOF(current());
     return tokens.front();

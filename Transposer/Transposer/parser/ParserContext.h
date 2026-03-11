@@ -34,7 +34,7 @@ public:
 
     const Token& current() const;
     Token advance();
-    const Token& peek() const;
+    Token copyCurrent();
 
     bool matchConsume(const CbTokenType type, const std::optional<std::reference_wrapper<Token>> out = std::nullopt);
     bool matchNonConsume(CbTokenType type) const;
