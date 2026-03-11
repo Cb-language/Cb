@@ -298,6 +298,7 @@ std::unique_ptr<BodyStmt> StmtParser::parseBodyStmt(const bool isGlobal, const b
     {
         if (auto stmt = parseStmt(isGlobal, isBreakable, isContinueAble)) bodyStmts.push_back(std::move(stmt));
 
+        c.expectSemiColon();
         if (!c.getIsInFunc())
         {
             break;
@@ -357,9 +358,9 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
     }
     else
     {
+        c.setIsInFunc(true);
         retType = std::make_unique<PrimitiveType>(Primitive::TYPE_FERMATA);
     }
-    c.setIsInFunc(true);
 
     auto funcStmt = std::make_unique<FuncDeclStmt>(
         c.copyCurrent(),
@@ -380,7 +381,6 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
     funcStmt->setBody(parseBodyStmt(false, false, false, false));
 
     c.setFuncDecl(temp);
-    c.setIsInFunc(false);
     return funcStmt;
 }
 

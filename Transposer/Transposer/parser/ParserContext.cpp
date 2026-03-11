@@ -80,7 +80,10 @@ void ParserContext::expectSemiColon()
     {
         setIsInFunc(false);
     }
-    expect(CbTokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(copyCurrent()));
+    else
+    {
+        expect(CbTokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(copyCurrent()));
+    }
 }
 
 void ParserContext::eatFuncNewLine()
