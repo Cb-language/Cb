@@ -94,6 +94,6 @@ const std::vector<KeywordInfo> KEYWORDS =
 	{CbTokenType::ASSIGNMENT_OP_MODULUS_EQUAL, "%=", WordBoundary::BOTH},
 
 	// comments
-	{CbTokenType::COMMENT_SINGLE, "?", WordBoundary::BOTH},
-	{CbTokenType::COMMENT_MULTI_START, "?*", WordBoundary::BOTH},
+	{CbTokenType::COMMENT_SINGLE, "?", WordBoundary::NONE},
+	{CbTokenType::COMMENT_MULTI_START, "?*", WordBoundary::NONE},
 };

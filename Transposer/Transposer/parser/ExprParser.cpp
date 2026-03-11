@@ -60,11 +60,11 @@ static UnaryOp strToUnaryOp(const std::string& str)
     return UnaryOp::Zero;
 }
 
-std::unique_ptr<Expr> ExprParser::parseExpr(bool needsSemicolon)
+std::unique_ptr<Expr> ExprParser::parseExpr(const bool needsSemicolon)
 {
     std::unique_ptr<Expr> left;
 
-    if (c.matchNonConsume(CbTokenType::UNARY_OP_NOT))
+    if (c.matchNonConsume(CbTokenType::UNARY_OP_NOT)) // the only unary prefix to the identifier
     {
         left = parseUnaryOp();
     }

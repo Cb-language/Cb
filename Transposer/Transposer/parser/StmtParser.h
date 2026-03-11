@@ -40,7 +40,6 @@ public:
     SemiColonEatType expectSemiColon(bool isInFunc = false) const;
     void eatFuncNewLine() const;
     void eatRest() const;
-    std::unique_ptr<Stmt> handleIdentifier() const;
 
     std::unique_ptr<Stmt> parseStmt(const bool isGlobal = false, const bool isBreakable = false, const bool isContinueAble = false);
 

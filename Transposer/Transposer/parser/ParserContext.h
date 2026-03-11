@@ -60,6 +60,7 @@ public:
     ClassDeclStmt* getClassDecl() const;
     void pushClassDecl(ClassDeclStmt& decl);
     void popClassDecl();
+    void setFuncDecl(IFuncDeclStmt* funcDecl);
 
     bool isEmpty() const;
 

@@ -150,6 +150,11 @@ void ParserContext::popClassDecl()
     classDecl.pop();
 }
 
+void ParserContext::setFuncDecl(IFuncDeclStmt* funcDecl)
+{
+    this->funcDecl = funcDecl;
+}
+
 bool ParserContext::isEmpty() const
 {
     return tokens.empty();
