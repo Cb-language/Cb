@@ -52,7 +52,7 @@ public:
     std::unique_ptr<ForStmt> parseForStmt();
 
     std::unique_ptr<ClassDeclStmt> parseClassDeclStmt();
-    std::unique_ptr<ConstractorDeclStmt> parseCtor(const FQN& className);
+    std::unique_ptr<ConstructorDeclStmt> parseCtor(const FQN& className);
     std::unique_ptr<ObjCreationStmt> parseObjCreationStmt() const;
 
     void parse();

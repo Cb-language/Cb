@@ -215,9 +215,14 @@ void ParserContext::popClassDecl()
     classDecl.pop();
 }
 
-void ParserContext::setFuncDecl(IFuncDeclStmt* funcDecl)
+void ParserContext::setFuncDecl(IFuncDeclStmt& funcDecl)
 {
-    this->funcDecl = funcDecl;
+    this->funcDecl = &funcDecl;
+}
+
+void ParserContext::addToClassDecl(ClassDeclStmt& decl)
+{
+    this->classDecl.push(decl);
 }
 
 void ParserContext::setIsInFunc(const bool isInFunc)

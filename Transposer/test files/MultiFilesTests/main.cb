@@ -1,11 +1,13 @@
-song prelude𝄕𝄇 𝅘𝅥=degree
-𝄞 play 𝄕"hi mom"𝄇 𝄀
-𝄞 degree x = 2 𝄀
-𝄞 𝄽 𝄀
-𝄞 G 𝄕 x == 2 𝄇 𝄋
-𝄞    x += 1 𝄀
-𝄞 𝄌 𝄀
-𝄞 play bar𝄕"hi mom"𝄇 𝄀
-𝄞 𝄽 𝄀
-𝄞 B𝄍x 𝄀
-𝄞 𝄽 𝄂
+instrument Test ? set class decl in code after
+𝄋
+    player score
+    𝄋 degree do 𝄀 bar som 𝄀 song f𝄕𝄇 𝅘𝅥=note B𝄍0 𝄂 𝄽 𝄀 𝄌
+    conductor score
+    𝄋 degree ba 𝄀 𝄌
+𝄌
+
+instrument Test2 : tutti Test
+𝄋
+    player score
+    𝄋 degree ca 𝄀 𝄌
+𝄌

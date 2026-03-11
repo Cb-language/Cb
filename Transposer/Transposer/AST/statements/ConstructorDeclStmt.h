@@ -5,7 +5,7 @@
 #include "ConstractorCallStmt.h"
 #include "symbols/Constractor.h"
 
-class ConstractorDeclStmt : public IFuncDeclStmt
+class ConstructorDeclStmt : public IFuncDeclStmt
 {
 private:
     std::unique_ptr<BodyStmt> body;
@@ -13,7 +13,7 @@ private:
     std::unique_ptr<ConstractorCallStmt> parentCtorCall;
 
 public:
-    ConstractorDeclStmt(const Token& token, const FQN& className, const std::vector<Var>& args, ClassDeclStmt* classDecl = nullptr);
+    ConstructorDeclStmt(const Token& token, const FQN& className, const std::vector<Var>& args, ClassDeclStmt* classDecl = nullptr);
 
     void setParentCtorCall(std::vector<std::unique_ptr<Expr>> args);
 

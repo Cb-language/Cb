@@ -21,7 +21,7 @@
 #include "AST/statements/SwitchStmt.h"
 #include "AST/statements/ForStmt.h"
 #include "AST/statements/ClassDeclStmt.h"
-#include "AST/statements/ConstractorDeclStmt.h"
+#include "AST/statements/ConstructorDeclStmt.h"
 #include "AST/statements/ConstractorCallStmt.h"
 #include "AST/statements/ObjCreationStmt.h"
 
@@ -376,11 +376,11 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
 
     const auto temp = c.getFuncDecl();
 
-    c.setFuncDecl(funcStmt.get());
+    c.setFuncDecl(*funcStmt);
 
     funcStmt->setBody(parseBodyStmt(false, false, false, false));
 
-    c.setFuncDecl(temp);
+    c.setFuncDecl(*temp);
     return funcStmt;
 }
 
@@ -656,7 +656,7 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
     {
         bool isStatic = false;
         auto virtualType = VirtualType::NONE;
-        AccessType access = PUBLIC;
+        AccessType access = PRIVATE;
 
         if (c.matchConsume(CbTokenType::KEYWORD_PLAYERSCORE)) access = PUBLIC;
         else if (c.matchConsume(CbTokenType::KEYWORD_CONDUCTORSCORE)) access = PRIVATE;
@@ -707,7 +707,7 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
         }
     }
 
-    return std::make_unique<ClassDeclStmt>(
+    const auto classDecl = std::make_unique<ClassDeclStmt>(
         c.copyCurrent(),
         c.getFuncDecl(),
         className,
@@ -718,9 +718,11 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
         parentName,
         c.getClassDecl()
     );
+    c.addToClassDecl(*classDecl);
+    return classDecl;
 }
 
-std::unique_ptr<ConstractorDeclStmt> StmtParser::parseCtor(const FQN& className)
+std::unique_ptr<ConstructorDeclStmt> StmtParser::parseCtor(const FQN& className)
 {
     if (const FQN ctorName = c.parseFQN(); ctorName != className)
     {
@@ -737,7 +739,7 @@ std::unique_ptr<ConstractorDeclStmt> StmtParser::parseCtor(const FQN& className)
         if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA);
     }
 
-    auto stmt = std::make_unique<ConstractorDeclStmt>(
+    auto stmt = std::make_unique<ConstructorDeclStmt>(
         c.copyCurrent(),
         className,
         args,

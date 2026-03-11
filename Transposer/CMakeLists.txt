@@ -191,8 +191,8 @@ add_executable(Transposer
         Transposer/AST/statements/ClassDeclStmt.h
         Transposer/errorHandling/classErrors/MissingClassPipe.cpp
         Transposer/errorHandling/classErrors/MissingClassPipe.h
-        Transposer/AST/statements/ConstractorDeclStmt.cpp
-        Transposer/AST/statements/ConstractorDeclStmt.h
+        Transposer/AST/statements/ConstructorDeclStmt.cpp
+        Transposer/AST/statements/ConstructorDeclStmt.h
         Transposer/symbols/Class.cpp
         Transposer/symbols/Class.h
         Transposer/symbols/Constractor.cpp

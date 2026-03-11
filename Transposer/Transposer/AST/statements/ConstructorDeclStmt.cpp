@@ -1,4 +1,4 @@
-#include "ConstractorDeclStmt.h"
+#include "ConstructorDeclStmt.h"
 
 #include <ranges>
 #include <algorithm>
@@ -10,31 +10,31 @@
 #include "symbols/Type/ClassType.h"
 #include "other/Utils.h"
 
-ConstractorDeclStmt::ConstractorDeclStmt(const Token& token, const FQN& className, const std::vector<Var>& args,
+ConstructorDeclStmt::ConstructorDeclStmt(const Token& token, const FQN& className, const std::vector<Var>& args,
     ClassDeclStmt* classDecl) : IFuncDeclStmt(token, classDecl),
     constractor(Constractor(args,  className)), parentCtorCall(nullptr)
 {
 }
 
-void ConstractorDeclStmt::setParentCtorCall(std::vector<std::unique_ptr<Expr>> args)
+void ConstructorDeclStmt::setParentCtorCall(std::vector<std::unique_ptr<Expr>> args)
 {
     if (parentCtorCall != nullptr) return;
     parentCtorCall = std::make_unique<ConstractorCallStmt>(token, funcDecl, std::move(args));
 }
 
-void ConstractorDeclStmt::setBody(std::unique_ptr<BodyStmt> body)
+void ConstructorDeclStmt::setBody(std::unique_ptr<BodyStmt> body)
 {
     this->body = std::move(body);
 }
 
-void ConstractorDeclStmt::analyze() const
+void ConstructorDeclStmt::analyze() const
 {
     if (this->body == nullptr) throw HowDidYouGetHere(token);
     if (parentCtorCall != nullptr) parentCtorCall->analyze();
     body->analyze();
 }
 
-std::string ConstractorDeclStmt::translateToCpp() const
+std::string ConstructorDeclStmt::translateToCpp() const
 {
     std::ostringstream oss;
     oss << translateFQNtoString(constractor.getClassName()) << "::" << constractor.translateToCpp();
@@ -64,22 +64,22 @@ std::string ConstractorDeclStmt::translateToCpp() const
     return oss.str();
 }
 
-std::string ConstractorDeclStmt::translateToH() const
+std::string ConstructorDeclStmt::translateToH() const
 {
     return constractor.translateToCpp() + ";";
 }
 
-const FQN& ConstractorDeclStmt::getName() const
+const FQN& ConstructorDeclStmt::getName() const
 {
     return constractor.getClassName();
 }
 
-std::unique_ptr<IType> ConstractorDeclStmt::getReturnType() const
+std::unique_ptr<IType> ConstructorDeclStmt::getReturnType() const
 {
     return std::make_unique<ClassType>(constractor.getClassName());
 }
 
-const Constractor& ConstractorDeclStmt::getConstractor() const
+const Constractor& ConstructorDeclStmt::getConstractor() const
 {
     return constractor;
 }

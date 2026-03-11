@@ -6,7 +6,6 @@
 #include "AST/abstract/Statement.h"
 #include "AST/abstract/VirtualType.h"
 
-// DO NOT DELETE - CIRCULAR INCLUDES
 class FuncCreditStmt;
 class BodyStmt;
 

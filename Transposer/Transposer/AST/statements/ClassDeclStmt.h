@@ -1,5 +1,5 @@
 #pragma once
-#include "ConstractorDeclStmt.h"
+#include "ConstructorDeclStmt.h"
 #include "FuncDeclStmt.h"
 #include "VarDeclStmt.h"
 #include "AST/abstract/Statement.h"
@@ -7,7 +7,7 @@
 
 typedef std::pair<AccessType, std::unique_ptr<VarDeclStmt>> Field;
 typedef std::pair<AccessType, std::unique_ptr<FuncDeclStmt>> Method;
-typedef std::pair<AccessType, std::unique_ptr<ConstractorDeclStmt>> Ctor;
+typedef std::pair<AccessType, std::unique_ptr<ConstructorDeclStmt>> Ctor;
 
 class ClassDeclStmt : public Stmt
 {
@@ -31,4 +31,6 @@ public:
     std::string translateToCpp() const override;
     std::string translateToH() const override;
     bool getHasEmptyCtor() const;
+
+    void setClassDetails(std::vector<Field> fields, std::vector<Method> methods, std::vector<Ctor> ctors);
 };

@@ -98,7 +98,7 @@ ClassDeclStmt::ClassDeclStmt(const Token& token, IFuncDeclStmt* funcDecl, const 
     {
         std::vector<Var> emptyArgs;
         std::vector<std::unique_ptr<Stmt>> emptyBodyStmts;
-        auto ctor = std::make_unique<ConstractorDeclStmt>(
+        auto ctor = std::make_unique<ConstructorDeclStmt>(
                 token,
                 name,
                 std::move(emptyArgs)
@@ -311,4 +311,11 @@ std::string ClassDeclStmt::translateToH() const
 bool ClassDeclStmt::getHasEmptyCtor() const
 {
     return hasEmptyCtor;
+}
+
+void ClassDeclStmt::setClassDetails(std::vector<Field> fields, std::vector<Method> methods, std::vector<Ctor> ctors)
+{
+    this->fields = std::move(fields);
+    this->methods = std::move(methods);
+    this->ctors = std::move(ctors);
 }

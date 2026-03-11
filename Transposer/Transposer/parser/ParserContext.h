@@ -67,7 +67,8 @@ public:
     ClassDeclStmt* getClassDecl() const;
     void pushClassDecl(ClassDeclStmt& decl);
     void popClassDecl();
-    void setFuncDecl(IFuncDeclStmt* funcDecl);
+    void setFuncDecl(IFuncDeclStmt& funcDecl);
+    void addToClassDecl(ClassDeclStmt& decl);
     void setIsInFunc(const bool isInFunc);
     bool getIsInFunc() const;
 
