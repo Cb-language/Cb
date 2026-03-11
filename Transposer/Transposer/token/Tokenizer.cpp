@@ -62,8 +62,7 @@ size_t Tokenizer::handleKeywordMatch(const std::string& code, size_t& row, size_
         case CbTokenType::COMMENT_SINGLE:
         {
             // If it's a one-line comment, look for the end of the line.
-
-            if (const size_t end = code.find('\n', keywordEnd); end != std::string::npos) return end;
+            if (const size_t end = code.find('\n', keywordEnd); end != std::string::npos) return end + 1;
 
             return keywordEnd;
         }
@@ -174,11 +173,6 @@ std::queue<Token> Tokenizer::tokenize(const std::string& code, const std::filesy
             {
                 lastMatch = &keyword->get();
                 lastMatchEnd = i + 1;
-            }
-
-            while (code[i] == ' ')
-            {
-                i++;
             }
         }
 

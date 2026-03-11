@@ -12,6 +12,13 @@
 #include "AST/statements/IncludeStmt.h"
 #include "FQN.h"
 
+enum class SemiColonEatType
+{
+    IN_SCOPE,
+    OUT_SCOPE
+};
+
+
 class ParserContext
 {
 private:
@@ -26,6 +33,12 @@ private:
 
     bool hasMain;
     Token firstToken;
+
+
+    bool isNewLine;
+    bool isInFunc;
+    void eatRest();
+    void eatFuncNewLine();
 public:
     explicit ParserContext(const std::queue<Token>& tokens);
 
@@ -33,8 +46,10 @@ public:
     void addError(std::unique_ptr<Error> err);
 
     const Token& current() const;
-    Token advance();
     Token copyCurrent();
+
+    Token advance();
+    SemiColonEatType expectSemiColon(const bool isInFunc);
 
     bool matchConsume(const CbTokenType type, const std::optional<std::reference_wrapper<Token>> out = std::nullopt);
     bool matchNonConsume(CbTokenType type) const;
@@ -44,7 +59,6 @@ public:
     FQN parseFQN();
 
     bool isUnaryOp() const;
-    bool isAssignmentOp() const;
     bool isBinaryOp() const;
     bool isType() const;
 
@@ -61,6 +75,8 @@ public:
     void pushClassDecl(ClassDeclStmt& decl);
     void popClassDecl();
     void setFuncDecl(IFuncDeclStmt* funcDecl);
+    void setIsInFunc(const bool isInFunc);
+
 
     bool isEmpty() const;
 

@@ -20,13 +20,6 @@ class TypeParser;
 class ExprParser;
 
 
-enum class SemiColonEatType
-{
-    IN_SCOPE,
-    OUT_SCOPE
-};
-
-
 class StmtParser
 {
 private:
@@ -36,10 +29,6 @@ private:
 
 public:
     StmtParser(ParserContext& c, TypeParser& typeParser, ExprParser& exprParser);
-
-    SemiColonEatType expectSemiColon(bool isInFunc = false) const;
-    void eatFuncNewLine() const;
-    void eatRest() const;
 
     std::unique_ptr<Stmt> parseStmt(const bool isGlobal = false, const bool isBreakable = false, const bool isContinueAble = false);
 

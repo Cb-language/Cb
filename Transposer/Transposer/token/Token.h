@@ -48,7 +48,7 @@ enum class CbTokenType : byte
 	KEYWORD_REST,           // pure virtual
 	KEYWORD_VARIATION,      // override
 	KEYWORD_CTOR_CALL,      // ctor call
-	KEYWORD_C_CLEF,          // 𝄡 (dosent compile)
+	KEYWORD_C_CLEF,        // 𝄡 (dosent compile)
 
 	// punctuation
 	PUNCTUATION_RET_TYPE_ARROW,      // 𝅘𝅥=
@@ -77,10 +77,16 @@ enum class CbTokenType : byte
 	UNARY_OP_NATRUAL,      // ♮      =0
 
 	// binary operation
-	BINARY_OP_EQUIAL,        // ==
+	BINARY_OP_EQUAL,         // =
+	BINARY_OP_EQUALITY,      // ==
 	BINARY_OP_NOT_EQUAL,     // !=
 	BINARY_OP_LESSER_EQUAL,  // <=
 	BINARY_OP_GREATER_EQUAL, // >=
+	BINARY_OP_PLUS_EQUAL,     // +=
+	BINARY_OP_MINUS_EQUAL,    // -=
+	BINARY_OP_DIVIDE_EQUAL,   // /=
+	BINARY_OP_MULTIPLY_EQUAL, // *=
+	BINARY_OP_MODULUS_EQUAL,  // %=
 	BINARY_OP_LESS_THAN,     // <
 	BINARY_OP_MORE_THAN,     // >
 	BINARY_OP_PLUS,          // +
@@ -90,14 +96,6 @@ enum class CbTokenType : byte
 	BINARY_OP_MODULO,        // %
 	BINARY_OP_OR,            // divis
 	BINARY_OP_AND,           // chord
-
-	// assignment operations
-	ASSIGNMENT_OP_EQUAL,          // =
-	ASSIGNMENT_OP_PLUS_EQUAL,     // +=
-	ASSIGNMENT_OP_MINUS_EQUAL,    // -=
-	ASSIGNMENT_OP_DIVIDE_EQUAL,   // /=
-	ASSIGNMENT_OP_MULTIPLY_EQUAL, // *=
-	ASSIGNMENT_OP_MODULUS_EQUAL,  // %=
 
 	// comments
 	COMMENT_SINGLE,       // ?

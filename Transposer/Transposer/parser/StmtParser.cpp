@@ -71,68 +71,16 @@ void StmtParser::parse()
     }
 }
 
-SemiColonEatType StmtParser::expectSemiColon(const bool isInFunc) const 
-{
-    if (!isInFunc)
-    {
-        if (!c.matchConsume(CbTokenType::PUNCTUATION_SEMICOLON))
-        {
-            c.addError(std::make_unique<MissingSemicolon>(c.copyCurrent()));
-            return SemiColonEatType::IN_SCOPE;
-        }
-        return SemiColonEatType::IN_SCOPE;
-    }
-
-    if (c.matchConsume(CbTokenType::PUNCTUATION_CLOSE_FUNC))
-    {
-        return SemiColonEatType::OUT_SCOPE;
-    }
-    if (c.matchConsume(CbTokenType::PUNCTUATION_SEMICOLON))
-    {
-        return SemiColonEatType::IN_SCOPE;
-    }
-
-    c.addError(std::make_unique<MissingSemicolon>(c.copyCurrent()));
-    return SemiColonEatType::IN_SCOPE;
-}
-
-void StmtParser::eatFuncNewLine() const
-{
-    if (!c.matchConsume(CbTokenType::PUNCTUATION_NEW_LINE))
-    {
-        return;
-    }
-    c.expect(CbTokenType::PUNCTUATION_OPEN_LINE, std::make_unique<NoLineOpener>(c.copyCurrent()));
-
-    if (c.matchConsume(CbTokenType::PUNCTUATION_SEMICOLON) || c.matchConsume(CbTokenType::PUNCTUATION_CLOSE_FUNC))
-    {
-        c.addError(std::make_unique<NoRest>(c.copyCurrent()));
-    }
-    eatRest();
-}
-
-void StmtParser::eatRest() const
-{
-    if (!c.matchConsume(CbTokenType::PUNCTUATION_REST))
-    {
-        return;
-    }
-    if (expectSemiColon(true) == SemiColonEatType::OUT_SCOPE) return;
-    eatFuncNewLine();
-}
-
 std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBreakable, const bool isContinueAble)
 {
     if (c.matchConsume(CbTokenType::KEYWORD_C_CLEF))
     {
         throw HowDareYou(c.copyCurrent());
     }
-
     if (c.matchNonConsume(CbTokenType::TYPE_RIFF))
     {
         return parseArrayDeclStmt();
     }
-
     if (c.isType())
     {
         return parseVarDecStmt();
@@ -140,12 +88,12 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
 
     if (c.matchNonConsume(CbTokenType::IDENTIFIER))
     {
-        return exprParser.parseExpr(false);
+        return exprParser.parseExpr();
     }
 
     if (c.matchConsume(CbTokenType::KEYWORD_HEAR))
     {
-    return parseHearStmt();
+        return parseHearStmt();
     }
     if (c.matchNonConsume(CbTokenType::KEYWORD_PLAY) || c.matchNonConsume(CbTokenType::KEYWORD_PLAYBAR))
     {
@@ -183,7 +131,6 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
     {
         return parseObjCreationStmt();
     }
-    
     if (c.matchConsume(CbTokenType::KEYWORD_PAUSE))
     {
         if (!isBreakable)
@@ -223,7 +170,7 @@ std::unique_ptr<VarDeclStmt> StmtParser::parseVarDecStmt() const
     const FQN name = c.parseFQN();
 
     std::unique_ptr<Expr> init = nullptr;
-    if (c.matchConsume(CbTokenType::ASSIGNMENT_OP_EQUAL))
+    if (c.matchConsume(CbTokenType::BINARY_OP_EQUAL))
     {
         init = exprParser.parseExpr();
 
@@ -248,7 +195,7 @@ std::unique_ptr<VarDeclStmt> StmtParser::parseVarDecStmt() const
 
 std::unique_ptr<AssignmentStmt> StmtParser::parseAssignmentStmt(std::unique_ptr<Call> left) const
 {
-    if (!c.isAssignmentOp())
+    if (!c.isBinaryOp())
     {
         c.addError(std::make_unique<NoPlacementOperator>(c.copyCurrent()));
         return nullptr;
@@ -315,7 +262,7 @@ std::unique_ptr<PlayStmt> StmtParser::parsePlayStmt() const
 
     while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
     {
-        auto expr = exprParser.parseExpr(false);
+        auto expr = exprParser.parseExpr();
         if (!expr) {
             c.addError(std::make_unique<ExpectedAnExpression>(t));
             return nullptr;
@@ -347,19 +294,15 @@ std::unique_ptr<BodyStmt> StmtParser::parseBodyStmt(const bool isGlobal, const b
     }
 
     std::vector<std::unique_ptr<Stmt>> bodyStmts;
-    while ((hasBrace && !c.matchConsume(CbTokenType::PUNCTUATION_CLOSE_CURLY_BRACKET)) || !hasBrace) // if  it doesn't have brace will automatically exit at the first endScope symbol
+    while (!hasBrace || !c.matchConsume(CbTokenType::PUNCTUATION_CLOSE_CURLY_BRACKET)) // if  it doesn't have brace will automatically exit at the first endScope symbol
     {
-        eatFuncNewLine();
-
         if (auto stmt = parseStmt(isGlobal, isBreakable, isContinueAble)) bodyStmts.push_back(std::move(stmt));
 
-        if (expectSemiColon(true) == SemiColonEatType::OUT_SCOPE)
+        if (c.expectSemiColon(true) == SemiColonEatType::OUT_SCOPE)
         {
             break;
         }
     }
-
-    if (hasBrace) c.expect(CbTokenType::PUNCTUATION_CLOSE_CURLY_BRACKET, std::make_unique<MissingBrace>(c.copyCurrent()));
 
     return std::make_unique<BodyStmt>(
         t,
@@ -372,6 +315,7 @@ std::unique_ptr<BodyStmt> StmtParser::parseBodyStmt(const bool isGlobal, const b
 
 std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
 {
+
     std::vector<std::unique_ptr<FuncCreditStmt>> credited;
 
     if (c.matchConsume(CbTokenType::PUNCTUATION_COPYRIGHT))
@@ -408,12 +352,14 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
     std::unique_ptr<IType> retType = nullptr;
     if (c.matchConsume(CbTokenType::PUNCTUATION_RET_TYPE_ARROW))
     {
+        c.setIsInFunc(true);
         retType = typeParser.parseIType();
     }
     else
     {
         retType = std::make_unique<PrimitiveType>(Primitive::TYPE_FERMATA);
     }
+    c.setIsInFunc(true);
 
     auto funcStmt = std::make_unique<FuncDeclStmt>(
         c.copyCurrent(),
@@ -434,6 +380,7 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
     funcStmt->setBody(parseBodyStmt(false, false, false, false));
 
     c.setFuncDecl(temp);
+    c.setIsInFunc(false);
     return funcStmt;
 }
 
@@ -723,7 +670,7 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
         if (c.matchConsume(CbTokenType::KEYWORD_CTOR_CALL))
         {
             if (auto ctor = parseCtor(className)) ctors.emplace_back(access, std::move(ctor));
-            if (expectSemiColon(true) == SemiColonEatType::OUT_SCOPE)
+            if (c.expectSemiColon(true) == SemiColonEatType::OUT_SCOPE)
             {
                 break;
             }
@@ -736,7 +683,7 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
                 method->setVirtual(virtualType);
                 methods.emplace_back(access, std::move(method));
             }
-            if (expectSemiColon(true) == SemiColonEatType::OUT_SCOPE)
+            if (c.expectSemiColon(true) == SemiColonEatType::OUT_SCOPE)
             {
                 break;
             }
@@ -748,7 +695,7 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
                 field->setIsStatic(isStatic);
                 fields.emplace_back(access, std::move(field));
             }
-            if (expectSemiColon(true) == SemiColonEatType::OUT_SCOPE)
+            if (c.expectSemiColon(true) == SemiColonEatType::OUT_SCOPE)
             {
                 break;
             }

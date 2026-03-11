@@ -71,10 +71,16 @@ const std::vector<KeywordInfo> KEYWORDS =
 	{CbTokenType::UNARY_OP_NATRUAL, "♮", WordBoundary::AFTER},
 
 	// binary operation
-	{CbTokenType::BINARY_OP_EQUIAL, "=", WordBoundary::NONE},
+	{CbTokenType::BINARY_OP_EQUAL, "=", WordBoundary::NONE},
+	{CbTokenType::BINARY_OP_EQUALITY, "==", WordBoundary::NONE},
 	{CbTokenType::BINARY_OP_NOT_EQUAL, "!=", WordBoundary::NONE},
 	{CbTokenType::BINARY_OP_LESSER_EQUAL, "<=", WordBoundary::NONE},
 	{CbTokenType::BINARY_OP_GREATER_EQUAL, ">=", WordBoundary::NONE},
+	{CbTokenType::BINARY_OP_PLUS_EQUAL, "+=", WordBoundary::BOTH},
+	{CbTokenType::BINARY_OP_MINUS_EQUAL, "-=", WordBoundary::BOTH},
+	{CbTokenType::BINARY_OP_DIVIDE_EQUAL, "/=", WordBoundary::BOTH},
+	{CbTokenType::BINARY_OP_MULTIPLY_EQUAL, "*=", WordBoundary::BOTH},
+	{CbTokenType::BINARY_OP_MODULUS_EQUAL, "%=", WordBoundary::BOTH},
 	{CbTokenType::BINARY_OP_LESS_THAN, "<", WordBoundary::NONE},
 	{CbTokenType::BINARY_OP_MORE_THAN, ">", WordBoundary::NONE},
 	{CbTokenType::BINARY_OP_PLUS, "+", WordBoundary::NONE},
@@ -84,14 +90,6 @@ const std::vector<KeywordInfo> KEYWORDS =
 	{CbTokenType::BINARY_OP_MODULO, "%", WordBoundary::NONE},
 	{CbTokenType::BINARY_OP_OR, "div.", WordBoundary::BOTH},
 	{CbTokenType::BINARY_OP_AND, "non div.", WordBoundary::BOTH},
-
-	// assignment operations
-	{CbTokenType::ASSIGNMENT_OP_EQUAL, "=", WordBoundary::BOTH},
-	{CbTokenType::ASSIGNMENT_OP_PLUS_EQUAL, "+=", WordBoundary::BOTH},
-	{CbTokenType::ASSIGNMENT_OP_MINUS_EQUAL, "-=", WordBoundary::BOTH},
-	{CbTokenType::ASSIGNMENT_OP_DIVIDE_EQUAL, "/=", WordBoundary::BOTH},
-	{CbTokenType::ASSIGNMENT_OP_MULTIPLY_EQUAL, "*=", WordBoundary::BOTH},
-	{CbTokenType::ASSIGNMENT_OP_MODULUS_EQUAL, "%=", WordBoundary::BOTH},
 
 	// comments
 	{CbTokenType::COMMENT_SINGLE, "?", WordBoundary::NONE},

@@ -2,10 +2,15 @@
 
 #include <functional>
 
+#include "StmtParser.h"
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
+#include "errorHandling/syntaxErrors/MissingSemicolon.h"
+#include "errorHandling/syntaxErrors/NoLineOpener.h"
+#include "errorHandling/syntaxErrors/NoRest.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 
-ParserContext::ParserContext(const std::queue<Token>& tokens) : tokens(tokens), len(tokens.size()), funcDecl(nullptr), hasMain(false)
+ParserContext::ParserContext(const std::queue<Token>& tokens)
+    : tokens(tokens), len(tokens.size()), funcDecl(nullptr), hasMain(false), isNewLine(false)
 {
     if (!tokens.empty())
     {
@@ -28,18 +33,88 @@ const Token& ParserContext::current() const
     return tokens.front();
 }
 
-Token ParserContext::advance()
-{
-    auto t = tokens.front();
-    tokens.pop();
-    return std::move(t);
-}
-
 Token ParserContext::copyCurrent()
 {
     if (tokens.empty()) throw UnexpectedEOF(current());
     return tokens.front();
 }
+
+Token ParserContext::advance()
+{
+
+    auto t = tokens.front();
+    tokens.pop();
+
+    if (!isNewLine)
+    {
+        isNewLine = true;
+        while (!tokens.empty() && current().type == CbTokenType::PUNCTUATION_NEW_LINE)
+        {
+            if (isInFunc)
+            {
+                eatFuncNewLine();
+            }
+            else
+            {
+                advance();
+            }
+        }
+
+        isNewLine = false;
+    }
+
+    return std::move(t);
+}
+
+SemiColonEatType ParserContext::expectSemiColon(const bool isInFunc)
+{
+    if (!isInFunc)
+    {
+        if (!matchConsume(CbTokenType::PUNCTUATION_SEMICOLON))
+        {
+            addError(std::make_unique<MissingSemicolon>(copyCurrent()));
+            return SemiColonEatType::IN_SCOPE;
+        }
+        return SemiColonEatType::IN_SCOPE;
+    }
+
+    if (matchConsume(CbTokenType::PUNCTUATION_CLOSE_FUNC))
+    {
+        return SemiColonEatType::OUT_SCOPE;
+    }
+    if (matchConsume(CbTokenType::PUNCTUATION_SEMICOLON))
+    {
+        return SemiColonEatType::IN_SCOPE;
+    }
+
+    addError(std::make_unique<MissingSemicolon>(copyCurrent()));
+    return SemiColonEatType::IN_SCOPE;
+}
+
+void ParserContext::eatFuncNewLine()
+{
+    if (!matchConsume(CbTokenType::PUNCTUATION_NEW_LINE))
+    {
+        return;
+    }
+    expect(CbTokenType::PUNCTUATION_OPEN_LINE, std::make_unique<NoLineOpener>(copyCurrent()));
+
+    if (matchConsume(CbTokenType::PUNCTUATION_SEMICOLON) || matchConsume(CbTokenType::PUNCTUATION_CLOSE_FUNC))
+    {
+        addError(std::make_unique<NoRest>(copyCurrent()));
+    }
+    eatRest();
+}
+
+void ParserContext::eatRest()
+{
+    if (!matchConsume(CbTokenType::PUNCTUATION_REST))
+    {
+        return;
+    }
+    if (expectSemiColon(true) == SemiColonEatType::OUT_SCOPE) return;
+}
+
 
 bool ParserContext::matchConsume(const CbTokenType type, const std::optional<std::reference_wrapper<Token>> out)
 {
@@ -99,14 +174,9 @@ bool ParserContext::isUnaryOp() const
     return (current().type >= CbTokenType::UNARY_OP_SHARP && current().type <= CbTokenType::UNARY_OP_NATRUAL);
 }
 
-bool ParserContext::isAssignmentOp() const
-{
-    return (current().type >= CbTokenType::ASSIGNMENT_OP_EQUAL && current().type <= CbTokenType::ASSIGNMENT_OP_MODULUS_EQUAL);
-}
-
 bool ParserContext::isBinaryOp() const
 {
-    return (current().type >= CbTokenType::BINARY_OP_EQUIAL && current().type <= CbTokenType::BINARY_OP_AND);
+    return (current().type >= CbTokenType::BINARY_OP_EQUAL && current().type <= CbTokenType::BINARY_OP_AND);
 }
 
 bool ParserContext::isType() const
@@ -153,6 +223,11 @@ void ParserContext::popClassDecl()
 void ParserContext::setFuncDecl(IFuncDeclStmt* funcDecl)
 {
     this->funcDecl = funcDecl;
+}
+
+void ParserContext::setIsInFunc(const bool isInFunc)
+{
+    this->isInFunc = isInFunc;
 }
 
 bool ParserContext::isEmpty() const

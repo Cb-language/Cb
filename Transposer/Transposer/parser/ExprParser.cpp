@@ -25,12 +25,18 @@ static std::string tokenToOp(const CbTokenType type)
         case CbTokenType::BINARY_OP_MULTIPLY:       return "*";
         case CbTokenType::BINARY_OP_DIVIDE:         return "/";
         case CbTokenType::BINARY_OP_MODULO:         return "%";
-        case CbTokenType::BINARY_OP_EQUIAL:         return "==";
+        case CbTokenType::BINARY_OP_EQUAL:          return "=";
+        case CbTokenType::BINARY_OP_EQUALITY:       return "==";
         case CbTokenType::BINARY_OP_NOT_EQUAL:      return "!=";
         case CbTokenType::BINARY_OP_LESS_THAN:      return "<";
         case CbTokenType::BINARY_OP_MORE_THAN:      return ">";
         case CbTokenType::BINARY_OP_LESSER_EQUAL:   return "<=";
         case CbTokenType::BINARY_OP_GREATER_EQUAL:  return ">=";
+        case CbTokenType::BINARY_OP_PLUS_EQUAL:     return "+=";
+        case CbTokenType::BINARY_OP_MINUS_EQUAL:    return "-=";
+        case CbTokenType::BINARY_OP_DIVIDE_EQUAL:   return "/=";
+        case CbTokenType::BINARY_OP_MULTIPLY_EQUAL: return "*=";
+        case CbTokenType::BINARY_OP_MODULUS_EQUAL:  return "%=";
         case CbTokenType::BINARY_OP_AND:            return "chord";
         case CbTokenType::BINARY_OP_OR:             return "divis";
         case CbTokenType::UNARY_OP_NOT:             return "!";
@@ -39,12 +45,6 @@ static std::string tokenToOp(const CbTokenType type)
         case CbTokenType::UNARY_OP_FLAT:            return "♭";
         case CbTokenType::UNARY_OP_DOUBLE_FLAT:     return "𝄫";
         case CbTokenType::UNARY_OP_NATRUAL:         return "♮";
-        case CbTokenType::ASSIGNMENT_OP_EQUAL:      return "=";
-        case CbTokenType::ASSIGNMENT_OP_PLUS_EQUAL: return "+=";
-        case CbTokenType::ASSIGNMENT_OP_MINUS_EQUAL:return "-=";
-        case CbTokenType::ASSIGNMENT_OP_DIVIDE_EQUAL:return "/=";
-        case CbTokenType::ASSIGNMENT_OP_MULTIPLY_EQUAL:return "*=";
-        case CbTokenType::ASSIGNMENT_OP_MODULUS_EQUAL:return "%=";
         default:                                    return "";
     }
 }
@@ -60,7 +60,7 @@ static UnaryOp strToUnaryOp(const std::string& str)
     return UnaryOp::Zero;
 }
 
-std::unique_ptr<Expr> ExprParser::parseExpr(const bool needsSemicolon)
+std::unique_ptr<Expr> ExprParser::parseExpr()
 {
     std::unique_ptr<Expr> left;
 
@@ -86,9 +86,9 @@ std::unique_ptr<Expr> ExprParser::parseExpr(const bool needsSemicolon)
             left = std::make_unique<UnaryOpExpr>(t, c.getFuncDecl(), std::move(call), strToUnaryOp(opStr), false, c.getClassDecl());
         }
 
-        else if (c.isAssignmentOp())
+        else if (c.isBinaryOp())
         {
-            left = parseAssignmentOp(std::move(call));
+            left = parseBinaryOp(std::move(call));
         }
         else
         {
@@ -105,20 +105,16 @@ std::unique_ptr<Expr> ExprParser::parseExpr(const bool needsSemicolon)
         left = std::make_unique<BinaryOpExpr>(opToken, c.getFuncDecl(), op, std::move(left), std::move(right), c.getClassDecl());
     }
 
-    if (needsSemicolon)
-    {
-        c.expect(CbTokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.copyCurrent()));
-    }
-
     return left;
 }
 
 std::unique_ptr<ConstValueExpr> ExprParser::parseConstValue() const
 {
-    Token t = c.copyCurrent();
-    c.advance();
+    Token t = c.advance();
+
     Primitive type;
-    switch (t.type) {
+    switch (t.type)
+    {
         case CbTokenType::CONST_BOOL:  type = Primitive::TYPE_MUTE;   break;
         case CbTokenType::CONST_STR:   type = Primitive::TYPE_BAR;    break;
         case CbTokenType::CONST_CHAR:  type = Primitive::TYPE_NOTE;   break;
@@ -165,11 +161,10 @@ std::unique_ptr<Expr> ExprParser::parseUnaryOp()
     return nullptr;
 }
 
-std::unique_ptr<Expr> ExprParser::parseAssignmentOp(std::unique_ptr<Call> left)
+std::unique_ptr<Expr> ExprParser::parseBinaryOp(std::unique_ptr<Call> left)
 {
-    Token opToken = c.copyCurrent();
+    Token opToken = c.advance();
     std::string op = tokenToOp(opToken.type);
-    c.advance();
     auto right = parseExpr();
     return std::make_unique<AssignmentStmt>(opToken, c.getFuncDecl(), std::move(left), op, std::move(right), c.getClassDecl());
 }

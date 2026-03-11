@@ -5,7 +5,7 @@ FuncCreditStmt::FuncCreditStmt(const Token& token, IFuncDeclStmt* funcDecl, cons
 {
 }
 
-const std::string& FuncCreditStmt::getName() const
+std::string FuncCreditStmt::getName() const
 {
     return translateFQNtoString(funcCredit.getName());
 }
