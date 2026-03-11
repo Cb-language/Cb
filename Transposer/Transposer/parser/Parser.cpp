@@ -17,6 +17,7 @@
 
 // ---------- semantic errors ----------
 #include "../errorHandling/semanticErrors/InvalidPathExtension.h"
+#include "errorHandling/lexicalErrors/UnexpectedEOF.h"
 
 #include "files/FileGraph.h"
 #include "symbols/Type/ClassType.h"
@@ -77,7 +78,14 @@ std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
 
 void Parser::parse()
 {
-    stmtParser.parse();
+    try
+    {
+        stmtParser.parse();
+    }
+    catch (UnexpectedEOF& e)
+    {
+        c.addError(std::make_unique<UnexpectedEOF>(e.getToken()));
+    }
 }
 
 void Parser::analyze()

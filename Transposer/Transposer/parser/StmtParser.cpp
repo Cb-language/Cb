@@ -670,7 +670,7 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
         if (c.matchConsume(CbTokenType::KEYWORD_CTOR_CALL))
         {
             if (auto ctor = parseCtor(className)) ctors.emplace_back(access, std::move(ctor));
-            if (c.expectSemiColon(true) == SemiColonEatType::OUT_SCOPE)
+            if (!c.getIsInFunc())
             {
                 break;
             }
@@ -683,7 +683,7 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
                 method->setVirtual(virtualType);
                 methods.emplace_back(access, std::move(method));
             }
-            if (c.expectSemiColon(true) == SemiColonEatType::OUT_SCOPE)
+            if (!c.getIsInFunc())
             {
                 break;
             }
@@ -695,7 +695,7 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
                 field->setIsStatic(isStatic);
                 fields.emplace_back(access, std::move(field));
             }
-            if (c.expectSemiColon(true) == SemiColonEatType::OUT_SCOPE)
+            if (!c.getIsInFunc())
             {
                 break;
             }

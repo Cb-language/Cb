@@ -12,13 +12,6 @@
 #include "AST/statements/IncludeStmt.h"
 #include "FQN.h"
 
-enum class SemiColonEatType
-{
-    IN_SCOPE,
-    OUT_SCOPE
-};
-
-
 class ParserContext
 {
 private:
@@ -49,7 +42,7 @@ public:
     Token copyCurrent();
 
     Token advance();
-    SemiColonEatType expectSemiColon(const bool isInFunc);
+    void expectSemiColon();
 
     bool matchConsume(const CbTokenType type, const std::optional<std::reference_wrapper<Token>> out = std::nullopt);
     bool matchNonConsume(CbTokenType type) const;

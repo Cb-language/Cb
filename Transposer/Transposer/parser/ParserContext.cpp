@@ -66,30 +66,21 @@ Token ParserContext::advance()
     return std::move(t);
 }
 
-SemiColonEatType ParserContext::expectSemiColon(const bool isInFunc)
+void ParserContext::expectSemiColon()
 {
     if (!isInFunc)
     {
         if (!matchConsume(CbTokenType::PUNCTUATION_SEMICOLON))
         {
             addError(std::make_unique<MissingSemicolon>(copyCurrent()));
-            return SemiColonEatType::IN_SCOPE;
         }
-        return SemiColonEatType::IN_SCOPE;
     }
 
     if (matchConsume(CbTokenType::PUNCTUATION_CLOSE_FUNC))
     {
         setIsInFunc(false);
-        return SemiColonEatType::OUT_SCOPE;
     }
-    if (matchConsume(CbTokenType::PUNCTUATION_SEMICOLON))
-    {
-        return SemiColonEatType::IN_SCOPE;
-    }
-
-    addError(std::make_unique<MissingSemicolon>(copyCurrent()));
-    return SemiColonEatType::IN_SCOPE;
+    expect(CbTokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(copyCurrent()));
 }
 
 void ParserContext::eatFuncNewLine()
@@ -113,7 +104,7 @@ void ParserContext::eatRest()
     {
         return;
     }
-    if (expectSemiColon(true) == SemiColonEatType::OUT_SCOPE) return;
+    expectSemiColon();
 }
 
 
