@@ -5,7 +5,6 @@
 
 #include "class/AccessType.h"
 
-
 #include "AST/statements/VarDeclStmt.h"
 #include "AST/statements/AssignmentStmt.h"
 #include "AST/statements/HearStmt.h"
@@ -20,13 +19,11 @@
 #include "AST/statements/BreakStmt.h"
 #include "AST/statements/CaseStmt.h"
 #include "AST/statements/SwitchStmt.h"
-#include "AST/statements/ContinueStmt.h"
 #include "AST/statements/ForStmt.h"
 #include "AST/statements/ClassDeclStmt.h"
 #include "AST/statements/ConstractorDeclStmt.h"
 #include "AST/statements/ConstractorCallStmt.h"
 #include "AST/statements/ObjCreationStmt.h"
-
 
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 #include "errorHandling/syntaxErrors/MissingSemicolon.h"
@@ -34,34 +31,44 @@
 #include "errorHandling/syntaxErrors/MissingIdentifier.h"
 #include "errorHandling/syntaxErrors/MissingParenthesis.h"
 #include "errorHandling/syntaxErrors/ExpectedKeywordNotFound.h"
-
-#include "errorHandling/semanticErrors/StmtNotBreakable.h"
-#include "errorHandling/semanticErrors/StmtNotContinueAble.h"
-
-#include "errorHandling/entryPointErrors/MainOverride.h"
-
-#include "errorHandling/classErrors/NoCtor.h"
-#include "errorHandling/classErrors/InvalidAccessKeyword.h"
-#include "errorHandling/classErrors/InvalidCtorName.h"
-#include "errorHandling/classErrors/MissingClassPipe.h"
-#include "errorHandling/classErrors/NoOverrideError.h"
-#include "errorHandling/classErrors/StaticCtor.h"
-#include "errorHandling/classErrors/VirtualCtor.h"
-#include "errorHandling/how/HowDareYou.h"
-#include "errorHandling/how/HowDidYouGetHere.h"
-#include "errorHandling/lexicalErrors/UnrecognizedToken.h"
-#include "errorHandling/semanticErrors/StaticFuncCantVirtual.h"
 #include "errorHandling/syntaxErrors/ExpectedAnExpression.h"
 #include "errorHandling/syntaxErrors/IncludeNotInTop.h"
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
 #include "errorHandling/syntaxErrors/NoLineOpener.h"
-#include "errorHandling/syntaxErrors/NoNewLine.h"
 #include "errorHandling/syntaxErrors/NoPlacementOperator.h"
 #include "errorHandling/syntaxErrors/NoRest.h"
+#include "errorHandling/semanticErrors/StmtNotBreakable.h"
+#include "errorHandling/semanticErrors/StmtNotContinueAble.h"
+#include "errorHandling/semanticErrors/StaticFuncCantVirtual.h"
+
+#include "errorHandling/classErrors/InvalidAccessKeyword.h"
+#include "errorHandling/classErrors/InvalidCtorName.h"
+#include "errorHandling/classErrors/StaticCtor.h"
+#include "errorHandling/classErrors/VirtualCtor.h"
+
+#include "errorHandling/lexicalErrors/UnrecognizedToken.h"
+
+#include "errorHandling/how/HowDareYou.h"
+#include "errorHandling/how/HowDidYouGetHere.h"
 
 StmtParser::StmtParser(ParserContext& c, TypeParser& typeParser, ExprParser& exprParser)
     : c(c), typeParser(typeParser), exprParser(exprParser)
 {
+}
+
+void StmtParser::parse()
+{
+    while (!c.isEmpty())
+    {
+        if (auto stmt = parseStmt(true))
+        {
+            c.getStmts().push_back(std::move(stmt));
+        }
+        else
+        {
+            c.advance();
+        }
+    }
 }
 
 SemiColonEatType StmtParser::expectSemiColon(const bool isInFunc) const // TODO when match and in func expect new line and call eat func new line ALWAYSS
@@ -114,19 +121,27 @@ void StmtParser::eatRest() const
     eatFuncNewLine();
 }
 
-void StmtParser::parse()
+std::unique_ptr<Stmt> StmtParser::handleIdentifier()
 {
-    while (!c.isEmpty())
+    Token identifier = c.advance();
+
+    if (c.matchNonConsume(TokenType::PUNCTUATION_PARENTHESIS_OPEN))
     {
-        if (auto stmt = parseStmt(true))
-        {
-            c.getStmts().push_back(std::move(stmt));
-        }
-        else
-        {
-            c.advance();
-        }
+        return exprParser.parseFuncCallExpr(true);
     }
+
+    if (c.isUnaryOp())
+    {
+        return exprParser.parseExpr(true, true);
+    }
+
+    if (c.isAssignmentOp())
+    {
+        return parseAssignmentStmt(TODO);
+    }
+
+    c.addError(std::make_unique<UnexpectedToken>(c.current()));
+    return nullptr;
 }
 
 std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBreakable, const bool isContinueAble)
@@ -148,25 +163,7 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
 
     if (c.matchNonConsume(TokenType::IDENTIFIER))
     {
-        if (c.matchConsume(TokenType::IDENTIFIER) && c.isUnaryOpStmtAhead())
-        {
-            auto expr = exprParser.parseUnaryOpExpr(true);
-            return std::unique_ptr<Stmt>(dynamic_cast<Stmt*>(expr.release()));
-        }
-        if (c.matchConsume(TokenType::IDENTIFIER) && c.isAssignmentStmtAhead())
-        {
-            return parseAssignmentStmt();
-        }
-
-        if (c.matchConsume(TokenType::IDENTIFIER))
-        {
-            // Might be a function call as a statement
-            if (c.peek().type == TokenType::PUNCTUATION_PARENTHESIS_OPEN)
-            {
-                auto expr = exprParser.parseFuncCallExpr(true);
-                return std::unique_ptr<Stmt>(dynamic_cast<Stmt*>(expr.release()));
-            }
-        }
+        return handleIdentifier();
     }
 
     if (c.matchConsume(TokenType::KEYWORD_HEAR))
@@ -215,7 +212,7 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
         {
             c.addError(std::make_unique<StmtNotBreakable>(c.current()));
         }
-        return parseBreakStmt();
+        return std::make_unique<BreakStmt>(c.current(), c.getFuncDecl(), c.getClassDecl());
     }
     if (c.matchConsume(TokenType::KEYWORD_RESUME))
     {
@@ -223,7 +220,7 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
         {
             c.addError(std::make_unique<StmtNotContinueAble>(c.current()));
         }
-        return parseContinueStmt();
+        return  std::make_unique<BreakStmt>(c.current(), c.getFuncDecl(), c.getClassDecl());
     }
     if (c.matchConsume(TokenType::KEYWORD_FEAT))
     {
@@ -272,12 +269,8 @@ std::unique_ptr<VarDeclStmt> StmtParser::parseVarDecStmt() const
     return stmt;
 }
 
-std::unique_ptr<AssignmentStmt> StmtParser::parseAssignmentStmt() const
+std::unique_ptr<AssignmentStmt> StmtParser::parseAssignmentStmt(std::unique_ptr<Call> left) const
 {
-    const Token& t = c.current();
-    auto left = exprParser.parseVarCallExpr(true);
-    if (!left) return nullptr;
-
     if (!c.isAssignmentOp())
     {
         c.addError(std::make_unique<NoPlacementOperator>(c.current()));
@@ -289,7 +282,7 @@ std::unique_ptr<AssignmentStmt> StmtParser::parseAssignmentStmt() const
     if (!right) return nullptr;
 
     return std::make_unique<AssignmentStmt>(
-        t,
+        c.current(),
         c.getFuncDecl(),
         std::move(left),
         opToken.value.value(),
@@ -642,18 +635,6 @@ std::unique_ptr<CaseStmt> StmtParser::parseCaseStmt()
     );
 }
 
-std::unique_ptr<BreakStmt> StmtParser::parseBreakStmt() const
-{
-    expectSemiColon(true);
-    return std::make_unique<BreakStmt>(c.current(), c.getFuncDecl(), c.getClassDecl());
-}
-
-std::unique_ptr<ContinueStmt> StmtParser::parseContinueStmt() const
-{
-    expectSemiColon(true);
-    return std::make_unique<ContinueStmt>(c.current(), c.getFuncDecl(), c.getClassDecl());
-}
-
 std::unique_ptr<ArrayDeclStmt> StmtParser::parseArrayDeclStmt() const
 {
     const Token& t = c.current();
@@ -856,7 +837,9 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
             if (virtualType != VirtualType::NONE)
             {
                 c.addError(std::make_unique<VirtualCtor>(c.current()));
+                continue;
             }
+            expectSemiColon(false);
         }
 
         else if (c.matchConsume(TokenType::KEYWORD_SONG))
@@ -867,6 +850,7 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
                 method->setVirtual(virtualType);
                 methods.emplace_back(access, std::move(method));
             }
+            expectSemiColon(false);
         }
 
         else if (c.isType())
@@ -876,6 +860,7 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
                 field->setIsStatic(isStatic);
                 fields.emplace_back(access, std::move(field));
             }
+            expectSemiColon(false);
         }
 
         else

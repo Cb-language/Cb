@@ -40,11 +40,12 @@ public:
     SemiColonEatType expectSemiColon(bool isInFunc = false) const;
     void eatFuncNewLine() const;
     void eatRest() const;
+    std::unique_ptr<Stmt> handleIdentifier();
 
     std::unique_ptr<Stmt> parseStmt(const bool isGlobal = false, const bool isBreakable = false, const bool isContinueAble = false);
 
     std::unique_ptr<VarDeclStmt> parseVarDecStmt() const;
-    std::unique_ptr<AssignmentStmt> parseAssignmentStmt() const;
+    std::unique_ptr<AssignmentStmt> parseAssignmentStmt(std::unique_ptr<Call> left) const;
 
     std::unique_ptr<HearStmt> parseHearStmt() const;
     std::unique_ptr<PlayStmt> parsePlayStmt() const;
@@ -59,8 +60,6 @@ public:
     std::unique_ptr<WhileStmt> parseWhileStmt();
     std::unique_ptr<SwitchStmt> parseSwitchStmt();
     std::unique_ptr<CaseStmt> parseCaseStmt();
-    std::unique_ptr<BreakStmt> parseBreakStmt() const;
-    std::unique_ptr<ContinueStmt> parseContinueStmt() const;
     std::unique_ptr<ArrayDeclStmt> parseArrayDeclStmt() const;
     std::unique_ptr<ForStmt> parseForStmt();
 

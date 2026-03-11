@@ -4,7 +4,7 @@
 #include "errorHandling/semanticErrors/NoReturn.h"
 #include "../../errorHandling/classErrors/VirtualNonMethod.h"
 
-FuncDeclStmt::FuncDeclStmt(const Token& token,  const std::string& funcName, std::unique_ptr<IType> returnType, const std::vector<Var>& args,
+FuncDeclStmt::FuncDeclStmt(const Token& token,  const FQN& funcName, std::unique_ptr<IType> returnType, const std::vector<Var>& args,
     std::vector<std::unique_ptr<FuncCreditStmt>>& credited, const bool isMethod, const VirtualType& virtualType, const bool isStatic, ClassDeclStmt* classDecl)
         : IFuncDeclStmt(token, classDecl), func(Func(std::move(returnType), funcName, args, virtualType, nullptr, isStatic)), body(nullptr), hasReturned(false), virtualType(virtualType), isMethod(isMethod)
 {
@@ -19,7 +19,7 @@ const std::vector<Var>& FuncDeclStmt::getArgs() const
     return func.getArgs();
 }
 
-std::string FuncDeclStmt::getName() const
+const FQN& FuncDeclStmt::getName() const
 {
     return func.getFuncName();
 }
@@ -101,7 +101,7 @@ std::string FuncDeclStmt::translateToCpp() const
 
 std::string FuncDeclStmt::translateToH() const
 {
-    if (func.getFuncName() == "prelude") return "";
+    if (translateFQNtoString(func.getFuncName()) == "prelude") return "";
 
     const std::string fStr = func.translateToCpp();
     std::string prefix = "";

@@ -75,7 +75,7 @@ bool SymbolTable::doesFuncExist(const std::string& name, const ClassNode* owner)
 {
     for (const auto& func : funcs| std::views::keys)
     {
-        if (func.getFuncName() == name && func.getOwner() == owner)
+        if (translateFQNtoString(func.getFuncName()) == name && func.getOwner() == owner)
         {
             return true;
         }
@@ -169,7 +169,7 @@ std::unique_ptr<Func> SymbolTable::getFunc(const std::string& name, const ClassN
     }
     for (const auto& func : funcs | std::views::keys)
     {
-        if (func.getFuncName() == name && func.getOwner() == owner)
+        if (translateFQNtoString(func.getFuncName()) == name && func.getOwner() == owner)
         {
             return std::make_unique<Func>(func.copy());
         }
@@ -183,7 +183,7 @@ std::string SymbolTable::getFuncsHeaders() const
     for (const auto& [func, isIncluded] : funcs)
     {
         // convention to note write the main's header
-        if (func.getFuncName() != "prelude" && !isIncluded)
+        if (translateFQNtoString(func.getFuncName()) != "prelude" && !isIncluded)
         {
             oss << func.translateToCpp() << ";" << std::endl;
         }
@@ -195,7 +195,7 @@ std::string SymbolTable::getFuncsHeaders() const
 void SymbolTable::addClass(const Class& cls, ClassNode* parent)
 {
     classTree.addClass(cls, parent);
-    currClass = classTree.find(cls.getClassName());
+    currClass = classTree.find(translateFQNtoString(cls.getClassName()));
 }
 
 void SymbolTable::resetCurrClass()
@@ -265,14 +265,14 @@ bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const
     {
         if (res->isLegal(*field, currClass)) return true;
 
-        throw AccessError(token, res->getClass().getClassName(), name);
+        throw AccessError(token, translateFQNtoString(res->getClass().getClassName()), name);
     }
 
     if (const Func* method = res->findMethod(name, currClass); method != nullptr)
     {
         if (res->isLegal(*method, currClass)) return true;
 
-        throw AccessError(token, res->getClass().getClassName(), name);
+        throw AccessError(token, translateFQNtoString(res->getClass().getClassName()), name);
     }
 
     if (currClass != nullptr)

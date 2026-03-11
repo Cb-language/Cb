@@ -280,6 +280,7 @@ add_executable(Transposer
         Transposer/errorHandling/classErrors/StaticCtor.h
         Transposer/errorHandling/classErrors/VirtualCtor.cpp
         Transposer/errorHandling/classErrors/VirtualCtor.h
+        Transposer/parser/FQN.h
 
 )
 

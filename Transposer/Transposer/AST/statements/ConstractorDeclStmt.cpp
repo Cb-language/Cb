@@ -10,8 +10,8 @@
 #include "symbols/Type/ClassType.h"
 #include "other/Utils.h"
 
-ConstractorDeclStmt::ConstractorDeclStmt(const Token& token, const std::string& className,
-                                         const std::vector<Var>& args, ClassDeclStmt* classDecl) : IFuncDeclStmt(token, classDecl),
+ConstractorDeclStmt::ConstractorDeclStmt(const Token& token, const FQN& className, const std::vector<Var>& args,
+    ClassDeclStmt* classDecl) : IFuncDeclStmt(token, classDecl),
     constractor(Constractor(args,  className)), parentCtorCall(nullptr)
 {
 }
@@ -37,7 +37,7 @@ void ConstractorDeclStmt::analyze() const
 std::string ConstractorDeclStmt::translateToCpp() const
 {
     std::ostringstream oss;
-    oss << constractor.getClassName() << "::" << constractor.translateToCpp();
+    oss << translateFQNtoString(constractor.getClassName()) << "::" << constractor.translateToCpp();
 
     if (parentCtorCall != nullptr)
     {
@@ -55,7 +55,7 @@ std::string ConstractorDeclStmt::translateToCpp() const
 
     for (const auto& stmt : body->getStmts())
     {
-        std::string temp = stmt->translateToCpp();
+        const std::string temp = stmt->translateToCpp();
         oss << getTabs() << Utils::removeFirstTabs(temp) << std::endl;
     }
 
@@ -69,14 +69,14 @@ std::string ConstractorDeclStmt::translateToH() const
     return constractor.translateToCpp() + ";";
 }
 
-std::string ConstractorDeclStmt::getName() const
+const FQN& ConstractorDeclStmt::getName() const
 {
     return constractor.getClassName();
 }
 
 std::unique_ptr<IType> ConstractorDeclStmt::getReturnType() const
 {
-    return std::make_unique<ClassType>(constractor.getClassName());
+    return std::make_unique<ClassType>(translateFQNtoString(constractor.getClassName()));
 }
 
 const Constractor& ConstractorDeclStmt::getConstractor() const

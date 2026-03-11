@@ -115,7 +115,7 @@ std::string ArrayDeclStmt::translateToCpp() const
 {
     std::ostringstream oss;
 
-    const std::string name = var.getName();
+    const std::string name = translateFQNtoString(var.getName());
 
 
     oss << getTabs()

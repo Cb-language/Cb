@@ -13,21 +13,20 @@ class ClassDeclStmt : public Stmt
 {
 private:
     bool hasEmptyCtor = false;
-    const std::string name;
+    FQN name;
     std::vector<Field> fields;
     std::vector<Method> methods;
     std::vector<Ctor> ctors;
 
-    bool isInheriting = false;
     AccessType inheritingPublic;
-    const std::string inheritingName;
+    std::unique_ptr<ClassDeclStmt> father;
 
     std::string generateToString() const;
     std::string generateEquals() const;
 
 public:
-    ClassDeclStmt(const Token& token, IFuncDeclStmt* funcDecl, const std::string& name, std::vector<Field>& fields,
-        std::vector<Method>& methods, std::vector<Ctor>& ctors, const bool isInheriting, AccessType inheritingPublic, const std::string& inheritingName, ClassDeclStmt* classDecl = nullptr);
+    ClassDeclStmt(const Token& token, IFuncDeclStmt* funcDecl, const FQN& name, std::vector<Field>& fields,
+        std::vector<Method>& methods, std::vector<Ctor>& ctors, AccessType inheritingPublic, std::unique_ptr<ClassDeclStmt> father, ClassDeclStmt* classDecl = nullptr);
     void analyze() const override;
     std::string translateToCpp() const override;
     std::string translateToH() const override;

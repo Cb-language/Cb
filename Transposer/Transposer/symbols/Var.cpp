@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-Var::Var(std::unique_ptr<IType> type, const std::string& name, bool isStatic) : type(std::move(type)), name(name), isStatic(isStatic)
+Var::Var(std::unique_ptr<IType> type, const FQN& name, const bool isStatic) : type(std::move(type)), name(name), isStatic(isStatic)
 {
 }
 
@@ -15,7 +15,7 @@ std::unique_ptr<IType> Var::getType() const
     return type->copy();
 }
 
-std::string Var::getName() const
+const FQN& Var::getName() const
 {
     return name;
 }

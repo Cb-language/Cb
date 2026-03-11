@@ -7,7 +7,7 @@ FuncCreditStmt::FuncCreditStmt(const Token& token, IFuncDeclStmt* funcDecl, cons
 
 const std::string& FuncCreditStmt::getName() const
 {
-    return funcCredit.getName();
+    return translateFQNtoString(funcCredit.getName());
 }
 
 // checked after the parsing via the credit queue

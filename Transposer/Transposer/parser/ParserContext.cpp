@@ -2,7 +2,7 @@
 
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
 
-ParserContext::ParserContext(const std::queue<Token>& tokens) : tokens(tokens), len(tokens.size()), funcDecl(nullptr), classDecl(nullptr), hasMain(false)
+ParserContext::ParserContext(const std::queue<Token>& tokens) : tokens(tokens), len(tokens.size()), funcDecl(nullptr), hasMain(false)
 {
     if (!tokens.empty())
     {
@@ -21,6 +21,10 @@ void ParserContext::addError(std::unique_ptr<Error> err)
 
 const Token& ParserContext::current() const
 {
+    if (tokens.empty())
+    {
+        throw UnexpectedEOF(getFirstToken());
+    }
     return tokens.front();
 }
 
@@ -113,7 +117,7 @@ IFuncDeclStmt* ParserContext::getFuncDecl() const
     return funcDecl;
 }
 
-ClassDeclStmt* ParserContext::getClassDecl() const
+std::stack<std::reference_wrapper<ClassDeclStmt>> ParserContext::getClassDecl() const
 {
     return classDecl;
 }

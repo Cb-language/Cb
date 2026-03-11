@@ -17,7 +17,7 @@ ConstractorCallStmt::ConstractorCallStmt(const Token& token, IFuncDeclStmt* func
 
 std::unique_ptr<IType> ConstractorCallStmt::getType() const
 {
-    return std::make_unique<ClassType>(currClass->getClass().getClassName());
+    return std::make_unique<ClassType>(translateFQNtoString(currClass->getClass().getClassName()));
 }
 
 void ConstractorCallStmt::analyze() const
@@ -38,7 +38,7 @@ void ConstractorCallStmt::analyze() const
         {
             if (currClass->isLegalAccess(accessType, currClass)) return;
 
-            throw AccessError(token, currClass->getClass().getClassName(), currClass->getClass().getClassName() + "_call");
+            throw AccessError(token, translateFQNtoString(currClass->getClass().getClassName()), translateFQNtoString(currClass->getClass().getClassName()) + "_call");
         }
     }
 
@@ -54,7 +54,7 @@ std::string ConstractorCallStmt::translateToCpp() const
         oss << getTabs();
     }
 
-    oss << currClass->getClass().getClassName() << "(";
+    oss << translateFQNtoString(currClass->getClass().getClassName()) << "(";
 
     bool first = true;
     for (const auto& arg : args)

@@ -35,10 +35,10 @@ std::string ObjCreationStmt::translateToCpp() const
     std::ostringstream oss;
     if (classNode == nullptr) throw HowDidYouGetHere(token);
 
-    const std::string className = classNode->getClass().getClassName();
+    const std::string className = translateFQNtoString(classNode->getClass().getClassName());
     const std::string classSafePtr = "SafePtr<" + className + ">";
 
-    oss << getTabs() << classSafePtr << " " << var.getName() << " = " << classSafePtr << "(";
+    oss << getTabs() << classSafePtr << " " << translateFQNtoString(var.getName()) << " = " << classSafePtr << "(";
 
     if (hasStartingValue && startingValue != nullptr) oss  << startingValue->translateToCpp();
     else oss << className << "()";

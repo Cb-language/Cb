@@ -28,12 +28,12 @@ void FuncCallExpr::analyze() const
         throw HowDidYouGetHere(token);
     }
 
-    if (funcDecl->getName() == "prelude")
+    if (translateFQNtoString(funcDecl->getName()) == "prelude")
     {
         return; // main doesnt have to copy right
     }
 
-    if (funcDecl->getName() == name)
+    if (translateFQNtoString(funcDecl->getName()) == name)
     {
         return; // a func doesn't have to copyright itself
     }
@@ -88,7 +88,7 @@ void FuncCallExpr::setType(std::unique_ptr<IType> type)
 
 bool FuncCallExpr::isLegalCall(const Func& func) const
 {
-    if (name != func.getFuncName() || args.size() != func.getArgs().size())
+    if (name != translateFQNtoString(func.getFuncName()) || args.size() != func.getArgs().size())
     {
         return false;
     }

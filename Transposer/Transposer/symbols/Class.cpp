@@ -2,8 +2,10 @@
 
 #include <ranges>
 
-Class::Class(const std::string& name, const std::vector<std::pair<AccessType, Func>>& methods,
-             const std::vector<std::pair<AccessType, Var>>& fields, const std::vector<std::pair<AccessType, Constractor>>& constractors, bool isAbstract) : name(name), _isAbstract(isAbstract)
+Class::Class(const FQN& name, const std::vector<std::pair<AccessType, Func>>& methods,
+    const std::vector<std::pair<AccessType, Var>>& fields,
+    const std::vector<std::pair<AccessType, Constractor>>& constractors, bool isAbstract)
+    : name(name), _isAbstract(isAbstract)
 {
     for (const auto& [accessType, method] : methods) this->methods.emplace_back(accessType, method.copy());
     for (const auto& [accessType, field] : fields) this->fields.emplace_back(accessType, field.copy());
@@ -14,11 +16,11 @@ Class::Class(const Class& other) : Class(other.name, other.methods, other.fields
 {
 }
 
-Class::Class(const std::string& name) : name(name), _isAbstract(false)
+Class::Class(const FQN& name) : name(name), _isAbstract(false)
 {
 }
 
-const std::string& Class::getClassName() const
+const FQN& Class::getClassName() const
 {
     return name;
 }
@@ -90,20 +92,20 @@ bool Class::hasConstractor(const Constractor& constractor) const
     return false;
 }
 
-bool Class::hasMethod(const std::string& name) const
+bool Class::hasMethod(FQN& name) const
 {
     for (const auto& m : methods | std::views::values)
     {
-        if (m.getFuncName() == name) return true;
+        if (translateFQNtoString(m.getFuncName()) == translateFQNtoString(name)) return true;
     }
     return false;
 }
 
-bool Class::hasField(const std::string& name) const
+bool Class::hasField(const FQN& name) const
 {
     for (const auto& f : fields | std::views::values)
     {
-        if (f.getName() == name) return true;
+        if (translateFQNtoString(f.getName()) == translateFQNtoString(name)) return true;
     }
     return false;
 }

@@ -29,8 +29,8 @@ public:
 
     bool isDescendantOf(const ClassNode* other) const;
 
-    const Var* findField(const std::string& name, const ClassNode* currClass = nullptr, const bool isBase = true) const;
-    const Func* findMethod(const std::string& name, const ClassNode* currClass = nullptr, const bool isBase = true) const;
+    const Var* findField(const FQN& name, const ClassNode* currClass = nullptr, const bool isBase = true) const;
+    const Func* findMethod(const FQN& name, const ClassNode* currClass = nullptr, const bool isBase = true) const;
 
     const Class& getClass() const;
     void setAbstract(const bool isAbstract);

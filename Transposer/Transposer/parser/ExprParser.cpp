@@ -1,4 +1,7 @@
 #include "ExprParser.h"
+
+#include <windows.h>
+
 #include "TypeParser.h"
 
 #include "errorHandling/syntaxErrors/MissingParenthesis.h"
@@ -139,15 +142,6 @@ std::unique_ptr<Expr> ExprParser::parsePrimaryExpr(const bool needsSemicolon, co
     return nullptr;
 }
 
-std::unique_ptr<Expr> ExprParser::parseIdentifierOrCallExpr(const bool needsSemicolon, const std::optional<Token>& t)
-{
-    const Token& token = t.has_value() ? t.value() : c.current();
-
-    if (c.peek().type == TokenType::PUNCTUATION_PARENTHESIS_OPEN)
-        return parseFuncCallExpr(needsSemicolon, token);
-
-    return parseCallExpr(token);
-}
 std::unique_ptr<Expr> ExprParser::parseGroupedExpr(const bool allowQualifiedPaths)
 {
     c.advance(); // consume '('
@@ -165,8 +159,7 @@ std::unique_ptr<Expr> ExprParser::parseInfixExpr(
     const int minPrecedence,
     std::unique_ptr<Expr> left,
     const bool needsSemicolon,
-    const bool allowQualifiedPaths,
-    const ClassNode* classCall)
+    const bool allowQualifiedPaths)
 {
     while (true)
     {
@@ -308,19 +301,23 @@ std::unique_ptr<UnaryOpExpr> ExprParser::parsePostfixUnaryExpr(std::unique_ptr<C
     );
 }
 
-std::unique_ptr<Call> ExprParser::parseVarCallExpr(const bool needsSemicolon, const std::optional<Token>& t) const
+std::unique_ptr<Call> ExprParser::parseVarCallExpr() const
 {
-    // Use the provided token or advance to get the next one
-    Token token = t.has_value() ? t.value() : c.advance();
+    Token token = c.advance();
     return std::make_unique<VarCallExpr>(token, c.getFuncDecl(), Var(nullptr, token.value.value()), c.getClassDecl());
 }
 
 
-std::unique_ptr<Call> ExprParser::parseFuncCallExpr(const bool needsSemicolon, std::optional<Token> t)
+std::unique_ptr<Call> ExprParser::parseFuncCallExpr(const bool needsSemicolon)
 {
+    std::string name = "";
+
     Token nameToken;
-    if (!c.expect(TokenType::IDENTIFIER, std::make_unique<MissingIdentifier>(t.value()), nameToken)) return nullptr;
-    const std::string name = nameToken.value.value();
+    if (!c.expect(TokenType::IDENTIFIER, std::make_unique<MissingIdentifier>(c.current()), nameToken))
+    {
+        return nullptr;
+    }
+    name = nameToken.value.value();
 
     if (!c.expect(TokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.current()))) return nullptr;
 
@@ -344,7 +341,7 @@ std::unique_ptr<Call> ExprParser::parseFuncCallExpr(const bool needsSemicolon, s
     }
 
     return std::make_unique<FuncCallExpr>(
-        t.value(),
+        c.current(),
         c.getFuncDecl(),
         name,
         std::move(args),
@@ -404,4 +401,21 @@ std::unique_ptr<Call> ExprParser::parseArrayAccess(std::unique_ptr<Call> call)
     c.expect(TokenType::PUNCTUATION_CLOSE_SQUARE_BRACE, std::make_unique<MissingParenthesis>(c.current()));
 
     return sliceingExpr;
+}
+
+FQN ExprParser::parseFQN() const
+{
+    FQN res;
+    do
+    {
+        Token iden;
+        if (!c.matchConsume(TokenType::IDENTIFIER, iden))
+        {
+            c.addError(std::make_unique<UnexpectedToken>(c.current()));
+            return res;
+        }
+        res.emplace_back(iden.value.value());
+
+    } while (c.matchConsume(TokenType::PUNCTUATION_BACKSLASH));
+    return res;
 }

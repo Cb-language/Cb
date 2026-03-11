@@ -3,6 +3,8 @@
 #include <vector>
 #include <queue>
 #include <memory>
+#include <stack>
+
 #include "errorHandling/Error.h"
 #include "AST/abstract/Statement.h"
 #include "AST/statements/expression/FuncCallExpr.h"
@@ -20,7 +22,7 @@ private:
     std::vector<std::unique_ptr<Error>> errors;
 
     IFuncDeclStmt* funcDecl;
-    ClassDeclStmt* classDecl;
+    std::stack<std::reference_wrapper<ClassDeclStmt>> classDecl;
 
     bool hasMain;
     Token firstToken;
@@ -53,7 +55,7 @@ public:
     std::vector<std::unique_ptr<IncludeStmt>>& getIncludes();
 
     IFuncDeclStmt* getFuncDecl() const;
-    ClassDeclStmt* getClassDecl() const;
+    std::stack<std::reference_wrapper<ClassDeclStmt>> getClassDecl() const;
 
     bool isEmpty() const;
 
