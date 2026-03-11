@@ -206,6 +206,7 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
     }
 
     c.addError(std::make_unique<UnrecognizedToken>(c.copyCurrent()));
+    c.advance();
     return nullptr;
 }
 

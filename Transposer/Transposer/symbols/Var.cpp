@@ -6,7 +6,7 @@ Var::Var(std::unique_ptr<IType> type, const FQN& name, const bool isStatic) : ty
 {
 }
 
-Var::Var(const Var& other) : Var(other.type->copy(), other.name, other.isStatic)
+Var::Var(const Var& other) : Var(other.type ? other.type->copy() : nullptr, other.name, other.isStatic)
 {
 }
 
