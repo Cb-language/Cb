@@ -13,7 +13,7 @@ private:
     std::unique_ptr<ConstractorCallStmt> parentCtorCall;
 
 public:
-    ConstructorDeclStmt(const Token& token, const FQN& className, const std::vector<Var>& args, ClassDeclStmt* classDecl = nullptr);
+    ConstructorDeclStmt(const Token& token, const FQN& className, const std::vector<Var>& args);
 
     void setParentCtorCall(std::vector<std::unique_ptr<Expr>> args);
 

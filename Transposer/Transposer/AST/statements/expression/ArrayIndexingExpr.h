@@ -8,7 +8,7 @@ private:
     std::unique_ptr<Expr> index;
 
 public:
-    ArrayIndexingExpr(const Token& token, IFuncDeclStmt* funcDecl, std::unique_ptr<Call> call, std::unique_ptr<Expr> index, ClassDeclStmt* classDecl = nullptr);
+    ArrayIndexingExpr(const Token& token, std::unique_ptr<Call> call, std::unique_ptr<Expr> index);
 
     std::unique_ptr<IType> getType() const override;
     std::string translateToCpp() const override;

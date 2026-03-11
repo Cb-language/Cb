@@ -7,8 +7,7 @@ class Expr : public Stmt
 protected:
     bool hasParens;
 
-    explicit Expr(const Token& token, ClassDeclStmt* classDecl = nullptr);
-    Expr(const Token& token, IFuncDeclStmt* funcDecl, ClassDeclStmt* classDecl = nullptr);
+    explicit Expr(const Token& token);
 
 public:
     ~Expr() override = default;
@@ -22,12 +21,7 @@ public:
 };
 
 
-inline Expr::Expr(const Token& token, IFuncDeclStmt* funcDecl, ClassDeclStmt* classDecl) : Stmt(token, funcDecl,
-    classDecl), hasParens(false)
-{
-}
-
-inline Expr::Expr(const Token& token, ClassDeclStmt* classDecl) : Stmt(token, classDecl), hasParens(false)
+inline Expr::Expr(const Token& token) : Stmt(token), hasParens(false)
 {
 }
 

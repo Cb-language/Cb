@@ -1,7 +1,6 @@
 #include "IfStmt.h"
 
-IfStmt::IfStmt(const Token& token, IFuncDeclStmt* funcDecl, StmtWithBody ifStmt, std::vector<StmtWithBody>& elseStmts,
-    ClassDeclStmt* classDecl) : Stmt(token, funcDecl, classDecl), ifStmt(std::move(ifStmt.expr), std::move(ifStmt.body))
+IfStmt::IfStmt(const Token& token, StmtWithBody ifStmt, std::vector<StmtWithBody>& elseStmts) : Stmt(token), ifStmt(std::move(ifStmt))
 {
     for (auto& stmt : elseStmts)
     {

@@ -21,9 +21,6 @@ private:
     std::vector<std::unique_ptr<IncludeStmt>> includes;
     std::vector<std::unique_ptr<Error>> errors;
 
-    IFuncDeclStmt* funcDecl;
-    std::stack<std::reference_wrapper<ClassDeclStmt>> classDecl;
-
     bool hasMain;
     Token firstToken;
 
@@ -63,12 +60,6 @@ public:
     std::vector<std::unique_ptr<Error>>& getErrors();
     std::vector<std::unique_ptr<IncludeStmt>>& getIncludes();
 
-    IFuncDeclStmt* getFuncDecl() const;
-    ClassDeclStmt* getClassDecl() const;
-    void pushClassDecl(ClassDeclStmt& decl);
-    void popClassDecl();
-    void setFuncDecl(IFuncDeclStmt& funcDecl);
-    void addToClassDecl(ClassDeclStmt& decl);
     void setIsInFunc(const bool isInFunc);
     bool getIsInFunc() const;
 

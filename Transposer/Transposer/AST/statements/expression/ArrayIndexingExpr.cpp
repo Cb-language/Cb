@@ -3,8 +3,8 @@
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
 
-ArrayIndexingExpr::ArrayIndexingExpr(const Token& token, IFuncDeclStmt* funcDecl, std::unique_ptr<Call> call, std::unique_ptr<Expr> index, ClassDeclStmt* classDecl)
-    : Call(token, funcDecl, classDecl), call(std::move(call)) ,index(std::move(index))
+ArrayIndexingExpr::ArrayIndexingExpr(const Token& token, std::unique_ptr<Call> call, std::unique_ptr<Expr> index)
+    : Call(token), call(std::move(call)) ,index(std::move(index))
 {
 }
 

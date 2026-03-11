@@ -3,8 +3,8 @@
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
 
-CaseStmt::CaseStmt(const Token& token, IFuncDeclStmt* funcDecl, StmtWithBody stmt,
-                   const bool isDefault, ClassDeclStmt* classDecl) : Stmt(token, funcDecl, classDecl), stmt(std::move(stmt.expr), std::move(stmt.body)), isDefault(isDefault)
+CaseStmt::CaseStmt(const Token& token, StmtWithBody stmt,
+                   const bool isDefault) : Stmt(token), stmt(std::move(stmt)), isDefault(isDefault)
 {
 }
 

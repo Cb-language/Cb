@@ -10,7 +10,7 @@
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 
 ParserContext::ParserContext(const std::queue<Token>& tokens)
-    : tokens(tokens), len(tokens.size()), funcDecl(nullptr), hasMain(false), isNewLine(false)
+    : tokens(tokens), len(tokens.size()), hasMain(false), isNewLine(false), isInFunc(false)
 {
     if (!tokens.empty())
     {
@@ -48,6 +48,7 @@ Token ParserContext::advance()
     if (!isNewLine)
     {
         isNewLine = true;
+
         while (!tokens.empty() && current().type == CbTokenType::PUNCTUATION_NEW_LINE)
         {
             if (isInFunc)
@@ -192,37 +193,6 @@ const std::vector<std::unique_ptr<Stmt>>& ParserContext::getStmts() const
 const std::vector<std::unique_ptr<Error>>& ParserContext::getErrors() const
 {
     return errors;
-}
-
-IFuncDeclStmt* ParserContext::getFuncDecl() const
-{
-    return funcDecl;
-}
-
-ClassDeclStmt* ParserContext::getClassDecl() const
-{
-    if (classDecl.empty()) return nullptr;
-    return &classDecl.top().get();
-}
-
-void ParserContext::pushClassDecl(ClassDeclStmt& decl)
-{
-    classDecl.push(decl);
-}
-
-void ParserContext::popClassDecl()
-{
-    classDecl.pop();
-}
-
-void ParserContext::setFuncDecl(IFuncDeclStmt& funcDecl)
-{
-    this->funcDecl = &funcDecl;
-}
-
-void ParserContext::addToClassDecl(ClassDeclStmt& decl)
-{
-    this->classDecl.push(decl);
 }
 
 void ParserContext::setIsInFunc(const bool isInFunc)

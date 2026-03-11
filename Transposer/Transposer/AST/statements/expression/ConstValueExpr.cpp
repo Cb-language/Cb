@@ -27,8 +27,8 @@ std::string ConstValueExpr::getValueStr() const
     return value;
 }
 
-ConstValueExpr::ConstValueExpr(const Token& token, IFuncDeclStmt* funcDecl, std::unique_ptr<IType> type, const std::string& value, ClassDeclStmt* classDecl)
-    : Expr(token, funcDecl, classDecl), type(std::move(type)), value(value)
+ConstValueExpr::ConstValueExpr(const Token& token, std::unique_ptr<IType> type, const std::string& value)
+    : Expr(token), type(std::move(type)), value(value)
 {
 }
 

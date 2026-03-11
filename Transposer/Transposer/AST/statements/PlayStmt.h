@@ -9,7 +9,7 @@ private:
     std::vector<std::unique_ptr<Expr>> exprs;
     bool printLine = false;
 public:
-    PlayStmt(const Token& token, IFuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Expr>> exprs, bool printLine = false, ClassDeclStmt* classDecl = nullptr);
+    PlayStmt(const Token& token, std::vector<std::unique_ptr<Expr>> exprs, bool printLine = false);
     void analyze() const override;
     std::string translateToCpp() const override;
 };

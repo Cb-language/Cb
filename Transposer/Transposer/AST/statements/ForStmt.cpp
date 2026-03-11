@@ -2,10 +2,10 @@
 
 #include "errorHandling/how/HowDidYouGetHere.h"
 
-ForStmt::ForStmt(const Token& token, IFuncDeclStmt* funcDecl,
+ForStmt::ForStmt(const Token& token,
                  std::unique_ptr<BodyStmt> body, const bool isIncreasing,
-                 std::unique_ptr<Expr> startExpr, std::unique_ptr<Expr> stepExpr, std::unique_ptr<Expr> stopExpr, const std::string& varName, ClassDeclStmt* classDecl)
-    : Stmt(token, funcDecl, classDecl), body(std::move(body)), isIncreasing(isIncreasing),
+                 std::unique_ptr<Expr> startExpr, std::unique_ptr<Expr> stepExpr, std::unique_ptr<Expr> stopExpr, const std::string& varName)
+    : Stmt(token), body(std::move(body)), isIncreasing(isIncreasing),
     startExpr(std::move(startExpr)), stepExpr(std::move(stepExpr)), stopExpr(std::move(stopExpr)), varName(varName)
 {
 }

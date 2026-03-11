@@ -10,8 +10,7 @@
 #include "symbols/Type/ClassType.h"
 #include "other/Utils.h"
 
-ConstructorDeclStmt::ConstructorDeclStmt(const Token& token, const FQN& className, const std::vector<Var>& args,
-    ClassDeclStmt* classDecl) : IFuncDeclStmt(token, classDecl),
+ConstructorDeclStmt::ConstructorDeclStmt(const Token& token, const FQN& className, const std::vector<Var>& args) : IFuncDeclStmt(token),
     constractor(Constractor(args,  className)), parentCtorCall(nullptr)
 {
 }
@@ -19,7 +18,7 @@ ConstructorDeclStmt::ConstructorDeclStmt(const Token& token, const FQN& classNam
 void ConstructorDeclStmt::setParentCtorCall(std::vector<std::unique_ptr<Expr>> args)
 {
     if (parentCtorCall != nullptr) return;
-    parentCtorCall = std::make_unique<ConstractorCallStmt>(token, funcDecl, std::move(args));
+    parentCtorCall = std::make_unique<ConstractorCallStmt>(token, std::move(args));
 }
 
 void ConstructorDeclStmt::setBody(std::unique_ptr<BodyStmt> body)

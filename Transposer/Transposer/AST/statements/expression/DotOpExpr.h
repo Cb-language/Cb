@@ -9,8 +9,8 @@ private:
     std::unique_ptr<Call> right;
 
 public:
-    DotOpExpr(const Token& token, IFuncDeclStmt* funcDecl,
-        std::unique_ptr<Call> left, std::unique_ptr<Call> right, ClassDeclStmt* classDecl = nullptr);
+    DotOpExpr(const Token& token,
+        std::unique_ptr<Call> left, std::unique_ptr<Call> right);
 
     std::unique_ptr<IType> getType() const override;
     void analyze() const override;

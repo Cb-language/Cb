@@ -8,7 +8,7 @@ private:
     const bool isGlobal;
     bool hasBrace = true;
 public:
-    BodyStmt(const Token& token, IFuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Stmt>>& stmts, const bool isGlobal = false, ClassDeclStmt* classDecl = nullptr);
+    BodyStmt(const Token& token, std::vector<std::unique_ptr<Stmt>>& stmts, const bool isGlobal = false);
     std::vector<std::unique_ptr<Stmt>>& getStmts();
     const std::vector<std::unique_ptr<Stmt>>& getStmts() const; // Added const overload
 

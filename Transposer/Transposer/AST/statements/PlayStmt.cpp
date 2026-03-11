@@ -1,7 +1,7 @@
 #include "PlayStmt.h"
 
-PlayStmt::PlayStmt(const Token& token, IFuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Expr>> exprs, const bool printLine, ClassDeclStmt* classDecl)
-    : Stmt(token, funcDecl, classDecl), exprs(std::move(exprs)) ,printLine(printLine)
+PlayStmt::PlayStmt(const Token& token, std::vector<std::unique_ptr<Expr>> exprs, const bool printLine)
+    : Stmt(token), exprs(std::move(exprs)) ,printLine(printLine)
 {
 }
 

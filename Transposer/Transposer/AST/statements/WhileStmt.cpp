@@ -1,7 +1,7 @@
 #include "WhileStmt.h"
 
-WhileStmt::WhileStmt(const Token& token, IFuncDeclStmt* funcDecl, StmtWithBody& stmt, ClassDeclStmt* classDecl)
-    : Stmt(token, funcDecl, classDecl), stmt(std::move(stmt.expr), std::move(stmt.body))
+WhileStmt::WhileStmt(const Token& token, StmtWithBody stmt)
+    : Stmt(token), stmt(std::move(stmt))
 {
 }
 

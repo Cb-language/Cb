@@ -2,8 +2,8 @@
 
 #include "files/FileGraph.h"
 
-IncludeStmt::IncludeStmt(const Token& token, IFuncDeclStmt* funcDecl,
-                         const std::filesystem::path& inPath, ClassDeclStmt* classDecl) : Stmt(token, funcDecl, classDecl), inPath(inPath),
+IncludeStmt::IncludeStmt(const Token& token,
+                         const std::filesystem::path& inPath) : Stmt(token), inPath(inPath),
                          outPath((File::getOutDir() / inPath.filename()).replace_extension("h"))
 {
 }

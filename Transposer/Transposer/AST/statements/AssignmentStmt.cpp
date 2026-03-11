@@ -2,18 +2,17 @@
 
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 
-AssignmentStmt::AssignmentStmt(const Token& token, IFuncDeclStmt* funcDecl,
-                               std::unique_ptr<Call> call, const std::string& assignmentOp, std::unique_ptr<Expr> expr, ClassDeclStmt* classDecl)
-        : Expr(token, funcDecl, classDecl), call(std::move(call)), assignmentOp(assignmentOp), expr(std::move(expr))
+AssignmentStmt::AssignmentStmt(const Token& token,
+                               std::unique_ptr<Call> call, const std::string& assignmentOp, std::unique_ptr<Expr> expr)
+        : Expr(token), call(std::move(call)), assignmentOp(assignmentOp), expr(std::move(expr))
 {
 }
 
 void AssignmentStmt::analyze() const
 {
-    auto leftType = call->getType();
-    auto rightType = expr->getType();
+    const auto leftType = call->getType();
 
-    if (*leftType != *rightType)
+    if (const auto rightType = expr->getType(); *leftType != *rightType)
     {
         throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), assignmentOp);
     }

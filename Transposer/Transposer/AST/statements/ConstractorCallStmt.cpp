@@ -6,8 +6,8 @@
 #include "other/Utils.h"
 #include "symbols/Type/ClassType.h"
 
-ConstractorCallStmt::ConstractorCallStmt(const Token& token, IFuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Expr>> args, ClassDeclStmt* classDecl)
-        : Expr(token, funcDecl, classDecl)
+ConstractorCallStmt::ConstractorCallStmt(const Token& token, std::vector<std::unique_ptr<Expr>> args)
+        : Expr(token)
 {
     for (auto& arg : args)
     {

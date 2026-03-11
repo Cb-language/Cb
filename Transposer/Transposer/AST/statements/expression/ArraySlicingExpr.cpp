@@ -3,14 +3,12 @@
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
 
-ArraySlicingExpr::ArraySlicingExpr(const Token& token, IFuncDeclStmt* funcDecl, std::unique_ptr<Call> call,
-    ClassDeclStmt* classDecl)
-    : Call(token, funcDecl, classDecl), call(std::move(call))
+ArraySlicingExpr::ArraySlicingExpr(const Token& token, std::unique_ptr<Call> call) : Call(token), call(std::move(call))
 {
 }
 
 ArraySlicingExpr::ArraySlicingExpr(const ArraySlicingExpr& other)
-    : Call(other.token, other.funcDecl, other.classDecl), call(other.call.get()), start(other.start.get()), stop(other.stop.get()), step(other.step.get())
+    : Call(other.token), call(other.call.get()), start(other.start.get()), stop(other.stop.get()), step(other.step.get())
 {
 }
 

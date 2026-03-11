@@ -20,8 +20,8 @@ private:
 
     const bool isElseIf = false;
 public:
-    IfStmt(const Token& token, IFuncDeclStmt* funcDecl,
-        StmtWithBody ifStmt, std::vector<StmtWithBody>& elseStmts, ClassDeclStmt* classDecl = nullptr);
+    IfStmt(const Token& token,
+        StmtWithBody ifStmt, std::vector<StmtWithBody>& elseStmts);
 
     void analyze() const override;
     std::string translateToCpp() const override;

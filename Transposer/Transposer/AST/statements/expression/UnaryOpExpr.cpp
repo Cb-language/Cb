@@ -3,9 +3,9 @@
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
 
-UnaryOpExpr::UnaryOpExpr(const Token& token, IFuncDeclStmt* funcDecl,
-    std::unique_ptr<Expr> operand, const UnaryOp op, const bool needsSemicolon, ClassDeclStmt* classDecl)
-        : Expr(token, funcDecl, classDecl), operand(std::move(operand)), op(op), needsSemicolon(needsSemicolon)
+UnaryOpExpr::UnaryOpExpr(const Token& token,
+    std::unique_ptr<Expr> operand, const UnaryOp op, const bool needsSemicolon)
+        : Expr(token), operand(std::move(operand)), op(op), needsSemicolon(needsSemicolon)
 {
     if (!needsSemicolon && op == UnaryOp::Zero)
     {

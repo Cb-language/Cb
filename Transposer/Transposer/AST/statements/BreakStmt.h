@@ -6,7 +6,7 @@ class BreakStmt : public Stmt
 private:
 
 public:
-    BreakStmt(const Token& token, IFuncDeclStmt* funcDecl, ClassDeclStmt* classDecl = nullptr);
+    explicit BreakStmt(const Token& token);
     void analyze() const override;
     std::string translateToCpp() const override;
 };

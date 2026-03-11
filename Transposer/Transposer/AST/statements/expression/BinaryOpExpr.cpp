@@ -5,9 +5,8 @@
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 #include "other/SymbolTable.h"
 
-BinaryOpExpr::BinaryOpExpr(const Token& token, IFuncDeclStmt* funcDecl,
-                           const std::string& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, ClassDeclStmt* classDecl)
-        : Expr(token, funcDecl, classDecl), op(op), left(std::move(left)), right(std::move(right))
+BinaryOpExpr::BinaryOpExpr(const Token& token, const std::string& op, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right)
+        : Expr(token), op(op), left(std::move(left)), right(std::move(right))
 {
 }
 
@@ -19,7 +18,7 @@ std::unique_ptr<IType> BinaryOpExpr::getType() const
     }
 
     auto leftType = left->getType()->copy();
-    auto rightType = right->getType()->copy();
+    const auto rightType = right->getType()->copy();
 
     // Comparison operators
     if (op == "==" || op == "!=" ||

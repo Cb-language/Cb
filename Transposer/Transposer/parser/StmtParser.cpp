@@ -137,7 +137,7 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
         {
             c.addError(std::make_unique<StmtNotBreakable>(c.copyCurrent()));
         }
-        return std::make_unique<BreakStmt>(c.copyCurrent(), c.getFuncDecl(), c.getClassDecl());
+        return std::make_unique<BreakStmt>(c.copyCurrent());
     }
     if (c.matchConsume(CbTokenType::KEYWORD_RESUME))
     {
@@ -145,7 +145,7 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
         {
             c.addError(std::make_unique<StmtNotContinueAble>(c.copyCurrent()));
         }
-        return std::make_unique<BreakStmt>(c.copyCurrent(), c.getFuncDecl(), c.getClassDecl());
+        return std::make_unique<BreakStmt>(c.copyCurrent());
     }
     if (c.matchConsume(CbTokenType::KEYWORD_FEAT))
     {
@@ -183,11 +183,9 @@ std::unique_ptr<VarDeclStmt> StmtParser::parseVarDecStmt() const
 
     auto stmt = std::make_unique<VarDeclStmt>(
         t,
-        c.getFuncDecl(),
         init != nullptr,
         std::move(init),
-        Var(std::move(type), name),
-        c.getClassDecl()
+        Var(std::move(type), name)
     );
 
     return stmt;
@@ -208,11 +206,9 @@ std::unique_ptr<AssignmentStmt> StmtParser::parseAssignmentStmt(std::unique_ptr<
 
     return std::make_unique<AssignmentStmt>(
         opToken,
-        c.getFuncDecl(),
         std::move(left),
         opToken.value.value(),
-        std::move(right),
-        c.getClassDecl()
+        std::move(right)
     );
 }
 
@@ -243,9 +239,7 @@ std::unique_ptr<HearStmt> StmtParser::parseHearStmt() const
 
     return std::make_unique<HearStmt>(
         c.copyCurrent(),
-        c.getFuncDecl(),
-        calls,
-        c.getClassDecl()
+        calls
     );
 }
 
@@ -278,10 +272,8 @@ std::unique_ptr<PlayStmt> StmtParser::parsePlayStmt() const
 
     return std::make_unique<PlayStmt>(
         t,
-        c.getFuncDecl(),
         std::move(exprs),
-        isBar,
-        c.getClassDecl()
+        isBar
     );
 }
 
@@ -307,10 +299,8 @@ std::unique_ptr<BodyStmt> StmtParser::parseBodyStmt(const bool isGlobal, const b
 
     return std::make_unique<BodyStmt>(
         t,
-        c.getFuncDecl(),
         bodyStmts,
-        isGlobal,
-        c.getClassDecl()
+        isGlobal
     );
 }
 
@@ -370,17 +360,11 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
         credited,
         isMethod,
         VirtualType::NONE,
-        false,
-        c.getClassDecl()
+        false
     );
-
-    const auto temp = c.getFuncDecl();
-
-    c.setFuncDecl(*funcStmt);
 
     funcStmt->setBody(parseBodyStmt(false, false, false, false));
 
-    c.setFuncDecl(*temp);
     return funcStmt;
 }
 
@@ -391,10 +375,8 @@ std::unique_ptr<ReturnStmt> StmtParser::parseReturnStmt() const
 
     return std::make_unique<ReturnStmt>(
         c.copyCurrent(),
-        c.getFuncDecl(),
         expr,
-        nullptr, 
-        c.getClassDecl()
+        nullptr
     );
 }
 
@@ -405,9 +387,7 @@ std::unique_ptr<FuncCreditStmt> StmtParser::parseFuncCreditStmt() const
 
     return std::make_unique<FuncCreditStmt>(
         t,
-        c.getFuncDecl(),
-        FuncCredit(name, t),
-        c.getClassDecl()
+        FuncCredit(name, t)
     );
 }
 
@@ -454,10 +434,8 @@ std::unique_ptr<IfStmt> StmtParser::parseIfStmt()
 
     return std::make_unique<IfStmt>(
         c.copyCurrent(),
-        c.getFuncDecl(),
         std::move(currStmt),
-        elses,
-        c.getClassDecl()
+        elses
     );
 }
 
@@ -473,9 +451,7 @@ std::unique_ptr<WhileStmt> StmtParser::parseWhileStmt()
 
     return std::make_unique<WhileStmt>(
         c.copyCurrent(),
-        c.getFuncDecl(),
-        stmt,
-        c.getClassDecl()
+        std::move(stmt)
     );
 }
 
@@ -506,10 +482,8 @@ std::unique_ptr<SwitchStmt> StmtParser::parseSwitchStmt()
 
     return std::make_unique<SwitchStmt>(
         c.copyCurrent(),
-        c.getFuncDecl(),
         Var(nullptr, empty), 
-        cases,
-        c.getClassDecl()
+        cases
     );
 }
 
@@ -537,10 +511,8 @@ std::unique_ptr<CaseStmt> StmtParser::parseCaseStmt()
 
     return std::make_unique<CaseStmt>(
         c.copyCurrent(),
-        c.getFuncDecl(),
         std::move(ret),
-        isDefault,
-        c.getClassDecl()
+        isDefault
     );
 }
 
@@ -570,12 +542,10 @@ std::unique_ptr<ArrayDeclStmt> StmtParser::parseArrayDeclStmt() const
 
     return std::make_unique<ArrayDeclStmt>(
         c.copyCurrent(),
-        c.getFuncDecl(),
         false, 
         nullptr, 
         Var(std::move(type), name),
-        std::move(sizes),
-        c.getClassDecl()
+        std::move(sizes)
     );
 }
 
@@ -615,14 +585,12 @@ std::unique_ptr<ForStmt> StmtParser::parseForStmt()
 
     return std::make_unique<ForStmt>(
         c.copyCurrent(),
-        c.getFuncDecl(),
         std::move(body),
         isIncreasing,
         std::move(startExpr),
         std::move(stepExpr),
         std::move(stopExpr),
-        varToken.value.value_or("i"),
-        c.getClassDecl()
+        varToken.value.value_or("i")
     );
 }
 
@@ -707,19 +675,15 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
         }
     }
 
-    const auto classDecl = std::make_unique<ClassDeclStmt>(
+    return std::make_unique<ClassDeclStmt>(
         c.copyCurrent(),
-        c.getFuncDecl(),
         className,
         fields,
         methods,
         ctors,
         inheretingPublicity,
-        parentName,
-        c.getClassDecl()
+        parentName
     );
-    c.addToClassDecl(*classDecl);
-    return classDecl;
 }
 
 std::unique_ptr<ConstructorDeclStmt> StmtParser::parseCtor(const FQN& className)
@@ -742,8 +706,7 @@ std::unique_ptr<ConstructorDeclStmt> StmtParser::parseCtor(const FQN& className)
     auto stmt = std::make_unique<ConstructorDeclStmt>(
         c.copyCurrent(),
         className,
-        args,
-        c.getClassDecl()
+        args
     );
 
     stmt->setBody(parseBodyStmt(false, false, false, true));
@@ -766,15 +729,13 @@ std::unique_ptr<ObjCreationStmt> StmtParser::parseObjCreationStmt() const
     }
 
     c.expect(CbTokenType::PUNCTUATION_SEMICOLON);
-    auto ctorCall = std::make_unique<ConstractorCallStmt>(c.copyCurrent(), c.getFuncDecl(), std::move(args), c.getClassDecl());
+    auto ctorCall = std::make_unique<ConstractorCallStmt>(c.copyCurrent(), std::move(args));
 
     return std::make_unique<ObjCreationStmt>(
         c.copyCurrent(),
-        c.getFuncDecl(),
         nullptr, 
         true,
         std::move(ctorCall),
-        Var(std::move(type), name),
-        c.getClassDecl()
+        Var(std::move(type), name)
     );
 }

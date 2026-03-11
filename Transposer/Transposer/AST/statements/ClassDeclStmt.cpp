@@ -81,10 +81,10 @@ std::string ClassDeclStmt::generateEquals() const
     return oss.str();
 }
 
-ClassDeclStmt::ClassDeclStmt(const Token& token, IFuncDeclStmt* funcDecl, const FQN& name, std::vector<Field>& fields,
+ClassDeclStmt::ClassDeclStmt(const Token& token, const FQN& name, std::vector<Field>& fields,
     std::vector<Method>& methods, std::vector<Ctor>& ctors, const AccessType inheritingPublic,
-    const FQN& parentName, ClassDeclStmt* classDecl)
-    : Stmt(token, funcDecl, classDecl), name(name), inheritingPublic(inheritingPublic), parentName(parentName)
+    const FQN& parentName)
+    : Stmt(token), name(name), inheritingPublic(inheritingPublic), parentName(parentName)
 {
     for (auto& [isPublic, func] : fields) this->fields.emplace_back(isPublic, std::move(func));
     for (auto& [isPublic, method] : methods) this->methods.emplace_back(isPublic, std::move(method));
@@ -105,7 +105,6 @@ ClassDeclStmt::ClassDeclStmt(const Token& token, IFuncDeclStmt* funcDecl, const 
             );
         ctor->setBody(std::make_unique<BodyStmt>(
                 token,
-                nullptr,
                 emptyBodyStmts
             )
         );

@@ -10,8 +10,7 @@ private:
     StmtWithBody stmt;
     bool isDefault = false;
 public:
-    CaseStmt(const Token& token, IFuncDeclStmt* funcDecl,
-        StmtWithBody stmt, const bool isDefault = false, ClassDeclStmt* classDecl = nullptr);
+    CaseStmt(const Token& token, StmtWithBody stmt, const bool isDefault = false);
     void analyze() const override;
     std::string translateToCpp() const override;
 

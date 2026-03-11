@@ -5,8 +5,8 @@
 #include "../../errorHandling/classErrors/VirtualNonMethod.h"
 
 FuncDeclStmt::FuncDeclStmt(const Token& token,  const FQN& funcName, std::unique_ptr<IType> returnType, const std::vector<Var>& args,
-    std::vector<std::unique_ptr<FuncCreditStmt>>& credited, const bool isMethod, const VirtualType& virtualType, const bool isStatic, ClassDeclStmt* classDecl)
-        : IFuncDeclStmt(token, classDecl), func(Func(std::move(returnType), funcName, args, virtualType, nullptr, isStatic)), body(nullptr), hasReturned(false), virtualType(virtualType), isMethod(isMethod)
+    std::vector<std::unique_ptr<FuncCreditStmt>>& credited, const bool isMethod, const VirtualType& virtualType, const bool isStatic)
+        : IFuncDeclStmt(token), func(Func(std::move(returnType), funcName, args, virtualType, nullptr, isStatic)), body(nullptr), hasReturned(false), virtualType(virtualType), isMethod(isMethod)
 {
     for (auto& c : credited)
     {
@@ -82,10 +82,10 @@ void FuncDeclStmt::analyze() const
         throw NoReturn(token);
     }
 
-    if (this->funcDecl != nullptr)
-    {
-        throw FuncInsideFunc(token);
-    }
+    // if (this->funcDecl != nullptr) ?????????????????????????????????????????
+    // {
+    //     throw FuncInsideFunc(token);
+    // }
 
     if (virtualType != VirtualType::PURE)
     {

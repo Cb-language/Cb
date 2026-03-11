@@ -8,7 +8,7 @@ private:
     bool needsSemicolon = false;
 
 public:
-    ConstractorCallStmt(const Token& token, IFuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Expr>> args, ClassDeclStmt* classDecl = nullptr);
+    ConstractorCallStmt(const Token& token, std::vector<std::unique_ptr<Expr>> args);
 
     std::unique_ptr<IType> getType() const override;
     void analyze() const override;

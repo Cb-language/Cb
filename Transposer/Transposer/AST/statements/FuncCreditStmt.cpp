@@ -1,7 +1,7 @@
 #include "FuncCreditStmt.h"
 
-FuncCreditStmt::FuncCreditStmt(const Token& token, IFuncDeclStmt* funcDecl, const FuncCredit& funcCredit, ClassDeclStmt* classDecl)
-    : Stmt(token, funcDecl, classDecl), funcCredit(funcCredit)
+FuncCreditStmt::FuncCreditStmt(const Token& token, const FuncCredit& funcCredit)
+    : Stmt(token), funcCredit(funcCredit)
 {
 }
 

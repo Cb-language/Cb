@@ -9,7 +9,7 @@ private:
     std::unique_ptr<Call> right;
 
 public:
-    StaticDotOpExpr(const Token& token, IFuncDeclStmt* funcDecl, std::unique_ptr<ClassType> left, std::unique_ptr<Call> right, const bool needsSemicolon = false, ClassDeclStmt* classDecl = nullptr);
+    StaticDotOpExpr(const Token& token, std::unique_ptr<ClassType> left, std::unique_ptr<Call> right, const bool needsSemicolon = false);
 
     std::unique_ptr<IType> getType() const override;
     void analyze() const override;

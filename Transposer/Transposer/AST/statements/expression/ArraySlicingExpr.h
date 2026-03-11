@@ -9,8 +9,8 @@ private:
     std::unique_ptr<Expr> stop;
     std::unique_ptr<Expr> step;
 public:
-    ArraySlicingExpr(const Token& token, IFuncDeclStmt* funcDecl,
-        std::unique_ptr<Call> call, ClassDeclStmt* classDecl = nullptr);
+    ArraySlicingExpr(const Token& token,
+        std::unique_ptr<Call> call);
 
     ArraySlicingExpr(const ArraySlicingExpr& other);
     void analyze() const override;

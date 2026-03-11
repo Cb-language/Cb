@@ -5,8 +5,7 @@ class Call : public Expr
 {
 protected:
     bool isClassItem = false;
-    Call(const Token& token, IFuncDeclStmt* funcDecl, ClassDeclStmt* classDecl = nullptr)
-                    : Expr(token, funcDecl, classDecl) {}
+    explicit Call(const Token& token) : Expr(token) {}
 
 public:
 

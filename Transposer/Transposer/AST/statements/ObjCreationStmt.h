@@ -9,8 +9,8 @@ class ObjCreationStmt : public VarDeclStmt
 private:
     const ClassNode* classNode;
 public:
-    ObjCreationStmt(const Token& token, IFuncDeclStmt* funcDecl, const ClassNode* classNode,
-        bool hasStartingValue, std::unique_ptr<ConstractorCallStmt> startingValue, const Var &var, ClassDeclStmt* classDecl = nullptr);
+    ObjCreationStmt(const Token& token, const ClassNode* classNode,
+        bool hasStartingValue, std::unique_ptr<ConstractorCallStmt> startingValue, const Var &var);
 
     void analyze() const override;
     std::string translateToCpp() const override;

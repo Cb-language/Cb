@@ -14,8 +14,8 @@ protected:
     Var var;
 
 public:
-    VarDeclStmt(const Token& token, IFuncDeclStmt* funcDecl,
-        bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var &var, ClassDeclStmt* classDecl = nullptr);
+    VarDeclStmt(const Token& token,
+        bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var &var);
 
     void analyze() const override;
     std::string translateToCpp() const override;

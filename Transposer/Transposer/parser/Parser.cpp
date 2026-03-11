@@ -63,9 +63,7 @@ std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
             c.getIncludes().emplace_back(
                 std::make_unique<IncludeStmt>(
                     pathToken,
-                    c.getFuncDecl(),
-                    path,
-                    c.getClassDecl()
+                    path
                 )
             );
 

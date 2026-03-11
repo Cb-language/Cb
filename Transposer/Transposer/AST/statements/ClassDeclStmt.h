@@ -25,8 +25,8 @@ private:
     std::string generateEquals() const;
 
 public:
-    ClassDeclStmt(const Token& token, IFuncDeclStmt* funcDecl, const FQN& name, std::vector<Field>& fields,
-        std::vector<Method>& methods, std::vector<Ctor>& ctors, AccessType inheritingPublic, const FQN& parentName, ClassDeclStmt* classDecl = nullptr);
+    ClassDeclStmt(const Token& token, const FQN& name, std::vector<Field>& fields,
+        std::vector<Method>& methods, std::vector<Ctor>& ctors, AccessType inheritingPublic, const FQN& parentName);
     void analyze() const override;
     std::string translateToCpp() const override;
     std::string translateToH() const override;

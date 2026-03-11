@@ -8,7 +8,7 @@ private:
     std::vector<std::unique_ptr<Call>> calls;
 
 public:
-    HearStmt(const Token& token,  IFuncDeclStmt* funcDecl, std::vector<std::unique_ptr<Call>>& calls, ClassDeclStmt* classDecl = nullptr);
+    HearStmt(const Token& token, std::vector<std::unique_ptr<Call>>& calls);
     void analyze() const override;
     std::string translateToCpp() const override;
 };

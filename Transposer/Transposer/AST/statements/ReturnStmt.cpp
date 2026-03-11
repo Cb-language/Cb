@@ -2,8 +2,8 @@
 
 #include "errorHandling/semanticErrors/WrongReturnType.h"
 
-ReturnStmt::ReturnStmt(const Token& token, IFuncDeclStmt* funcDecl, std::unique_ptr<Expr>& rExpr, std::unique_ptr<IType> rType, ClassDeclStmt* classDecl)
-        : Stmt(token, funcDecl, classDecl), rType(std::move(rType)),
+ReturnStmt::ReturnStmt(const Token& token, std::unique_ptr<Expr>& rExpr, std::unique_ptr<IType> rType)
+        : Stmt(token), rType(std::move(rType)),
         rExpr(rExpr == nullptr ? nullptr : std::move(rExpr))
 {
 }

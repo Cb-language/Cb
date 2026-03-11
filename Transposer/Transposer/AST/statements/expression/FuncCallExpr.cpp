@@ -6,9 +6,10 @@
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/semanticErrors/CallWithoutCopyright.h"
 
-FuncCallExpr::FuncCallExpr(const Token& token, IFuncDeclStmt* funcDecl,
-    const FQN& name, std::vector<std::unique_ptr<Expr>> args, const bool needsSemicolon, ClassDeclStmt* classDecl)
-    : Call(token, funcDecl, classDecl), name(name), type(std::make_unique<PrimitiveType>(Primitive::TYPE_FERMATA)), needsSemicolon(needsSemicolon)
+FuncCallExpr::FuncCallExpr(const Token& token,
+    const FQN& name, std::vector<std::unique_ptr<Expr>> args, const bool needsSemicolon)
+    : Call(token), name(name), type(std::make_unique<PrimitiveType>(Primitive::TYPE_FERMATA)),
+      needsSemicolon(needsSemicolon), funcDecl(nullptr)
 {
     for (auto& arg : args)
     {
@@ -30,7 +31,7 @@ void FuncCallExpr::analyze() const
 
     if (translateFQNtoString(funcDecl->getName()) == "prelude")
     {
-        return; // main doesnt have to copy right
+        return; // main doesnt have to copyright
     }
 
     if (funcDecl->getName() == name)
@@ -84,6 +85,11 @@ std::string FuncCallExpr::translateToCpp() const
 void FuncCallExpr::setType(std::unique_ptr<IType> type)
 {
     this->type = std::move(type);
+}
+
+void FuncCallExpr::setClassDecl(IFuncDeclStmt& decl)
+{
+    this->funcDecl = &decl;
 }
 
 bool FuncCallExpr::isLegalCall(const Func& func) const

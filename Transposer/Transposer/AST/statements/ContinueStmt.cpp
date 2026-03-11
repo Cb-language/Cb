@@ -2,7 +2,7 @@
 
 #include "errorHandling/semanticErrors/StmtNotContinueAble.h"
 
-ContinueStmt::ContinueStmt(const Token& token, IFuncDeclStmt* funcDecl, ClassDeclStmt* classDecl) : Stmt(token, funcDecl, classDecl)
+ContinueStmt::ContinueStmt(const Token& token) : Stmt(token)
 {
 }
 

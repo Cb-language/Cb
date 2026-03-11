@@ -5,10 +5,10 @@
 #include "../../errorHandling/classErrors/InstantiateAbstractClass.h"
 #include "symbols/Type/ClassType.h"
 
-ObjCreationStmt::ObjCreationStmt(const Token& token, IFuncDeclStmt* funcDecl,
+ObjCreationStmt::ObjCreationStmt(const Token& token,
                                  const ClassNode* classNode, const bool hasStartingValue, std::unique_ptr<ConstractorCallStmt> startingValue,
-                                 const Var& var, ClassDeclStmt* classDecl)
-: VarDeclStmt(token, funcDecl, hasStartingValue, std::move(startingValue), var, classDecl),
+                                 const Var& var)
+: VarDeclStmt(token, hasStartingValue, std::move(startingValue), var),
       classNode(classNode)
 {
     if (classNode == nullptr) throw HowDidYouGetHere(token);

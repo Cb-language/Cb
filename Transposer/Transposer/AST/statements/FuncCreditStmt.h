@@ -8,7 +8,7 @@ private:
     const FuncCredit funcCredit;
 
 public:
-    FuncCreditStmt(const Token& token, IFuncDeclStmt* funcDecl, const FuncCredit& funcCredit, ClassDeclStmt* classDecl = nullptr);
+    FuncCreditStmt(const Token& token, const FuncCredit& funcCredit);
 
     std::string getName() const;
 

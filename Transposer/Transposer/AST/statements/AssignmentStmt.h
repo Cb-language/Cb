@@ -14,8 +14,8 @@ private:
     const std::unique_ptr<Expr> expr;
 
 public:
-    AssignmentStmt(const Token& token, IFuncDeclStmt* funcDecl,
-        std::unique_ptr<Call> call, const std::string& assignmentOp, std::unique_ptr<Expr> expr, ClassDeclStmt* classDecl = nullptr);
+    AssignmentStmt(const Token& token,
+        std::unique_ptr<Call> call, const std::string& assignmentOp, std::unique_ptr<Expr> expr);
     void analyze() const override;
     std::string translateToCpp() const override;
     std::unique_ptr<IType> getType() const override;

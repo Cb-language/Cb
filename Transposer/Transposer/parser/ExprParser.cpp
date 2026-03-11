@@ -83,7 +83,7 @@ std::unique_ptr<Expr> ExprParser::parseExpr()
             Token t = c.copyCurrent();
             const std::string opStr = tokenToOp(t.type);
             c.advance();
-            left = std::make_unique<UnaryOpExpr>(t, c.getFuncDecl(), std::move(call), strToUnaryOp(opStr), false, c.getClassDecl());
+            left = std::make_unique<UnaryOpExpr>(t, std::move(call), strToUnaryOp(opStr), false);
         }
 
         else if (c.isBinaryOp())
@@ -102,7 +102,7 @@ std::unique_ptr<Expr> ExprParser::parseExpr()
         std::string op = tokenToOp(opToken.type);
         c.advance();
         auto right = parseExpr();
-        left = std::make_unique<BinaryOpExpr>(opToken, c.getFuncDecl(), op, std::move(left), std::move(right), c.getClassDecl());
+        left = std::make_unique<BinaryOpExpr>(opToken, op, std::move(left), std::move(right));
     }
 
     return left;
@@ -122,7 +122,7 @@ std::unique_ptr<ConstValueExpr> ExprParser::parseConstValue() const
         case CbTokenType::CONST_INT:   type = Primitive::TYPE_DEGREE; break;
         default: return nullptr;
     }
-    return std::make_unique<ConstValueExpr>(t, c.getFuncDecl(), std::make_unique<PrimitiveType>(type), t.value.value(), c.getClassDecl());
+    return std::make_unique<ConstValueExpr>(t, std::make_unique<PrimitiveType>(type), t.value.value());
 }
 
 FQN ExprParser::parseFQN() const
@@ -143,7 +143,7 @@ std::unique_ptr<Call> ExprParser::parseFuncCall(const FQN& name)
             c.expect(CbTokenType::PUNCTUATION_COMMA);
         }
     }
-    return std::make_unique<FuncCallExpr>(t, c.getFuncDecl(), name, std::move(args), false, c.getClassDecl());
+    return std::make_unique<FuncCallExpr>(t, name, std::move(args), false);
 }
 
 std::unique_ptr<Expr> ExprParser::parseUnaryOp()
@@ -155,7 +155,7 @@ std::unique_ptr<Expr> ExprParser::parseUnaryOp()
     if (opStr == "!")
     {
         auto operand = parseExpr();
-        return std::make_unique<UnaryOpExpr>(t, c.getFuncDecl(), std::move(operand), UnaryOp::Not, false, c.getClassDecl());
+        return std::make_unique<UnaryOpExpr>(t, std::move(operand), UnaryOp::Not, false);
     }
     
     return nullptr;
@@ -166,7 +166,7 @@ std::unique_ptr<Expr> ExprParser::parseBinaryOp(std::unique_ptr<Call> left)
     Token opToken = c.advance();
     std::string op = tokenToOp(opToken.type);
     auto right = parseExpr();
-    return std::make_unique<AssignmentStmt>(opToken, c.getFuncDecl(), std::move(left), op, std::move(right), c.getClassDecl());
+    return std::make_unique<AssignmentStmt>(opToken, std::move(left), op, std::move(right));
 }
 
 std::unique_ptr<Call> ExprParser::parseCallExpr()
@@ -180,14 +180,14 @@ std::unique_ptr<Call> ExprParser::parseCallExpr()
     }
     else
     {
-        call = std::make_unique<VarCallExpr>(startToken, c.getFuncDecl(), Var(nullptr, name), c.getClassDecl());
+        call = std::make_unique<VarCallExpr>(startToken, Var(nullptr, name));
     }
 
     while (c.matchConsume(CbTokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
     {
         auto index = parseExpr();
         c.expect(CbTokenType::PUNCTUATION_CLOSE_SQUARE_BRACE);
-        call = std::make_unique<ArrayIndexingExpr>(c.copyCurrent(), c.getFuncDecl(), std::move(call), std::move(index), c.getClassDecl());
+        call = std::make_unique<ArrayIndexingExpr>(c.copyCurrent(), std::move(call), std::move(index));
     }
 
     return call;
@@ -201,19 +201,15 @@ std::unique_ptr<Call> ExprParser::parseArrayAccess(std::unique_ptr<Call> call)
     {
         return std::make_unique<ArrayIndexingExpr>(
             c.copyCurrent(),
-            c.getFuncDecl(),
             std::move(call),
-            std::move(expr),
-            c.getClassDecl()
+            std::move(expr)
         );
     }
     if (!c.expect(CbTokenType::PUNCTUATION_COLON, std::make_unique<UnexpectedToken>(c.current()))) return nullptr;
 
     auto sliceingExpr = std::make_unique<ArraySlicingExpr>(
         c.copyCurrent(),
-        c.getFuncDecl(),
-        std::move(call),
-        c.getClassDecl()
+        std::move(call)
     );
 
     sliceingExpr->setStart(std::move(expr));

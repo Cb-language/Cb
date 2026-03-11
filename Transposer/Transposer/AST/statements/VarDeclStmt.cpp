@@ -2,8 +2,8 @@
 
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
 
-VarDeclStmt::VarDeclStmt(const Token& token, IFuncDeclStmt* funcDecl, const bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var& var, ClassDeclStmt* classDecl) :
-    Stmt(token, funcDecl, classDecl), hasStartingValue(hasStartingValue), startingValue(std::move(startingValue)) , var(var.copy())
+VarDeclStmt::VarDeclStmt(const Token& token, const bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var& var) :
+    Stmt(token), hasStartingValue(hasStartingValue), startingValue(std::move(startingValue)) , var(var.copy())
 {
 }
 
