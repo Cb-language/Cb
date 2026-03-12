@@ -21,16 +21,15 @@ private:
     TypeParser typeParser;
 
 public:
-    explicit Parser(const std::vector<Token>& tokens);
+    explicit Parser(const std::queue<Token>& tokens);
 
     const ParserContext& getContext() const;
-    ParserContext& getContext();
 
     std::vector<std::pair<std::filesystem::path, Token>> readIncludes();
     void parse();
     void analyze();
     std::string translateToCpp(const std::filesystem::path& hPath, const bool isMain = false) const;
     std::string translateToH(const bool isMain = false) const;
-    bool shouldProduceCpp(bool isMain) const;
+    //bool shouldProduceCpp(bool isMain) const;
 };
 

@@ -1,9 +1,11 @@
 #pragma once
 #include <string>
+#include <queue>
 #include <vector>
 #include <boost/regex.hpp>
 #include "Token.h"
 #include "TrieTree/TrieNode.h"
+
 
 class Tokenizer
 {
@@ -15,9 +17,9 @@ private:
 
 	void initTrieTree() const;
 	static bool checkBoundary(const std::string &code, const KeywordInfo *keyword, const size_t start, const size_t end);
-	static size_t handleKeywordMatch(const std::string &code, size_t& row, size_t& col, const TokenType tokenType, std::vector<Token> &tokens, const size_t keywordEnd, const std::filesystem::path& path);
+	static size_t handleKeywordMatch(const std::string &code, size_t& row, size_t& col, const CbTokenType tokenType, std::queue<Token>& tokens, const size_t keywordEnd, const std::filesystem::path& path);
 	static void onRegexToken(Token *token);
 public:
 	Tokenizer();
-	std::vector<Token> tokenize(const std::string& code, const std::filesystem::path& path) const;
+	std::queue<Token> tokenize(const std::string& code, const std::filesystem::path& path) const;
 };

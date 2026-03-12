@@ -6,7 +6,7 @@
 
 typedef unsigned char byte;
 
-enum class TokenType : byte
+enum class CbTokenType : byte
 {
 	// types
 	TYPE_FLAT,    // signed
@@ -48,7 +48,7 @@ enum class TokenType : byte
 	KEYWORD_REST,           // pure virtual
 	KEYWORD_VARIATION,      // override
 	KEYWORD_CTOR_CALL,      // ctor call
-	KEYWORD_C_CLEF,          // 𝄡 (dosent compile)
+	KEYWORD_C_CLEF,        // 𝄡 (dosent compile)
 
 	// punctuation
 	PUNCTUATION_RET_TYPE_ARROW,      // 𝅘𝅥=
@@ -58,14 +58,14 @@ enum class TokenType : byte
 	PUNCTUATION_CLOSE_SQUARE_BRACE,  // ]
 	PUNCTUATION_OPEN_CURLY_BRACKET,  // 𝄋
 	PUNCTUATION_CLOSE_CURLY_BRACKET, // 𝄌
-	PUNCTUATION_LOOP_OPEN,           // 𝄕
-	PUNCTUATION_LOOP_CLOSE,          // 𝄇
+	PUNCTUATION_PARENTHESIS_OPEN,    // 𝄕
+	PUNCTUATION_PARENTHESIS_CLOSE,   // 𝄇
 	PUNCTUATION_COLON,               // :
 	PUNCTUATION_BACKSLASH,           // 𝄍
 	PUNCTUATION_REST,                // 𝄽 (does nothing)
 	PUNCTUATION_OPEN_LINE,           // 𝄞
 	PUNCTUATION_SEMICOLON,           // 𝄀
-	PUNCTUATION_CLOSE_FILE,          // 𝄂
+	PUNCTUATION_CLOSE_FUNC,          // 𝄂
 	PUNCTUATION_NEW_LINE,            // \n
 
 	// unary operations
@@ -73,14 +73,20 @@ enum class TokenType : byte
 	UNARY_OP_DOUBLE_SHARP, // 𝄪     ++)++
 	UNARY_OP_FLAT,         // ♭     --
 	UNARY_OP_DOUBLE_FLAT,  // 𝄫     --)--
+	UNARY_OP_NOT,          // !
 	UNARY_OP_NATRUAL,      // ♮      =0
-	UNARY_OP_NOT,          // !     !
 
 	// binary operation
-	BINARY_OP_EQUIAL,        // ==
+	BINARY_OP_EQUAL,         // =
+	BINARY_OP_EQUALITY,      // ==
 	BINARY_OP_NOT_EQUAL,     // !=
 	BINARY_OP_LESSER_EQUAL,  // <=
 	BINARY_OP_GREATER_EQUAL, // >=
+	BINARY_OP_PLUS_EQUAL,     // +=
+	BINARY_OP_MINUS_EQUAL,    // -=
+	BINARY_OP_DIVIDE_EQUAL,   // /=
+	BINARY_OP_MULTIPLY_EQUAL, // *=
+	BINARY_OP_MODULUS_EQUAL,  // %=
 	BINARY_OP_LESS_THAN,     // <
 	BINARY_OP_MORE_THAN,     // >
 	BINARY_OP_PLUS,          // +
@@ -90,14 +96,6 @@ enum class TokenType : byte
 	BINARY_OP_MODULO,        // %
 	BINARY_OP_OR,            // divis
 	BINARY_OP_AND,           // chord
-
-	// assignment operations
-	ASSIGNMENT_OP_EQUAL,          // =
-	ASSIGNMENT_OP_PLUS_EQUAL,     // +=
-	ASSIGNMENT_OP_MINUS_EQUAL,    // -=
-	ASSIGNMENT_OP_DIVIDE_EQUAL,   // /=
-	ASSIGNMENT_OP_MULTIPLY_EQUAL, // *=
-	ASSIGNMENT_OP_MODULUS_EQUAL,  // %=
 
 	// comments
 	COMMENT_SINGLE,       // ?
@@ -119,7 +117,7 @@ enum class TokenType : byte
 };
 struct Token
 {
-	TokenType type;
+	CbTokenType type;
 	std::optional<std::string> value;
 
 	size_t line;
@@ -129,7 +127,7 @@ struct Token
 
 	Token();
 
-	Token(const TokenType type, const std::optional<std::string> &value, const size_t line, const size_t column, const std::filesystem::path& path);
+	Token(const CbTokenType type, const std::optional<std::string> &value, const size_t line, const size_t column, const std::filesystem::path& path);
 
 	bool isConst() const;
 };

@@ -4,5 +4,5 @@
 class StaticFuncCantVirtual : public Error
 {
 public:
-    StaticFuncCantVirtual(const Token& token);
+    explicit StaticFuncCantVirtual(const Token& token);
 };

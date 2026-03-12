@@ -11,10 +11,10 @@ class VarDeclStmt : public Stmt
 protected:
     const bool hasStartingValue;
     const std::unique_ptr<Expr> startingValue;
-    const Var var;
+    Var var;
 
 public:
-    VarDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
+    VarDeclStmt(const Token& token,
         bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var &var);
 
     void analyze() const override;
@@ -22,4 +22,5 @@ public:
 
     const Var& getVar() const;
     const Expr* getStartingValue() const;
+    void setIsStatic(const bool isStatic);
 };

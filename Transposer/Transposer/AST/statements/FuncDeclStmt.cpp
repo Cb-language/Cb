@@ -4,10 +4,9 @@
 #include "errorHandling/semanticErrors/NoReturn.h"
 #include "../../errorHandling/classErrors/VirtualNonMethod.h"
 
-FuncDeclStmt::FuncDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass,
-    const std::string& funcName, std::unique_ptr<IType> returnType, const std::vector<Var>& args,
-    std::vector<std::unique_ptr<FuncCreditStmt>>& credited, bool isMethod, const VirtualType& virtualType, bool isStatic)
-        : IFuncDeclStmt(token, scope, currClass), func(Func(std::move(returnType), funcName, args, virtualType, currClass, isStatic)), body(nullptr), hasReturned(false), isMethod(isMethod), virtualType(virtualType)
+FuncDeclStmt::FuncDeclStmt(const Token& token,  const FQN& funcName, std::unique_ptr<IType> returnType, const std::vector<Var>& args,
+    std::vector<std::unique_ptr<FuncCreditStmt>>& credited, const bool isMethod, const VirtualType& virtualType, const bool isStatic)
+        : IFuncDeclStmt(token), func(Func(std::move(returnType), funcName, args, virtualType, nullptr, isStatic)), body(nullptr), hasReturned(false), virtualType(virtualType), isMethod(isMethod)
 {
     for (auto& c : credited)
     {
@@ -20,7 +19,7 @@ const std::vector<Var>& FuncDeclStmt::getArgs() const
     return func.getArgs();
 }
 
-std::string FuncDeclStmt::getName() const
+const FQN& FuncDeclStmt::getName() const
 {
     return func.getFuncName();
 }
@@ -44,6 +43,11 @@ void FuncDeclStmt::setVirtual(const VirtualType vType)
 VirtualType FuncDeclStmt::getVirtual() const
 {
     return virtualType;
+}
+
+void FuncDeclStmt::setIsStatic(const bool isStatic) const
+{
+    this->getFunc().setStatic(isStatic);
 }
 
 void FuncDeclStmt::setBody(std::unique_ptr<BodyStmt> body)
@@ -73,15 +77,15 @@ void FuncDeclStmt::analyze() const
         throw VirtualNonMethod(token);
     }
 
-    if (func.getType()->getType() != "fermata" && !hasReturned && virtualType != VirtualType::PURE)
+    if (func.getType()->toString() != "fermata" && !hasReturned && virtualType != VirtualType::PURE)
     {
         throw NoReturn(token);
     }
 
-    if (this->funcDecl != nullptr)
-    {
-        throw FuncInsideFunc(token);
-    }
+    // if (this->funcDecl != nullptr) ?????????????????????????????????????????
+    // {
+    //     throw FuncInsideFunc(token);
+    // }
 
     if (virtualType != VirtualType::PURE)
     {
@@ -97,7 +101,7 @@ std::string FuncDeclStmt::translateToCpp() const
 
 std::string FuncDeclStmt::translateToH() const
 {
-    if (func.getFuncName() == "prelude") return "";
+    if (translateFQNtoString(func.getFuncName()) == "prelude") return "";
 
     const std::string fStr = func.translateToCpp();
     std::string prefix = "";

@@ -20,7 +20,7 @@ public:
     static ClassTree& instance();
 
     void addClass(const Class& c, ClassNode* p);
-    ClassNode* find(const std::string& name);
+    ClassNode* find(const FQN& name);
 
     static void init();
     static void destroy();

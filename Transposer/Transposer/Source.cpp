@@ -103,13 +103,13 @@ int main(int argc, char* argv[])
         SymbolTable::clearClasses();
         return -1;
     }
-    catch (const std::exception& e) // Catch unexpected C++ errors
-    {
-        std::cerr << "Internal Transpiler Error: " << e.what() << std::endl;
-        graph.reset();
-        SymbolTable::clearClasses();
-        return -1;
-    }
+    // catch (const std::exception& e) // Catch unexpected C++ errors
+    // {
+    //     std::cerr << "Internal Transpiler Error: " << e.what() << std::endl;
+    //     graph.reset();
+    //     SymbolTable::clearClasses();
+    //     return -1;
+    // }
     
     std::vector<Error*> errors = FileGraph::getAllErrors();
 

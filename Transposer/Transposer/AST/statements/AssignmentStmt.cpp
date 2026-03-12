@@ -1,55 +1,29 @@
 #include "AssignmentStmt.h"
 
-#include "errorHandling/semanticErrors/IllegalTypeCast.h"
+#include "errorHandling/semanticErrors/IllegalOpOnType.h"
 
-
-AssignmentStmt::AssignmentStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-    std::unique_ptr<Call> call, const std::string& assignmentOp, std::unique_ptr<Expr> expr)
-        : Stmt(token, scope, funcDecl, currClass), call(std::move(call)), assignmentOp(assignmentOp), expr(std::move(expr))
+AssignmentStmt::AssignmentStmt(const Token& token,
+                               std::unique_ptr<Call> call, const std::string& assignmentOp, std::unique_ptr<Expr> expr)
+        : Expr(token), call(std::move(call)), assignmentOp(assignmentOp), expr(std::move(expr))
 {
 }
 
 void AssignmentStmt::analyze() const
 {
-    if (assignmentOp == "-=" || assignmentOp == "*=" || assignmentOp == "/=" || assignmentOp == "//=" || assignmentOp == "%=")
-    {
-        if (!call->getType()->copy()->isNumberable())
-        {
-            throw IllegalTypeCast(token, call->getType()->toString(), "degree");
-        }
+    const auto leftType = call->getType();
 
-        if (!expr->getType()->copy()->isNumberable())
-        {
-            throw IllegalTypeCast(token, expr->getType()->toString(), "degree");
-        }
-    }
-
-    if (*(call->getType()->copy()) != *(expr->getType()->copy()))
+    if (const auto rightType = expr->getType(); *leftType != *rightType)
     {
-        throw IllegalTypeCast(token, expr->getType()->toString(), call->getType()->toString());
+        throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), assignmentOp);
     }
 }
 
 std::string AssignmentStmt::translateToCpp() const
 {
-    const std::string varName = call->translateToCpp();
-    if (assignmentOp == "+=" || assignmentOp == "=")
-    {
-        const bool isVarStr = call->getType()->getType() == "bar";
-        const bool isExprStr = expr->getType()->getType() == "bar" || expr->getType()->getType() == "note";
+    return getTabs() + call->translateToCpp() + " " + assignmentOp + " " + expr->translateToCpp() + ";";
+}
 
-        if (isVarStr && !isExprStr)
-        {
-            return getTabs() + varName + " " + assignmentOp + " std::to_string(" + expr->translateToCpp() + ");";
-        }
-    }
-
-    if (assignmentOp == "//=")
-    {
-        return getTabs() + varName + " = " + "static_cast<double>(" + varName +") / static_cast<double>(" + expr->translateToCpp() + ");";
-    }
-
-
-    return getTabs() + Utils::removeAllFirstTabs(varName) + " "
-     + assignmentOp + " " + expr->translateToCpp() + ";";
+std::unique_ptr<IType> AssignmentStmt::getType() const
+{
+    return call->getType()->copy();
 }

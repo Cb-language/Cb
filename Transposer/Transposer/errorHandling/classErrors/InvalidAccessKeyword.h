@@ -4,5 +4,5 @@
 class InvalidAccessKeyword : public Error
 {
 public:
-    InvalidAccessKeyword(const Token& token);
+    explicit InvalidAccessKeyword(const Token& token);
 };

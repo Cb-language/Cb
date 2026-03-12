@@ -4,8 +4,8 @@
 
 #include "errorHandling/semanticErrors/IllegalHear.h"
 
-HearStmt::HearStmt(const Token& token,  Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::vector<std::unique_ptr<Call>>& calls)
-    : Stmt(token, scope, funcDecl, currClass)
+HearStmt::HearStmt(const Token& token, std::vector<std::unique_ptr<Call>>& calls)
+    : Stmt(token)
 {
     for (auto& call : calls)
     {

@@ -4,5 +4,5 @@
 class InvalidPathExtension : public Error
 {
 public:
-    InvalidPathExtension(const Token& token);
+    explicit InvalidPathExtension(const Token& token);
 };

@@ -6,11 +6,9 @@
 #include "other/Utils.h"
 #include "symbols/Type/ClassType.h"
 
-ConstractorCallStmt::ConstractorCallStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl,
-                                         const ClassNode* currClass, const ClassNode* classNode, std::vector<std::unique_ptr<Expr>> args)
-        : Expr(token, scope, funcDecl, currClass), classNode(classNode)
+ConstractorCallStmt::ConstractorCallStmt(const Token& token, std::vector<std::unique_ptr<Expr>> args)
+        : Expr(token)
 {
-    if (classNode == nullptr) throw HowDidYouGetHere(token);
     for (auto& arg : args)
     {
         this->args.emplace_back(std::move(arg));
@@ -19,12 +17,12 @@ ConstractorCallStmt::ConstractorCallStmt(const Token& token, Scope* scope, IFunc
 
 std::unique_ptr<IType> ConstractorCallStmt::getType() const
 {
-    return std::make_unique<ClassType>(classNode);
+    return std::make_unique<ClassType>(currClass->getClass().getClassName());
 }
 
 void ConstractorCallStmt::analyze() const
 {
-    for (const auto& [accessType, ctor] : classNode->getClass().getConstractors())
+    for (const auto& [accessType, ctor] : currClass->getClass().getConstractors())
     {
         auto ctorArgs = ctor.getArgs();
         if (args.size() != ctorArgs.size()) continue;
@@ -38,9 +36,9 @@ void ConstractorCallStmt::analyze() const
 
         if (!differ)
         {
-            if (classNode->isLegalAccess(accessType, currClass)) return;
+            if (currClass->isLegalAccess(accessType, currClass)) return;
 
-            throw AccessError(token, classNode->getClass().getClassName(), classNode->getClass().getClassName() + "_call");
+            throw AccessError(token, translateFQNtoString(currClass->getClass().getClassName()), translateFQNtoString(currClass->getClass().getClassName()) + "_call");
         }
     }
 
@@ -51,12 +49,12 @@ std::string ConstractorCallStmt::translateToCpp() const
 {
     std::ostringstream oss;
 
-    if (isStmt)
+    if (needsSemicolon)
     {
         oss << getTabs();
     }
 
-    oss << classNode->getClass().getClassName() << "(";
+    oss << translateFQNtoString(currClass->getClass().getClassName()) << "(";
 
     bool first = true;
     for (const auto& arg : args)
@@ -72,7 +70,7 @@ std::string ConstractorCallStmt::translateToCpp() const
 
     oss << ")";
 
-    if (isStmt)
+    if (needsSemicolon)
     {
         oss << ";";
     }
@@ -80,12 +78,12 @@ std::string ConstractorCallStmt::translateToCpp() const
     return oss.str();
 }
 
-void ConstractorCallStmt::setIsStmt(const bool isStmt)
+void ConstractorCallStmt::setNeedsSemicolon(const bool needsSemicolon)
 {
-    this->isStmt = isStmt;
+    this->needsSemicolon = needsSemicolon;
 }
 
 const ClassNode* ConstractorCallStmt::getClassNode() const
 {
-    return classNode;
+    return currClass;
 }

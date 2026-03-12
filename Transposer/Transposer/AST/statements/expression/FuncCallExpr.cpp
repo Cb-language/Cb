@@ -6,9 +6,10 @@
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/semanticErrors/CallWithoutCopyright.h"
 
-FuncCallExpr::FuncCallExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-    const std::string& name,std::vector<std::unique_ptr<Expr>> args, const bool isStmt)
-    : Call(token, scope, funcDecl, currClass), name(name), type(std::make_unique<Type>("fermata")), isStmt(isStmt)
+FuncCallExpr::FuncCallExpr(const Token& token,
+    const FQN& name, std::vector<std::unique_ptr<Expr>> args, const bool needsSemicolon)
+    : Call(token), name(name), type(std::make_unique<PrimitiveType>(Primitive::TYPE_FERMATA)),
+      needsSemicolon(needsSemicolon), funcDecl(nullptr)
 {
     for (auto& arg : args)
     {
@@ -28,9 +29,9 @@ void FuncCallExpr::analyze() const
         throw HowDidYouGetHere(token);
     }
 
-    if (funcDecl->getName() == "prelude")
+    if (translateFQNtoString(funcDecl->getName()) == "prelude")
     {
-        return; // main doesnt have to copy right
+        return; // main doesnt have to copyright
     }
 
     if (funcDecl->getName() == name)
@@ -40,12 +41,12 @@ void FuncCallExpr::analyze() const
 
     for (const auto& credit : funcDecl->getCredited())
     {
-        if (credit->getName() == name)
+        if (credit->getName() == translateFQNtoString(name))
         {
             return;
         }
     }
-   throw CallWithoutCopyright(token, name);
+   throw CallWithoutCopyright(token, translateFQNtoString(name));
 }
 
 std::string FuncCallExpr::translateToCpp() const
@@ -53,12 +54,12 @@ std::string FuncCallExpr::translateToCpp() const
     std::ostringstream oss;
     bool first = true;
 
-    if (isStmt && !isClassItem)
+    if (needsSemicolon && !isClassItem)
     {
         oss << getTabs();
     }
 
-    oss << name << "(";
+    oss << translateFQNtoString(name) << "(";
 
     for (const auto& arg : args)
     {
@@ -73,7 +74,7 @@ std::string FuncCallExpr::translateToCpp() const
 
     oss << ")";
 
-    if (isStmt)
+    if (needsSemicolon)
     {
         oss << ";";
     }
@@ -84,6 +85,11 @@ std::string FuncCallExpr::translateToCpp() const
 void FuncCallExpr::setType(std::unique_ptr<IType> type)
 {
     this->type = std::move(type);
+}
+
+void FuncCallExpr::setClassDecl(IFuncDeclStmt& decl)
+{
+    this->funcDecl = &decl;
 }
 
 bool FuncCallExpr::isLegalCall(const Func& func) const
@@ -108,17 +114,17 @@ const Token& FuncCallExpr::getToken() const
     return token;
 }
 
-const std::string& FuncCallExpr::getName() const
+const FQN& FuncCallExpr::getName() const
 {
     return name;
 }
 
 std::string FuncCallExpr::toString() const
 {
-    return name;
+    return translateFQNtoString(name);
 }
 
-void FuncCallExpr::setIsStmt(const bool isStmt)
+void FuncCallExpr::setNeedsSemicolon(const bool needsSemicolon)
 {
-    this->isStmt = isStmt;
+    this->needsSemicolon = needsSemicolon;
 }

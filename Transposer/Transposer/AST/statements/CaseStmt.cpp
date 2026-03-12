@@ -3,26 +3,26 @@
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
 
-CaseStmt::CaseStmt(const Token& token, Scope *scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::unique_ptr<Expr> expr, std::unique_ptr<BodyStmt> body,
-                   const bool isDefault) : Stmt(token, scope, funcDecl, currClass), expr(std::move(expr)), body(std::move(body)), isDefault(isDefault)
+CaseStmt::CaseStmt(const Token& token, StmtWithBody stmt,
+                   const bool isDefault) : Stmt(token), stmt(std::move(stmt)), isDefault(isDefault)
 {
 }
 
 void CaseStmt::analyze() const
 {
     // Can't really get here, but it's good to check
-    if (body == nullptr)
+    if (stmt.body == nullptr)
     {
         throw HowDidYouGetHere(token);
     }
 
-    if (!expr->getType()->isNumberable())
+    if (!stmt.expr->getType()->isNumberable())
     {
-        throw IllegalTypeCast(token, expr->getType()->toString(), "degree");
+        throw IllegalTypeCast(token, stmt.expr->getType()->toString(), "degree");
     }
 
-    body->analyze();
-    expr->analyze();
+    stmt.body->analyze();
+    stmt.expr->analyze();
 }
 
 std::string CaseStmt::translateToCpp() const
@@ -36,8 +36,8 @@ std::string CaseStmt::translateToCpp() const
     }
     else
     {
-        os << "case " << expr->translateToCpp();
+        os << "case " << stmt.expr->translateToCpp();
     }
-    os << ":\n" << body->translateToCpp() << "\n";
+    os << ":\n" << stmt.body->translateToCpp() << "\n";
     return os.str();
 }

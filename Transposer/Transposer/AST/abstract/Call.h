@@ -5,11 +5,9 @@ class Call : public Expr
 {
 protected:
     bool isClassItem = false;
-    explicit Call(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const bool hasParens)
-                    : Expr(token, scope, funcDecl, currClass, hasParens) {}
+    explicit Call(const Token& token) : Expr(token) {}
 
 public:
-    Call(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass) : Expr(token, scope, funcDecl, currClass) {}
 
     virtual std::string toString() const = 0;
 
@@ -22,7 +20,7 @@ inline bool Call::getIsClassItem() const
     return isClassItem;
 }
 
-inline void Call::setIsClassItem(bool value)
+inline void Call::setIsClassItem(const bool value)
 {
     isClassItem = value;
 }

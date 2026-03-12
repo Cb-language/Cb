@@ -1,19 +1,19 @@
 #include "WhileStmt.h"
 
-WhileStmt::WhileStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::unique_ptr<Expr>& condition, std::unique_ptr<Stmt>& body)
-    : Stmt(token, scope, funcDecl, currClass), condition(std::move(condition)), body(std::move(body))
+WhileStmt::WhileStmt(const Token& token, StmtWithBody stmt)
+    : Stmt(token), stmt(std::move(stmt))
 {
 }
 
 void WhileStmt::analyze() const
 {
-    body->analyze();
-    condition->analyze();
+    stmt.body->analyze();
+    stmt.expr->analyze();
 }
 
 std::string WhileStmt::translateToCpp() const
 {
     std::ostringstream oss;
-    oss << getTabs() << "while (" << condition->translateToCpp() << ")" << std::endl << body->translateToCpp();
+    oss << getTabs() << "while (" << stmt.expr->translateToCpp() << ")" << std::endl << stmt.body->translateToCpp();
     return oss.str();
 }

@@ -39,8 +39,8 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.h
         Transposer/parser/Parser_org.cpp
         Transposer/parser/Parser.h
-        Transposer/symbols/Type/Type.cpp
-        Transposer/symbols/Type/Type.h
+        Transposer/symbols/Type/PrimitiveType.cpp
+        Transposer/symbols/Type/PrimitiveType.h
         Transposer/AST/abstract/Expression.h
         Transposer/AST/statements/expression/ConstValueExpr.cpp
         Transposer/AST/statements/expression/ConstValueExpr.h
@@ -191,8 +191,8 @@ add_executable(Transposer
         Transposer/AST/statements/ClassDeclStmt.h
         Transposer/errorHandling/classErrors/MissingClassPipe.cpp
         Transposer/errorHandling/classErrors/MissingClassPipe.h
-        Transposer/AST/statements/ConstractorDeclStmt.cpp
-        Transposer/AST/statements/ConstractorDeclStmt.h
+        Transposer/AST/statements/ConstructorDeclStmt.cpp
+        Transposer/AST/statements/ConstructorDeclStmt.h
         Transposer/symbols/Class.cpp
         Transposer/symbols/Class.h
         Transposer/symbols/Constractor.cpp
@@ -266,6 +266,21 @@ add_executable(Transposer
         Transposer/parser/ExprParser.h
         Transposer/parser/TypeParser.cpp
         Transposer/parser/TypeParser.h
+        Transposer/errorHandling/syntaxErrors/NoLineOpener.cpp
+        Transposer/errorHandling/syntaxErrors/NoLineOpener.h
+        Transposer/errorHandling/how/HowDareYou.cpp
+        Transposer/errorHandling/how/HowDareYou.h
+        Transposer/errorHandling/syntaxErrors/NoNewLine.cpp
+        Transposer/errorHandling/syntaxErrors/NoNewLine.h
+        Transposer/errorHandling/syntaxErrors/NoRest.cpp
+        Transposer/errorHandling/syntaxErrors/NoRest.h
+        Transposer/errorHandling/classErrors/InvalidCtorName.cpp
+        Transposer/errorHandling/classErrors/InvalidCtorName.h
+        Transposer/errorHandling/classErrors/StaticCtor.cpp
+        Transposer/errorHandling/classErrors/StaticCtor.h
+        Transposer/errorHandling/classErrors/VirtualCtor.cpp
+        Transposer/errorHandling/classErrors/VirtualCtor.h
+        Transposer/parser/FQN.h
 
 )
 

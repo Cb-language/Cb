@@ -93,7 +93,7 @@ bool ClassNode::isDescendantOf(const ClassNode* other) const
     return parent->isDescendantOf(other);
 }
 
-const Var* ClassNode::findField(const std::string& name, const ClassNode* currClass, const bool isBase) const
+const Var* ClassNode::findField(const FQN& name, const ClassNode* currClass, const bool isBase) const
 {
     for (const auto& [accessType, field] : c.getFields())
     {
@@ -108,7 +108,7 @@ const Var* ClassNode::findField(const std::string& name, const ClassNode* currCl
     return nullptr;
 }
 
-const Func* ClassNode::findMethod(const std::string& name, const ClassNode* currClass, const bool isBase) const
+const Func* ClassNode::findMethod(const FQN& name, const ClassNode* currClass, const bool isBase) const
 {
     for (const auto& [accessType, method] : c.getMethods())
     {

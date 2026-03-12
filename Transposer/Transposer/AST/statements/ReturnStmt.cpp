@@ -2,15 +2,15 @@
 
 #include "errorHandling/semanticErrors/WrongReturnType.h"
 
-ReturnStmt::ReturnStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::unique_ptr<Expr>& rExpr, std::unique_ptr<IType> rType)
-        : Stmt(token, scope, funcDecl, currClass), rType(std::move(rType)),
+ReturnStmt::ReturnStmt(const Token& token, std::unique_ptr<Expr>& rExpr, std::unique_ptr<IType> rType)
+        : Stmt(token), rType(std::move(rType)),
         rExpr(rExpr == nullptr ? nullptr : std::move(rExpr))
 {
 }
 
 void ReturnStmt::analyze() const
 {
-    if (rExpr == nullptr && rType->getType() != "fermata")
+    if (rExpr == nullptr && rType->toString() != "fermata")
     {
         throw WrongReturnType(token);
     }

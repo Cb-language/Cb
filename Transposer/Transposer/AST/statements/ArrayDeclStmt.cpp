@@ -19,7 +19,7 @@ void ArrayDeclStmt::analyzeSizes() const
         size->analyze();
         if (!size->getType()->isNumberable())
         {
-            throw IllegalTypeCast(token, size->getType()->getType(), "degree");
+            throw IllegalTypeCast(token, size->getType()->toString(), "degree");
         }
     }
 }
@@ -53,9 +53,9 @@ std::string ArrayDeclStmt::createConstructor(IType* type, const size_t dim) cons
     return oss.str();
 }
 
-ArrayDeclStmt::ArrayDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const bool hasStartingValue,
-                             std::unique_ptr<Expr> startingValue, const Var& var, std::vector<std::unique_ptr<Expr>> sizes) :
-        VarDeclStmt(token, scope, funcDecl, currClass, hasStartingValue, std::move(startingValue), var), sizes(std::move(sizes))
+ArrayDeclStmt::ArrayDeclStmt(const Token& token, const bool hasStartingValue,
+    std::unique_ptr<Expr> startingValue, const Var& var, std::vector<std::unique_ptr<Expr>> sizes) :
+        VarDeclStmt(token, hasStartingValue, std::move(startingValue), var), sizes(std::move(sizes))
 {
 }
 
@@ -114,7 +114,7 @@ std::string ArrayDeclStmt::translateToCpp() const
 {
     std::ostringstream oss;
 
-    const std::string name = var.getName();
+    const std::string name = translateFQNtoString(var.getName());
 
 
     oss << getTabs()

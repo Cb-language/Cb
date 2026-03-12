@@ -4,5 +4,5 @@
 class MainOverride : public Error
 {
 public:
-    MainOverride(const Token &token);
+    explicit MainOverride(const Token &token);
 };

@@ -7,19 +7,19 @@
 
 std::string ConstValueExpr::getValueStr() const
 {
-    if (*type == "freq" && value.starts_with("."))
+    if (type->toString() == "freq" && value.starts_with("."))
     {
         return "0" + value;
     }
 
-    if (*type == "bar")
+    if (type->toString() == "bar")
     {
         std::string content = value;
         std::ranges::replace(content, '\n', ' ');
         return content;
     }
 
-    if (*type == "mute")
+    if (type->toString() == "mute")
     {
         return value == "cres" ? "true" : "false";
     }
@@ -27,8 +27,8 @@ std::string ConstValueExpr::getValueStr() const
     return value;
 }
 
-ConstValueExpr::ConstValueExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::unique_ptr<IType> type, const std::string &value)
-    : Expr(token, scope, funcDecl, currClass), type(std::move(type)), value(value)
+ConstValueExpr::ConstValueExpr(const Token& token, std::unique_ptr<IType> type, const std::string& value)
+    : Expr(token), type(std::move(type)), value(value)
 {
 }
 

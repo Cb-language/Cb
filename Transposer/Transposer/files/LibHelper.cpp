@@ -954,10 +954,10 @@ public:
     explicit SafePtr(const T& t);
     SafePtr(const SafePtr& other);
 
-    template <typename U>
+    template <typename U> requires std::is_base_of_v<T, U>
     explicit SafePtr(std::unique_ptr<U>& otherPtr);
 
-    template <typename U>
+    template <typename U> requires std::is_base_of_v<T, U>
     explicit SafePtr(const U& u);
 
     template <typename U>
@@ -1123,17 +1123,17 @@ SafePtr<T>::SafePtr(const SafePtr& other)
 }
 
 template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-template <typename U>
+template <typename U> requires std::is_base_of_v<T, U>
 SafePtr<T>::SafePtr(std::unique_ptr<U>& otherPtr)
 {
     ptr = otherPtr.release();
 }
 
 template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-template <typename U>
+template <typename U> requires std::is_base_of_v<T, U>
 SafePtr<T>::SafePtr(const U& u)
 {
-    ptr = std::make_unique<T>(u);
+    ptr = std::make_unique<U>(u);
 }
 
 template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>

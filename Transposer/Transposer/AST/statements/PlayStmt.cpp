@@ -1,7 +1,7 @@
 #include "PlayStmt.h"
 
-PlayStmt::PlayStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::vector<std::unique_ptr<Expr>> exprs, const bool printLine)
-    : Stmt(token, scope, funcDecl, currClass), exprs(std::move(exprs)) ,printLine(printLine)
+PlayStmt::PlayStmt(const Token& token, std::vector<std::unique_ptr<Expr>> exprs, const bool printLine)
+    : Stmt(token), exprs(std::move(exprs)) ,printLine(printLine)
 {
 }
 
@@ -18,7 +18,7 @@ std::string PlayStmt::translateToCpp() const
     std::string ret = getTabs() + "std::cout";
     for (const auto& var : exprs)
     {
-        if (var->getType()->getType() == "mute")
+        if (var->getType()->toString() == "mute")
         {
             ret += " << (" + Utils::removeAllFirstTabs(var->translateToCpp()) + R"( ? "cres" : "demen"))";
             continue;

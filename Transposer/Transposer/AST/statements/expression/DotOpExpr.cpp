@@ -9,8 +9,8 @@
 #include "symbols/Type/ClassType.h"
 
 
-DotOpExpr::DotOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-    std::unique_ptr<Call> left, std::unique_ptr<Call> right, const bool hasParens) : Call(token, scope, funcDecl, currClass, hasParens), left(std::move(left)), right(std::move(right))
+DotOpExpr::DotOpExpr(const Token& token,
+    std::unique_ptr<Call> left, std::unique_ptr<Call> right) : Call(token), left(std::move(left)), right(std::move(right))
 {
 }
 
@@ -32,9 +32,9 @@ void DotOpExpr::analyze() const
 
     if (rightCasted == nullptr) throw HowDidYouGetHere(token);
 
-    if (!SymbolTable::isLegalFieldOrMethod(leftType, rightCasted->toString(), token, currClass))
+    if (const FQN passing = {rightCasted->toString()}; !SymbolTable::isLegalFieldOrMethod(leftType, passing, token, currClass))
     {
-        throw IllegalDotOpError(token, left->translateToCpp(), rightCasted->toString()), leftType->toString();
+        throw IllegalDotOpError(token, left->translateToCpp(), rightCasted->toString());
     }
 }
 

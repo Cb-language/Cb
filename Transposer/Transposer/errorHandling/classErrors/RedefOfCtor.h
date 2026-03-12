@@ -4,5 +4,5 @@
 class RedefOfCtor : public Error
 {
 public:
-    RedefOfCtor(const Token& token);
+    explicit RedefOfCtor(const Token& token);
 };

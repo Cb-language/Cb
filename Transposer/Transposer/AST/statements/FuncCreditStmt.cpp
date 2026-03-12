@@ -1,13 +1,13 @@
 #include "FuncCreditStmt.h"
 
-FuncCreditStmt::FuncCreditStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const FuncCredit& funcCredit)
-    : Stmt(token, scope, funcDecl, currClass), funcCredit(funcCredit)
+FuncCreditStmt::FuncCreditStmt(const Token& token, const FuncCredit& funcCredit)
+    : Stmt(token), funcCredit(funcCredit)
 {
 }
 
-const std::string& FuncCreditStmt::getName() const
+std::string FuncCreditStmt::getName() const
 {
-    return funcCredit.getName();
+    return translateFQNtoString(funcCredit.getName());
 }
 
 // checked after the parsing via the credit queue

@@ -4,7 +4,7 @@
 
 struct KeywordInfo
 {
-    TokenType type;
+    CbTokenType type;
     std::string keyword;
     WordBoundary boundary;
 };

@@ -1,9 +1,25 @@
 #include "ParserContext.h"
 
-#include "errorHandling/lexicalErrors/UnexpectedEOF.h"
+#include <functional>
 
-ParserContext::ParserContext(const std::vector<Token>& tokens) : tokens(tokens), len(tokens.size()), pos(0), hasMain(false)
+#include "StmtParser.h"
+#include "errorHandling/lexicalErrors/UnexpectedEOF.h"
+#include "errorHandling/syntaxErrors/MissingSemicolon.h"
+#include "errorHandling/syntaxErrors/NoLineOpener.h"
+#include "errorHandling/syntaxErrors/NoRest.h"
+#include "errorHandling/syntaxErrors/UnexpectedToken.h"
+
+ParserContext::ParserContext(const std::queue<Token>& tokens)
+    : tokens(tokens), len(tokens.size()), hasMain(false), isNewLine(false), isInFunc(false)
 {
+    if (!tokens.empty())
+    {
+        firstToken = tokens.front();
+    }
+    else
+    {
+        firstToken = Token(CbTokenType::PUNCTUATION_NEW_LINE, std::nullopt, 0, 0, "");
+    }
 }
 
 void ParserContext::addError(std::unique_ptr<Error> err)
@@ -11,44 +27,116 @@ void ParserContext::addError(std::unique_ptr<Error> err)
     errors.emplace_back(std::move(err));
 }
 
-void ParserContext::synchronize()
-{
-    advance();
-
-    // Clear callsQ and creditsQ to prevent dangling pointers from incomplete statements/expressions
-    while (!callsQ.empty()) callsQ.pop();
-    while (!creditsQ.empty()) creditsQ.pop();
-}
-
 const Token& ParserContext::current() const
 {
-    return tokens[pos];
+    if (tokens.empty()) throw UnexpectedEOF(getFirstToken());
+    return tokens.front();
+}
+
+Token ParserContext::copyCurrent()
+{
+    if (tokens.empty()) throw UnexpectedEOF(current());
+    return tokens.front();
 }
 
 Token ParserContext::advance()
 {
-    return tokens[pos++];
+    if (tokens.empty()) throw UnexpectedEOF(current());
+    auto t = tokens.front();
+    tokens.pop();
+
+    if (!isNewLine)
+    {
+        isNewLine = true;
+
+        while (!tokens.empty() && current().type == CbTokenType::PUNCTUATION_NEW_LINE)
+        {
+            if (isInFunc)
+            {
+                eatFuncNewLine();
+            }
+            else
+            {
+                advance();
+            }
+        }
+
+        isNewLine = false;
+    }
+
+    return std::move(t);
 }
 
-const Token& ParserContext::peek() const // TODO wrap the parser calling function in try catch
+void ParserContext::expectSemiColon()
 {
-    if (pos >= len - 1) throw UnexpectedEOF(current());
-    return tokens[pos + 1];
+    if (!isInFunc)
+    {
+        if (!matchConsume(CbTokenType::PUNCTUATION_SEMICOLON))
+        {
+            addError(std::make_unique<MissingSemicolon>(copyCurrent()));
+        }
+        return;
+    }
+
+    if (matchConsume(CbTokenType::PUNCTUATION_CLOSE_FUNC))
+    {
+        setIsInFunc(false);
+    }
+    else
+    {
+        expect(CbTokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(copyCurrent()));
+    }
 }
 
-bool ParserContext::isAtEnd() const
+void ParserContext::eatFuncNewLine()
 {
-    return pos >= len;
+    if (!matchConsume(CbTokenType::PUNCTUATION_NEW_LINE))
+    {
+        return;
+    }
+    expect(CbTokenType::PUNCTUATION_OPEN_LINE, std::make_unique<NoLineOpener>(copyCurrent()));
+
+    if (matchConsume(CbTokenType::PUNCTUATION_SEMICOLON) || matchConsume(CbTokenType::PUNCTUATION_CLOSE_FUNC))
+    {
+        addError(std::make_unique<NoRest>(copyCurrent()));
+    }
+    eatRest();
 }
 
-bool ParserContext::match(const TokenType type) const
+void ParserContext::eatRest()
 {
+    if (!matchConsume(CbTokenType::PUNCTUATION_REST))
+    {
+        return;
+    }
+    expectSemiColon();
+}
+
+
+bool ParserContext::matchConsume(const CbTokenType type, const std::optional<std::reference_wrapper<Token>> out)
+{
+    if (tokens.empty()) throw UnexpectedEOF(current());
+    if (current().type == type)
+    {
+        if (out.has_value())
+        {
+            out.value().get() = current();
+        }
+        advance();
+        return true;
+    }
+    return false;
+}
+
+bool ParserContext::matchNonConsume(const CbTokenType type) const
+{
+    if (tokens.empty()) throw UnexpectedEOF(current());
     return current().type == type;
 }
 
-bool ParserContext::expect(const TokenType type, std::unique_ptr<Error> err, const std::optional<std::reference_wrapper<Token>> out)
+bool ParserContext::expect(const CbTokenType type, std::unique_ptr<Error> err, const std::optional<std::reference_wrapper<Token>> out)
 {
-    if (!match(type))
+    if (!matchNonConsume(type))
     {
         if (err)
             addError(std::move(err));
@@ -59,150 +147,45 @@ bool ParserContext::expect(const TokenType type, std::unique_ptr<Error> err, con
     if (out.has_value())
         out->get() = current();
 
+    advance();
     return true;
 }
 
-bool ParserContext::isAssignmentStmtAhead()
+FQN ParserContext::parseFQN()
 {
-    const size_t startPos = pos;
-
-    // Must start with identifier
-    if (!match(TokenType::IDENTIFIER))
+    FQN res;
+    do
     {
-        return false;
-    }
-
-    advance(); // consume IDENTIFIER
-
-    while (true)
-    {
-        // Handle member access: \identifier
-        if (match(TokenType::PUNCTUATION, "\\"))
+        Token iden;
+        if (!matchConsume(CbTokenType::IDENTIFIER, iden))
         {
-            advance(); // consume '\'
-
-            if (!match(TokenType::IDENTIFIER))
-            {
-                pos = startPos;
-                return false;
-            }
-
-            advance(); // consume IDENTIFIER
+            addError(std::make_unique<UnexpectedToken>(current()));
+            return res;
         }
-        // Handle indexing: [...]
-        else if (match(TokenType::PUNCTUATION, "["))
-        {
-            advance(); // consume '['
+        res.emplace_back(iden.value.value());
 
-            int depth = 1;
-            while (depth > 0)
-            {
-                if (match(TokenType::PUNCTUATION, "["))
-                {
-                    depth++;
-                }
-                else if (match(TokenType::PUNCTUATION, "]"))
-                {
-                    depth--;
-                }
-
-                advance();
-            }
-        }
-        else
-        {
-            break;
-        }
-    }
-
-    const bool result =
-        match(TokenType::OP_ASSIGNMENT) ||
-        match(TokenType::PUNCTUATION, "║");
-
-    pos = startPos;
-    return result;
+    } while (matchConsume(CbTokenType::PUNCTUATION_BACKSLASH));
+    return res;
 }
 
-bool ParserContext::isUnaryOpStmtAhead()
+bool ParserContext::isUnaryOp() const
 {
-    const size_t startPos = pos;
-
-    if (!match(TokenType::IDENTIFIER))
-    {
-        return false;
-    }
-
-    advance(); // consume IDENTIFIER
-
-    while (true)
-    {
-        // Handle member access: \identifier
-        if (match(TokenType::PUNCTUATION, "\\"))
-        {
-            advance(); // consume '\'
-
-            if (!match(TokenType::IDENTIFIER))
-            {
-                pos = startPos;
-                return false;
-            }
-
-            advance(); // consume IDENTIFIER
-        }
-
-        // Handle indexing: [...]
-        else if (match(TokenType::PUNCTUATION, "["))
-        {
-            advance(); // consume '['
-
-            int depth = 1;
-
-            while (depth > 0)
-            {
-                if (match(TokenType::PUNCTUATION, "["))
-                {
-                    depth++;
-                }
-
-                else if (match(TokenType::PUNCTUATION, "]"))
-                {
-                    depth--;
-                }
-
-                advance();
-            }
-        }
-
-        else
-        {
-            break;
-        }
-    }
-
-    bool result = match(TokenType::OP_UNARY);
-    pos = startPos;
-
-    return result;
+    return (current().type >= CbTokenType::UNARY_OP_SHARP && current().type <= CbTokenType::UNARY_OP_NATRUAL);
 }
 
-void ParserContext::addToSymTable(const SymbolTable& symTable)
+bool ParserContext::isBinaryOp() const
 {
-    this->symTable += symTable;
+    return (current().type >= CbTokenType::BINARY_OP_EQUAL && current().type <= CbTokenType::BINARY_OP_AND);
 }
 
-const SymbolTable& ParserContext::getSymTable() const
+bool ParserContext::isType() const
 {
-    return symTable;
+    return (current().type >= CbTokenType::TYPE_FLAT && current().type <= CbTokenType::TYPE_FERMATA);
 }
 
 bool ParserContext::getHasMain() const
 {
     return hasMain;
-}
-
-const Token& ParserContext::getLast() const
-{
-    return tokens[len - 1];
 }
 
 const std::vector<std::unique_ptr<Stmt>>& ParserContext::getStmts() const
@@ -215,19 +198,54 @@ const std::vector<std::unique_ptr<Error>>& ParserContext::getErrors() const
     return errors;
 }
 
-const std::vector<Token>& ParserContext::getTokens() const
+void ParserContext::setIsInFunc(const bool isInFunc)
 {
-    return tokens;
+    this->isInFunc = isInFunc;
 }
 
-size_t ParserContext::getPos() const
+bool ParserContext::getIsInFunc() const
 {
-    return pos;
+    return isInFunc;
 }
 
-SymbolTable& ParserContext::getSymTable()
+void ParserContext::addBreakable()
 {
-    return symTable;
+    this->breakables++;
+}
+
+void ParserContext::removeBreakable()
+{
+    this->breakables--;
+}
+
+void ParserContext::addContinueable()
+{
+    this->continueables++;
+}
+
+void ParserContext::removeContinueable()
+{
+    this->continueables--;
+}
+
+bool ParserContext::getIsBreakable() const
+{
+    return breakables != 0;
+}
+
+bool ParserContext::getIsContinueable() const
+{
+    return continueables != 0;
+}
+
+bool ParserContext::isEmpty() const
+{
+    return tokens.empty();
+}
+
+const Token& ParserContext::getFirstToken() const
+{
+    return firstToken;
 }
 
 std::vector<std::unique_ptr<Stmt>>& ParserContext::getStmts()
@@ -243,14 +261,4 @@ std::vector<std::unique_ptr<Error>>& ParserContext::getErrors()
 std::vector<std::unique_ptr<IncludeStmt>>& ParserContext::getIncludes()
 {
     return includes;
-}
-
-std::queue<FuncCredit>& ParserContext::getCreditsQ()
-{
-    return creditsQ;
-}
-
-std::queue<FuncCallExpr*>& ParserContext::getCallsQ()
-{
-    return callsQ;
 }

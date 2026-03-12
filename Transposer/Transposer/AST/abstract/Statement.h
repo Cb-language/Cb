@@ -1,47 +1,37 @@
 #pragma once
 
-#include <locale>
-#include <sstream>
-
 #include "other/Scope.h"
-#include "other/Utils.h"
 
 class IFuncDeclStmt;
+class ClassDeclStmt;
 
 class Stmt
 {
 protected:
     const Token token;
+
     Scope* scope;
-    IFuncDeclStmt* funcDecl;
     const ClassNode* currClass;
 
-    Stmt(const Token& token, Scope* scope, const ClassNode* currClass);
-    Stmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass);
+    explicit Stmt(const Token& token);
+
     std::string getTabs(const int offset = 0) const;
 public:
-    virtual ~Stmt();
+    virtual ~Stmt() = default;
     virtual void analyze() const = 0;
     virtual std::string translateToCpp() const = 0;
     virtual std::string translateToH() const;
 
-    const ClassNode* getCurrClass() const;
+    virtual const Token& getToken() const;
+    void setScope(Scope* scope);
+    void setClassNode(const ClassNode* currClass);
 
-    void setFuncDecl(IFuncDeclStmt *funcDecl);
 };
 
-inline Stmt::Stmt(const Token& token, Scope* scope, const ClassNode* currClass) : token(token), scope(scope), currClass(currClass)
+inline Stmt::Stmt(const Token& token) : token(token),
+                                        scope(nullptr),
+                                        currClass(nullptr)
 {
-    funcDecl = nullptr;
-}
-
-inline Stmt::Stmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass) : token(token), scope(scope), funcDecl(funcDecl), currClass(currClass)
-{
-}
-
-inline const ClassNode* Stmt::getCurrClass() const
-{
-    return currClass;
 }
 
 inline std::string Stmt::getTabs(const int offset) const
@@ -57,18 +47,22 @@ inline std::string Stmt::getTabs(const int offset) const
     return res;
 }
 
-inline Stmt::~Stmt()
-{
-    scope = nullptr;
-    funcDecl = nullptr;
-}
-
 inline std::string Stmt::translateToH() const
 {
     return ""; // not a lot of thing need it
 }
 
-inline void Stmt::setFuncDecl(IFuncDeclStmt* funcDecl)
+inline const Token& Stmt::getToken() const
 {
-    this->funcDecl = funcDecl;
+    return token;
+}
+
+inline void Stmt::setScope(Scope* scope)
+{
+    this->scope = scope;
+}
+
+inline void Stmt::setClassNode(const ClassNode* currClass)
+{
+    this->currClass = currClass;
 }

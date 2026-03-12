@@ -10,7 +10,7 @@ private:
 
     std::string getValueStr() const;
 public:
-    ConstValueExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::unique_ptr<IType> type, const std::string &value);
+    ConstValueExpr(const Token& token, std::unique_ptr<IType> type, const std::string &value);
     void analyze() const override;
     std::string translateToCpp() const override;
     std::unique_ptr<IType> getType() const override;

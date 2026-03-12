@@ -3,5 +3,5 @@
 class IdentifierTaken : public Error
 {
 public:
-    IdentifierTaken(const Token &token);
+    explicit IdentifierTaken(const Token &token);
 };

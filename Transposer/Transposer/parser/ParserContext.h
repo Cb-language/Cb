@@ -3,62 +3,78 @@
 #include <vector>
 #include <queue>
 #include <memory>
+#include <stack>
+
 #include "errorHandling/Error.h"
 #include "AST/abstract/Statement.h"
 #include "AST/statements/expression/FuncCallExpr.h"
 #include "other/SymbolTable.h"
-#include "symbols/FuncCredit.h"
 #include "AST/statements/IncludeStmt.h"
-
+#include "FQN.h"
 
 class ParserContext
 {
 private:
-    const std::vector<Token> tokens;
+    std::queue<Token> tokens;
     const size_t len;
-    size_t pos;
     std::vector<std::unique_ptr<Stmt>> stmts;
-    std::queue<FuncCredit> creditsQ;
-    std::queue<FuncCallExpr*> callsQ;
     std::vector<std::unique_ptr<IncludeStmt>> includes;
     std::vector<std::unique_ptr<Error>> errors;
-    bool hasMain;
-    SymbolTable symTable;
 
+    bool hasMain;
+    Token firstToken;
+
+    int breakables;
+    int continueables;
+
+    bool isNewLine;
+    bool isInFunc;
+    void eatRest();
+    void eatFuncNewLine();
 public:
-    explicit ParserContext(const std::vector<Token>& tokens);
+    explicit ParserContext(const std::queue<Token>& tokens);
 
 
     void addError(std::unique_ptr<Error> err);
-    void synchronize();
 
     const Token& current() const;
+    Token copyCurrent();
+
     Token advance();
-    const Token& peek() const;
+    void expectSemiColon();
 
-    bool isAtEnd() const;
+    bool matchConsume(const CbTokenType type, const std::optional<std::reference_wrapper<Token>> out = std::nullopt);
+    bool matchNonConsume(CbTokenType type) const;
 
-    bool match(TokenType type) const;
+    bool expect(CbTokenType type, std::unique_ptr<Error> err = nullptr, std::optional<std::reference_wrapper<Token>> out = std::nullopt);
 
-    bool expect(TokenType type, std::unique_ptr<Error> err = nullptr, std::optional<std::reference_wrapper<Token>> out = std::nullopt);
+    FQN parseFQN();
 
-    bool isAssignmentStmtAhead();
-    bool isUnaryOpStmtAhead();
+    bool isUnaryOp() const;
+    bool isBinaryOp() const;
+    bool isType() const;
 
-
-    void addToSymTable(const SymbolTable& symTable);
-    const SymbolTable& getSymTable() const;
     bool getHasMain() const;
-    const Token& getLast() const;
     const std::vector<std::unique_ptr<Stmt>>& getStmts() const;
     const std::vector<std::unique_ptr<Error>>& getErrors() const;
-    const std::vector<Token>& getTokens() const;
 
-    SymbolTable& getSymTable();
     std::vector<std::unique_ptr<Stmt>>& getStmts();
     std::vector<std::unique_ptr<Error>>& getErrors();
     std::vector<std::unique_ptr<IncludeStmt>>& getIncludes();
-    size_t getPos() const;
-    std::queue<FuncCredit>& getCreditsQ();
-    std::queue<FuncCallExpr*>& getCallsQ();
+
+    void setIsInFunc(const bool isInFunc);
+    bool getIsInFunc() const;
+
+    void addBreakable();
+    void removeBreakable();
+
+    void addContinueable();
+    void removeContinueable();
+
+    bool getIsBreakable() const;
+    bool getIsContinueable() const;
+
+    bool isEmpty() const;
+
+    const Token& getFirstToken() const;
 };

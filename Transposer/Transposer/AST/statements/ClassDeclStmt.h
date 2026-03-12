@@ -1,5 +1,5 @@
 #pragma once
-#include "ConstractorDeclStmt.h"
+#include "ConstructorDeclStmt.h"
 #include "FuncDeclStmt.h"
 #include "VarDeclStmt.h"
 #include "AST/abstract/Statement.h"
@@ -7,29 +7,30 @@
 
 typedef std::pair<AccessType, std::unique_ptr<VarDeclStmt>> Field;
 typedef std::pair<AccessType, std::unique_ptr<FuncDeclStmt>> Method;
-typedef std::pair<AccessType, std::unique_ptr<ConstractorDeclStmt>> Ctor;
+typedef std::pair<AccessType, std::unique_ptr<ConstructorDeclStmt>> Ctor;
 
 class ClassDeclStmt : public Stmt
 {
 private:
     bool hasEmptyCtor = false;
-    const std::string name;
+    FQN name;
     std::vector<Field> fields;
     std::vector<Method> methods;
     std::vector<Ctor> ctors;
 
-    bool isInheriting = false;
-    const std::string inheritingPublic;
-    const std::string inheritingName;
+    AccessType inheritingPublic;
+    FQN parentName;
 
     std::string generateToString() const;
     std::string generateEquals() const;
 
 public:
-    ClassDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const std::string& name, std::vector<Field>& fields,
-        std::vector<Method>& methods, std::vector<Ctor>& ctors, const bool isInheriting, const std::string& inheritingPublic, const std::string& inheritingName);
+    ClassDeclStmt(const Token& token, const FQN& name, std::vector<Field>& fields,
+        std::vector<Method>& methods, std::vector<Ctor>& ctors, AccessType inheritingPublic, const FQN& parentName);
     void analyze() const override;
     std::string translateToCpp() const override;
     std::string translateToH() const override;
     bool getHasEmptyCtor() const;
+
+    void setClassDetails(std::vector<Field> fields, std::vector<Method> methods, std::vector<Ctor> ctors);
 };

@@ -4,5 +4,5 @@
 class InvalidExpression : public Error
 {
 public:
-    InvalidExpression(const Token &token);
+    explicit InvalidExpression(const Token &token);
 };

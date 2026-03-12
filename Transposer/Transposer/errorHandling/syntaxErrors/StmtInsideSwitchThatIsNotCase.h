@@ -4,5 +4,5 @@
 class StmtInsideSwitchThatIsNotCase : public Error
 {
 public:
-    StmtInsideSwitchThatIsNotCase(const Token& token);
+    explicit StmtInsideSwitchThatIsNotCase(const Token& token);
 };

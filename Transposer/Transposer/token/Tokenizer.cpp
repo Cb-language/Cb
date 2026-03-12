@@ -54,33 +54,30 @@ bool Tokenizer::checkBoundary(const std::string& code, const KeywordInfo* keywor
     return true;
 }
 
-size_t Tokenizer::handleKeywordMatch(const std::string& code, size_t& row, size_t& col, const TokenType tokenType,
-    std::vector<Token>& tokens, const size_t keywordEnd, const std::filesystem::path& path)
+size_t Tokenizer::handleKeywordMatch(const std::string& code, size_t& row, size_t& col, const CbTokenType tokenType,
+            std::queue<Token>& tokens, const size_t keywordEnd, const std::filesystem::path& path)
 {
     switch (tokenType)
     {
-        case TokenType::COMMENT_SINGLE:
+        case CbTokenType::COMMENT_SINGLE:
         {
             // If it's a one-line comment, look for the end of the line.
-            const size_t end = code.find('\n', keywordEnd);
-
-            if (end != std::string::npos) return end;
+            if (const size_t end = code.find('\n', keywordEnd); end != std::string::npos) return end + 1;
 
             return keywordEnd;
         }
 
-        case TokenType::COMMENT_MULTI_START:
+        case CbTokenType::COMMENT_MULTI_START:
         {
             // If it's a multiline comment, look for a COMMENT_MULTY_END match.
-            const size_t end = code.find(COMMENT_MULTY_END, keywordEnd);
 
-            if (end != std::string::npos)
+            if (const size_t end = code.find(COMMENT_MULTY_END, keywordEnd); end != std::string::npos)
                 return end + COMMENT_MULTY_END.length();
 
-            tokens.emplace_back(TokenType::ERROR_TOKEN, std::nullopt, row, col, path);
+            tokens.emplace(CbTokenType::ERROR_TOKEN, std::nullopt, row, col, path);
         }
 
-        case TokenType::PUNCTUATION_NEW_LINE:
+        case CbTokenType::PUNCTUATION_NEW_LINE:
         {
             row += 1;
             col = 0;
@@ -88,7 +85,7 @@ size_t Tokenizer::handleKeywordMatch(const std::string& code, size_t& row, size_
 
         default:
         {
-            tokens.emplace_back(tokenType, std::nullopt, row, col, path);
+            tokens.emplace(tokenType, std::nullopt, row, col, path);
             return keywordEnd;
         }
     }
@@ -100,7 +97,7 @@ void Tokenizer::onRegexToken(Token* token)
     // for post analysis if needed
     switch (token->type)
     {
-        case TokenType::CONST_STR:
+        case CbTokenType::CONST_STR:
         {
             std::string content = token->value.value();
             if (content.length() >= 2 && content.front() == '\"' && content.back() == '\"')
@@ -111,7 +108,7 @@ void Tokenizer::onRegexToken(Token* token)
             break;
         }
 
-        case TokenType::CONST_CHAR:
+        case CbTokenType::CONST_CHAR:
         {
             std::string content = token->value.value();
             if (content.length() >= 2 && content.front() == '\'' && content.back() == '\"')
@@ -147,9 +144,9 @@ Tokenizer::Tokenizer() : trieTree(std::make_unique<TrieNode>())
     tokenRegex = boost::regex(regex, boost::regex::perl | boost::regex::optimize);
 }
 
-std::vector<Token> Tokenizer::tokenize(const std::string& code, const std::filesystem::path& path) const
+std::queue<Token> Tokenizer::tokenize(const std::string& code, const std::filesystem::path& path) const
 {
-    std::vector<Token> tokens;
+    std::queue<Token> tokens;
     size_t row = 1;
     size_t col = 0;
     int codePos = 0;
@@ -177,11 +174,6 @@ std::vector<Token> Tokenizer::tokenize(const std::string& code, const std::files
                 lastMatch = &keyword->get();
                 lastMatchEnd = i + 1;
             }
-
-            while (code[i] == ' ')
-            {
-                i++;
-            }
         }
 
         if (lastMatch && checkBoundary(code, lastMatch, codePos, lastMatchEnd))
@@ -194,24 +186,24 @@ std::vector<Token> Tokenizer::tokenize(const std::string& code, const std::files
         std::string search_target = code.substr(codePos);
         if (boost::smatch match; boost::regex_search(search_target, match, tokenRegex, boost::regex_constants::match_continuous))
         {
-            auto type = TokenType::ERROR_TOKEN;
-            if (match["ConstFloat"].matched) type = TokenType::CONST_FLOAT;
-            else if (match["ConstInt"].matched) type = TokenType::CONST_INT;
-            else if (match["ConstChar"].matched) type = TokenType::CONST_CHAR;
-            else if (match["ConstStr"].matched) type = TokenType::CONST_STR;
-            else if (match["Identifier"].matched) type = TokenType::IDENTIFIER;
+            auto type = CbTokenType::ERROR_TOKEN;
+            if (match["ConstFloat"].matched) type = CbTokenType::CONST_FLOAT;
+            else if (match["ConstInt"].matched) type = CbTokenType::CONST_INT;
+            else if (match["ConstChar"].matched) type = CbTokenType::CONST_CHAR;
+            else if (match["ConstStr"].matched) type = CbTokenType::CONST_STR;
+            else if (match["Identifier"].matched) type = CbTokenType::IDENTIFIER;
 
             std::string match_str = match.str();
             Token token(type, match_str, row, col, path);
             onRegexToken(&token);
-            tokens.emplace_back(token);
+            tokens.emplace(token);
 
             codePos += match_str.length();
             col += match_str.length() - 1; // col will be incremented at the start of next loop
             continue;
         }
 
-        tokens.emplace_back(TokenType::ERROR_TOKEN, std::nullopt, row, col, path); // if didnt match throw error
+        tokens.emplace(CbTokenType::ERROR_TOKEN, std::nullopt, row, col, path); // if didnt match throw error
         codePos++;
     }
     return tokens;

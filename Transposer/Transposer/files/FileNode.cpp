@@ -158,7 +158,6 @@ void FileNode::start()
     for (auto& child : children)
     {
         child->start();
-        file.getParser().getContext().addToSymTable(child->file.parser.getContext().getSymTable());
     }
 
     file.parse();

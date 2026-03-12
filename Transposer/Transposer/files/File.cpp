@@ -76,7 +76,7 @@ void File::write(const bool isMain)
 
         if(!fileH || !fileH.is_open())
         {
-            throw CouldntOpenFile(Token(TokenType::ERROR_TOKEN, inPath.string(),0,0, outPathH), outPathH);
+            throw CouldntOpenFile(Token(CbTokenType::ERROR_TOKEN, inPath.string(),0,0, outPathH), outPathH);
         }
         fileH << parser.translateToH();
 
@@ -87,7 +87,7 @@ void File::write(const bool isMain)
 
     if(!fileCpp || !fileCpp.is_open())
     {
-        throw CouldntOpenFile(Token(TokenType::ERROR_TOKEN, inPath.string(),0,0, outPathCpp), outPathCpp);
+        throw CouldntOpenFile(Token(CbTokenType::ERROR_TOKEN, inPath.string(),0,0, outPathCpp), outPathCpp);
     }
     fileCpp << parser.translateToCpp(outPathH, isMain);
 
@@ -99,13 +99,13 @@ const std::vector<std::unique_ptr<Error>>& File::getErrors() const
     return parser.getContext().getErrors();
 }
 
-std::vector<Token> File::tokenize() const
+std::queue<Token> File::tokenize() const
 {
     std::ifstream file(inPath, std::ios::binary);
 
     if(!file || !file.is_open())
     {
-        throw CouldntOpenFile(Token(TokenType::COMMENT_SINGLE, inPath.string(),0,0, inPath), inPath);
+        throw CouldntOpenFile(Token(CbTokenType::COMMENT_SINGLE, inPath.string(),0,0, inPath), inPath);
     }
 
     const std::string data = std::string((std::istreambuf_iterator<char>(file)),

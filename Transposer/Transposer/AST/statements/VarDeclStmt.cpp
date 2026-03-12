@@ -2,8 +2,8 @@
 
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
 
-VarDeclStmt::VarDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var& var) :
-    Stmt(token, scope, funcDecl, currClass), hasStartingValue(hasStartingValue), startingValue(std::move(startingValue)) , var(var.copy())
+VarDeclStmt::VarDeclStmt(const Token& token, const bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var& var) :
+    Stmt(token), hasStartingValue(hasStartingValue), startingValue(std::move(startingValue)) , var(var.copy())
 {
 }
 
@@ -21,12 +21,12 @@ std::string VarDeclStmt::translateToCpp() const
 {
     std::string prefix = "";
     if (var.getStatic()) prefix = "static ";
-    std::string ret = getTabs() + prefix + var.getType()->translateTypeToCpp() + " " + var.getName();
+    std::string ret = getTabs() + prefix + var.getType()->translateTypeToCpp() + " " + translateFQNtoString(var.getName());
 
     if (hasStartingValue && startingValue != nullptr && !var.getStatic())
     {
         ret += " = ";
-        if (var.getType()->getType() != startingValue->getType()->getType()) ret += var.getType()->translateTypeToCpp() + "(" + startingValue->translateToCpp() + ")";
+        if (var.getType()->toString() != startingValue->getType()->toString()) ret += var.getType()->translateTypeToCpp() + "(" + startingValue->translateToCpp() + ")";
         else ret +=  startingValue->translateToCpp();
     }
 
@@ -42,4 +42,9 @@ const Var& VarDeclStmt::getVar() const
 const Expr* VarDeclStmt::getStartingValue() const
 {
     return startingValue.get();
+}
+
+void VarDeclStmt::setIsStatic(const bool isStatic)
+{
+    this->var.setIsStatic(isStatic);
 }

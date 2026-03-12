@@ -1,44 +1,42 @@
-#include "ConstractorDeclStmt.h"
+#include "ConstructorDeclStmt.h"
 
 #include <ranges>
 #include <algorithm>
 #include <iostream>
 
-#include "errorHandling/classErrors/ParentNotInitialized.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "ConstractorCallStmt.h"
 #include "other/SymbolTable.h"
 #include "symbols/Type/ClassType.h"
 #include "other/Utils.h"
 
-ConstractorDeclStmt::ConstractorDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass, const std::string& className,
-                                         const std::vector<Var>& args) : IFuncDeclStmt(token, scope, currClass),
+ConstructorDeclStmt::ConstructorDeclStmt(const Token& token, const FQN& className, const std::vector<Var>& args) : IFuncDeclStmt(token),
     constractor(Constractor(args,  className)), parentCtorCall(nullptr)
 {
 }
 
-void ConstractorDeclStmt::setParentCtorCall(std::vector<std::unique_ptr<Expr>> args)
+void ConstructorDeclStmt::setParentCtorCall(std::vector<std::unique_ptr<Expr>> args)
 {
     if (parentCtorCall != nullptr) return;
-    parentCtorCall = std::make_unique<ConstractorCallStmt>(token, scope, funcDecl, currClass, currClass->getParent(), std::move(args));
+    parentCtorCall = std::make_unique<ConstractorCallStmt>(token, std::move(args));
 }
 
-void ConstractorDeclStmt::setBody(std::unique_ptr<BodyStmt> body)
+void ConstructorDeclStmt::setBody(std::unique_ptr<BodyStmt> body)
 {
     this->body = std::move(body);
 }
 
-void ConstractorDeclStmt::analyze() const
+void ConstructorDeclStmt::analyze() const
 {
     if (this->body == nullptr) throw HowDidYouGetHere(token);
     if (parentCtorCall != nullptr) parentCtorCall->analyze();
     body->analyze();
 }
 
-std::string ConstractorDeclStmt::translateToCpp() const
+std::string ConstructorDeclStmt::translateToCpp() const
 {
     std::ostringstream oss;
-    oss << constractor.getClassName() << "::" << constractor.translateToCpp();
+    oss << translateFQNtoString(constractor.getClassName()) << "::" << constractor.translateToCpp();
 
     if (parentCtorCall != nullptr)
     {
@@ -56,7 +54,7 @@ std::string ConstractorDeclStmt::translateToCpp() const
 
     for (const auto& stmt : body->getStmts())
     {
-        std::string temp = stmt->translateToCpp();
+        const std::string temp = stmt->translateToCpp();
         oss << getTabs() << Utils::removeFirstTabs(temp) << std::endl;
     }
 
@@ -65,22 +63,22 @@ std::string ConstractorDeclStmt::translateToCpp() const
     return oss.str();
 }
 
-std::string ConstractorDeclStmt::translateToH() const
+std::string ConstructorDeclStmt::translateToH() const
 {
     return constractor.translateToCpp() + ";";
 }
 
-std::string ConstractorDeclStmt::getName() const
+const FQN& ConstructorDeclStmt::getName() const
 {
     return constractor.getClassName();
 }
 
-std::unique_ptr<IType> ConstractorDeclStmt::getReturnType() const
+std::unique_ptr<IType> ConstructorDeclStmt::getReturnType() const
 {
-    return std::make_unique<ClassType>(SymbolTable::getClass(constractor.getClassName()));
+    return std::make_unique<ClassType>(constractor.getClassName());
 }
 
-const Constractor& ConstractorDeclStmt::getConstractor() const
+const Constractor& ConstructorDeclStmt::getConstractor() const
 {
     return constractor;
 }
