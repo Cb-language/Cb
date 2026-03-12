@@ -10,19 +10,36 @@ CaseStmt::CaseStmt(const Token& token, StmtWithBody stmt,
 
 void CaseStmt::analyze() const
 {
+    if (symTable == nullptr) return;
+
     // Can't really get here, but it's good to check
     if (stmt.body == nullptr)
     {
         throw HowDidYouGetHere(token);
     }
 
-    if (!stmt.expr->getType()->isNumberable())
+    if (!isDefault)
     {
-        throw IllegalTypeCast(token, stmt.expr->getType()->toString(), "degree");
+        stmt.expr->setSymbolTable(symTable);
+        stmt.expr->setScope(scope);
+        stmt.expr->setClassNode(currClass);
+        stmt.expr->analyze();
+
+        if (!stmt.expr->getType()->isNumberable())
+        {
+            throw IllegalTypeCast(token, stmt.expr->getType()->toString(), "degree");
+        }
     }
 
+    if (auto* body = dynamic_cast<BodyStmt*>(stmt.body.get()))
+    {
+        body->setBreakable(true);
+    }
+
+    stmt.body->setSymbolTable(symTable);
+    stmt.body->setScope(scope);
+    stmt.body->setClassNode(currClass);
     stmt.body->analyze();
-    stmt.expr->analyze();
 }
 
 std::string CaseStmt::translateToCpp() const

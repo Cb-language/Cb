@@ -14,14 +14,24 @@ void SwitchStmt::setExpr(std::unique_ptr<Expr> expr)
 
 void SwitchStmt::analyze() const
 {
-    for (const auto& c : cases)
-    {
-        c->analyze();
-    }
+    if (symTable == nullptr) return;
+
+    expr->setSymbolTable(symTable);
+    expr->setScope(scope);
+    expr->setClassNode(currClass);
+    expr->analyze();
 
     if (!expr->getType()->isNumberable())
     {
         throw IllegalSwitchVar(token, expr->translateToCpp());
+    }
+
+    for (const auto& c : cases)
+    {
+        c->setSymbolTable(symTable);
+        c->setScope(scope);
+        c->setClassNode(currClass);
+        c->analyze();
     }
 }
 

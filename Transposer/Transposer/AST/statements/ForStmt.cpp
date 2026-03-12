@@ -1,6 +1,7 @@
 #include "ForStmt.h"
 
 #include "errorHandling/how/HowDidYouGetHere.h"
+#include "other/SymbolTable.h"
 
 ForStmt::ForStmt(const Token& token,
                  std::unique_ptr<BodyStmt> body, const bool isIncreasing,
@@ -12,28 +13,56 @@ ForStmt::ForStmt(const Token& token,
 
 void ForStmt::analyze() const
 {
-    // Must have start expr!!
-    if (startExpr == nullptr || !startExpr->getType()->isNumberable())
+    if (symTable == nullptr) return;
+
+    if (startExpr != nullptr)
     {
+        startExpr->setSymbolTable(symTable);
+        startExpr->setScope(scope);
+        startExpr->setClassNode(currClass);
         startExpr->analyze();
     }
 
-    if (stepExpr != nullptr && !stepExpr->getType()->isNumberable())
+    if (stepExpr != nullptr)
     {
+        stepExpr->setSymbolTable(symTable);
+        stepExpr->setScope(scope);
+        stepExpr->setClassNode(currClass);
         stepExpr->analyze();
     }
 
-    if (stopExpr != nullptr && !stopExpr->getType()->isNumberable())
+    if (stopExpr != nullptr)
     {
+        stopExpr->setSymbolTable(symTable);
+        stopExpr->setScope(scope);
+        stopExpr->setClassNode(currClass);
         stopExpr->analyze();
     }
 
-    // Can't really get here, but it's good to check
     if (body == nullptr)
     {
         throw HowDidYouGetHere(token);
     }
-    body->analyze();
+    symTable->enterScope(true, true);
+
+    const FQN fqn = {varName};
+    const Var loopVar(std::make_unique<PrimitiveType>(Primitive::TYPE_DEGREE), fqn);
+    symTable->addVar(loopVar, token);
+
+    body->setSymbolTable(symTable);
+    body->setScope(symTable->getCurrScope());
+    body->setClassNode(currClass);
+    
+    // Manual analysis of body statements to skip BodyStmt's enterScope (which we already did)
+    for (const auto& s : body->getStmts())
+    {
+        s->setSymbolTable(symTable);
+        s->setScope(symTable->getCurrScope());
+        s->setClassNode(currClass);
+        s->analyze();
+    }
+
+    symTable->exitScope();
 }
 
 std::string ForStmt::translateToCpp() const

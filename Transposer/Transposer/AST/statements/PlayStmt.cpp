@@ -7,8 +7,13 @@ PlayStmt::PlayStmt(const Token& token, std::vector<std::unique_ptr<Expr>> exprs,
 
 void PlayStmt::analyze() const
 {
+    if (symTable == nullptr) return;
+
     for (const auto& var : exprs)
     {
+        var->setSymbolTable(symTable);
+        var->setScope(scope);
+        var->setClassNode(currClass);
         var->analyze();
     }
 }

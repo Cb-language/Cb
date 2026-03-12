@@ -42,7 +42,19 @@ void ConstValueExpr::analyze() const
 
 std::string ConstValueExpr::translateToCpp() const
 {
-    return type->translateTypeToCpp() + "(" + getValueStr() + ")";
+    std::ostringstream oss;
+    oss << type->translateTypeToCpp() + "(";
+
+    if (type->toString() == "bar") oss << "\"";
+    if (type->toString() == "note") oss << "\'";
+
+    oss << getValueStr();
+
+    if (type->toString() == "bar") oss << "\"";
+    if (type->toString() == "note") oss << "\'";
+
+    oss << ")";
+    return oss.str();
 }
 
 std::unique_ptr<IType> ConstValueExpr::getType() const

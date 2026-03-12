@@ -15,8 +15,15 @@ HearStmt::HearStmt(const Token& token, std::vector<std::unique_ptr<Call>>& calls
 
 void HearStmt::analyze() const
 {
+    if (symTable == nullptr) return;
+
     for (const auto& call : calls)
     {
+        call->setSymbolTable(symTable);
+        call->setScope(scope);
+        call->setClassNode(currClass);
+        call->analyze();
+
         if (call->getType()->getArrLevel() > 0 || !(call->getType()->isPrimitive()))
         {
             throw IllegalHear(token, call->getType()->toString());

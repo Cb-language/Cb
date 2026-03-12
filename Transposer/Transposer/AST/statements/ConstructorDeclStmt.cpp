@@ -28,9 +28,42 @@ void ConstructorDeclStmt::setBody(std::unique_ptr<BodyStmt> body)
 
 void ConstructorDeclStmt::analyze() const
 {
+    if (symTable == nullptr) return;
     if (this->body == nullptr) throw HowDidYouGetHere(token);
-    if (parentCtorCall != nullptr) parentCtorCall->analyze();
-    body->analyze();
+
+    symTable->changeFunc(const_cast<ConstructorDeclStmt*>(this));
+
+    if (parentCtorCall != nullptr)
+    {
+        const ClassNode* parentNode = currClass->getParent();
+        if (parentNode == nullptr) throw HowDidYouGetHere(token);
+
+        parentCtorCall->setTargetClass(parentNode);
+        parentCtorCall->setSymbolTable(symTable);
+        parentCtorCall->setScope(scope);
+        parentCtorCall->setClassNode(currClass);
+        parentCtorCall->analyze();
+    }
+
+    symTable->enterScope(false, false);
+    for (const auto& arg : constractor.getArgs())
+    {
+        symTable->addVar(arg, token);
+    }
+
+    body->setSymbolTable(symTable);
+    body->setScope(symTable->getCurrScope());
+    body->setClassNode(currClass);
+
+    for (const auto& s : body->getStmts())
+    {
+        s->setSymbolTable(symTable);
+        s->setScope(symTable->getCurrScope());
+        s->setClassNode(currClass);
+        s->analyze();
+    }
+
+    symTable->exitScope();
 }
 
 std::string ConstructorDeclStmt::translateToCpp() const

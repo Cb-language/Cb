@@ -10,6 +10,18 @@ AssignmentStmt::AssignmentStmt(const Token& token,
 
 void AssignmentStmt::analyze() const
 {
+    if (symTable == nullptr) return;
+
+    call->setSymbolTable(symTable);
+    call->setScope(scope);
+    call->setClassNode(currClass);
+    call->analyze();
+
+    expr->setSymbolTable(symTable);
+    expr->setScope(scope);
+    expr->setClassNode(currClass);
+    expr->analyze();
+
     const auto leftType = call->getType();
 
     if (const auto rightType = expr->getType(); *leftType != *rightType)

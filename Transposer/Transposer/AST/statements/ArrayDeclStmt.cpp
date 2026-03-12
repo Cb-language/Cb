@@ -8,6 +8,8 @@
 
 void ArrayDeclStmt::analyzeSizes() const
 {
+    if (symTable == nullptr) return;
+
     // Can't get here but always check
     if (var.getType()->getArrLevel() != sizes.size())
     {
@@ -16,6 +18,9 @@ void ArrayDeclStmt::analyzeSizes() const
 
     for (const auto& size : sizes)
     {
+        size->setSymbolTable(symTable);
+        size->setScope(scope);
+        size->setClassNode(currClass);
         size->analyze();
         if (!size->getType()->isNumberable())
         {
@@ -61,6 +66,8 @@ ArrayDeclStmt::ArrayDeclStmt(const Token& token, const bool hasStartingValue,
 
 void ArrayDeclStmt::analyze() const
 {
+    if (symTable == nullptr) return;
+
     if (!sizes.empty())
     {
         analyzeSizes();
@@ -68,6 +75,11 @@ void ArrayDeclStmt::analyze() const
 
     if (hasStartingValue)
     {
+        startingValue->setSymbolTable(symTable);
+        startingValue->setScope(scope);
+        startingValue->setClassNode(currClass);
+        startingValue->analyze();
+
         const std::unique_ptr<IType> startType = startingValue->getType()->copy();
         const std::unique_ptr<IType> varType = var.getType()->copy();
         const unsigned int arrLevel = varType->getArrLevel();
