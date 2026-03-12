@@ -5,6 +5,7 @@
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "other/Utils.h"
 #include "symbols/Type/ClassType.h"
+#include "other/SymbolTable.h"
 
 ConstractorCallStmt::ConstractorCallStmt(const Token& token, std::vector<std::unique_ptr<Expr>> args)
         : Expr(token)
@@ -17,14 +18,26 @@ ConstractorCallStmt::ConstractorCallStmt(const Token& token, std::vector<std::un
 
 std::unique_ptr<IType> ConstractorCallStmt::getType() const
 {
+    if (targetClass != nullptr) return std::make_unique<ClassType>(targetClass->getClass().getClassName());
     return std::make_unique<ClassType>(currClass->getClass().getClassName());
 }
 
 void ConstractorCallStmt::analyze() const
 {
-    for (const auto& [accessType, ctor] : currClass->getClass().getConstractors())
+    const ClassNode* target = targetClass != nullptr ? targetClass : currClass;
+    if (target == nullptr) throw HowDidYouGetHere(token);
+
+    for (const auto& arg : args)
     {
-        auto ctorArgs = ctor.getArgs();
+        arg->setSymbolTable(symTable);
+        arg->setScope(scope);
+        arg->setClassNode(currClass);
+        arg->analyze();
+    }
+
+    for (const auto& [accessType, ctor] : target->getClass().getConstractors())
+    {
+        const auto& ctorArgs = ctor.getArgs();
         if (args.size() != ctorArgs.size()) continue;
 
         bool differ = false;
@@ -36,9 +49,9 @@ void ConstractorCallStmt::analyze() const
 
         if (!differ)
         {
-            if (currClass->isLegalAccess(accessType, currClass)) return;
+            if (target->isLegalAccess(accessType, currClass)) return;
 
-            throw AccessError(token, translateFQNtoString(currClass->getClass().getClassName()), translateFQNtoString(currClass->getClass().getClassName()) + "_call");
+            throw AccessError(token, translateFQNtoString(target->getClass().getClassName()), translateFQNtoString(target->getClass().getClassName()) + "_call");
         }
     }
 
@@ -48,13 +61,14 @@ void ConstractorCallStmt::analyze() const
 std::string ConstractorCallStmt::translateToCpp() const
 {
     std::ostringstream oss;
+    const ClassNode* target = targetClass != nullptr ? targetClass : currClass;
 
     if (needsSemicolon)
     {
         oss << getTabs();
     }
 
-    oss << translateFQNtoString(currClass->getClass().getClassName()) << "(";
+    oss << translateFQNtoString(target->getClass().getClassName()) << "(";
 
     bool first = true;
     for (const auto& arg : args)
@@ -86,4 +100,9 @@ void ConstractorCallStmt::setNeedsSemicolon(const bool needsSemicolon)
 const ClassNode* ConstractorCallStmt::getClassNode() const
 {
     return currClass;
+}
+
+void ConstractorCallStmt::setTargetClass(const ClassNode* targetClass)
+{
+    this->targetClass = targetClass;
 }

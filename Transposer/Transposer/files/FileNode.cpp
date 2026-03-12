@@ -10,8 +10,8 @@ std::unordered_map<
         std::unique_ptr<FileNode>
     > FileNode::nodes;
 
-FileNode::FileNode(const std::filesystem::path& inPath, const std::filesystem::path& outFilename)
-    : file(File(inPath.c_str(),outFilename))
+FileNode::FileNode(const std::filesystem::path& inFilename, const std::filesystem::path& outFilename)
+    : file(File(inFilename.c_str(),outFilename))
 {
 }
 
@@ -22,16 +22,14 @@ FileNode::FileNode(const std::filesystem::path& filename)
 
 void FileNode::readAndAddChildren()
 {
-    const auto res = file.getIncludes();
-
-    for (const auto& p : res)
+    for (const auto res = file.getIncludes(); const auto& [first, second] : res)
     {
         const std::filesystem::path fullPath =
             std::filesystem::weakly_canonical(
-                File::getMainPath() / p.first
+                File::getMainPath() / first
             );
 
-        const Token& t = p.second;
+        const Token& t = second;
 
         if (!std::filesystem::exists(fullPath))
         {
@@ -92,8 +90,7 @@ FileNode* FileNode::getNode(const std::filesystem::path& inPath, const std::file
     const std::filesystem::path canonicalOut =
         std::filesystem::weakly_canonical(outPath);
 
-    auto it = nodes.find(canonicalIn);
-    if (it != nodes.end())
+    if (const auto it = nodes.find(canonicalIn); it != nodes.end())
     {
         return it->second.get();
     }

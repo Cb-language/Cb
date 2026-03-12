@@ -21,7 +21,6 @@ private:
     std::vector<std::unique_ptr<IncludeStmt>> includes;
     std::vector<std::unique_ptr<Error>> errors;
 
-    bool hasMain;
     Token firstToken;
 
     int breakables;
@@ -54,7 +53,6 @@ public:
     bool isBinaryOp() const;
     bool isType() const;
 
-    bool getHasMain() const;
     const std::vector<std::unique_ptr<Stmt>>& getStmts() const;
     const std::vector<std::unique_ptr<Error>>& getErrors() const;
 

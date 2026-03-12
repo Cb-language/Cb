@@ -74,6 +74,21 @@ std::unique_ptr<IType> BinaryOpExpr::getType() const
 
 void BinaryOpExpr::analyze() const
 {
+    if (symTable == nullptr) return;
+
+    if (left != nullptr)
+    {
+        left->setSymbolTable(symTable);
+        left->setScope(scope);
+        left->setClassNode(currClass);
+        left->analyze();
+    }
+
+    right->setSymbolTable(symTable);
+    right->setScope(scope);
+    right->setClassNode(currClass);
+    right->analyze();
+
     const auto leftType = left != nullptr ? left->getType() : nullptr;
     const auto rightType = right->getType();
 
@@ -82,18 +97,18 @@ void BinaryOpExpr::analyze() const
         op == "<"  || op == ">"  ||
         op == "<=" || op == ">=")
     {
-        if (*leftType != *rightType)
+        if (leftType == nullptr || *leftType != *rightType)
         {
-            throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), op);
+            throw IllegalOpOnType(token, leftType ? leftType->toString() : "null", rightType->toString(), op);
         }
     }
 
     // Logical operators
     if (op == "chord" || op == "divis")
     {
-        if (*leftType != *rightType)
+        if (leftType == nullptr || *leftType != *rightType)
         {
-            throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), op);
+            throw IllegalOpOnType(token, leftType ? leftType->toString() : "null", rightType->toString(), op);
         }
     }
 
@@ -108,7 +123,20 @@ void BinaryOpExpr::analyze() const
     // the + op
     if (op == "+")
     {
-        if (!(leftType->isNumberable() && rightType->isNumberable()) || (leftType->isStringable() && rightType->isStringable()))
+        if (leftType == nullptr)
+        {
+             if (!rightType->isNumberable()) throw IllegalOpOnType(token, "null", rightType->toString(), "+");
+        }
+        else if (leftType->toString() == "bar" || rightType->toString() == "bar")
+        {
+            // string concatenation or string + something is usually allowed in our translateToCpp
+            // but we should check if at least one is stringable or both are numberable
+            if (!((leftType->isStringable() || leftType->isNumberable()) && (rightType->isStringable() || rightType->isNumberable())))
+            {
+                throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), "+");
+            }
+        }
+        else if (!(leftType->isNumberable() && rightType->isNumberable()))
         {
             throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), "+");
         }
@@ -119,9 +147,19 @@ void BinaryOpExpr::analyze() const
         op == "*"  || op == "/" ||
         op == "%")
     {
-        if (!(leftType->isNumberable() && rightType->isNumberable()))
+        if (leftType != nullptr)
         {
-            throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), op);
+            if (!(leftType->isNumberable() && rightType->isNumberable()))
+            {
+                throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), op);
+            }
+        }
+        else
+        {
+            if (!rightType->isNumberable())
+            {
+                throw IllegalOpOnType(token, "null", rightType->toString(), op);
+            }
         }
     }
 }

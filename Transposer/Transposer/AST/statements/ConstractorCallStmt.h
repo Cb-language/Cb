@@ -6,6 +6,7 @@ class ConstractorCallStmt : public Expr
 private:
     std::vector<std::unique_ptr<Expr>> args;
     bool needsSemicolon = false;
+    const ClassNode* targetClass = nullptr;
 
 public:
     ConstractorCallStmt(const Token& token, std::vector<std::unique_ptr<Expr>> args);
@@ -17,4 +18,5 @@ public:
     void setNeedsSemicolon(const bool needsSemicolon) override;
 
     const ClassNode* getClassNode() const;
+    void setTargetClass(const ClassNode* targetClass);
 };

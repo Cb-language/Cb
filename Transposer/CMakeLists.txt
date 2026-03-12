@@ -210,8 +210,8 @@ add_executable(Transposer
         Transposer/symbols/Type/ClassType.h
         Transposer/AST/statements/ConstractorCallStmt.cpp
         Transposer/AST/statements/ConstractorCallStmt.h
-        Transposer/errorHandling/syntaxErrors/IllegalVarName.cpp
-        Transposer/errorHandling/syntaxErrors/IllegalVarName.h
+        Transposer/errorHandling/semanticErrors/IllegalVarName.cpp
+        Transposer/errorHandling/semanticErrors/IllegalVarName.h
         Transposer/errorHandling/classErrors/AccessError.cpp
         Transposer/errorHandling/classErrors/AccessError.h
         Transposer/errorHandling/classErrors/InvalidCtorArgs.cpp

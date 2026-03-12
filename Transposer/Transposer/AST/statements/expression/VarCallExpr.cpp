@@ -1,4 +1,6 @@
 #include "VarCallExpr.h"
+#include "other/SymbolTable.h"
+#include "errorHandling/semanticErrors/UnrecognizedIdentifier.h"
 
 VarCallExpr::VarCallExpr(const Token& token, const Var& var)
     : Call(token), var(var.copy())
@@ -7,6 +9,16 @@ VarCallExpr::VarCallExpr(const Token& token, const Var& var)
 
 void VarCallExpr::analyze() const
 {
+    if (symTable == nullptr) return;
+
+    if (const auto resolvedVar = symTable->getVar(var.getName()))
+    {
+        const_cast<VarCallExpr*>(this)->var = resolvedVar->copy();
+    }
+    else
+    {
+        throw UnrecognizedIdentifier(token);
+    }
 }
 
 std::string VarCallExpr::translateToCpp() const

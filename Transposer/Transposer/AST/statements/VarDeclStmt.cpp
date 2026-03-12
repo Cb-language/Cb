@@ -1,6 +1,10 @@
 #include "VarDeclStmt.h"
 
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
+#include "errorHandling/classErrors/IllegalFieldName.h"
+#include "../../errorHandling/semanticErrors/IllegalVarName.h"
+#include "other/SymbolTable.h"
+#include "other/Utils.h"
 
 VarDeclStmt::VarDeclStmt(const Token& token, const bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var& var) :
     Stmt(token), hasStartingValue(hasStartingValue), startingValue(std::move(startingValue)) , var(var.copy())
@@ -9,12 +13,34 @@ VarDeclStmt::VarDeclStmt(const Token& token, const bool hasStartingValue, std::u
 
 void VarDeclStmt::analyze() const
 {
-    if (hasStartingValue && *(var.getType()) != *(startingValue->getType()))
+    if (symTable == nullptr) return;
+    const std::string varNameStr = translateFQNtoString(var.getName());
+    const bool startsWithNote = Utils::startsWithNote(varNameStr);
+
+    if (symTable->getCurrClass() == nullptr)
     {
-        throw IllegalTypeCast(token, var.getType()->toString(), startingValue->getType()->toString());
+        // local variable
+        if (startsWithNote) throw IllegalVarName(token);
+        symTable->addVar(var, token);
+    }
+    else
+    {
+        // Field (should already be registered in Pass 2, but let's check name here)
+        if (!startsWithNote) throw IllegalFieldName(token);
     }
 
-    if (startingValue != nullptr) startingValue->analyze();
+    if (hasStartingValue)
+    {
+        startingValue->setSymbolTable(symTable);
+        startingValue->setScope(symTable->getCurrScope());
+        startingValue->setClassNode(symTable->getCurrClass());
+        startingValue->analyze();
+        
+        if (*(var.getType()) != *(startingValue->getType()))
+        {
+            throw IllegalTypeCast(token, var.getType()->toString(), startingValue->getType()->toString());
+        }
+    }
 }
 
 std::string VarDeclStmt::translateToCpp() const

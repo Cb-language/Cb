@@ -5,6 +5,8 @@
 #include "AST/statements/FuncDeclStmt.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/semanticErrors/CallWithoutCopyright.h"
+#include "other/SymbolTable.h"
+#include "errorHandling/semanticErrors/IllegalCall.h"
 
 FuncCallExpr::FuncCallExpr(const Token& token,
     const FQN& name, std::vector<std::unique_ptr<Expr>> args, const bool needsSemicolon)
@@ -24,6 +26,25 @@ std::unique_ptr<IType> FuncCallExpr::getType() const
 
 void FuncCallExpr::analyze() const
 {
+    if (symTable == nullptr) return;
+
+    for (const auto& arg : args)
+    {
+        arg->setSymbolTable(symTable);
+        arg->setScope(scope);
+        arg->setClassNode(currClass);
+        arg->analyze();
+    }
+
+    if (auto t = symTable->getCallType(this, currClass))
+    {
+        const_cast<FuncCallExpr*>(this)->type = std::move(t);
+    }
+    else
+    {
+        throw IllegalCall(token, translateFQNtoString(this->getName()));
+    }
+
     if (funcDecl == nullptr)
     {
         throw HowDidYouGetHere(token);

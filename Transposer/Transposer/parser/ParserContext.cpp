@@ -2,7 +2,6 @@
 
 #include <functional>
 
-#include "StmtParser.h"
 #include "errorHandling/lexicalErrors/UnexpectedEOF.h"
 #include "errorHandling/syntaxErrors/MissingSemicolon.h"
 #include "errorHandling/syntaxErrors/NoLineOpener.h"
@@ -187,11 +186,6 @@ bool ParserContext::isBinaryOp() const
 bool ParserContext::isType() const
 {
     return (current().type >= CbTokenType::TYPE_FLAT && current().type <= CbTokenType::TYPE_FERMATA);
-}
-
-bool ParserContext::getHasMain() const
-{
-    return hasMain;
 }
 
 const std::vector<std::unique_ptr<Stmt>>& ParserContext::getStmts() const

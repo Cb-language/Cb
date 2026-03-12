@@ -13,7 +13,6 @@
 #include "errorHandling/entryPointErrors/InvalidMainArgs.h"
 #include "errorHandling/entryPointErrors/InvalidMainReturnType.h"
 #include "errorHandling/entryPointErrors/MainOverride.h"
-#include "errorHandling/semanticErrors/IdentifierTaken.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "symbols/Type/ClassType.h"
 
@@ -71,9 +70,10 @@ void SymbolTable::analyze(const std::vector<std::unique_ptr<Stmt>>& stmts)
 
     // Pass 2: Structure and Member Signatures
     // Resolve class hierarchy and register all fields, methods, and constructors.
-    // This allows any body to refer to any member of any class.
+    // This allows any body stmt to refer to any member of any class.
     for (const auto& stmt : stmts)
     {
+        stmt->setSymbolTable(this);
         if (const auto* classDecl = dynamic_cast<ClassDeclStmt*>(stmt.get()))
         {
             if (ClassNode* node = classTree.find(classDecl->getName()))
@@ -88,12 +88,14 @@ void SymbolTable::analyze(const std::vector<std::unique_ptr<Stmt>>& stmts)
                 currClass = node;
                 for (const auto& [access, field] : classDecl->getFields())
                 {
+                    field->setSymbolTable(this);
                     field->setScope(currScope);
                     field->setClassNode(node);
                     addField(access, field->getVar(), field->getToken());
                 }
                 for (const auto& [access, method] : classDecl->getMethods())
                 {
+                    method->setSymbolTable(this);
                     method->setScope(currScope);
                     method->setClassNode(node);
                     Func f = method->getFunc();
@@ -103,6 +105,7 @@ void SymbolTable::analyze(const std::vector<std::unique_ptr<Stmt>>& stmts)
                 }
                 for (const auto& [access, ctor] : classDecl->getCtors())
                 {
+                    ctor->setSymbolTable(this);
                     ctor->setScope(currScope);
                     ctor->setClassNode(node);
                     addCtor(access, ctor->getConstractor(), ctor->getToken());
@@ -124,6 +127,7 @@ void SymbolTable::analyze(const std::vector<std::unique_ptr<Stmt>>& stmts)
     for (const auto& stmt : stmts)
     {
         // Ensure the top-level statement has the correct context
+        stmt->setSymbolTable(this);
         stmt->setScope(currScope);
         if (const auto* classDecl = dynamic_cast<ClassDeclStmt*>(stmt.get()))
         {
@@ -389,7 +393,7 @@ bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const
 
     if (currClass != nullptr)
     {
-        if (auto parent = currClass->getParent())
+        if (const auto parent = currClass->getParent(); parent != nullptr)
         {
             return isLegalFieldOrMethod(std::make_unique<ClassType>(name), name, token, currClass->getParent());
         }

@@ -29,4 +29,6 @@ public:
     std::unique_ptr<IType> getArrType() const override;
 
     std::string toString() const override;
+
+    FQN getFQN() const override;
 };

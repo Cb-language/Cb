@@ -3,6 +3,7 @@
 #include <ranges>
 
 #include "FuncDeclStmt.h"
+#include "errorHandling/classErrors/ClassDosentExisit.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "other/SymbolTable.h"
 #include "errorHandling/classErrors/InvalidOverrideSignature.h"
@@ -112,17 +113,42 @@ ClassDeclStmt::ClassDeclStmt(const Token& token, const FQN& name, std::vector<Fi
         this->ctors.emplace_back(PUBLIC, std::move(ctor));
     }
 }
-
 void ClassDeclStmt::analyze() const
 {
-    for (const auto& field : fields | std::views::values) field->analyze();
-    for (const auto& ctor : ctors | std::views::values) ctor->analyze();
+    if (symTable == nullptr) return;
+
+    if (!parentName.empty())
+    {
+        if (symTable->getClass(parentName) == nullptr)
+        {
+            throw ClassDosentExisit(token, translateFQNtoString(parentName));
+        }
+    }
+
+    for (const auto& field : fields | std::views::values)
+    {
+        field->setSymbolTable(symTable);
+        field->setScope(scope);
+        field->setClassNode(currClass);
+        field->analyze();
+    }
+    for (const auto& ctor : ctors | std::views::values)
+    {
+        ctor->setSymbolTable(symTable);
+        ctor->setScope(scope);
+        ctor->setClassNode(currClass);
+        ctor->analyze();
+    }
 
     bool isAbstract = false;
 
     for (const auto& method : methods | std::views::values)
     {
+        method->setSymbolTable(symTable);
+        method->setScope(scope);
+        method->setClassNode(currClass);
         method->analyze();
+
         switch (method->getVirtual())
         {
         case VirtualType::PURE:

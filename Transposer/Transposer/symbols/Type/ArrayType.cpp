@@ -68,3 +68,10 @@ std::string ArrayType::toString() const
 {
     return "riff " + valueType->toString();
 }
+
+FQN ArrayType::getFQN() const
+{
+    FQN fqn = valueType->getFQN();
+    fqn.insert(fqn.begin(), "riff");
+    return fqn;
+}

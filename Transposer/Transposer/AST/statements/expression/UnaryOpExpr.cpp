@@ -2,6 +2,7 @@
 
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
+#include "other/SymbolTable.h"
 
 UnaryOpExpr::UnaryOpExpr(const Token& token,
     std::unique_ptr<Expr> operand, const UnaryOp op, const bool needsSemicolon)
@@ -15,6 +16,13 @@ UnaryOpExpr::UnaryOpExpr(const Token& token,
 
 void UnaryOpExpr::analyze() const
 {
+    if (symTable == nullptr) return;
+
+    operand->setSymbolTable(symTable);
+    operand->setScope(scope);
+    operand->setClassNode(currClass);
+    operand->analyze();
+
     if (op == UnaryOp::Not && operand->getType()->toString() != "mute")
     {
         throw IllegalTypeCast(token, operand->getType()->toString(), "mute");
@@ -63,7 +71,7 @@ std::string UnaryOpExpr::translateToCpp() const
             break;
 
         case UnaryOp::MinusMinusMinusMinus:
-            ret += "-= 2";
+            ret += " -= 2";
             break;
         }
     }

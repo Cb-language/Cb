@@ -1,5 +1,5 @@
 #include "ContinueStmt.h"
-
+#include "other/SymbolTable.h"
 #include "errorHandling/semanticErrors/StmtNotContinueAble.h"
 
 ContinueStmt::ContinueStmt(const Token& token) : Stmt(token)
@@ -8,10 +8,8 @@ ContinueStmt::ContinueStmt(const Token& token) : Stmt(token)
 
 void ContinueStmt::analyze() const
 {
-    if (!scope->getIsContinueAble())
-    {
-        throw StmtNotContinueAble(token);
-    }
+    if (symTable == nullptr) return;
+    if (!symTable->getCurrScope()->getIsContinueAble()) throw StmtNotContinueAble(token);
 }
 
 std::string ContinueStmt::translateToCpp() const

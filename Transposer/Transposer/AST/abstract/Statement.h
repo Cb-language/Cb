@@ -4,6 +4,7 @@
 
 class IFuncDeclStmt;
 class ClassDeclStmt;
+class SymbolTable;
 
 class Stmt
 {
@@ -12,6 +13,7 @@ protected:
 
     Scope* scope;
     const ClassNode* currClass;
+    mutable SymbolTable* symTable;
 
     explicit Stmt(const Token& token);
 
@@ -25,12 +27,14 @@ public:
     virtual const Token& getToken() const;
     void setScope(Scope* scope);
     void setClassNode(const ClassNode* currClass);
+    void setSymbolTable(SymbolTable* symTable) const;
 
 };
 
 inline Stmt::Stmt(const Token& token) : token(token),
                                         scope(nullptr),
-                                        currClass(nullptr)
+                                        currClass(nullptr),
+                                        symTable(nullptr)
 {
 }
 
@@ -65,4 +69,9 @@ inline void Stmt::setScope(Scope* scope)
 inline void Stmt::setClassNode(const ClassNode* currClass)
 {
     this->currClass = currClass;
+}
+
+inline void Stmt::setSymbolTable(SymbolTable* symTable) const
+{
+    this->symTable = symTable;
 }

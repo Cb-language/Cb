@@ -27,4 +27,6 @@ public:
     std::unique_ptr<IType> copy() const override;
     std::string toString() const override;
 
+    FQN getFQN() const override;
+
 };

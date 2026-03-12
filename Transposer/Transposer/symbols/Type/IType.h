@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
-
+#include <memory>
+#include "parser/FQN.h"
 #include "other/Utils.h"
 
 class IType
@@ -24,4 +25,6 @@ public:
     virtual std::unique_ptr<IType> getArrType() const {return nullptr;}
 
     virtual std::string toString() const = 0;
+
+    virtual FQN getFQN() const = 0;
 };

@@ -113,3 +113,8 @@ std::string PrimitiveType::toString() const
     default: return "";
     }
 }
+
+FQN PrimitiveType::getFQN() const
+{
+    return {toString()};
+}

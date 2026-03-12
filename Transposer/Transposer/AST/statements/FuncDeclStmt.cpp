@@ -1,8 +1,8 @@
 #include "FuncDeclStmt.h"
 
-#include "errorHandling/semanticErrors/FuncInsideFunc.h"
 #include "errorHandling/semanticErrors/NoReturn.h"
 #include "../../errorHandling/classErrors/VirtualNonMethod.h"
+#include "other/SymbolTable.h"
 
 FuncDeclStmt::FuncDeclStmt(const Token& token,  const FQN& funcName, std::unique_ptr<IType> returnType, const std::vector<Var>& args,
     std::vector<std::unique_ptr<FuncCreditStmt>>& credited, const bool isMethod, const VirtualType& virtualType, const bool isStatic)
@@ -72,24 +72,41 @@ const std::vector<std::unique_ptr<FuncCreditStmt>>& FuncDeclStmt::getCredited() 
 
 void FuncDeclStmt::analyze() const
 {
+    if (symTable == nullptr) return;
+
     if (virtualType != VirtualType::NONE && !isMethod)
     {
         throw VirtualNonMethod(token);
     }
 
-    if (func.getType()->toString() != "fermata" && !hasReturned && virtualType != VirtualType::PURE)
-    {
-        throw NoReturn(token);
-    }
-
-    // if (this->funcDecl != nullptr) ?????????????????????????????????????????
-    // {
-    //     throw FuncInsideFunc(token);
-    // }
-
     if (virtualType != VirtualType::PURE)
     {
-        body->analyze();
+        symTable->changeFunc(const_cast<FuncDeclStmt*>(this));
+        
+        symTable->enterScope(false, false);
+        for (const auto& arg : func.getArgs())
+        {
+            symTable->addVar(arg, token);
+        }
+        
+        body->setSymbolTable(symTable);
+        body->setScope(symTable->getCurrScope());
+        body->setClassNode(symTable->getCurrClass());
+
+        for (const auto& stmt : body->getStmts())
+        {
+            stmt->setSymbolTable(symTable);
+            stmt->setScope(symTable->getCurrScope());
+            stmt->setClassNode(symTable->getCurrClass());
+            stmt->analyze();
+        }
+        
+        symTable->exitScope();
+
+        if (func.getType()->toString() != "fermata" && !hasReturned)
+        {
+            throw NoReturn(token);
+        }
     }
 }
 

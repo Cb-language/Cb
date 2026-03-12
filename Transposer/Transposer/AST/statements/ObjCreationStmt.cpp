@@ -4,6 +4,8 @@
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "../../errorHandling/classErrors/InstantiateAbstractClass.h"
 #include "symbols/Type/ClassType.h"
+#include "other/SymbolTable.h"
+#include "errorHandling/classErrors/ClassDosentExisit.h"
 
 ObjCreationStmt::ObjCreationStmt(const Token& token,
                                  const ClassNode* classNode, const bool hasStartingValue, std::unique_ptr<ConstractorCallStmt> startingValue,
@@ -15,17 +17,33 @@ ObjCreationStmt::ObjCreationStmt(const Token& token,
 
 void ObjCreationStmt::analyze() const
 {
+    if (symTable == nullptr) return;
+
+    const ClassNode* target = classNode;
+    if (target == nullptr)
+    {
+        target = symTable->getClass(var.getType()->getFQN());
+        if (target == nullptr) throw ClassDosentExisit(token, var.getType()->toString());
+        const_cast<ObjCreationStmt*>(this)->classNode = target;
+    }
+
     if (startingValue != nullptr)
     {
-        const auto type = startingValue->getType()->copy();
-        if (const auto clsPtr = dynamic_cast<ClassType*>(type.get()))
+        if (auto* ctorCall = dynamic_cast<ConstractorCallStmt*>(const_cast<Expr*>(startingValue.get())))
         {
-            if (clsPtr->getClassNode()->isAbstract())
+            ctorCall->setTargetClass(target);
+            ctorCall->setSymbolTable(symTable);
+            ctorCall->setScope(scope);
+            ctorCall->setClassNode(currClass);
+            ctorCall->analyze();
+            
+            if (target->isAbstract())
             {
                 throw InstantiateAbstractClass(token);
             }
         }
     }
+    
     VarDeclStmt::analyze();
 }
 

@@ -3,17 +3,22 @@
 
 class BodyStmt : public Stmt
 {
-private:
-    std::vector<std::unique_ptr<Stmt>> stmts;
-    const bool isGlobal;
-    bool hasBrace = true;
+std::vector<std::unique_ptr<Stmt>> stmts;
+bool isGlobal;
+bool hasBrace = true;
+bool isBreakable = false;
+bool isContinueAble = false;
+
 public:
-    BodyStmt(const Token& token, std::vector<std::unique_ptr<Stmt>>& stmts, const bool isGlobal = false);
-    std::vector<std::unique_ptr<Stmt>>& getStmts();
-    const std::vector<std::unique_ptr<Stmt>>& getStmts() const; // Added const overload
+BodyStmt(const Token& token, std::vector<std::unique_ptr<Stmt>>& stmts, bool isGlobal = false);
+std::vector<std::unique_ptr<Stmt>>& getStmts();
+const std::vector<std::unique_ptr<Stmt>>& getStmts() const;
 
-    void analyze() const override;
-    std::string translateToCpp() const override;
+void analyze() const override;
+std::string translateToCpp() const override;
 
-    void setHasBrace(const bool hasBrace);
+void setHasBrace(bool hasBrace);
+void setBreakable(bool isBreakable);
+void setContinueAble(bool isContinueAble);
 };
+

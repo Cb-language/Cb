@@ -5,7 +5,7 @@
 class VarCallExpr : public Call
 {
 protected:
-    const Var var;
+    Var var;
 
 public:
     VarCallExpr(const Token& token, const Var& var);

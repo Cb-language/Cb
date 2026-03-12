@@ -67,3 +67,8 @@ std::string ClassType::toString() const
 {
     return translateFQNtoString(name);
 }
+
+FQN ClassType::getFQN() const
+{
+    return name;
+}
