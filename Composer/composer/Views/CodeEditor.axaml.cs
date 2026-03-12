@@ -46,7 +46,8 @@ public partial class CodeEditor : UserControl
         { "'", "'" },
         { "𝄞", "𝄀" },
         { "𝄋", "𝄌"},
-        { "𝄕", "𝄇"}
+        { "𝄕", "𝄇"},
+        { "𝄢𝄩", "𝄩𝄢"}
     };
 
     public CodeEditor()
@@ -95,6 +96,7 @@ public partial class CodeEditor : UserControl
             case "^": replacement = "𝆫"; break;
             case "\\": replacement = "𝄍"; break;
             case "#": replacement = "♯"; break;
+            case "?": replacement = "𝄢"; break;
         }
 
         if (replacement != null)
@@ -241,7 +243,8 @@ public partial class CodeEditor : UserControl
                     case Key.D0: replacement = "♮"; break; // ALT + 0
                     case Key.C: replacement = "©"; break; // ALT + C
                     case Key.OemQuestion: // ALT + / (or ? key)
-                    case Key.Divide: replacement = "𝄂"; break; // ALT + Numpad /
+                    case Key.Divide: replacement = "𝄢𝄩"; break; // ALT + Numpad /
+                    case Key.OemSemicolon: replacement = "𝄂"; break;
                     case Key.OemPlus: replacement = "𝅘𝅥="; break; // ALT + Numpad +
                     case Key.D3: replacement = "𝄪"; break;  // ALT+ #
                     case Key.B: replacement = "♭"; break; // ALT + B
