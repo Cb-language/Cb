@@ -75,6 +75,7 @@ void ParserContext::expectSemiColon()
         {
             addError(std::make_unique<MissingSemicolon>(copyCurrent()));
         }
+        return;
     }
 
     if (matchConsume(CbTokenType::PUNCTUATION_CLOSE_FUNC))

@@ -74,8 +74,11 @@ std::unique_ptr<IType> TypeParser::parseType() const
 
 std::unique_ptr<IType> TypeParser::parseArrayType() const
 {
+    c.advance(); // eat the riff keyword
+
     std::unique_ptr<IType> arrType = parseType();
-    if (!arrType) return nullptr;
+    if (!arrType)
+        return nullptr;
 
     return std::make_unique<ArrayType>(std::move(arrType));
 }

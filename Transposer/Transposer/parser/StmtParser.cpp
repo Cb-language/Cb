@@ -145,7 +145,7 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
         {
             c.addError(std::make_unique<StmtNotContinueAble>(c.copyCurrent()));
         }
-        return std::make_unique<BreakStmt>(c.copyCurrent());
+        return std::make_unique<ContinueStmt>(c.copyCurrent());
     }
     if (c.matchConsume(CbTokenType::KEYWORD_FEAT))
     {
@@ -202,7 +202,8 @@ std::unique_ptr<AssignmentStmt> StmtParser::parseAssignmentStmt(std::unique_ptr<
     c.matchConsume(c.current().type, opToken);
 
     auto right = exprParser.parseExpr();
-    if (!right) return nullptr;
+    if (!right)
+        return nullptr;
 
     return std::make_unique<AssignmentStmt>(
         opToken,
@@ -214,7 +215,8 @@ std::unique_ptr<AssignmentStmt> StmtParser::parseAssignmentStmt(std::unique_ptr<
 
 std::unique_ptr<HearStmt> StmtParser::parseHearStmt() const
 {
-    if (!c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent()))) return nullptr;
+    if (!c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent())))
+        return nullptr;
 
     auto var = exprParser.parseCallExpr();
     if (!var)
@@ -250,7 +252,8 @@ std::unique_ptr<PlayStmt> StmtParser::parsePlayStmt() const
     if (c.matchConsume(CbTokenType::KEYWORD_PLAYBAR, t)) isBar = true;
     else c.matchConsume(CbTokenType::KEYWORD_PLAY, t);
 
-    if (!c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent()))) return nullptr;
+    if (!c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent())))
+        return nullptr;
 
     std::vector<std::unique_ptr<Expr>> exprs;
 
@@ -282,7 +285,10 @@ std::unique_ptr<BodyStmt> StmtParser::parseBodyStmt(const bool isGlobal, const b
     Token t = c.copyCurrent();
     if (hasBrace)
     {
-        if (!c.expect(CbTokenType::PUNCTUATION_OPEN_CURLY_BRACKET, std::make_unique<MissingBrace>(c.copyCurrent()))) return nullptr;
+        if (!c.expect(CbTokenType::PUNCTUATION_OPEN_CURLY_BRACKET, std::make_unique<MissingBrace>(c.copyCurrent())))
+            return nullptr;
+        if (!c.expect(CbTokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.copyCurrent())))
+            return nullptr;
     }
 
     std::vector<std::unique_ptr<Stmt>> bodyStmts;
@@ -311,32 +317,37 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
 
     if (c.matchConsume(CbTokenType::PUNCTUATION_COPYRIGHT))
     {
-        if (c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent()))) return nullptr;
+        if (!c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent())))
         {
-            while (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
-            {
-                if (auto credit = parseFuncCreditStmt()) credited.push_back(std::move(credit));
-                if (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA, std::make_unique<UnexpectedToken>(c.copyCurrent()));
-            }
+            return nullptr;
+        }
+
+        while (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+        {
+            if (auto credit = parseFuncCreditStmt()) credited.push_back(std::move(credit));
+            if (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA, std::make_unique<UnexpectedToken>(c.copyCurrent()));
         }
     }
 
     const FQN name = c.parseFQN();
 
-    if (!c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent()))) return nullptr;
+    if (!c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent())))
+        return nullptr;
 
     std::vector<Var> args;
     while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
     {
         auto type = typeParser.parseIType();
-        if (!type) return nullptr;
+        if (!type)
+            return nullptr;
 
         const FQN argName = c.parseFQN();
         args.emplace_back(std::move(type), argName);
 
         if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
         {
-            if (!c.expect(CbTokenType::PUNCTUATION_COMMA, std::make_unique<UnexpectedToken>(c.copyCurrent()))) return nullptr;
+            if (!c.expect(CbTokenType::PUNCTUATION_COMMA, std::make_unique<UnexpectedToken>(c.copyCurrent())))
+                return nullptr;
         }
     }
 
@@ -441,10 +452,16 @@ std::unique_ptr<IfStmt> StmtParser::parseIfStmt()
 
 std::unique_ptr<WhileStmt> StmtParser::parseWhileStmt()
 {
-    if (!c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent()))) return nullptr;
+    if (!c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent())))
+        return nullptr;
+
     auto condition = exprParser.parseExpr();
-    if (!condition) return nullptr;
-    if (!c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.copyCurrent()))) return nullptr;
+
+    if (!condition)
+        return nullptr;
+
+    if (!c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.copyCurrent())))
+        return nullptr;
 
     auto body = parseBodyStmt(false, true, true, true);
     auto stmt = StmtWithBody(std::move(condition), std::move(body));
@@ -457,16 +474,21 @@ std::unique_ptr<WhileStmt> StmtParser::parseWhileStmt()
 
 std::unique_ptr<SwitchStmt> StmtParser::parseSwitchStmt()
 {
-    if (!c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent()))) return nullptr;
+    if (!c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent())))
+        return nullptr;
 
-    if (const auto expr = exprParser.parseExpr(); !expr)
+    auto expr = exprParser.parseExpr();
+    if (!expr)
     {
         c.addError(std::make_unique<InvalidExpression>(c.copyCurrent()));
         return nullptr;
     }
 
-    if (!c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.copyCurrent()))) return nullptr;
-    if (!c.expect(CbTokenType::PUNCTUATION_OPEN_CURLY_BRACKET, std::make_unique<MissingBrace>(c.copyCurrent()))) return nullptr;
+
+    if (!c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.copyCurrent())))
+        return nullptr;
+    if (!c.expect(CbTokenType::PUNCTUATION_OPEN_CURLY_BRACKET, std::make_unique<MissingBrace>(c.copyCurrent())))
+        return nullptr;
 
     std::vector<std::unique_ptr<CaseStmt>> cases;
     while (!c.matchConsume(CbTokenType::PUNCTUATION_CLOSE_CURLY_BRACKET))
@@ -482,7 +504,7 @@ std::unique_ptr<SwitchStmt> StmtParser::parseSwitchStmt()
 
     return std::make_unique<SwitchStmt>(
         c.copyCurrent(),
-        Var(nullptr, empty), 
+        std::move(expr),
         cases
     );
 }
@@ -538,7 +560,8 @@ std::unique_ptr<ArrayDeclStmt> StmtParser::parseArrayDeclStmt() const
     }
 
     if (!c.expect(CbTokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.copyCurrent())) &&
-        !c.expect(CbTokenType::PUNCTUATION_CLOSE_FUNC, std::make_unique<MissingSemicolon>(c.copyCurrent()))) return nullptr;
+        !c.expect(CbTokenType::PUNCTUATION_CLOSE_FUNC, std::make_unique<MissingSemicolon>(c.copyCurrent())))
+            return nullptr;
 
     return std::make_unique<ArrayDeclStmt>(
         c.copyCurrent(),

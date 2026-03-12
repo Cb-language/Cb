@@ -9,11 +9,11 @@
 class SwitchStmt : public Stmt
 {
 private:
-    Var var;
+    std::unique_ptr<Expr> expr;
     std::vector<std::unique_ptr<CaseStmt>> cases;
 public:
-    SwitchStmt(const Token& token, Var var, std::vector<std::unique_ptr<CaseStmt>>& cases);
-    void setVar(const Var& var);
+    SwitchStmt(const Token& token, std::unique_ptr<Expr> expr, std::vector<std::unique_ptr<CaseStmt>>& cases);
+    void setExpr(std::unique_ptr<Expr> expr);
 
     void analyze() const override;
     std::string translateToCpp() const override;

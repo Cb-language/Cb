@@ -10,13 +10,152 @@
 #include "AST/statements/expression/ArraySlicingExpr.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 #include "errorHandling/syntaxErrors/MissingParenthesis.h"
-#include "errorHandling/syntaxErrors/InvalidExpression.h"
-#include "errorHandling/syntaxErrors/MissingSemicolon.h"
 #include "symbols/Type/PrimitiveType.h"
+
+std::unique_ptr<Expr> ExprParser::parseExprPrec(const int minPrec)
+{
+    std::unique_ptr<Expr> left;
+
+    if (c.matchNonConsume(CbTokenType::UNARY_OP_NOT))
+    {
+        left = parseUnaryOp();
+    }
+    else if (c.current().isConst())
+    {
+        left = parseConstValue();
+    }
+    else
+    {
+        std::unique_ptr<Call> call = parseCallExpr();
+
+        if (c.isUnaryOp())
+        {
+            Token t = c.copyCurrent();
+            const std::string opStr = tokenToOp(t.type);
+            c.advance();
+            left = std::make_unique<UnaryOpExpr>(t, std::move(call), strToUnaryOp(opStr), false);
+        }
+        else
+        {
+            left = std::move(call);
+        }
+    }
+
+    while (c.isBinaryOp())
+    {
+        const CbTokenType opType = c.current().type;
+        const int prec = getOpPrecedence(opType);
+
+        // Stop if this operator binds less tightly than our caller requires
+        if (prec < minPrec)
+            break;
+
+        Token opToken = c.copyCurrent();
+        std::string op = tokenToOp(opToken.type);
+        c.advance();
+
+        const int nextMinPrec = isRightAssociative(opType) ? prec : prec + 1;
+        auto right = parseExprPrec(nextMinPrec);
+
+        // Build the correct AST node depending on operator kind
+        switch (opType)
+        {
+            case CbTokenType::BINARY_OP_EQUAL:
+            case CbTokenType::BINARY_OP_PLUS_EQUAL:
+            case CbTokenType::BINARY_OP_MINUS_EQUAL:
+            case CbTokenType::BINARY_OP_DIVIDE_EQUAL:
+            case CbTokenType::BINARY_OP_MULTIPLY_EQUAL:
+            case CbTokenType::BINARY_OP_MODULUS_EQUAL:
+            {
+                auto callLeft = std::unique_ptr<Call>(
+                    dynamic_cast<Call*>(left.release())
+                );
+                left = std::make_unique<AssignmentStmt>(
+                    opToken, std::move(callLeft), op, std::move(right)
+                );
+                break;
+            }
+            default:
+            {
+                left = std::make_unique<BinaryOpExpr>(
+                    opToken, op, std::move(left), std::move(right)
+                );
+                break;
+            }
+        }
+    }
+
+    return left;
+}
+
+int ExprParser::getOpPrecedence(const CbTokenType type)
+{
+    switch (type)
+    {
+        // Assignment operators — lowest precedence, RIGHT-associative
+    case CbTokenType::BINARY_OP_EQUAL:
+    case CbTokenType::BINARY_OP_PLUS_EQUAL:
+    case CbTokenType::BINARY_OP_MINUS_EQUAL:
+    case CbTokenType::BINARY_OP_DIVIDE_EQUAL:
+    case CbTokenType::BINARY_OP_MULTIPLY_EQUAL:
+    case CbTokenType::BINARY_OP_MODULUS_EQUAL:
+        return 1;
+
+        // Logical OR
+    case CbTokenType::BINARY_OP_OR:
+        return 2;
+
+        // Logical AND
+    case CbTokenType::BINARY_OP_AND:
+        return 3;
+
+        // Equality
+    case CbTokenType::BINARY_OP_EQUALITY:
+    case CbTokenType::BINARY_OP_NOT_EQUAL:
+        return 4;
+
+        // Relational
+    case CbTokenType::BINARY_OP_LESS_THAN:
+    case CbTokenType::BINARY_OP_MORE_THAN:
+    case CbTokenType::BINARY_OP_LESSER_EQUAL:
+    case CbTokenType::BINARY_OP_GREATER_EQUAL:
+        return 5;
+
+        // Additive
+    case CbTokenType::BINARY_OP_PLUS:
+    case CbTokenType::BINARY_OP_MINUS:
+        return 6;
+
+        // Multiplicative — highest precedence among binary ops
+    case CbTokenType::BINARY_OP_MULTIPLY:
+    case CbTokenType::BINARY_OP_DIVIDE:
+    case CbTokenType::BINARY_OP_MODULO:
+        return 7;
+
+    default:
+        return 0;
+    }
+}
+
+bool ExprParser::isRightAssociative(const CbTokenType type)
+{
+    switch (type)
+    {
+    case CbTokenType::BINARY_OP_EQUAL:
+    case CbTokenType::BINARY_OP_PLUS_EQUAL:
+    case CbTokenType::BINARY_OP_MINUS_EQUAL:
+    case CbTokenType::BINARY_OP_DIVIDE_EQUAL:
+    case CbTokenType::BINARY_OP_MULTIPLY_EQUAL:
+    case CbTokenType::BINARY_OP_MODULUS_EQUAL:
+        return true;
+    default:
+        return false;
+    }
+}
 
 ExprParser::ExprParser(ParserContext& c, TypeParser& typeParser) : c(c), typeParser(typeParser) {}
 
-static std::string tokenToOp(const CbTokenType type)
+std::string ExprParser::tokenToOp(const CbTokenType type)
 {
     switch (type)
     {
@@ -49,7 +188,7 @@ static std::string tokenToOp(const CbTokenType type)
     }
 }
 
-static UnaryOp strToUnaryOp(const std::string& str)
+UnaryOp ExprParser::strToUnaryOp(const std::string& str)
 {
     if (str == "♯") return UnaryOp::PlusPlus;
     if (str == "𝄪") return UnaryOp::PlusPlusPlusPlus;
@@ -166,7 +305,11 @@ std::unique_ptr<Expr> ExprParser::parseBinaryOp(std::unique_ptr<Call> left)
     Token opToken = c.advance();
     std::string op = tokenToOp(opToken.type);
     auto right = parseExpr();
-    return std::make_unique<AssignmentStmt>(opToken, std::move(left), op, std::move(right));
+
+    if (op == "=" || op == "+=" || op == "-=" || op == "*=" || op == "/=" || op == "%=")
+        return std::make_unique<AssignmentStmt>(opToken, std::move(left), op, std::move(right));
+
+    return std::make_unique<BinaryOpExpr>(opToken, op, std::move(left),  std::move(right));
 }
 
 std::unique_ptr<Call> ExprParser::parseCallExpr()
@@ -205,7 +348,8 @@ std::unique_ptr<Call> ExprParser::parseArrayAccess(std::unique_ptr<Call> call)
             std::move(expr)
         );
     }
-    if (!c.expect(CbTokenType::PUNCTUATION_COLON, std::make_unique<UnexpectedToken>(c.current()))) return nullptr;
+    if (!c.expect(CbTokenType::PUNCTUATION_COLON, std::make_unique<UnexpectedToken>(c.current())))
+        return nullptr;
 
     auto sliceingExpr = std::make_unique<ArraySlicingExpr>(
         c.copyCurrent(),

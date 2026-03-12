@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+#include "AST/statements/expression/UnaryOpExpr.h"
+
 class Expr;
 class ConstValueExpr;
 class Call;
@@ -17,6 +19,11 @@ private:
     ParserContext& c;
     TypeParser& typeParser;
 
+    std::unique_ptr<Expr> parseExprPrec(int minPrec);
+    static int getOpPrecedence(const CbTokenType type);
+    static bool isRightAssociative(const CbTokenType type);
+    static std::string tokenToOp(const CbTokenType type);
+    static UnaryOp strToUnaryOp(const std::string& str);
 public:
     explicit ExprParser(ParserContext& c, TypeParser& typeParser);
 

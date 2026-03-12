@@ -2,14 +2,14 @@
 
 #include "errorHandling/semanticErrors/IllegalSwitchVar.h"
 
-SwitchStmt::SwitchStmt(const Token& token, Var var, std::vector<std::unique_ptr<CaseStmt>>& cases)
-    : Stmt(token), var(std::move(var)), cases(std::move(cases))
+SwitchStmt::SwitchStmt(const Token& token, std::unique_ptr<Expr> expr, std::vector<std::unique_ptr<CaseStmt>>& cases)
+    : Stmt(token), expr(std::move(expr)), cases(std::move(cases))
 {
 }
 
-void SwitchStmt::setVar(const Var& var)
+void SwitchStmt::setExpr(std::unique_ptr<Expr> expr)
 {
-    this->var = var;
+    this->expr = std::move(expr);
 }
 
 void SwitchStmt::analyze() const
@@ -19,16 +19,16 @@ void SwitchStmt::analyze() const
         c->analyze();
     }
 
-    if (!var.isNumberable())
+    if (!expr->getType()->isNumberable())
     {
-        throw IllegalSwitchVar(token, translateFQNtoString(var.getName()));
+        throw IllegalSwitchVar(token, expr->translateToCpp());
     }
 }
 
 std::string SwitchStmt::translateToCpp() const
 {
     std::ostringstream os;
-    os << getTabs() << "switch (" << translateFQNtoString(var.getName()) << ")\n";
+    os << getTabs() << "switch (" << expr->translateToCpp() << ")\n";
     os << getTabs() << "{\n";
     for (const auto& c : cases)
     {
