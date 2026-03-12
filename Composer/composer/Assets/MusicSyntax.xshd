@@ -13,10 +13,10 @@
     <Color name="CClef" foreground="#FF0000" />         
             
     <RuleSet ignoreCase="true">
-        <Span color="Comment" begin="\?\*" end="\*\?" />
-        <Span color="Comment" begin="\?" />
+        <Span color="Comment" multiline="true" begin="𝄢𝄩" end="𝄩𝄢" />
+        <Span color="Comment" begin="𝄢" />
 
-        <Span color="String">
+        <Span color="String" multiline="true">
             <Begin>"</Begin>
             <End>"</End>
         </Span>
@@ -62,11 +62,12 @@
             <Word>resume</Word>
             <Word>play</Word>
             <Word>hear</Word>
-            <Word>feat</Word>
+            <Word>feat.</Word>
             <Word>motif</Word>
             <Word>rest</Word>
             <Word>variation</Word>
-            <Word>divis</Word>
+            <Word>div.</Word>
+            <Word>non div.</Word>
             <Word>A</Word>
             <Word>B</Word>
             <Word>C</Word>
