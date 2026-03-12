@@ -17,8 +17,6 @@ class IfStmt : public Stmt
 private:
     StmtWithBody ifStmt;
     std::vector<StmtWithBody> elseStmts;
-
-    const bool isElseIf = false;
 public:
     IfStmt(const Token& token,
         StmtWithBody ifStmt, std::vector<StmtWithBody>& elseStmts);

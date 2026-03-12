@@ -30,7 +30,7 @@ private:
 public:
     StmtParser(ParserContext& c, TypeParser& typeParser, ExprParser& exprParser);
 
-    std::unique_ptr<Stmt> parseStmt(const bool isGlobal = false, const bool isBreakable = false, const bool isContinueAble = false);
+    std::unique_ptr<Stmt> parseStmt();
 
     std::unique_ptr<VarDeclStmt> parseVarDecStmt() const;
     std::unique_ptr<AssignmentStmt> parseAssignmentStmt(std::unique_ptr<Call> left) const;
@@ -38,13 +38,14 @@ public:
     std::unique_ptr<HearStmt> parseHearStmt() const;
     std::unique_ptr<PlayStmt> parsePlayStmt() const;
 
-    std::unique_ptr<BodyStmt> parseBodyStmt(const bool isGlobal = false, const bool isBreakable = false, const bool isContinueAble = false, const bool hasBrace = true);
+    std::unique_ptr<BodyStmt> parseBodyStmt(bool isGlobal = false, bool isContinueAble = false, bool hasBrace = true);
     std::unique_ptr<FuncDeclStmt> parseFuncDeclStmt(const bool isMethod = false);
     std::unique_ptr<ReturnStmt> parseReturnStmt() const;
     std::unique_ptr<FuncCreditStmt> parseFuncCreditStmt() const;
 
-    StmtWithBody getIfStmtWithBody(bool isBreakable, bool isContinueable);
-    std::unique_ptr<IfStmt> parseIfStmt(bool isBreakable, bool isContinueable);
+    StmtWithBody parseConditionAndBody();
+    StmtWithBody parseElseBody();
+    std::unique_ptr<IfStmt> parseIfStmt();
     std::unique_ptr<WhileStmt> parseWhileStmt();
     std::unique_ptr<SwitchStmt> parseSwitchStmt();
     std::unique_ptr<CaseStmt> parseCaseStmt();

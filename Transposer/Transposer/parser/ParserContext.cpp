@@ -208,6 +208,36 @@ bool ParserContext::getIsInFunc() const
     return isInFunc;
 }
 
+void ParserContext::addBreakable()
+{
+    this->breakables++;
+}
+
+void ParserContext::removeBreakable()
+{
+    this->breakables--;
+}
+
+void ParserContext::addContinueable()
+{
+    this->continueables++;
+}
+
+void ParserContext::removeContinueable()
+{
+    this->continueables--;
+}
+
+bool ParserContext::getIsBreakable() const
+{
+    return breakables != 0;
+}
+
+bool ParserContext::getIsContinueable() const
+{
+    return continueables != 0;
+}
+
 bool ParserContext::isEmpty() const
 {
     return tokens.empty();

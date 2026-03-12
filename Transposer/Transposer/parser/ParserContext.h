@@ -24,6 +24,8 @@ private:
     bool hasMain;
     Token firstToken;
 
+    int breakables;
+    int continueables;
 
     bool isNewLine;
     bool isInFunc;
@@ -63,6 +65,14 @@ public:
     void setIsInFunc(const bool isInFunc);
     bool getIsInFunc() const;
 
+    void addBreakable();
+    void removeBreakable();
+
+    void addContinueable();
+    void removeContinueable();
+
+    bool getIsBreakable() const;
+    bool getIsContinueable() const;
 
     bool isEmpty() const;
 
