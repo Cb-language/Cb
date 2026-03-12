@@ -51,7 +51,7 @@
 #include "errorHandling/how/HowDareYou.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 
-StmtParser::StmtParser(ParserContext& c, TypeParser& typeParser, ExprParser& exprParser)
+StmtParser::StmtParser(ParserContext& c, TypeParser& typeParser, ExprParser& exprParser) //TODO///////////////// think tommrow. should we make c clef or bass clef the new comment. sleep on it decide tommorow
     : c(c), typeParser(typeParser), exprParser(exprParser)
 {
 }
@@ -294,7 +294,7 @@ std::unique_ptr<BodyStmt> StmtParser::parseBodyStmt(const bool isGlobal, const b
     );
 }
 
-std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
+std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod) // TODO make return IFuncDecl for ctor to be same
 {
 
     std::vector<std::unique_ptr<FuncCreditStmt>> credited;
