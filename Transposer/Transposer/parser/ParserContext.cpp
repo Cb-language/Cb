@@ -41,7 +41,7 @@ Token ParserContext::copyCurrent()
 
 Token ParserContext::advance()
 {
-
+    if (tokens.empty()) throw UnexpectedEOF(current());
     auto t = tokens.front();
     tokens.pop();
 
@@ -115,6 +115,7 @@ void ParserContext::eatRest()
 
 bool ParserContext::matchConsume(const CbTokenType type, const std::optional<std::reference_wrapper<Token>> out)
 {
+    if (tokens.empty()) throw UnexpectedEOF(current());
     if (current().type == type)
     {
         if (out.has_value())
@@ -129,6 +130,7 @@ bool ParserContext::matchConsume(const CbTokenType type, const std::optional<std
 
 bool ParserContext::matchNonConsume(const CbTokenType type) const
 {
+    if (tokens.empty()) throw UnexpectedEOF(current());
     return current().type == type;
 }
 

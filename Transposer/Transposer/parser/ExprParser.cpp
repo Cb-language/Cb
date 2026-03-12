@@ -8,6 +8,7 @@
 #include "AST/statements/expression/ArrayIndexingExpr.h"
 #include "AST/statements/AssignmentStmt.h"
 #include "AST/statements/expression/ArraySlicingExpr.h"
+#include "errorHandling/syntaxErrors/InvalidExpression.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 #include "errorHandling/syntaxErrors/MissingParenthesis.h"
 #include "symbols/Type/PrimitiveType.h"
@@ -176,8 +177,8 @@ std::string ExprParser::tokenToOp(const CbTokenType type)
         case CbTokenType::BINARY_OP_DIVIDE_EQUAL:   return "/=";
         case CbTokenType::BINARY_OP_MULTIPLY_EQUAL: return "*=";
         case CbTokenType::BINARY_OP_MODULUS_EQUAL:  return "%=";
-        case CbTokenType::BINARY_OP_AND:            return "chord";
-        case CbTokenType::BINARY_OP_OR:             return "divis";
+        case CbTokenType::BINARY_OP_AND:            return "non div.";
+        case CbTokenType::BINARY_OP_OR:             return "div.";
         case CbTokenType::UNARY_OP_NOT:             return "!";
         case CbTokenType::UNARY_OP_SHARP:           return "♯";
         case CbTokenType::UNARY_OP_DOUBLE_SHARP:    return "𝄪";
@@ -207,7 +208,6 @@ std::unique_ptr<Expr> ExprParser::parseExpr()
     {
         left = parseUnaryOp();
     }
-
     else if (c.current().isConst())
     {
         left = parseConstValue();
@@ -224,10 +224,14 @@ std::unique_ptr<Expr> ExprParser::parseExpr()
             c.advance();
             left = std::make_unique<UnaryOpExpr>(t, std::move(call), strToUnaryOp(opStr), false);
         }
-
         else if (c.isBinaryOp())
         {
             left = parseBinaryOp(std::move(call));
+        }
+        else if (c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
+        {
+            left = parseExpr();
+            c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.copyCurrent()));
         }
         else
         {
@@ -326,48 +330,63 @@ std::unique_ptr<Call> ExprParser::parseCallExpr()
         call = std::make_unique<VarCallExpr>(startToken, Var(nullptr, name));
     }
 
-    while (c.matchConsume(CbTokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
-    {
-        auto index = parseExpr();
-        c.expect(CbTokenType::PUNCTUATION_CLOSE_SQUARE_BRACE);
-        call = std::make_unique<ArrayIndexingExpr>(c.copyCurrent(), std::move(call), std::move(index));
-    }
-
-    return call;
+    return parseArrayAccess(std::move(call));
 }
 
 std::unique_ptr<Call> ExprParser::parseArrayAccess(std::unique_ptr<Call> call)
 {
-    auto expr = parseExpr();
-
-    if (c.matchConsume(CbTokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
+    while (c.matchConsume(CbTokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
     {
-        return std::make_unique<ArrayIndexingExpr>(
-            c.copyCurrent(),
-            std::move(call),
-            std::move(expr)
-        );
+        auto firstExpr = parseExpr();
+        if (!firstExpr)
+        {
+            c.addError(std::make_unique<InvalidExpression>(c.copyCurrent()));
+            return nullptr;
+        }
+
+        if (c.matchConsume(CbTokenType::PUNCTUATION_COLON))
+        {
+            Token t = c.copyCurrent();
+
+            auto slicingExpr = std::make_unique<ArraySlicingExpr>(t, std::move(call));
+            slicingExpr->setStart(std::move(firstExpr));
+
+            auto stopExpr = parseExpr();
+            if (!stopExpr)
+            {
+                c.addError(std::make_unique<InvalidExpression>(c.copyCurrent()));
+                return nullptr;
+            }
+            slicingExpr->setStop(std::move(stopExpr));
+
+            if (!c.expect(CbTokenType::PUNCTUATION_COLON,
+                    std::make_unique<UnexpectedToken>(c.copyCurrent())))
+                return nullptr;
+
+            auto stepExpr = parseExpr();
+            if (!stepExpr)
+            {
+                c.addError(std::make_unique<InvalidExpression>(c.copyCurrent()));
+                return nullptr;
+            }
+            slicingExpr->setStep(std::move(stepExpr));
+
+            if (!c.expect(CbTokenType::PUNCTUATION_CLOSE_SQUARE_BRACE,
+                    std::make_unique<MissingParenthesis>(c.copyCurrent())))
+                return nullptr;
+
+            call = std::move(slicingExpr);
+        }
+        else
+        {
+            if (!c.expect(CbTokenType::PUNCTUATION_CLOSE_SQUARE_BRACE,
+                    std::make_unique<MissingParenthesis>(c.copyCurrent())))
+                return nullptr;
+
+            call = std::make_unique<ArrayIndexingExpr>(
+                c.copyCurrent(), std::move(call), std::move(firstExpr));
+        }
     }
-    if (!c.expect(CbTokenType::PUNCTUATION_COLON, std::make_unique<UnexpectedToken>(c.current())))
-        return nullptr;
 
-    auto sliceingExpr = std::make_unique<ArraySlicingExpr>(
-        c.copyCurrent(),
-        std::move(call)
-    );
-
-    sliceingExpr->setStart(std::move(expr));
-    sliceingExpr->setStop(parseExpr());
-
-    if (!c.matchConsume(CbTokenType::PUNCTUATION_COLON))
-    {
-        c.addError(std::make_unique<UnexpectedToken>(c.copyCurrent()));
-        return nullptr;
-    }
-
-    sliceingExpr->setStop(parseExpr());
-
-    c.expect(CbTokenType::PUNCTUATION_CLOSE_SQUARE_BRACE, std::make_unique<MissingParenthesis>(c.current()));
-
-    return sliceingExpr;
+    return call;
 }

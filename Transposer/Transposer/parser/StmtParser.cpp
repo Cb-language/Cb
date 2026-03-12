@@ -109,7 +109,7 @@ std::unique_ptr<Stmt> StmtParser::parseStmt(const bool isGlobal, const bool isBr
     }
     if (c.matchConsume(CbTokenType::KEYWORD_IF))
     {
-        return parseIfStmt();
+        return parseIfStmt(isBreakable, isContinueAble);
     }
     if (c.matchConsume(CbTokenType::KEYWORD_WHILE))
     {
@@ -226,7 +226,6 @@ std::unique_ptr<HearStmt> StmtParser::parseHearStmt() const
     }
 
     std::vector<std::unique_ptr<Call>> calls;
-    calls.push_back(std::move(var));
 
     while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
     {
@@ -381,8 +380,9 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
 
 std::unique_ptr<ReturnStmt> StmtParser::parseReturnStmt() const
 {
-    c.expect(CbTokenType::PUNCTUATION_BACKSLASH, std::make_unique<UnexpectedToken>(c.copyCurrent()));
-    auto expr = exprParser.parseExpr();
+    std::unique_ptr<Expr> expr = nullptr;
+    if (c.matchConsume(CbTokenType::PUNCTUATION_BACKSLASH))
+        expr = exprParser.parseExpr();
 
     return std::make_unique<ReturnStmt>(
         c.copyCurrent(),
@@ -402,7 +402,7 @@ std::unique_ptr<FuncCreditStmt> StmtParser::parseFuncCreditStmt() const
     );
 }
 
-StmtWithBody StmtParser::getIfStmtWithBody()
+StmtWithBody StmtParser::getIfStmtWithBody(const bool isBreakable, const bool isContinueable)
 {
     Token t = c.copyCurrent();
 
@@ -424,9 +424,9 @@ StmtWithBody StmtParser::getIfStmtWithBody()
     return {condition ? std::move(condition) : nullptr, std::move(body)};
 }
 
-std::unique_ptr<IfStmt> StmtParser::parseIfStmt()
+std::unique_ptr<IfStmt> StmtParser::parseIfStmt(const bool isBreakable, const bool isContinueable)
 {
-    auto currStmt = getIfStmtWithBody();
+    auto currStmt = getIfStmtWithBody(isBreakable, isContinueable);
 
     std::vector<StmtWithBody> elses;
     while (c.matchConsume(CbTokenType::KEYWORD_ELSE))
@@ -434,11 +434,11 @@ std::unique_ptr<IfStmt> StmtParser::parseIfStmt()
         if (c.matchConsume(CbTokenType::PUNCTUATION_BACKSLASH)) 
         {
             c.expect(CbTokenType::KEYWORD_IF, std::make_unique<ExpectedKeywordNotFound>(c.copyCurrent(), "D"));
-            elses.push_back(getIfStmtWithBody());
+            elses.push_back(getIfStmtWithBody(isBreakable, isContinueable));
         }
         else 
         {
-            elses.push_back(getIfStmtWithBody());
+            elses.push_back(getIfStmtWithBody(isBreakable, isContinueable));
             break;
         }
     }
@@ -595,7 +595,7 @@ std::unique_ptr<ForStmt> StmtParser::parseForStmt()
     }
 
     std::unique_ptr<Expr> stopExpr = nullptr;
-    if (c.matchConsume(CbTokenType::UNARY_OP_SHARP))
+    if ((isIncreasing && c.matchConsume(CbTokenType::UNARY_OP_SHARP)) || (!isIncreasing && c.matchConsume(CbTokenType::UNARY_OP_FLAT)))
     {
         stopExpr = exprParser.parseExpr();
     }
@@ -654,9 +654,9 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
         else if (c.matchConsume(CbTokenType::KEYWORD_SECTIONSCORE)) access = PROTECTED;
 
         if (c.matchConsume(CbTokenType::KEYWORD_UNISON)) isStatic = true;
-        if (c.matchConsume(CbTokenType::KEYWORD_VARIATION)) virtualType = VirtualType::OVERRIDE;
-        if (c.matchConsume(CbTokenType::KEYWORD_REST)) virtualType = VirtualType::PURE;
-        if (c.matchConsume(CbTokenType::KEYWORD_MOTIF)) virtualType = VirtualType::VIRTUAL;
+        else if (c.matchConsume(CbTokenType::KEYWORD_VARIATION)) virtualType = VirtualType::OVERRIDE;
+        else if (c.matchConsume(CbTokenType::KEYWORD_REST)) virtualType = VirtualType::PURE;
+        else if (c.matchConsume(CbTokenType::KEYWORD_MOTIF)) virtualType = VirtualType::VIRTUAL;
 
         if (c.matchConsume(CbTokenType::KEYWORD_CTOR_CALL))
         {
@@ -740,10 +740,12 @@ std::unique_ptr<ObjCreationStmt> StmtParser::parseObjCreationStmt() const
 {
     auto type = typeParser.parseIType();
     const FQN name = c.parseFQN();
+    bool hasCtorArgs;
 
     std::vector<std::unique_ptr<Expr>> args;
     if (c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
     {
+        hasCtorArgs = true;
         while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
         {
             args.push_back(exprParser.parseExpr());
@@ -757,7 +759,7 @@ std::unique_ptr<ObjCreationStmt> StmtParser::parseObjCreationStmt() const
     return std::make_unique<ObjCreationStmt>(
         c.copyCurrent(),
         nullptr, 
-        true,
+        hasCtorArgs,
         std::move(ctorCall),
         Var(std::move(type), name)
     );

@@ -43,8 +43,8 @@ public:
     std::unique_ptr<ReturnStmt> parseReturnStmt() const;
     std::unique_ptr<FuncCreditStmt> parseFuncCreditStmt() const;
 
-    StmtWithBody getIfStmtWithBody();
-    std::unique_ptr<IfStmt> parseIfStmt();
+    StmtWithBody getIfStmtWithBody(bool isBreakable, bool isContinueable);
+    std::unique_ptr<IfStmt> parseIfStmt(bool isBreakable, bool isContinueable);
     std::unique_ptr<WhileStmt> parseWhileStmt();
     std::unique_ptr<SwitchStmt> parseSwitchStmt();
     std::unique_ptr<CaseStmt> parseCaseStmt();
