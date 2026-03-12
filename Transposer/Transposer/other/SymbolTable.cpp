@@ -34,7 +34,7 @@ SymbolTable::~SymbolTable()
     currClass = nullptr;
 }
 
-void SymbolTable::analyze(const std::vector<std::unique_ptr<Stmt>>& stmts)
+void SymbolTable::analyzePass1(const std::vector<std::unique_ptr<Stmt>>& stmts)
 {
     // Pass 1: Global Declarations (Names only)
     // Register all classes and global function signatures so they can be referenced by name.
@@ -52,7 +52,6 @@ void SymbolTable::analyze(const std::vector<std::unique_ptr<Stmt>>& stmts)
             if (translateFQNtoString(funcDecl->getName()) == "prelude")
             {
                 if (hasMainFound) throw MainOverride(funcDecl->getToken());
-                hasMainFound = true;
 
                 if (funcDecl->getReturnType()->toString() != "degree")
                 {
@@ -63,11 +62,17 @@ void SymbolTable::analyze(const std::vector<std::unique_ptr<Stmt>>& stmts)
                 {
                     throw InvalidMainArgs(funcDecl->getToken());
                 }
+
+                hasMainFound = true;
+                mainPath = funcDecl->getToken().path;
             }
         }
     }
     resetCurrClass();
+}
 
+void SymbolTable::analyzePass2(const std::vector<std::unique_ptr<Stmt>>& stmts)
+{
     // Pass 2: Structure and Member Signatures
     // Resolve class hierarchy and register all fields, methods, and constructors.
     // This allows any body stmt to refer to any member of any class.
@@ -121,7 +126,10 @@ void SymbolTable::analyze(const std::vector<std::unique_ptr<Stmt>>& stmts)
             addVar(varDecl->getVar(), varDecl->getToken());
         }
     }
+}
 
+void SymbolTable::analyzePass3(const std::vector<std::unique_ptr<Stmt>>& stmts)
+{
     // Pass 3: Full Semantic Analysis (Bodies and Initializers)
     // Now that all signatures are known, perform deep analysis.
     for (const auto& stmt : stmts)
@@ -349,21 +357,9 @@ bool SymbolTable::addCtor(const AccessType accessType, const Constractor& ctor, 
     return true;
 }
 
-SymbolTable& SymbolTable::operator+=(const SymbolTable& other)
+std::optional<std::filesystem::path> SymbolTable::getMainPath() const
 {
-    for (const auto& func : other.funcs | std::views::keys)
-    {
-        addFunc(func, true);
-    }
-
-    if (other.head == nullptr) return *this;
-
-    for (const auto& [var, token] : other.head->getCurrVars())
-    {
-        addVar(var.copy(), token);
-    }
-
-    return *this;
+    return hasMainFound ? std::make_optional(mainPath) : std::nullopt;
 }
 
 void SymbolTable::clearClasses()

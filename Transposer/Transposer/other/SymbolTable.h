@@ -20,6 +20,7 @@ private:
     std::set<std::pair<Func, bool>> funcs; // the bool means is it included to this file
     ClassNode* currClass = nullptr;
     bool hasMainFound = false;
+    std::filesystem::path mainPath;
 
     static ClassTree& classTree;
 
@@ -27,7 +28,9 @@ public:
     SymbolTable();
     ~SymbolTable();
 
-    void analyze(const std::vector<std::unique_ptr<Stmt>>& stmts);
+    void analyzePass1(const std::vector<std::unique_ptr<Stmt>>& stmts);
+    void analyzePass2(const std::vector<std::unique_ptr<Stmt>>& stmts);
+    void analyzePass3(const std::vector<std::unique_ptr<Stmt>>& stmts);
 
     // std::nullopt when not found
     std::optional<Var> getVar(const FQN& name) const;
@@ -61,8 +64,7 @@ public:
     bool addMethod(const AccessType accessType, const Func& method, const Token& token) const;
     bool addCtor(const AccessType accessType, const Constractor& ctor, const Token& token) const;
 
-    SymbolTable& operator+=(const SymbolTable& other);
-
+    std::optional<std::filesystem::path> getMainPath() const;
     static void clearClasses();
     static bool isClass(const FQN& name);
     static ClassNode* getClass(const FQN& name);

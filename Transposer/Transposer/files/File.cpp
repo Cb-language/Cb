@@ -73,12 +73,26 @@ void File::parse()
     parser.parse();
 }
 
-void File::analyze()
+void File::analyzePass1(SymbolTable& symTable)
 {
-    if (analyzed) return;
+    if (analyzed1) return;
     if (!parsed) parse();
-    analyzed = true;
-    symTable.analyze(parser.getContext().getStmts());
+    analyzed1 = true;
+    symTable.analyzePass1(parser.getContext().getStmts());
+}
+
+void File::analyzePass2(SymbolTable& symTable)
+{
+    if (analyzed2) return;
+    analyzed2 = true;
+    symTable.analyzePass2(parser.getContext().getStmts());
+}
+
+void File::analyzePass3(SymbolTable& symTable)
+{
+    if (analyzed3) return;
+    analyzed3 = true;
+    symTable.analyzePass3(parser.getContext().getStmts());
 }
 
 void File::write(const bool isMain)

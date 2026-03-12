@@ -31,11 +31,11 @@ private:
     static FileNode* build(const std::filesystem::path& path);
     static FileNode* build(const std::filesystem::path& inPath, const std::filesystem::path& outPath);
 
-    void start();
+    void analyzePass1(SymbolTable& symTable);
+    void analyzePass2(SymbolTable& symTable);
+    void analyzePass3(SymbolTable& symTable);
 
     void write(const bool isMain = false);
-
-    bool hasMain() const;
 
     const std::vector<std::unique_ptr<Error>>& getErrors() const;
 

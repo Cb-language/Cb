@@ -9,7 +9,7 @@
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 
 ParserContext::ParserContext(const std::queue<Token>& tokens)
-    : tokens(tokens), len(tokens.size()), hasMain(false), breakables(0), continueables(0), isNewLine(false),
+    : tokens(tokens), len(tokens.size()), breakables(0), continueables(0), isNewLine(false),
       isInFunc(false)
 {
     if (!tokens.empty())

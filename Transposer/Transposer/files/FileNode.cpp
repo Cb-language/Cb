@@ -150,26 +150,40 @@ FileNode* FileNode::build(const std::filesystem::path& inPath, const std::filesy
     return node;
 }
 
-void FileNode::start()
+void FileNode::analyzePass1(SymbolTable& symTable)
 {
+    file.analyzePass1(symTable);
+
     for (auto& child : children)
     {
-        child->start();
+        child->analyzePass1(symTable);
     }
+}
 
-    file.parse();
-    file.analyze();
+void FileNode::analyzePass2(SymbolTable& symTable)
+{
+    file.analyzePass2(symTable);
+
+    for (auto& child : children)
+    {
+        child->analyzePass2(symTable);
+    }
+}
+
+void FileNode::analyzePass3(SymbolTable& symTable)
+{
+    file.analyzePass3(symTable);
+
+    for (auto& child : children)
+    {
+        child->analyzePass3(symTable);
+    }
 }
 
 void FileNode::write(const bool isMain)
 {
     for (auto& child : children) child->write();
     file.write(isMain);
-}
-
-bool FileNode::hasMain() const
-{
-    return file.parser.getContext().getHasMain();
 }
 
 void FileNode::clear(const FileNode* main)

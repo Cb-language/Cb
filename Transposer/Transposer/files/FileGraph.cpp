@@ -31,11 +31,13 @@ void FileGraph::build(const std::filesystem::path& main, const std::filesystem::
     this->main = FileNode::build(main.filename(), outDir.filename());
 }
 
-void FileGraph::start() const
+void FileGraph::start()
 {
-    main->start();
+    main->analyzePass1(symTable);
+    main->analyzePass2(symTable);
+    main->analyzePass3(symTable);
 
-    if (!main->hasMain())
+    if (const auto path = symTable.getMainPath(); !path.has_value() || path != main->file.getInPath())
     {
         throw NoMain(main->file.parser.getContext().getFirstToken());
     }

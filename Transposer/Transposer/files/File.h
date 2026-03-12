@@ -15,12 +15,13 @@ private:
     const std::filesystem::path outPathH;
     const std::filesystem::path outPathCpp;
     Parser parser;
-    SymbolTable symTable;
 
     std::vector<std::pair<std::filesystem::path, Token>> includes;
     bool readIncludes = false;
     bool parsed = false;
-    bool analyzed = false;
+    bool analyzed1 = false;
+    bool analyzed2 = false;
+    bool analyzed3 = false;
     bool writen = false;
 
     std::queue<Token> tokenize() const;
@@ -36,7 +37,9 @@ private:
     const std::filesystem::path& getOutCppPath() const;
     const std::vector<std::pair<std::filesystem::path, Token>>& getIncludes();
     void parse();
-    void analyze();
+    void analyzePass1(SymbolTable& symTable);
+    void analyzePass2(SymbolTable& symTable);
+    void analyzePass3(SymbolTable& symTable);
     void write(const bool isMain = false);
     const std::vector<std::unique_ptr<Error>>& getErrors() const;
 
