@@ -33,4 +33,10 @@ public:
     bool getHasEmptyCtor() const;
 
     void setClassDetails(std::vector<Field> fields, std::vector<Method> methods, std::vector<Ctor> ctors);
+
+    const FQN& getName() const;
+    const FQN& getParentName() const;
+    const std::vector<Field>& getFields() const;
+    const std::vector<Method>& getMethods() const;
+    const std::vector<Ctor>& getCtors() const;
 };

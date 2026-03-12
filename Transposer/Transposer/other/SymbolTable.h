@@ -19,12 +19,15 @@ private:
     IFuncDeclStmt* currFunc;
     std::set<std::pair<Func, bool>> funcs; // the bool means is it included to this file
     ClassNode* currClass = nullptr;
+    bool hasMainFound = false;
 
     static ClassTree& classTree;
 
 public:
     SymbolTable();
     ~SymbolTable();
+
+    void analyze(const std::vector<std::unique_ptr<Stmt>>& stmts);
 
     // std::nullopt when not found
     std::optional<Var> getVar(const FQN& name) const;
@@ -34,7 +37,7 @@ public:
     bool doesFuncExist(const Func& f) const;
     bool doesFuncExist(const FQN& name, const ClassNode* owner = nullptr) const;
     bool isLegalCredit(const FuncCredit& credit) const;
-    std::unique_ptr<IType> getCallType(FuncCallExpr* expr, const ClassNode* callClass = nullptr) const;
+    std::unique_ptr<IType> getCallType(const FuncCallExpr* expr, const ClassNode* callClass = nullptr) const;
     void addFunc(const Func& f, const bool isIncluded = false);
 
     void enterScope(bool isBreakable, bool isContinueAble);

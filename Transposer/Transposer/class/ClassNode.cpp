@@ -11,6 +11,12 @@ const ClassNode* ClassNode::getParent() const
     return parent;
 }
 
+void ClassNode::setParent(ClassNode* parent)
+{
+    this->parent = parent;
+    if (parent != nullptr) parent->addChild(this);
+}
+
 const std::vector<ClassNode*>& ClassNode::getChildren() const
 {
     return children;

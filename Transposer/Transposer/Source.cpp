@@ -1,10 +1,9 @@
 ﻿// ReSharper disable CppDFAUnreachableCode
+// ReSharper disable CppDFAConstantConditions
 #include <iostream>
 #include <sstream>
 #include <filesystem>
 #include <vector>
-#include <map>
-#include <iomanip>
 
 #include "token/Tokenizer.h"
 #include "errorHandling/Error.h"
@@ -103,17 +102,15 @@ int main(int argc, char* argv[])
         SymbolTable::clearClasses();
         return -1;
     }
-    // catch (const std::exception& e) // Catch unexpected C++ errors
-    // {
-    //     std::cerr << "Internal Transpiler Error: " << e.what() << std::endl;
-    //     graph.reset();
-    //     SymbolTable::clearClasses();
-    //     return -1;
-    // }
-    
-    std::vector<Error*> errors = FileGraph::getAllErrors();
+    catch (const std::exception& e) // Catch unexpected C++ errors
+    {
+        std::cerr << "Internal Transpiler Error: " << e.what() << std::endl;
+        graph.reset();
+        SymbolTable::clearClasses();
+        return -1;
+    }
 
-    if (!errors.empty())
+    if (std::vector<Error*> errors = FileGraph::getAllErrors(); !errors.empty())
     {
         if (mode == LSP)
         {
@@ -138,8 +135,7 @@ int main(int argc, char* argv[])
     }
 
     std::filesystem::path exePath = outPath;
-    std::string ext = cmd->getExeExtension();
-    if (!ext.empty())
+    if (std::string ext = cmd->getExeExtension(); !ext.empty())
     {
         exePath.replace_extension(ext);
     }
@@ -152,9 +148,8 @@ int main(int argc, char* argv[])
     {
         std::ostringstream cmdBuild;
         std::string filesStr;
-        const auto paths = FileGraph::getAllCppPaths();
 
-        for (const auto& path : paths)
+        for (const auto paths = FileGraph::getAllCppPaths(); const auto& path : paths)
         {
             filesStr += " \"" + path.string() + "\" ";
         }

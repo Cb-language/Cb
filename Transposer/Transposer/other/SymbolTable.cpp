@@ -1,10 +1,19 @@
+// ReSharper disable CppExpressionWithoutSideEffects
 #include "SymbolTable.h"
 
 #include <ranges>
 #include <sstream>
 
 #include "AST/statements/expression/FuncCallExpr.h"
+#include "AST/statements/ClassDeclStmt.h"
+#include "AST/statements/FuncDeclStmt.h"
+#include "AST/statements/VarDeclStmt.h"
+#include "AST/statements/ConstructorDeclStmt.h"
 #include "errorHandling/classErrors/AccessError.h"
+#include "errorHandling/entryPointErrors/InvalidMainArgs.h"
+#include "errorHandling/entryPointErrors/InvalidMainReturnType.h"
+#include "errorHandling/entryPointErrors/MainOverride.h"
+#include "errorHandling/semanticErrors/IdentifierTaken.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "symbols/Type/ClassType.h"
 
@@ -24,6 +33,110 @@ SymbolTable::~SymbolTable()
     head = nullptr;
     currScope = nullptr;
     currClass = nullptr;
+}
+
+void SymbolTable::analyze(const std::vector<std::unique_ptr<Stmt>>& stmts)
+{
+    // Pass 1: Global Declarations (Names only)
+    // Register all classes and global function signatures so they can be referenced by name.
+    for (const auto& stmt : stmts)
+    {
+        if (const auto* classDecl = dynamic_cast<ClassDeclStmt*>(stmt.get()))
+        {
+            addClass(Class(classDecl->getName()));
+        }
+        else if (const auto* funcDecl = dynamic_cast<FuncDeclStmt*>(stmt.get()))
+        {
+            addFunc(funcDecl->getFunc());
+
+            // Prelude entry-point validation
+            if (translateFQNtoString(funcDecl->getName()) == "prelude")
+            {
+                if (hasMainFound) throw MainOverride(funcDecl->getToken());
+                hasMainFound = true;
+
+                if (funcDecl->getReturnType()->toString() != "degree")
+                {
+                    throw InvalidMainReturnType(funcDecl->getToken());
+                }
+
+                if (!funcDecl->getArgs().empty())
+                {
+                    throw InvalidMainArgs(funcDecl->getToken());
+                }
+            }
+        }
+    }
+    resetCurrClass();
+
+    // Pass 2: Structure and Member Signatures
+    // Resolve class hierarchy and register all fields, methods, and constructors.
+    // This allows any body to refer to any member of any class.
+    for (const auto& stmt : stmts)
+    {
+        if (const auto* classDecl = dynamic_cast<ClassDeclStmt*>(stmt.get()))
+        {
+            if (ClassNode* node = classTree.find(classDecl->getName()))
+            {
+                // Resolve and set parent
+                if (const FQN& parentName = classDecl->getParentName(); !parentName.empty())
+                {
+                    if (ClassNode* parentPtr = classTree.find(parentName)) node->setParent(parentPtr);
+                }
+
+                // Add inner members (fields, methods, ctors) to the class node
+                currClass = node;
+                for (const auto& [access, field] : classDecl->getFields())
+                {
+                    field->setScope(currScope);
+                    field->setClassNode(node);
+                    addField(access, field->getVar(), field->getToken());
+                }
+                for (const auto& [access, method] : classDecl->getMethods())
+                {
+                    method->setScope(currScope);
+                    method->setClassNode(node);
+                    Func f = method->getFunc();
+                    f.setOwner(node);
+                    addMethod(access, f, method->getToken());
+                    addFunc(f); // Make methods available for lookup via call resolution
+                }
+                for (const auto& [access, ctor] : classDecl->getCtors())
+                {
+                    ctor->setScope(currScope);
+                    ctor->setClassNode(node);
+                    addCtor(access, ctor->getConstractor(), ctor->getToken());
+                }
+                resetCurrClass();
+            }
+        }
+        else if (auto* varDecl = dynamic_cast<VarDeclStmt*>(stmt.get()))
+        {
+            // Register global variables so they are available in Pass 3 initializers
+            varDecl->setScope(currScope);
+            varDecl->setClassNode(nullptr);
+            addVar(varDecl->getVar(), varDecl->getToken());
+        }
+    }
+
+    // Pass 3: Full Semantic Analysis (Bodies and Initializers)
+    // Now that all signatures are known, perform deep analysis.
+    for (const auto& stmt : stmts)
+    {
+        // Ensure the top-level statement has the correct context
+        stmt->setScope(currScope);
+        if (const auto* classDecl = dynamic_cast<ClassDeclStmt*>(stmt.get()))
+        {
+            stmt->setClassNode(classTree.find(classDecl->getName()));
+        }
+        else
+        {
+            stmt->setClassNode(nullptr);
+        }
+
+        // Recursively analyze the statement (will handle nested bodies and expressions)
+        stmt->analyze();
+    }
 }
 
 std::optional<Var> SymbolTable::getVar(const FQN &name) const
@@ -96,7 +209,7 @@ bool SymbolTable::isLegalCredit(const FuncCredit& credit) const
     return false;
 }
 
-std::unique_ptr<IType> SymbolTable::getCallType(FuncCallExpr* expr, const ClassNode* callClass) const
+std::unique_ptr<IType> SymbolTable::getCallType(const FuncCallExpr* expr, const ClassNode* callClass) const
 {
     const ClassNode* current = callClass;
     while (current != nullptr)
@@ -256,12 +369,11 @@ void SymbolTable::clearClasses()
 
 bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const FQN& name, const Token& token, const ClassNode* currClass)
 {
-    const ClassNode* res = nullptr; // classTree.find(type->toString());
+    const ClassNode* res = classTree.find(name);
 
     if (res == nullptr) throw HowDidYouGetHere(token);
 
-    const Var* field = res->findField(name, currClass);
-    if (field != nullptr)
+    if (const Var* field = res->findField(name, currClass); field != nullptr)
     {
         if (res->isLegal(*field, currClass)) return true;
 

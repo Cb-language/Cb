@@ -6,18 +6,35 @@
 #include "errorHandling/preproccessorErrors/CouldntOpenFile.h"
 #include "token/Tokenizer.h"
 
+std::queue<Token> File::tokenize() const
+{
+    std::ifstream file(inPath, std::ios::binary);
+
+    if(!file || !file.is_open())
+    {
+        throw CouldntOpenFile(Token(CbTokenType::COMMENT_SINGLE, inPath.string(),0,0, inPath), inPath);
+    }
+
+    const auto data = std::string((std::istreambuf_iterator<char>(file)),
+                                  std::istreambuf_iterator<char>());
+
+    file.close();
+
+    return tokenizer.tokenize(data, inPath);
+}
 std::filesystem::path File::mainPath = "C\\:";
+
 std::filesystem::path File::outDir = "C\\:";
 
 File::File(const std::string& inFilename, const std::string& outFilename)
     : inPath(mainPath / inFilename), outPathH((outDir / outFilename).replace_extension("h")),
-    outPathCpp((outDir / outFilename).replace_extension("cpp")), parser(Parser(tokenize()))
+      outPathCpp((outDir / outFilename).replace_extension("cpp")), parser(Parser(tokenize()))
 {
 }
 
 File::File(const std::filesystem::path& inPath, const std::filesystem::path& outPath)
     : inPath(mainPath / Utils::normalizePath(inPath)), outPathH((outDir / Utils::normalizePath(outPath)).replace_extension("h")),
-        outPathCpp((outDir / Utils::normalizePath(outPath)).replace_extension("cpp")), parser(Parser(tokenize()))
+      outPathCpp((outDir / Utils::normalizePath(outPath)).replace_extension("cpp")), parser(Parser(tokenize()))
 {
 }
 
@@ -61,7 +78,7 @@ void File::analyze()
     if (analyzed) return;
     if (!parsed) parse();
     analyzed = true;
-    parser.analyze();
+    symTable.analyze(parser.getContext().getStmts());
 }
 
 void File::write(const bool isMain)
@@ -99,26 +116,9 @@ const std::vector<std::unique_ptr<Error>>& File::getErrors() const
     return parser.getContext().getErrors();
 }
 
-std::queue<Token> File::tokenize() const
+void File::setMainPath(const std::filesystem::path& path)
 {
-    std::ifstream file(inPath, std::ios::binary);
-
-    if(!file || !file.is_open())
-    {
-        throw CouldntOpenFile(Token(CbTokenType::COMMENT_SINGLE, inPath.string(),0,0, inPath), inPath);
-    }
-
-    const std::string data = std::string((std::istreambuf_iterator<char>(file)),
-                             std::istreambuf_iterator<char>());
-
-    file.close();
-
-    return tokenizer.tokenize(data, inPath);
-}
-
-void File::setMainPath(const std::filesystem::path& mainPath)
-{
-    File::mainPath = mainPath.parent_path();
+    File::mainPath = path.parent_path();
 }
 
 const std::filesystem::path& File::getMainPath()
@@ -126,9 +126,9 @@ const std::filesystem::path& File::getMainPath()
     return mainPath;
 }
 
-void File::setOutDir(const std::filesystem::path& outDir)
+void File::setOutDir(const std::filesystem::path& path)
 {
-    File::outDir = outDir.parent_path();
+    File::outDir = path.parent_path();
 }
 
 const std::filesystem::path& File::getOutDir()

@@ -27,9 +27,8 @@ public:
 
     std::vector<std::pair<std::filesystem::path, Token>> readIncludes();
     void parse();
-    void analyze();
-    std::string translateToCpp(const std::filesystem::path& hPath, const bool isMain = false) const;
-    std::string translateToH(const bool isMain = false) const;
+    std::string translateToCpp(const std::filesystem::path& hPath, const bool isMain = false);
+    std::string translateToH(const bool isMain = false);
     //bool shouldProduceCpp(bool isMain) const;
 };
 

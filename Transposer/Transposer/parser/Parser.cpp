@@ -6,10 +6,6 @@
 #include <filesystem>
 #include <algorithm>
 
-// ---------- AST related ----------
-#include "AST/statements/FuncDeclStmt.h"
-#include "AST/statements/expression/FuncCallExpr.h"
-
 // ---------- syntax errors ----------
 #include "../errorHandling/syntaxErrors/UnexpectedToken.h"
 #include "../errorHandling/syntaxErrors/MissingSemicolon.h"
@@ -86,29 +82,49 @@ void Parser::parse()
     }
 }
 
-void Parser::analyze()
+std::string Parser::translateToCpp(const std::filesystem::path& hPath, const bool isMain)
 {
+    std::ostringstream oss;
+
+    oss << "#include <iostream>" << std::endl;
+
+    if (isMain) oss << translateToH(isMain);
+    else oss << "#include \"" << hPath.generic_string() << "\"" << std::endl;
+
     for (const auto& stmt : c.getStmts())
     {
-        try
-        {
-            stmt->analyze();
-        }
-        catch (const Error& e)
-        {
-            c.addError(std::make_unique<Error>(e.getToken(), e.getErrorMessage()));
-        }
+        oss << std::endl << stmt->translateToCpp();
     }
+
+    if (isMain)
+    {
+        oss << "int main()" << std::endl <<
+            "{" << std::endl <<
+            "\treturn prelude().getValue();" << std::endl <<
+            "}" << std::endl;
+    }
+
+    return oss.str();
 }
 
-std::string Parser::translateToCpp(const std::filesystem::path& hPath, const bool isMain) const
+std::string Parser::translateToH(const bool isMain)
 {
-    return "";
-}
+    std::ostringstream oss;
+    if (!isMain) oss << "#pragma once" << std::endl;
 
-std::string Parser::translateToH(const bool isMain) const
-{
-    return "";
+    oss << "#include <string>" << std::endl;
+    oss << Utils::getAllObjIncludes() << std::endl;
+
+    if (!c.getIncludes().empty()) oss << std::endl;
+
+    for (const auto& i : c.getIncludes())
+    {
+        oss << i->translateToCpp() << std::endl;
+    }
+
+    for (const auto& stmt : c.getStmts()) oss << stmt->translateToH();
+
+    return oss.str();
 }
 
 // bool Parser::shouldProduceCpp(const bool isMain) const

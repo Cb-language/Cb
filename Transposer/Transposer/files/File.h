@@ -15,6 +15,7 @@ private:
     const std::filesystem::path outPathH;
     const std::filesystem::path outPathCpp;
     Parser parser;
+    SymbolTable symTable;
 
     std::vector<std::pair<std::filesystem::path, Token>> includes;
     bool readIncludes = false;
@@ -40,10 +41,10 @@ private:
     const std::vector<std::unique_ptr<Error>>& getErrors() const;
 
 public:
-    static void setMainPath(const std::filesystem::path& mainPath);
+    static void setMainPath(const std::filesystem::path& path);
     static const std::filesystem::path& getMainPath();
 
-    static void setOutDir(const std::filesystem::path& outDir);
+    static void setOutDir(const std::filesystem::path& path);
     static const std::filesystem::path& getOutDir();
 
     Parser& getParser();

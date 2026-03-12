@@ -14,6 +14,7 @@ public:
     ~ClassNode() = default;
 
     const ClassNode* getParent() const;
+    void setParent(ClassNode* parent);
     const std::vector<ClassNode*>& getChildren() const;
 
     bool isLegal(const Var& field, const ClassNode* curr) const;

@@ -318,3 +318,28 @@ void ClassDeclStmt::setClassDetails(std::vector<Field> fields, std::vector<Metho
     this->methods = std::move(methods);
     this->ctors = std::move(ctors);
 }
+
+const FQN& ClassDeclStmt::getName() const
+{
+    return name;
+}
+
+const FQN& ClassDeclStmt::getParentName() const
+{
+    return parentName;
+}
+
+const std::vector<Field>& ClassDeclStmt::getFields() const
+{
+    return fields;
+}
+
+const std::vector<Method>& ClassDeclStmt::getMethods() const
+{
+    return methods;
+}
+
+const std::vector<Ctor>& ClassDeclStmt::getCtors() const
+{
+    return ctors;
+}
