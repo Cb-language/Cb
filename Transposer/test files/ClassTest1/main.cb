@@ -1,133 +1,127 @@
-? ═══════════════════════════════════════════════════
-? Cb Class (Instrument) Test File
-? Exercises: fields, methods, constructors, static,
-?            virtual/override, inheritance, objects
-? ═══════════════════════════════════════════════════
+𝄢 ═══════════════════════════════════════════════════
+𝄢 Cb Class (Instrument) Test File
+𝄢 Exercises: fields, methods, constructors, static,
+𝄢            virtual/override, inheritance, objects
+𝄢 ═══════════════════════════════════════════════════
 
 
-? ─── Base class: Instrument with fields and methods ───
+𝄢 ─── Base class: Instrument with fields and methods ───
 
 instrument Animal 𝄋
     player score degree legs = 4 𝄀
     player score bar name = "unknown" 𝄀
 
-    player score 𝆫 Animal 𝄕 degree l, bar n 𝄇 𝄋
+    player score 𝆫 Animal 𝄕 degree l, bar n 𝄇
     𝄞   legs = l 𝄀
-    𝄞   name = n 𝄀
-    𝄌 𝄀
+    𝄞   name = n 𝄂 𝄀
 
     player score song speak𝄕𝄇
     𝄞 play bar𝄕name𝄇 𝄀
     𝄞 play bar𝄕" says nothing"𝄇 𝄀
-    𝄞 𝄽 𝄂
+    𝄞 𝄽 𝄂 𝄀
 
-    player score motif song voice𝄕𝄇 𝅘𝅥=bar
+    player score motif song voice𝄕𝄇 𝅘𝅥=bar
     𝄞 B𝄍"..." 𝄀
-    𝄞 𝄽 𝄂
+    𝄞 𝄽 𝄂 𝄀
 
-    player score song getLegs𝄕𝄇 𝅘𝅥=degree
+    player score song getLegs𝄕𝄇 𝅘𝅥=degree
     𝄞 B𝄍legs 𝄀
-    𝄞 𝄽 𝄂
+    𝄞 𝄽 𝄂 𝄀
 
-    player score unison song kingdom𝄕𝄇 𝅘𝅥=bar
+    player score unison song kingdom𝄕𝄇 𝅘𝅥=bar
     𝄞 B𝄍"Animalia" 𝄀
-    𝄞 𝄽 𝄂
+    𝄞 𝄽 𝄂 𝄀
 𝄌
 
 
-? ─── Derived class: Dog overrides voice ───
+𝄢 ─── Derived class: Dog overrides voice ───
 
 instrument Dog : tutti Animal 𝄋
     conductor score bar breed = "mutt" 𝄀
 
-    player score 𝆫 Dog 𝄕 bar n, bar b 𝄇 𝄋
+    player score 𝆫 Dog 𝄕 bar n, bar b 𝄇
     𝄞   name = n 𝄀
     𝄞   legs = 4 𝄀
-    𝄞   breed = b 𝄀
-    𝄌
+    𝄞   breed = b 𝄂 𝄀
 
-    player score variation song voice𝄕𝄇 𝅘𝅥=bar
+    player score variation song voice𝄕𝄇 𝅘𝅥=bar
     𝄞 B𝄍"Woof!" 𝄀
-    𝄞 𝄽 𝄂
+    𝄞 𝄽 𝄂 𝄀
 
     player score song fetch𝄕bar item𝄇
     𝄞 play bar𝄕name𝄇 𝄀
     𝄞 play bar𝄕" fetches "𝄇 𝄀
     𝄞 play bar𝄕item𝄇 𝄀
-    𝄞 𝄽 𝄂
+    𝄞 𝄽 𝄂 𝄀
 𝄌
 
 
-? ─── Derived class: Cat overrides voice ───
+𝄢 ─── Derived class: Cat overrides voice ───
 
 instrument Cat : tutti Animal 𝄋
-    conductor score mute isIndoor = 1 == 1
+    conductor score mute isIndoor = 1 == 1 𝄀
 
-    player score 𝆫 Cat 𝄕 bar n, mute indoor 𝄇 𝄋
+    player score 𝆫 Cat 𝄕 bar n, mute indoor 𝄇
     𝄞    name = n 𝄀
     𝄞    legs = 4 𝄀
-    𝄞    isIndoor = indoor 𝄀
-    𝄌
+    𝄞    isIndoor = indoor 𝄂 𝄀
 
-    player score variation song voice𝄕𝄇 𝅘𝅥=bar
+    player score variation song voice𝄕𝄇 𝅘𝅥=bar
     𝄞 B𝄍"Meow!" 𝄀
-    𝄞 𝄽 𝄂
+    𝄞 𝄽 𝄂 𝄀
 𝄌
 
 
-? ─── Derived class: Spider, different leg count ───
+𝄢 ─── Derived class: Spider, different leg count ───
 
 instrument Spider : sordino Animal 𝄋
-    player score 𝆫 Spider 𝄕 bar n 𝄇 𝄋
-
+    player score 𝆫 Spider 𝄕 bar n 𝄇
     𝄞   name = n 𝄀
-    𝄞   legs = 8 𝄀
-    𝄌
+    𝄞   legs = 8 𝄂 𝄀
 
-    player score variation song voice𝄕𝄇 𝅘𝅥=bar
+    player score variation song voice𝄕𝄇 𝅘𝅥=bar
     𝄞 B𝄍"*silence*" 𝄀
-    𝄞 𝄽 𝄂
+    𝄞 𝄽 𝄂 𝄀
 𝄌
 
 
-? ─── Counter class: tests static and unary ops ───
+𝄢 ─── Counter class: tests static and unary ops ───
 
 instrument Counter 𝄋
-    player score degree count = 0
+    player score degree count = 0 𝄀
 
-    player score 𝆫 Counter 𝄕 degree start 𝄇 𝄋
-    𝄞    count = start 𝄀
-    𝄌
+    player score 𝆫 Counter 𝄕 degree start 𝄇
+    𝄞    count = start 𝄂 𝄀
 
     player score song increment𝄕𝄇
     𝄞 count♯ 𝄀
-    𝄞 𝄽 𝄂
+    𝄞 𝄽 𝄂 𝄀
 
     player score song decrement𝄕𝄇
     𝄞 count♭ 𝄀
-    𝄞 𝄽 𝄂
+    𝄞 𝄽 𝄂 𝄀
 
     player score song reset𝄕𝄇
     𝄞 count♮ 𝄀
-    𝄞 𝄽 𝄂
+    𝄞 𝄽 𝄂 𝄀
 
-    player score song getCount𝄕𝄇 𝅘𝅥=degree
+    player score song getCount𝄕𝄇 𝅘𝅥=degree
     𝄞 B𝄍count 𝄀
-    𝄞 𝄽 𝄂
+    𝄞 𝄽 𝄂 𝄀
 𝄌
 
 
-? ─── Main: create objects and exercise everything ───
+𝄢 ─── Main: create objects and exercise everything ───
 
-song prelude𝄕𝄇 𝅘𝅥=degree
+song prelude𝄕𝄇 𝅘𝅥=degree
 𝄞 𝄽 𝄀
-𝄞 ? Create objects
+𝄢 Create objects
 𝄞 𝆫 Dog rex 𝄕 "Rex", "Labrador" 𝄇 𝄀
 𝄞 𝆫 Cat whiskers 𝄕 "Whiskers", 1 == 1 𝄇 𝄀
 𝄞 𝆫 Spider charlotte 𝄕 "Charlotte" 𝄇 𝄀
 𝄞 𝆫 Counter c 𝄕 0 𝄇 𝄀
 𝄞 𝄽 𝄀
-𝄞 ? Test methods
+𝄢 Test methods
 𝄞 rex𝄍speak𝄕𝄇 𝄀
 𝄞 play bar𝄕rex𝄍voice𝄕𝄇𝄇 𝄀
 𝄞 rex𝄍fetch𝄕"ball"𝄇 𝄀
@@ -137,10 +131,10 @@ song prelude𝄕𝄇 𝅘𝅥=degree
 𝄞 play bar𝄕charlotte𝄍voice𝄕𝄇𝄇 𝄀
 𝄞 play𝄕charlotte𝄍getLegs𝄕𝄇𝄇 𝄀
 𝄞 𝄽 𝄀
-𝄞 ? Test static method
+𝄢 Test static method
 𝄞 play bar𝄕Animal𝄍kingdom𝄕𝄇𝄇 𝄀
 𝄞 𝄽 𝄀
-𝄞 ? Test counter with unary ops
+𝄢 Test counter with unary ops
 𝄞 c𝄍increment𝄕𝄇 𝄀
 𝄞 c𝄍increment𝄕𝄇 𝄀
 𝄞 c𝄍increment𝄕𝄇 𝄀
@@ -150,11 +144,10 @@ song prelude𝄕𝄇 𝅘𝅥=degree
 𝄞 c𝄍reset𝄕𝄇 𝄀
 𝄞 play𝄕c𝄍getCount𝄕𝄇𝄇 𝄀
 𝄞 𝄽 𝄀
-𝄞 ? Loop over leg counts
+𝄢 Loop over leg counts
 𝄞 play bar𝄕"Leg check:"𝄇 𝄀
 𝄞 play𝄕rex𝄍getLegs𝄕𝄇𝄇 𝄀
 𝄞 play𝄕whiskers𝄍getLegs𝄕𝄇𝄇 𝄀
 𝄞 play𝄕charlotte𝄍getLegs𝄕𝄇𝄇 𝄀
 𝄞 𝄽 𝄀
-𝄞 B𝄍0 𝄀
-𝄞 𝄽 𝄂
+𝄞 B𝄍0 𝄂

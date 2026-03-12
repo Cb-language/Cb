@@ -38,7 +38,7 @@ public:
     std::unique_ptr<HearStmt> parseHearStmt() const;
     std::unique_ptr<PlayStmt> parsePlayStmt() const;
 
-    std::unique_ptr<BodyStmt> parseBodyStmt(bool isGlobal = false, bool isContinueAble = false, bool hasBrace = true);
+    std::unique_ptr<BodyStmt> parseBodyStmt(bool isGlobal = false, bool hasBrace = true);
     std::unique_ptr<FuncDeclStmt> parseFuncDeclStmt(const bool isMethod = false);
     std::unique_ptr<ReturnStmt> parseReturnStmt() const;
     std::unique_ptr<FuncCreditStmt> parseFuncCreditStmt() const;

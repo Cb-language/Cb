@@ -11,7 +11,6 @@ ObjCreationStmt::ObjCreationStmt(const Token& token,
 : VarDeclStmt(token, hasStartingValue, std::move(startingValue), var),
       classNode(classNode)
 {
-    if (classNode == nullptr) throw HowDidYouGetHere(token);
 }
 
 void ObjCreationStmt::analyze() const

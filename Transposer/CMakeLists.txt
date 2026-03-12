@@ -281,6 +281,8 @@ add_executable(Transposer
         Transposer/errorHandling/classErrors/VirtualCtor.cpp
         Transposer/errorHandling/classErrors/VirtualCtor.h
         Transposer/parser/FQN.h
+        Transposer/errorHandling/classErrors/CtorWithReturnValue.cpp
+        Transposer/errorHandling/classErrors/CtorWithReturnValue.h
 
 )
 

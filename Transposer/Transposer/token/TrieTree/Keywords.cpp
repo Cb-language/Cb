@@ -92,6 +92,6 @@ const std::vector<KeywordInfo> KEYWORDS =
 	{CbTokenType::BINARY_OP_AND, "non div.", WordBoundary::BOTH},
 
 	// comments
-	{CbTokenType::COMMENT_SINGLE, "?", WordBoundary::NONE},
-	{CbTokenType::COMMENT_MULTI_START, "?*", WordBoundary::NONE},
+	{CbTokenType::COMMENT_SINGLE, "𝄢", WordBoundary::NONE},
+	{CbTokenType::COMMENT_MULTI_START, "𝄢𝄩", WordBoundary::NONE},
 };

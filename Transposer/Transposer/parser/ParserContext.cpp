@@ -10,7 +10,8 @@
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 
 ParserContext::ParserContext(const std::queue<Token>& tokens)
-    : tokens(tokens), len(tokens.size()), hasMain(false), isNewLine(false), isInFunc(false)
+    : tokens(tokens), len(tokens.size()), hasMain(false), breakables(0), continueables(0), isNewLine(false),
+      isInFunc(false)
 {
     if (!tokens.empty())
     {
@@ -43,6 +44,10 @@ Token ParserContext::advance()
 {
     if (tokens.empty()) throw UnexpectedEOF(current());
     auto t = tokens.front();
+    if (t.type == CbTokenType::PUNCTUATION_CLOSE_FUNC)
+    {
+        setIsInFunc(false);
+    }
     tokens.pop();
 
     if (!isNewLine)
@@ -122,6 +127,7 @@ bool ParserContext::matchConsume(const CbTokenType type, const std::optional<std
         {
             out.value().get() = current();
         }
+
         advance();
         return true;
     }
