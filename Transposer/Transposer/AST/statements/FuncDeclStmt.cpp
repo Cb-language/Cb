@@ -118,7 +118,9 @@ void FuncDeclStmt::analyze() const
 
 std::string FuncDeclStmt::translateToCpp() const
 {
-    return func.translateToCpp() + "\n" + body->translateToCpp() + "\n";
+    std::string res = func.translateToCpp();
+    res += "\n" + body->translateToCpp() + "\n";
+    return res;
 }
 
 std::string FuncDeclStmt::translateToH() const

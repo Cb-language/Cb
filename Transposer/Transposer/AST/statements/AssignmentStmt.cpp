@@ -32,7 +32,10 @@ void AssignmentStmt::analyze() const
 
 std::string AssignmentStmt::translateToCpp() const
 {
-    return getTabs() + call->translateToCpp() + " " + assignmentOp + " " + expr->translateToCpp() + ";";
+    std::string res = needsSemicolon ? getTabs() : "";
+    res += call->translateToCpp() + " " + assignmentOp + " " + expr->translateToCpp();
+    if (needsSemicolon) res += ";";
+    return res;
 }
 
 std::unique_ptr<IType> AssignmentStmt::getType() const

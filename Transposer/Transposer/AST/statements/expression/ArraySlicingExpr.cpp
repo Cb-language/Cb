@@ -43,8 +43,9 @@ void ArraySlicingExpr::analyze() const
 std::string ArraySlicingExpr::translateToCpp() const
 {
     std::ostringstream oss;
-
-    oss << call->translateToCpp() << ".slice(" << start->translateToCpp() << ", " << stop->translateToCpp() << ", " << step->translateToCpp() << ")";
+    if (needsSemicolon) oss << getTabs();
+    oss << call->translateToCpp() << "[" << start->translateToCpp() << " : " << stop->translateToCpp() << " : " << step->translateToCpp() << "]";
+    if (needsSemicolon) oss << ";";
     return oss.str();
 }
 

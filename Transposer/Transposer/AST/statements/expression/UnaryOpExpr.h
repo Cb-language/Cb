@@ -17,10 +17,9 @@ class UnaryOpExpr : public Expr
 private:
     const std::unique_ptr<Expr> operand;
     const UnaryOp op;
-    const bool needsSemicolon;
 public:
     UnaryOpExpr(const Token& token,
-        std::unique_ptr<Expr> operand, const UnaryOp op, const bool needsSemicolon = false);
+        std::unique_ptr<Expr> operand, const UnaryOp op, bool needsSemicolon = false);
     void analyze() const override;
     std::string translateToCpp() const override;
     std::unique_ptr<IType> getType() const override;

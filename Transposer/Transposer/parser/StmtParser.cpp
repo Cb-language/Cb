@@ -76,7 +76,9 @@ std::unique_ptr<Stmt> StmtParser::parseStmt()
 
     if (c.matchNonConsume(CbTokenType::IDENTIFIER))
     {
-        return exprParser.parseExpr();
+        auto res = exprParser.parseExpr();
+        if (res) res->setNeedsSemicolon(true);
+        return res;
     }
 
     if (c.matchConsume(CbTokenType::KEYWORD_HEAR))

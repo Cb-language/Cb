@@ -15,7 +15,10 @@ std::unique_ptr<IType> ArrayIndexingExpr::getType() const
 
 std::string ArrayIndexingExpr::translateToCpp() const
 {
-    return call->translateToCpp() + "[" + index->translateToCpp() + "]";
+    std::string res = needsSemicolon ? getTabs() : "";
+    res += call->translateToCpp() + "[" + index->translateToCpp() + "]";
+    if (needsSemicolon) res += ";";
+    return res;
 }
 
 void ArrayIndexingExpr::analyze() const

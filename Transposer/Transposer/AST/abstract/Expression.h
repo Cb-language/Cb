@@ -6,6 +6,7 @@ class Expr : public Stmt
 {
 protected:
     bool hasParens;
+    bool needsSemicolon;
 
     explicit Expr(const Token& token);
 
@@ -21,7 +22,7 @@ public:
 };
 
 
-inline Expr::Expr(const Token& token) : Stmt(token), hasParens(false)
+inline Expr::Expr(const Token& token) : Stmt(token), hasParens(false), needsSemicolon(false)
 {
 }
 
@@ -32,4 +33,5 @@ inline void Expr::setHasParens(const bool hasParens)
 
 inline void Expr::setNeedsSemicolon(const bool needsSemicolon)
 {
+    this->needsSemicolon = needsSemicolon;
 }

@@ -6,8 +6,9 @@
 
 UnaryOpExpr::UnaryOpExpr(const Token& token,
     std::unique_ptr<Expr> operand, const UnaryOp op, const bool needsSemicolon)
-        : Expr(token), operand(std::move(operand)), op(op), needsSemicolon(needsSemicolon)
+        : Expr(token), operand(std::move(operand)), op(op)
 {
+    this->needsSemicolon = needsSemicolon;
     if (!needsSemicolon && op == UnaryOp::Zero)
     {
         hasParens = true;
@@ -36,7 +37,7 @@ void UnaryOpExpr::analyze() const
 
 std::string UnaryOpExpr::translateToCpp() const
 {
-    std::string ret = getTabs();
+    std::string ret = needsSemicolon ? getTabs() : "";
     
     if (op == UnaryOp::Not)
     {

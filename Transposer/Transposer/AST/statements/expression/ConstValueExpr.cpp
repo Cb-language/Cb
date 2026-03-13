@@ -43,6 +43,7 @@ void ConstValueExpr::analyze() const
 std::string ConstValueExpr::translateToCpp() const
 {
     std::ostringstream oss;
+    if (needsSemicolon) oss << getTabs();
     oss << type->translateTypeToCpp() + "(";
 
     if (type->toString() == "bar") oss << "\"";
@@ -54,6 +55,7 @@ std::string ConstValueExpr::translateToCpp() const
     if (type->toString() == "note") oss << "\'";
 
     oss << ")";
+    if (needsSemicolon) oss << ";";
     return oss.str();
 }
 

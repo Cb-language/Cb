@@ -174,6 +174,11 @@ std::string BinaryOpExpr::translateToCpp() const
     const std::string opStr = op;
     std::ostringstream oss;
 
+    if (needsSemicolon)
+    {
+        oss << getTabs();
+    }
+
     if (op == "//")
     {
         std::string leftStrClean = leftStr;
@@ -224,6 +229,11 @@ std::string BinaryOpExpr::translateToCpp() const
     if (hasParens)
     {
         return "(" + oss.str() + ")";
+    }
+
+    if (needsSemicolon)
+    {
+        oss << ";";
     }
 
     return oss.str();

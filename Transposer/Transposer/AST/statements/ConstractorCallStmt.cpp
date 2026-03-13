@@ -78,7 +78,6 @@ std::string ConstractorCallStmt::translateToCpp() const
             oss << ", ";
         }
         first = false;
-
         oss << arg->translateToCpp();
     }
 
@@ -99,7 +98,7 @@ void ConstractorCallStmt::setNeedsSemicolon(const bool needsSemicolon)
 
 const ClassNode* ConstractorCallStmt::getClassNode() const
 {
-    return currClass;
+    return targetClass != nullptr ? targetClass : currClass;
 }
 
 void ConstractorCallStmt::setTargetClass(const ClassNode* targetClass)
