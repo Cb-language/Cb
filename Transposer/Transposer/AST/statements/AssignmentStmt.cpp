@@ -1,6 +1,7 @@
 #include "AssignmentStmt.h"
 
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
+#include "other/SymbolTable.h"
 
 AssignmentStmt::AssignmentStmt(const Token& token,
                                std::unique_ptr<Call> call, const std::string& assignmentOp, std::unique_ptr<Expr> expr)
@@ -26,7 +27,7 @@ void AssignmentStmt::analyze() const
 
     if (const auto rightType = expr->getType(); leftType->toString() != rightType->toString())
     {
-        throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), assignmentOp);
+        symTable->addError(std::make_unique<IllegalOpOnType>(token, leftType->toString(), rightType->toString(), assignmentOp));
     }
 }
 

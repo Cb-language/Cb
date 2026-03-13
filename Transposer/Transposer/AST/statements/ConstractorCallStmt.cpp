@@ -25,7 +25,7 @@ std::unique_ptr<IType> ConstractorCallStmt::getType() const
 void ConstractorCallStmt::analyze() const
 {
     const ClassNode* target = targetClass != nullptr ? targetClass : currClass;
-    if (target == nullptr) throw HowDidYouGetHere(token);
+    if (target == nullptr) symTable->addError(std::make_unique<HowDidYouGetHere>(token));
 
     for (const auto& arg : args)
     {
@@ -51,11 +51,11 @@ void ConstractorCallStmt::analyze() const
         {
             if (target->isLegalAccess(accessType, currClass)) return;
 
-            throw AccessError(token, translateFQNtoString(target->getClass().getClassName()), translateFQNtoString(target->getClass().getClassName()) + "_call");
+            symTable->addError(std::make_unique<AccessError>(token, translateFQNtoString(target->getClass().getClassName()), translateFQNtoString(target->getClass().getClassName()) + "_call"));
         }
     }
 
-    throw InvalidCtorArgs(token);
+    symTable->addError(std::make_unique<InvalidCtorArgs>(token));
 }
 
 std::string ConstractorCallStmt::translateToCpp() const

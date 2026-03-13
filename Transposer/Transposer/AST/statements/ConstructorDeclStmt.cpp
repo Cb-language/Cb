@@ -29,14 +29,14 @@ void ConstructorDeclStmt::setBody(std::unique_ptr<BodyStmt> body)
 void ConstructorDeclStmt::analyze() const
 {
     if (symTable == nullptr) return;
-    if (this->body == nullptr) throw HowDidYouGetHere(token);
+    if (this->body == nullptr) symTable->addError(std::make_unique<HowDidYouGetHere>(token));
 
     symTable->changeFunc(const_cast<ConstructorDeclStmt*>(this));
 
     if (parentCtorCall != nullptr)
     {
         const ClassNode* parentNode = currClass->getParent();
-        if (parentNode == nullptr) throw HowDidYouGetHere(token);
+        if (parentNode == nullptr) symTable->addError(std::make_unique<HowDidYouGetHere>(token));
 
         parentCtorCall->setTargetClass(parentNode);
         parentCtorCall->setSymbolTable(symTable);

@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "errorHandling/semanticErrors/IllegalHear.h"
+#include "other/SymbolTable.h"
 
 HearStmt::HearStmt(const Token& token, std::vector<std::unique_ptr<Call>>& calls)
     : Stmt(token)
@@ -26,7 +27,7 @@ void HearStmt::analyze() const
 
         if (call->getType()->getArrLevel() > 0 || !(call->getType()->isPrimitive()))
         {
-            throw IllegalHear(token, call->getType()->toString());
+            symTable->addError(std::make_unique<IllegalHear>(token, call->getType()->toString()));
         }
     }
 }

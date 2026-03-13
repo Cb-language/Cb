@@ -1,6 +1,7 @@
 #include "SwitchStmt.h"
 
 #include "errorHandling/semanticErrors/IllegalSwitchVar.h"
+#include "other/SymbolTable.h"
 
 SwitchStmt::SwitchStmt(const Token& token, std::unique_ptr<Expr> expr, std::vector<std::unique_ptr<CaseStmt>>& cases)
     : Stmt(token), expr(std::move(expr)), cases(std::move(cases))
@@ -23,7 +24,7 @@ void SwitchStmt::analyze() const
 
     if (!expr->getType()->isNumberable())
     {
-        throw IllegalSwitchVar(token, expr->translateToCpp());
+        symTable->addError(std::make_unique<IllegalSwitchVar>(token, expr->translateToCpp()));
     }
 
     for (const auto& c : cases)

@@ -26,12 +26,12 @@ void UnaryOpExpr::analyze() const
 
     if (op == UnaryOp::Not && operand->getType()->toString() != "mute")
     {
-        throw IllegalTypeCast(token, operand->getType()->toString(), "mute");
+        symTable->addError(std::make_unique<IllegalTypeCast>(token, operand->getType()->toString(), "mute"));
     }
 
     if (operand->getType()->getArrLevel() != 0 || !operand->getType()->isPrimitive())
     {
-        throw IllegalOpOnType(token, operand->getType()->toString());
+        symTable->addError(std::make_unique<IllegalOpOnType>(token, operand->getType()->toString()));
     }
 }
 

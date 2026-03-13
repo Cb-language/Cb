@@ -41,7 +41,7 @@ void ForStmt::analyze() const
 
     if (body == nullptr)
     {
-        throw HowDidYouGetHere(token);
+        symTable->addError(std::make_unique<HowDidYouGetHere>(token));
     }
     symTable->enterScope(true, true);
 

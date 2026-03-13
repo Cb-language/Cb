@@ -2,6 +2,7 @@
 
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
+#include "other/SymbolTable.h"
 
 ArraySlicingExpr::ArraySlicingExpr(const Token& token, std::unique_ptr<Call> call) : Call(token), call(std::move(call))
 {
@@ -38,22 +39,22 @@ void ArraySlicingExpr::analyze() const
 
     if (call->getType()->getArrLevel() == 0)
     {
-        throw IllegalOpOnType(token, call->getType()->toString());
+        symTable->addError(std::make_unique<IllegalOpOnType>(token, call->getType()->toString()));
     }
 
     if (!start->getType()->isNumberable())
     {
-        throw IllegalTypeCast(token, start->getType()->toString(), "degree");
+        symTable->addError(std::make_unique<IllegalTypeCast>(token, start->getType()->toString(), "degree"));
     }
 
     if (!step->getType()->isNumberable())
     {
-        throw IllegalTypeCast(token, step->getType()->toString(), "degree");
+        symTable->addError(std::make_unique<IllegalTypeCast>(token, step->getType()->toString(), "degree"));
     }
 
     if (!stop->getType()->isNumberable())
     {
-        throw IllegalTypeCast(token, stop->getType()->toString(), "degree");
+        symTable->addError(std::make_unique<IllegalTypeCast>(token, stop->getType()->toString(), "degree"));
     }
 }
 

@@ -9,7 +9,7 @@ BreakStmt::BreakStmt(const Token& token) : Stmt(token)
 void BreakStmt::analyze() const
 {
     if (symTable == nullptr) return;
-    if (!symTable->getCurrScope()->getIsBreakable()) throw StmtNotBreakable(token);
+    if (!symTable->getCurrScope()->getIsBreakable()) symTable->addError(std::make_unique<StmtNotBreakable>(token));
 }
 
 std::string BreakStmt::translateToCpp() const

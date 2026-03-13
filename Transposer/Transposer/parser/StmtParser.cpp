@@ -24,7 +24,6 @@
 #include "AST/statements/ConstructorDeclStmt.h"
 #include "AST/statements/ConstractorCallStmt.h"
 #include "AST/statements/ObjCreationStmt.h"
-#include "errorHandling/classErrors/CtorWithReturnValue.h"
 
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 #include "errorHandling/syntaxErrors/MissingSemicolon.h"
@@ -35,22 +34,15 @@
 #include "errorHandling/syntaxErrors/ExpectedAnExpression.h"
 #include "errorHandling/syntaxErrors/IncludeNotInTop.h"
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
-#include "errorHandling/syntaxErrors/NoLineOpener.h"
 #include "errorHandling/syntaxErrors/NoPlacementOperator.h"
-#include "errorHandling/syntaxErrors/NoRest.h"
 #include "errorHandling/semanticErrors/StmtNotBreakable.h"
 #include "errorHandling/semanticErrors/StmtNotContinueAble.h"
-#include "errorHandling/semanticErrors/StaticFuncCantVirtual.h"
 
-#include "errorHandling/classErrors/InvalidAccessKeyword.h"
 #include "errorHandling/classErrors/InvalidCtorName.h"
-#include "errorHandling/classErrors/StaticCtor.h"
-#include "errorHandling/classErrors/VirtualCtor.h"
 
 #include "errorHandling/lexicalErrors/UnrecognizedToken.h"
 
 #include "errorHandling/how/HowDareYou.h"
-#include "errorHandling/how/HowDidYouGetHere.h"
 
 StmtParser::StmtParser(ParserContext& c, TypeParser& typeParser, ExprParser& exprParser)
     : c(c), typeParser(typeParser), exprParser(exprParser)
@@ -59,7 +51,7 @@ StmtParser::StmtParser(ParserContext& c, TypeParser& typeParser, ExprParser& exp
 
 std::unique_ptr<Stmt> StmtParser::parseStmt()
 {
-    while (c.matchConsume(CbTokenType::PUNCTUATION_NEW_LINE)) {} // if new lines got here they are in the global scope and we can just eat them
+    while (c.matchConsume(CbTokenType::PUNCTUATION_NEW_LINE)) {} // if new lines got here they are in the global scope, and we can just eat them
 
     if (c.matchConsume(CbTokenType::KEYWORD_C_CLEF))
     {

@@ -25,16 +25,16 @@ void DotOpExpr::analyze() const
 
     if (leftType->isPrimitive())
     {
-        throw IllegalOpOnType(token, leftType->toString());
+        symTable->addError(std::make_unique<IllegalOpOnType>(token, leftType->toString()));
     }
 
     const auto rightCasted = dynamic_cast<const Call*>(right.get());
 
-    if (rightCasted == nullptr) throw HowDidYouGetHere(token);
+    if (rightCasted == nullptr) symTable->addError(std::make_unique<HowDidYouGetHere>(token));
 
     if (const FQN passing = {rightCasted->toString()}; !SymbolTable::isLegalFieldOrMethod(leftType, passing, token, currClass))
     {
-        throw IllegalDotOpError(token, left->translateToCpp(), rightCasted->toString());
+        symTable->addError(std::make_unique<IllegalDotOpError>(token, left->translateToCpp(), rightCasted->toString()));
     }
 }
 

@@ -81,7 +81,7 @@ void FuncDeclStmt::analyze() const
 
     if (virtualType != VirtualType::NONE && !isMethod)
     {
-        throw VirtualNonMethod(token);
+        symTable->addError(std::make_unique<VirtualNonMethod>(token));
     }
 
     if (virtualType != VirtualType::PURE)
@@ -110,7 +110,7 @@ void FuncDeclStmt::analyze() const
 
         if (func.getType()->toString() != "fermata" && !hasReturned)
         {
-            throw NoReturn(token);
+            symTable->addError(std::make_unique<NoReturn>(token));
         }
     }
 }

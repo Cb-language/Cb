@@ -18,7 +18,7 @@ void FuncCreditStmt::analyze() const
     if (symTable == nullptr) return;
     if (!symTable->isLegalCredit(funcCredit))
     {
-        throw IllegalCredit(token, getName());
+        symTable->addError(std::make_unique<IllegalCredit>(token, getName()));
     }
 }
 

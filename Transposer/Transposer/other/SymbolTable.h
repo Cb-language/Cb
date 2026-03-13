@@ -5,6 +5,7 @@
 #include "Scope.h"
 #include "class/ClassNode.h"
 #include "class/ClassTree.h"
+#include "errorHandling/Error.h"
 #include "symbols/Func.h"
 #include "symbols/FuncCredit.h"
 
@@ -21,6 +22,7 @@ private:
     ClassNode* currClass = nullptr;
     bool hasMainFound = false;
     std::filesystem::path mainPath;
+    mutable std::vector<std::unique_ptr<Error>> errors;
 
     static ClassTree& classTree;
 
@@ -31,6 +33,9 @@ public:
     void analyzePass1(const std::vector<std::unique_ptr<Stmt>>& stmts);
     void analyzePass2(const std::vector<std::unique_ptr<Stmt>>& stmts);
     void analyzePass3(const std::vector<std::unique_ptr<Stmt>>& stmts);
+
+    void addError(std::unique_ptr<Error> err) const;
+    std::vector<Error*> getErrors() const;
 
     // std::nullopt when not found
     std::optional<Var> getVar(const FQN& name, const ClassNode* contextClass = nullptr) const;

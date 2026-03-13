@@ -2,6 +2,7 @@
 
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
+#include "other/SymbolTable.h"
 
 CaseStmt::CaseStmt(const Token& token, StmtWithBody stmt,
                    const bool isDefault) : Stmt(token), stmt(std::move(stmt)), isDefault(isDefault)
@@ -15,7 +16,7 @@ void CaseStmt::analyze() const
     // Can't really get here, but it's good to check
     if (stmt.body == nullptr)
     {
-        throw HowDidYouGetHere(token);
+        symTable->addError(std::make_unique<HowDidYouGetHere>(token));
     }
 
     if (!isDefault)
@@ -27,7 +28,7 @@ void CaseStmt::analyze() const
 
         if (!stmt.expr->getType()->isNumberable())
         {
-            throw IllegalTypeCast(token, stmt.expr->getType()->toString(), "degree");
+            symTable->addError(std::make_unique<IllegalTypeCast>(token, stmt.expr->getType()->toString(), "degree"));
         }
     }
 

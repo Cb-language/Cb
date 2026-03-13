@@ -17,7 +17,7 @@ void ArrayDeclStmt::analyzeSizes() const
     // Can't get here but always check
     if (var.getType()->getArrLevel() != sizes.size())
     {
-        throw HowDidYouGetHere(token);
+        symTable->addError(std::make_unique<HowDidYouGetHere>(token));
     }
 
     for (const auto& size : sizes)
@@ -28,7 +28,7 @@ void ArrayDeclStmt::analyzeSizes() const
         size->analyze();
         if (!size->getType()->isNumberable())
         {
-            throw IllegalTypeCast(token, size->getType()->toString(), "degree");
+            symTable->addError(std::make_unique<IllegalTypeCast>(token, size->getType()->toString(), "degree"));
         }
     }
 }
@@ -78,13 +78,13 @@ void ArrayDeclStmt::analyze() const
     if (symTable->getCurrClass() == nullptr)
     {
         // local variable
-        if (startsWithNote) throw IllegalVarName(token);
+        if (startsWithNote) symTable->addError(std::make_unique<IllegalVarName>(token));
         symTable->addVar(var, token);
     }
     else
     {
         // Field (should already be registered in Pass 2, but let's check name here)
-        if (!startsWithNote) throw IllegalFieldName(token);
+        if (!startsWithNote) symTable->addError(std::make_unique<IllegalFieldName>(token));
     }
 
     if (!sizes.empty())
@@ -107,21 +107,21 @@ void ArrayDeclStmt::analyze() const
         // Can't get here but always check
         if (arrLevel == 0)
         {
-            throw HowDidYouGetHere(token);
+            symTable->addError(std::make_unique<HowDidYouGetHere>(token));
         }
 
         if (arrLevel == startArrLevel) // Array<int> x = 3; Array<int> y = x;
         {
             if (*varType != *startType)
             {
-                throw IllegalTypeCast(token, startType->toString(), varType->toString());
+                symTable->addError(std::make_unique<IllegalTypeCast>(token, startType->toString(), varType->toString()));
             }
         }
         else if (arrLevel == startArrLevel + 1) // Array<int> x = 3; or Array<int> y; Array<Array<int>> x = y;
         {
             if (*(varType->getArrType()) != *startType)
             {
-                throw IllegalTypeCast(token, startType->toString(), varType->getArrType()->toString());
+                symTable->addError(std::make_unique<IllegalTypeCast>(token, startType->toString(), varType->getArrType()->toString()));
             }
         }
         else if (arrLevel > 1 && startArrLevel == 0) // Array<Array<int>> y = 3;
@@ -135,7 +135,7 @@ void ArrayDeclStmt::analyze() const
 
             if (*type != *startType)
             {
-                throw IllegalTypeCast(token, startType->toString(), type->toString());
+                symTable->addError(std::make_unique<IllegalTypeCast>(token, startType->toString(), type->toString()));
             }
         }
     }
@@ -159,8 +159,7 @@ std::string ArrayDeclStmt::translateToCpp() const
     if (hasStartingValue && startingValue != nullptr)
     {
         const unsigned int varArrLevel = var.getType()->getArrLevel();
-        const unsigned int startArrLevel = startingValue->getType()->getArrLevel();
-        if (startArrLevel != 0 && (varArrLevel == startArrLevel || varArrLevel == startArrLevel + 1))
+        if (const unsigned int startArrLevel = startingValue->getType()->getArrLevel(); startArrLevel != 0 && (varArrLevel == startArrLevel || varArrLevel == startArrLevel + 1))
         {
             oss << std::endl << getTabs() << name << " = " << startingValue->translateToCpp() << ";";
         }

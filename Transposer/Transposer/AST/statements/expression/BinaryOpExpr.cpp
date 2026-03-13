@@ -101,7 +101,7 @@ void BinaryOpExpr::analyze() const
     {
         if (leftType == nullptr || *leftType != *rightType)
         {
-            throw IllegalOpOnType(token, leftType ? leftType->toString() : "null", rightType->toString(), op);
+            symTable->addError(std::make_unique<IllegalOpOnType>(token, leftType ? leftType->toString() : "null", rightType->toString(), op));
         }
     }
 
@@ -110,7 +110,7 @@ void BinaryOpExpr::analyze() const
     {
         if (leftType == nullptr || *leftType != *rightType)
         {
-            throw IllegalOpOnType(token, leftType ? leftType->toString() : "null", rightType->toString(), op);
+            symTable->addError(std::make_unique<IllegalOpOnType>(token, leftType ? leftType->toString() : "null", rightType->toString(), op));
         }
     }
 
@@ -118,7 +118,7 @@ void BinaryOpExpr::analyze() const
     {
         if (!rightType->isNumberable())
         {
-            throw IllegalOpOnType(token, rightType->toString());
+            symTable->addError(std::make_unique<IllegalOpOnType>(token, rightType->toString()));
         }
     }
 
@@ -127,7 +127,7 @@ void BinaryOpExpr::analyze() const
     {
         if (leftType == nullptr)
         {
-             if (!rightType->isNumberable()) throw IllegalOpOnType(token, "null", rightType->toString(), "+");
+             if (!rightType->isNumberable()) symTable->addError(std::make_unique<IllegalOpOnType>(token, "null", rightType->toString(), "+"));
         }
         else if (leftType->toString() == "bar" || rightType->toString() == "bar")
         {
@@ -135,12 +135,12 @@ void BinaryOpExpr::analyze() const
             // but we should check if at least one is stringable or both are numberable
             if (!((leftType->isStringable() || leftType->isNumberable()) && (rightType->isStringable() || rightType->isNumberable())))
             {
-                throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), "+");
+                symTable->addError(std::make_unique<IllegalOpOnType>(token, leftType->toString(), rightType->toString(), "+"));
             }
         }
         else if (!(leftType->isNumberable() && rightType->isNumberable()))
         {
-            throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), "+");
+            symTable->addError(std::make_unique<IllegalOpOnType>(token, leftType->toString(), rightType->toString(), "+"));
         }
     }
 
@@ -153,14 +153,14 @@ void BinaryOpExpr::analyze() const
         {
             if (!(leftType->isNumberable() && rightType->isNumberable()))
             {
-                throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), op);
+                symTable->addError(std::make_unique<IllegalOpOnType>(token, leftType->toString(), rightType->toString(), op));
             }
         }
         else
         {
             if (!rightType->isNumberable())
             {
-                throw IllegalOpOnType(token, "null", rightType->toString(), op);
+                symTable->addError(std::make_unique<IllegalOpOnType>(token, "null", rightType->toString(), op));
             }
         }
     }

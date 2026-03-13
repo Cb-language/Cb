@@ -2,6 +2,7 @@
 
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
+#include "other/SymbolTable.h"
 
 ArrayIndexingExpr::ArrayIndexingExpr(const Token& token, std::unique_ptr<Call> call, std::unique_ptr<Expr> index)
     : Call(token), call(std::move(call)) ,index(std::move(index))
@@ -40,12 +41,12 @@ void ArrayIndexingExpr::analyze() const
 
     if (call->getType()->getArrLevel() == 0)
     {
-        throw IllegalOpOnType(token, call->getType()->toString());
+        symTable->addError(std::make_unique<IllegalOpOnType>(token, call->getType()->toString()));
     }
 
     if (!index->getType()->isNumberable())
     {
-        throw IllegalTypeCast(token, index->getType()->toString(), "degree");
+        symTable->addError(std::make_unique<IllegalTypeCast>(token, index->getType()->toString(), "degree"));
     }
 }
 

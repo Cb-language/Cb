@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "errorHandling/how/HowDidYouGetHere.h"
+#include "other/SymbolTable.h"
 
 
 std::string ConstValueExpr::getValueStr() const
@@ -36,7 +37,7 @@ void ConstValueExpr::analyze() const
 {
     if (value.empty())
     {
-        throw HowDidYouGetHere(token);
+        symTable->addError(std::make_unique<HowDidYouGetHere>(token));
     }
 }
 

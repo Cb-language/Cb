@@ -20,13 +20,13 @@ void VarDeclStmt::analyze() const
     if (symTable->getCurrClass() == nullptr)
     {
         // local variable
-        if (startsWithNote) throw IllegalVarName(token);
+        if (startsWithNote) symTable->addError(std::make_unique<IllegalVarName>(token));
         symTable->addVar(var, token);
     }
     else
     {
         // Field (should already be registered in Pass 2, but let's check name here)
-        if (!startsWithNote) throw IllegalFieldName(token);
+        if (!startsWithNote) symTable->addError(std::make_unique<IllegalFieldName>(token));
     }
 
     if (hasStartingValue)
@@ -38,7 +38,7 @@ void VarDeclStmt::analyze() const
         
         if (translateFQNtoString(var.getType()->getFQN()) != translateFQNtoString(startingValue->getType()->getFQN()))
         {
-            throw IllegalTypeCast(token, var.getType()->toString(), startingValue->getType()->toString());
+            symTable->addError(std::make_unique<IllegalTypeCast>(token, var.getType()->toString(), startingValue->getType()->toString()));
         }
     }
 }

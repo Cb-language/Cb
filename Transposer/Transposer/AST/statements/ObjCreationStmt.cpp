@@ -3,9 +3,9 @@
 #include "class/ClassNode.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "../../errorHandling/classErrors/InstantiateAbstractClass.h"
+#include "errorHandling/classErrors/ClassDosentExisit.h"
 #include "symbols/Type/ClassType.h"
 #include "other/SymbolTable.h"
-#include "errorHandling/classErrors/ClassDosentExisit.h"
 
 ObjCreationStmt::ObjCreationStmt(const Token& token,
                                  const ClassNode* classNode, const bool hasStartingValue, std::unique_ptr<ConstractorCallStmt> startingValue,
@@ -23,7 +23,7 @@ void ObjCreationStmt::analyze() const
     if (target == nullptr)
     {
         target = symTable->getClass(var.getType()->getFQN());
-        if (target == nullptr) throw ClassDosentExisit(token, var.getType()->toString());
+        if (target == nullptr) symTable->addError(std::make_unique<ClassDosentExisit>(token, var.getType()->toString()));
         const_cast<ObjCreationStmt*>(this)->classNode = target;
     }
 
@@ -39,7 +39,7 @@ void ObjCreationStmt::analyze() const
             
             if (target->isAbstract())
             {
-                throw InstantiateAbstractClass(token);
+                symTable->addError(std::make_unique<InstantiateAbstractClass>(token));
             }
         }
     }
@@ -50,7 +50,7 @@ void ObjCreationStmt::analyze() const
 std::string ObjCreationStmt::translateToCpp() const
 {
     std::ostringstream oss;
-    if (classNode == nullptr) throw HowDidYouGetHere(token);
+    if (classNode == nullptr) symTable->addError(std::make_unique<HowDidYouGetHere>(token));
 
     const std::string className = translateFQNtoString(classNode->getClass().getClassName());
     const std::string classSafePtr = "SafePtr<" + className + ">";

@@ -42,12 +42,12 @@ void FuncCallExpr::analyze() const
     }
     else
     {
-        throw IllegalCall(token, translateFQNtoString(this->getName()));
+        symTable->addError(std::make_unique<IllegalCall>(token, translateFQNtoString(this->getName())));
     }
 
     if (funcDecl == nullptr)
     {
-        throw HowDidYouGetHere(token);
+        symTable->addError(std::make_unique<HowDidYouGetHere>(token));
     }
 
     if (funcDecl->getIsMethod())
@@ -72,7 +72,7 @@ void FuncCallExpr::analyze() const
             return;
         }
     }
-   throw CallWithoutCopyright(token, translateFQNtoString(name));
+   symTable->addError(std::make_unique<CallWithoutCopyright>(token, translateFQNtoString(name)));
 }
 
 std::string FuncCallExpr::translateToCpp() const

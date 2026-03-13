@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
     }
     catch (Error& e) // Catch known semantic/syntax errors (like NoReturn)
     {
-        std::vector<Error*> errors = FileGraph::getAllErrors();
+        std::vector<Error*> errors = graph.getAllErrors();
         errors.push_back(&e); // Add the fatal error to the list
 
         if (mode == LSP)
@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    if (std::vector<Error*> errors = FileGraph::getAllErrors(); !errors.empty())
+    if (std::vector<Error*> errors = graph.getAllErrors(); !errors.empty())
     {
         if (mode == LSP)
         {

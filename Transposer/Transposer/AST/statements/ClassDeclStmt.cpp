@@ -121,7 +121,7 @@ void ClassDeclStmt::analyze() const
     {
         if (SymbolTable::getClass(parentName) == nullptr)
         {
-            throw ClassDosentExisit(token, translateFQNtoString(parentName));
+            symTable->addError(std::make_unique<ClassDosentExisit>(token, translateFQNtoString(parentName)));
         }
     }
 
@@ -162,23 +162,20 @@ void ClassDeclStmt::analyze() const
             const ClassNode* parent = this->currClass->getParent();
             if (parent == nullptr || translateFQNtoString(parent->getClass().getClassName()) == "Object")
             {
-                throw NoOverrideError(token);
-            }
+                symTable->addError(std::make_unique<NoOverrideError>(token));}
 
             const Func* baseMethod = parent->findMethod(method->getName());
             if (baseMethod == nullptr)
             {
-                throw NoOverrideError(token);
-            }
+                symTable->addError(std::make_unique<NoOverrideError>(token));}
 
             if (baseMethod->getVirtual() != VirtualType::VIRTUAL && baseMethod->getVirtual() != VirtualType::PURE)
             {
-                throw NoOverrideError(token);
-            }
+                symTable->addError(std::make_unique<NoOverrideError>(token));}
 
             if (!baseMethod->isSameNameAndArgs(method->getFunc()))
             {
-                throw InvalidOverrideSignature(token);
+                symTable->addError(std::make_unique<InvalidOverrideSignature>(token));
             }
             break;
         }
@@ -191,8 +188,7 @@ void ClassDeclStmt::analyze() const
                 {
                     if (baseMethod->getVirtual() != VirtualType::NONE)
                     {
-                        throw NoOverrideError(token);
-                    }
+                        symTable->addError(std::make_unique<NoOverrideError>(token));}
                 }
             }
         }
@@ -224,7 +220,7 @@ void ClassDeclStmt::analyze() const
                 {
                     if (!isAbstract)
                     {
-                        throw UnimplementedPureVirtualMethod(token, translateFQNtoString(baseMethod.getFuncName()));
+                        symTable->addError(std::make_unique<UnimplementedPureVirtualMethod>(token, translateFQNtoString(baseMethod.getFuncName())));
                     }
                 }
             }

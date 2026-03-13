@@ -19,7 +19,7 @@ public:
     void start();
     void write() const;
     static std::vector<std::filesystem::path> getAllCppPaths();
-    static std::vector<Error*> getAllErrors();
+    std::vector<Error*> getAllErrors() const;
 
 private:
     ~FileGraph();

@@ -32,6 +32,7 @@ SymbolTable::~SymbolTable()
     head = nullptr;
     currScope = nullptr;
     currClass = nullptr;
+    errors.clear();
 }
 
 void SymbolTable::analyzePass1(const std::vector<std::unique_ptr<Stmt>>& stmts)
@@ -52,16 +53,16 @@ void SymbolTable::analyzePass1(const std::vector<std::unique_ptr<Stmt>>& stmts)
             // Prelude entry-point validation
             if (translateFQNtoString(funcDecl->getName()) == "prelude")
             {
-                if (hasMainFound) throw MainOverride(funcDecl->getToken());
+                if (hasMainFound) addError(std::make_unique<MainOverride>(funcDecl->getToken()));
 
                 if (funcDecl->getReturnType()->toString() != "degree")
                 {
-                    throw InvalidMainReturnType(funcDecl->getToken());
+                    addError(std::make_unique<InvalidMainReturnType>(funcDecl->getToken()));
                 }
 
                 if (!funcDecl->getArgs().empty())
                 {
-                    throw InvalidMainArgs(funcDecl->getToken());
+                    addError(std::make_unique<InvalidMainArgs>(funcDecl->getToken()));
                 }
 
                 hasMainFound = true;
@@ -124,7 +125,11 @@ void SymbolTable::analyzePass2(const std::vector<std::unique_ptr<Stmt>>& stmts)
             // Register global variables so they are available in Pass 3 initializers
             varDecl->setScope(currScope);
             varDecl->setClassNode(nullptr);
-            addVar(varDecl->getVar(), varDecl->getToken());
+            try {
+                addVar(varDecl->getVar(), varDecl->getToken());
+            } catch (const Error& e) {
+                addError(std::unique_ptr<Error>(e.copy()));
+            }
         }
     }
 }
@@ -148,8 +153,27 @@ void SymbolTable::analyzePass3(const std::vector<std::unique_ptr<Stmt>>& stmts)
         }
 
         // Recursively analyze the statement (will handle nested bodies and expressions)
-        stmt->analyze();
+        try {
+            stmt->analyze();
+        } catch (const Error& e) {
+            addError(std::unique_ptr<Error>(e.copy()));
+        }
     }
+}
+
+void SymbolTable::addError(std::unique_ptr<Error> err) const
+{
+    errors.push_back(std::move(err));
+}
+
+std::vector<Error*> SymbolTable::getErrors() const
+{
+    std::vector<Error*> errs;
+    for (const auto& err : errors)
+    {
+        errs.push_back(err.get());
+    }
+    return errs;
 }
 
 std::optional<Var> SymbolTable::getVar(const FQN &name, const ClassNode* contextClass) const
@@ -199,12 +223,26 @@ std::optional<Var> SymbolTable::getVar(const FQN &name, const ClassNode* context
 
 void SymbolTable::addVar(std::unique_ptr<IType> type, const Token& token) const
 {
-    currScope->addVar(std::move(type), token);
+    try
+    {
+        currScope->addVar(std::move(type), token);
+    }
+    catch (const Error& e)
+    {
+        addError(std::unique_ptr<Error>(e.copy()));
+    }
 }
 
 void SymbolTable::addVar(const Var& var, const Token& token) const
 {
-    currScope->addVar(var, token);
+    try
+    {
+        currScope->addVar(var, token);
+    }
+    catch (const Error& e)
+    {
+        addError(std::unique_ptr<Error>(e.copy()));
+    }
 }
 
 ClassNode* SymbolTable::getClass(const FQN& name)
@@ -219,12 +257,12 @@ bool SymbolTable::isClass(const FQN& name)
 
 bool SymbolTable::doesFuncExist(const Func& f) const
 {
-    return funcs.find(f) != funcs.end();
+    return funcs.contains(f);
 }
 
 bool SymbolTable::doesFuncExist(const FQN& name, const ClassNode* owner) const
 {
-    for (const auto& [func, info] : funcs)
+    for (const auto& func : funcs | std::views::keys)
     {
         if (func.getFuncName() == name && func.getOwner() == owner)
         {
@@ -236,7 +274,7 @@ bool SymbolTable::doesFuncExist(const FQN& name, const ClassNode* owner) const
 
 bool SymbolTable::isLegalCredit(const FuncCredit& credit) const
 {
-    for (const auto& [func, info] : funcs)
+    for (const auto& func : funcs | std::views::keys)
     {
         if (credit.isLegalCredit(func))
         {
@@ -249,9 +287,7 @@ bool SymbolTable::isLegalCredit(const FuncCredit& credit) const
 
 std::unique_ptr<IType> SymbolTable::getCallType(const FuncCallExpr* expr, const ClassNode* callClass) const
 {
-    const FQN& fqn = expr->getName();
-
-    if (fqn.size() > 1)
+    if (const FQN& fqn = expr->getName(); fqn.size() > 1)
     {
         // Member access: rex.speak() or Animal.kingdom()
         FQN targetName = fqn;
@@ -371,7 +407,7 @@ IFuncDeclStmt* SymbolTable::getCurrFunc() const
 
 std::unique_ptr<Func> SymbolTable::getFunc(const FQN& name, const ClassNode* owner) const
 {
-    for (const auto& [func, info] : funcs)
+    for (const auto& func : funcs | std::views::keys)
     {
         if (func.getFuncName() == name && func.getOwner() == owner)
         {
@@ -450,7 +486,12 @@ bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const
 {
     const ClassNode* res = classTree.find(name);
 
-    if (res == nullptr) throw HowDidYouGetHere(token);
+    if (res == nullptr) {
+        // Since this is static, we don't have easy access to a SymbolTable instance here
+        // Usually, isLegalFieldOrMethod is called from an AST node that HAS access to a symTable.
+        // We should probably pass the SymbolTable to this method or just keep throwing for static helpers.
+        throw HowDidYouGetHere(token);
+    }
 
     if (const Var* field = res->findField(name, currClass); field != nullptr)
     {

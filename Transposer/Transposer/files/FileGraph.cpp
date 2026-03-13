@@ -53,9 +53,16 @@ std::vector<std::filesystem::path> FileGraph::getAllCppPaths()
     return FileNode::getAllCppPath();
 }
 
-std::vector<Error*> FileGraph::getAllErrors()
+std::vector<Error*> FileGraph::getAllErrors() const
 {
-    return FileNode::getAllErrors();
+    auto err = FileNode::getAllErrors();
+
+    for (auto& e : symTable.getErrors())
+    {
+        err.emplace_back(e);
+    }
+
+    return err;
 }
 
 FileGraph::~FileGraph()

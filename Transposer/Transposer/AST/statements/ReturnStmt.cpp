@@ -27,11 +27,11 @@ void ReturnStmt::analyze() const
         
         if (rExpr == nullptr)
         {
-            if (expectedType->toString() != "fermata") throw WrongReturnType(token);
+            if (expectedType->toString() != "fermata") symTable->addError(std::make_unique<WrongReturnType>(token));
         }
         else
         {
-            if (*expectedType != *(rExpr->getType())) throw WrongReturnType(token);
+            if (*expectedType != *(rExpr->getType())) symTable->addError(std::make_unique<WrongReturnType>(token));
         }
     }
 }

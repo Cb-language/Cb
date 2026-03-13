@@ -22,7 +22,7 @@ void StaticDotOpExpr::analyze() const
 {
     if (const FQN pass = {right->toString()}; !SymbolTable::isLegalFieldOrMethod(left->copy(), pass, token, currClass))
     {
-        throw IllegalDotOpError(token, left->toString(), right->toString());
+        symTable->addError(std::make_unique<IllegalDotOpError>(token, left->toString(), right->toString()));
     }
 }
 

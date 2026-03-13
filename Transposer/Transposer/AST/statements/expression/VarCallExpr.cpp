@@ -17,7 +17,7 @@ void VarCallExpr::analyze() const
     }
     else
     {
-        throw UnrecognizedIdentifier(token, translateFQNtoString(var.getName()));
+        symTable->addError(std::make_unique<UnrecognizedIdentifier>(token, translateFQNtoString(var.getName())));
     }
 }
 
