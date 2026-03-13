@@ -470,7 +470,7 @@ bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const
     {
         if (const auto parent = currClass->getParent(); parent != nullptr)
         {
-            return isLegalFieldOrMethod(std::make_unique<ClassType>(name), name, token, currClass->getParent());
+            return isLegalFieldOrMethod(std::make_unique<ClassType>(name), name, token, parent);
         }
     }
 

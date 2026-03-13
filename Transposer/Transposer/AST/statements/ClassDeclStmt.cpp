@@ -119,7 +119,7 @@ void ClassDeclStmt::analyze() const
 
     if (!parentName.empty())
     {
-        if (symTable->getClass(parentName) == nullptr)
+        if (SymbolTable::getClass(parentName) == nullptr)
         {
             throw ClassDosentExisit(token, translateFQNtoString(parentName));
         }
