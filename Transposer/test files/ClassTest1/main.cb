@@ -32,8 +32,6 @@ instrument Animal 𝄋
     𝄞 B𝄍"Animalia" 𝄀
     𝄞 𝄽 𝄂 𝄀
 𝄌
-
-
 𝄢 ─── Derived class: Dog overrides voice ───
 
 instrument Dog : tutti Animal 𝄋
@@ -115,13 +113,13 @@ instrument Counter 𝄋
 
 song prelude𝄕𝄇 𝅘𝅥=degree
 𝄞 𝄽 𝄀
-𝄢 Create objects
+𝄞 𝄢 Create objects
 𝄞 𝆫 Dog rex 𝄕 "Rex", "Labrador" 𝄇 𝄀
 𝄞 𝆫 Cat whiskers 𝄕 "Whiskers", 1 == 1 𝄇 𝄀
 𝄞 𝆫 Spider charlotte 𝄕 "Charlotte" 𝄇 𝄀
 𝄞 𝆫 Counter c 𝄕 0 𝄇 𝄀
 𝄞 𝄽 𝄀
-𝄢 Test methods
+𝄞 𝄢 Test methods
 𝄞 rex𝄍speak𝄕𝄇 𝄀
 𝄞 play bar𝄕rex𝄍voice𝄕𝄇𝄇 𝄀
 𝄞 rex𝄍fetch𝄕"ball"𝄇 𝄀
@@ -131,10 +129,10 @@ song prelude𝄕𝄇 𝅘𝅥=degree
 𝄞 play bar𝄕charlotte𝄍voice𝄕𝄇𝄇 𝄀
 𝄞 play𝄕charlotte𝄍getLegs𝄕𝄇𝄇 𝄀
 𝄞 𝄽 𝄀
-𝄢 Test static method
+𝄞 𝄢 Test static method
 𝄞 play bar𝄕Animal𝄍kingdom𝄕𝄇𝄇 𝄀
 𝄞 𝄽 𝄀
-𝄢 Test counter with unary ops
+𝄞 𝄢 Test counter with unary ops
 𝄞 c𝄍increment𝄕𝄇 𝄀
 𝄞 c𝄍increment𝄕𝄇 𝄀
 𝄞 c𝄍increment𝄕𝄇 𝄀
@@ -144,7 +142,7 @@ song prelude𝄕𝄇 𝅘𝅥=degree
 𝄞 c𝄍reset𝄕𝄇 𝄀
 𝄞 play𝄕c𝄍getCount𝄕𝄇𝄇 𝄀
 𝄞 𝄽 𝄀
-𝄢 Loop over leg counts
+𝄞 𝄢 Loop over leg counts
 𝄞 play bar𝄕"Leg check:"𝄇 𝄀
 𝄞 play𝄕rex𝄍getLegs𝄕𝄇𝄇 𝄀
 𝄞 play𝄕whiskers𝄍getLegs𝄕𝄇𝄇 𝄀

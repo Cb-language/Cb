@@ -44,9 +44,10 @@ void SymbolTable::analyzePass1(const std::vector<std::unique_ptr<Stmt>>& stmts)
         {
             addClass(Class(classDecl->getName()));
         }
-        else if (const auto* funcDecl = dynamic_cast<FuncDeclStmt*>(stmt.get()))
+        else if (auto* funcDecl = dynamic_cast<FuncDeclStmt*>(stmt.get()))
         {
-            addFunc(funcDecl->getFunc());
+            Func f = funcDecl->getFunc();
+            funcs[f] = std::make_pair(false, funcDecl);
 
             // Prelude entry-point validation
             if (translateFQNtoString(funcDecl->getName()) == "prelude")
@@ -106,7 +107,7 @@ void SymbolTable::analyzePass2(const std::vector<std::unique_ptr<Stmt>>& stmts)
                     Func f = method->getFunc();
                     f.setOwner(node);
                     addMethod(access, f, method->getToken());
-                    addFunc(f); // Make methods available for lookup via call resolution
+                    funcs[f] = std::make_pair(false, method.get());
                 }
                 for (const auto& [access, ctor] : classDecl->getCtors())
                 {
@@ -185,20 +186,12 @@ bool SymbolTable::isClass(const FQN& name)
 
 bool SymbolTable::doesFuncExist(const Func& f) const
 {
-    for (const auto& func : funcs | std::views::keys)
-    {
-        if (func == f)
-        {
-            return true;
-        }
-    }
-
-    return false;
+    return funcs.contains(f);
 }
 
 bool SymbolTable::doesFuncExist(const FQN& name, const ClassNode* owner) const
 {
-    for (const auto& func : funcs| std::views::keys)
+    for (const auto& func : funcs | std::views::keys)
     {
         if (func.getFuncName() == name && func.getOwner() == owner)
         {
@@ -210,7 +203,7 @@ bool SymbolTable::doesFuncExist(const FQN& name, const ClassNode* owner) const
 
 bool SymbolTable::isLegalCredit(const FuncCredit& credit) const
 {
-    for (const auto& func : funcs| std::views::keys)
+    for (const auto& func : funcs | std::views::keys)
     {
         if (credit.isLegalCredit(func))
         {
@@ -223,28 +216,82 @@ bool SymbolTable::isLegalCredit(const FuncCredit& credit) const
 
 std::unique_ptr<IType> SymbolTable::getCallType(const FuncCallExpr* expr, const ClassNode* callClass) const
 {
-    const ClassNode* current = callClass;
-    while (current != nullptr)
+    if (const FQN& fqn = expr->getName(); fqn.size() > 1)
     {
-        for (const auto& func : funcs | std::views::keys)
+        // Member access: rex.speak() or Animal.kingdom()
+        FQN targetName = fqn;
+        const std::string methodName = targetName.back();
+        targetName.pop_back();
+
+        const ClassNode* targetClassNode = nullptr;
+
+        // 1. Try to resolve targetName as a variable (e.g., 'rex')
+        if (const auto var = getVar(targetName))
         {
-            if (func.getOwner() == current && expr->isLegalCall(func))
+            if (const auto* classType = dynamic_cast<ClassType*>(var->getType().get()); classType == nullptr)
             {
-                // check access
-                if (current->isLegal(func, callClass))
-                {
-                    return func.getType();
-                }
+                targetClassNode = classTree.find(classType->getFQN());
             }
         }
-        current = current->getParent();
-    }
 
-    for (const auto& func : funcs| std::views::keys)
-    {
-        if (expr->isLegalCall(func))
+        // 2. Try to resolve targetName as a class name (static call, e.g., 'Animal')
+        if (targetClassNode == nullptr)
         {
-            return func.getType()->copy();
+            targetClassNode = classTree.find(targetName);
+        }
+
+        if (targetClassNode != nullptr)
+        {
+            const ClassNode* current = targetClassNode;
+            while (current != nullptr)
+            {
+                for (const auto& [func, info] : funcs)
+                {
+                    if (func.getOwner() == current && 
+                        translateFQNtoString(func.getFuncName()) == methodName && 
+                        expr->argsMatch(func))
+                    {
+                        // Check access rights
+                        if (current->isLegal(func, callClass))
+                        {
+                            if (info.second != nullptr) const_cast<FuncCallExpr*>(expr)->setClassDecl(*(info.second));
+                            const_cast<FuncCallExpr*>(expr)->setTargetClass(current);
+                            return func.getType();
+                        }
+                    }
+                }
+                current = current->getParent();
+            }
+        }
+    }
+    else
+    {
+        // Local or Global call
+        const ClassNode* current = callClass;
+        while (current != nullptr)
+        {
+            for (const auto& [func, info] : funcs)
+            {
+                if (func.getOwner() == current && expr->isLegalCall(func))
+                {
+                    // check access
+                    if (current->isLegal(func, callClass))
+                    {
+                        if (info.second != nullptr) const_cast<FuncCallExpr*>(expr)->setClassDecl(*(info.second));
+                        return func.getType();
+                    }
+                }
+            }
+            current = current->getParent();
+        }
+
+        for (const auto& [func, info] : funcs)
+        {
+            if (func.getOwner() == nullptr && expr->isLegalCall(func))
+            {
+                if (info.second != nullptr) const_cast<FuncCallExpr*>(expr)->setClassDecl(*(info.second));
+                return func.getType()->copy();
+            }
         }
     }
 
@@ -253,7 +300,7 @@ std::unique_ptr<IType> SymbolTable::getCallType(const FuncCallExpr* expr, const 
 
 void SymbolTable::addFunc(const Func& f, const bool isIncluded)
 {
-    funcs.insert(std::make_pair(f.copy(), isIncluded));
+    funcs[f] = std::make_pair(isIncluded, nullptr);
 }
 
 void SymbolTable::enterScope(const bool isBreakable, const bool isContinueAble)
@@ -288,10 +335,6 @@ IFuncDeclStmt* SymbolTable::getCurrFunc() const
 
 std::unique_ptr<Func> SymbolTable::getFunc(const FQN& name, const ClassNode* owner) const
 {
-    if (!doesFuncExist(name, owner))
-    {
-        return nullptr;
-    }
     for (const auto& func : funcs | std::views::keys)
     {
         if (func.getFuncName() == name && func.getOwner() == owner)
@@ -305,10 +348,10 @@ std::unique_ptr<Func> SymbolTable::getFunc(const FQN& name, const ClassNode* own
 std::string SymbolTable::getFuncsHeaders() const
 {
     std::ostringstream oss;
-    for (const auto& [func, isIncluded] : funcs)
+    for (const auto& [func, info] : funcs)
     {
         // convention to note write the main's header
-        if (translateFQNtoString(func.getFuncName()) != "prelude" && !isIncluded)
+        if (translateFQNtoString(func.getFuncName()) != "prelude" && !info.first)
         {
             oss << func.translateToCpp() << ";" << std::endl;
         }

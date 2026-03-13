@@ -80,7 +80,16 @@ std::string FuncCallExpr::translateToCpp() const
         oss << getTabs();
     }
 
-    oss << translateFQNtoString(name) << "(";
+    if (targetClass != nullptr && !name.empty() && translateFQNtoString({name[0]}) == translateFQNtoString(targetClass->getClass().getClassName()))
+    {
+        // Static call: Animal::kingdom()
+        oss << translateFQNtoString({name[0]}) << "::" << name.back() << "(";
+    }
+    else
+    {
+        // Member call (->) or global call
+        oss << translateFQNtoString(name) << "(";
+    }
 
     for (const auto& arg : args)
     {
@@ -113,6 +122,11 @@ void FuncCallExpr::setClassDecl(IFuncDeclStmt& decl)
     this->funcDecl = &decl;
 }
 
+void FuncCallExpr::setTargetClass(const ClassNode* targetClass)
+{
+    this->targetClass = targetClass;
+}
+
 bool FuncCallExpr::isLegalCall(const Func& func) const
 {
     if (name != func.getFuncName() || args.size() != func.getArgs().size())
@@ -120,7 +134,17 @@ bool FuncCallExpr::isLegalCall(const Func& func) const
         return false;
     }
 
-    for (int i = 0; i < func.getArgs().size(); i++)
+    return argsMatch(func);
+}
+
+bool FuncCallExpr::argsMatch(const Func& func) const
+{
+    if (args.size() != func.getArgs().size())
+    {
+        return false;
+    }
+
+    for (size_t i = 0; i < args.size(); i++)
     {
         if (*(func.getArgs()[i].getType()) != *(args[i]->getType()))
         {

@@ -16,6 +16,7 @@ private:
     std::unique_ptr<IType> type;
     bool needsSemicolon;
     IFuncDeclStmt* funcDecl;
+    const ClassNode* targetClass = nullptr;
 
 public:
     FuncCallExpr(const Token& token,
@@ -27,7 +28,9 @@ public:
 
     void setType(std::unique_ptr<IType> type);
     void setClassDecl(IFuncDeclStmt& decl);
+    void setTargetClass(const ClassNode* targetClass);
     bool isLegalCall(const Func& func) const;
+    bool argsMatch(const Func& func) const;
 
     const Token& getToken() const override;
     const FQN& getName() const;

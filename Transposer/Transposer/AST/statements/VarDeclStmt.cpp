@@ -36,7 +36,7 @@ void VarDeclStmt::analyze() const
         startingValue->setClassNode(symTable->getCurrClass());
         startingValue->analyze();
         
-        if (*(var.getType()) != *(startingValue->getType()))
+        if (translateFQNtoString(var.getType()->getFQN()) != translateFQNtoString(startingValue->getType()->getFQN()))
         {
             throw IllegalTypeCast(token, var.getType()->toString(), startingValue->getType()->toString());
         }

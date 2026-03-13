@@ -17,7 +17,7 @@ private:
     std::unique_ptr<Scope> head;
     Scope* currScope;
     IFuncDeclStmt* currFunc;
-    std::set<std::pair<Func, bool>> funcs; // the bool means is it included to this file
+    std::map<Func, std::pair<bool, IFuncDeclStmt*>> funcs; // the bool means is it included to this file
     ClassNode* currClass = nullptr;
     bool hasMainFound = false;
     std::filesystem::path mainPath;

@@ -17,7 +17,7 @@ private:
 
 	void initTrieTree() const;
 	static bool checkBoundary(const std::string &code, const KeywordInfo *keyword, const size_t start, const size_t end);
-	static size_t handleKeywordMatch(const std::string &code, size_t& row, size_t& col, const CbTokenType tokenType, std::queue<Token>& tokens, const size_t keywordEnd, const std::filesystem::path& path);
+	static size_t handleKeywordMatch(const std::string &code, size_t& row, size_t& col, const CbTokenType tokenType, std::queue<Token>& tokens, const size_t keywordEnd, const size_t keywordStart, const std::filesystem::path& path);
 	static void onRegexToken(Token *token);
 public:
 	Tokenizer();
