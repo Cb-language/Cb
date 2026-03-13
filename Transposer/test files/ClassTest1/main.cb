@@ -31,7 +31,7 @@ instrument Animal 𝄋
     player score unison song kingdom𝄕𝄇 𝅘𝅥=bar
     𝄞 B𝄍"Animalia" 𝄀
     𝄞 𝄽 𝄂 𝄀
-𝄌
+𝄌 𝄀
 𝄢 ─── Derived class: Dog overrides voice ───
 
 instrument Dog : Animal 𝄋
@@ -51,7 +51,7 @@ instrument Dog : Animal 𝄋
     𝄞 play bar𝄕" fetches "𝄇 𝄀
     𝄞 play bar𝄕item𝄇 𝄀
     𝄞 𝄽 𝄂 𝄀
-𝄌
+𝄌 𝄀
 
 
 𝄢 ─── Derived class: Cat overrides voice ───
@@ -67,7 +67,7 @@ instrument Cat : Animal 𝄋
     player score variation song voice𝄕𝄇 𝅘𝅥=bar
     𝄞 B𝄍"Meow!" 𝄀
     𝄞 𝄽 𝄂 𝄀
-𝄌
+𝄌 𝄀
 
 
 𝄢 ─── Derived class: Spider, different leg count ───
@@ -80,7 +80,7 @@ instrument Spider : Animal 𝄋
     player score variation song voice𝄕𝄇 𝅘𝅥=bar
     𝄞 B𝄍"*silence*" 𝄀
     𝄞 𝄽 𝄂 𝄀
-𝄌
+𝄌 𝄀
 
 
 𝄢 ─── Counter class: tests static and unary ops ───
@@ -106,7 +106,7 @@ instrument Counter 𝄋
     player score song getCount𝄕𝄇 𝅘𝅥=degree
     𝄞 B𝄍count 𝄀
     𝄞 𝄽 𝄂 𝄀
-𝄌
+𝄌 𝄀
 
 
 𝄢 ─── Main: create objects and exercise everything ───

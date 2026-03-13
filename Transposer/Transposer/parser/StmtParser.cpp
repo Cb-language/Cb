@@ -211,18 +211,11 @@ std::unique_ptr<HearStmt> StmtParser::parseHearStmt() const
     if (!c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent())))
         return nullptr;
 
-    auto var = exprParser.parseCallExpr();
-    if (!var)
-    {
-        c.addError(std::make_unique<ExpectedAnExpression>(c.copyCurrent()));
-        return nullptr;
-    }
-
     std::vector<std::unique_ptr<Call>> calls;
 
     while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
     {
-        var = exprParser.parseCallExpr();
+        auto var = exprParser.parseCallExpr();
         calls.push_back(std::move(var));
 
         if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
@@ -282,7 +275,7 @@ std::unique_ptr<BodyStmt> StmtParser::parseBodyStmt(const bool isGlobal, const b
     }
 
     std::vector<std::unique_ptr<Stmt>> bodyStmts;
-    while (!hasBrace || !c.matchNonConsume(CbTokenType::PUNCTUATION_CLOSE_CURLY_BRACKET)) 
+    while (!hasBrace || !c.matchConsume(CbTokenType::PUNCTUATION_CLOSE_CURLY_BRACKET))
     {
         auto stmt = parseStmt();
         if (stmt)
@@ -301,11 +294,6 @@ std::unique_ptr<BodyStmt> StmtParser::parseBodyStmt(const bool isGlobal, const b
         }
         
         if (c.isEmpty()) break;
-    }
-
-    if (hasBrace)
-    {
-        c.expect(CbTokenType::PUNCTUATION_CLOSE_CURLY_BRACKET, std::make_unique<MissingBrace>(c.copyCurrent()));
     }
 
     return std::make_unique<BodyStmt>(
@@ -535,8 +523,6 @@ std::unique_ptr<SwitchStmt> StmtParser::parseSwitchStmt()
 
     c.removeBreakable();
 
-    c.expectSemiColon();
-
     return std::make_unique<SwitchStmt>(
         c.copyCurrent(),
         std::move(expr),
@@ -638,6 +624,7 @@ std::unique_ptr<ForStmt> StmtParser::parseForStmt()
     c.addContinueable();
 
     auto body = parseBodyStmt(false, true);
+    c.expectSemiColon();
 
     c.removeBreakable();
     c.removeContinueable();
@@ -792,7 +779,7 @@ void StmtParser::parse()
     {
         if (auto stmt = parseStmt())
         {
-            bool selfTerm = isSelfTerminating(stmt.get());
+            const bool selfTerm = isSelfTerminating(stmt.get());
             c.getStmts().push_back(std::move(stmt));
             if (!selfTerm)
             {
