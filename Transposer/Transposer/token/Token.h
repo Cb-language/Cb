@@ -59,7 +59,8 @@ enum class CbTokenType : byte
 	PUNCTUATION_PARENTHESIS_CLOSE,   // 𝄇
 	PUNCTUATION_COLON,               // :
 	PUNCTUATION_BACKSLASH,           // 𝄍
-	PUNCTUATION_REST,                // 𝄽 (does nothing)
+	PUNCTUATION_DOUBLE_BACKSLASH,    // 𝄓
+	PUNCTUATION_REST,                // 𝄽
 	PUNCTUATION_OPEN_LINE,           // 𝄞
 	PUNCTUATION_SEMICOLON,           // 𝄀
 	PUNCTUATION_CLOSE_FUNC,          // 𝄂
@@ -67,9 +68,9 @@ enum class CbTokenType : byte
 
 	// unary operations
 	UNARY_OP_SHARP,        // ♯    ++
-	UNARY_OP_DOUBLE_SHARP, // 𝄪     ++)++
+	UNARY_OP_DOUBLE_SHARP, // 𝄪     += 2
 	UNARY_OP_FLAT,         // ♭     --
-	UNARY_OP_DOUBLE_FLAT,  // 𝄫     --)--
+	UNARY_OP_DOUBLE_FLAT,  // 𝄫     -= 2
 	UNARY_OP_NOT,          // !
 	UNARY_OP_NATRUAL,      // ♮      =0
 
@@ -95,8 +96,8 @@ enum class CbTokenType : byte
 	BINARY_OP_AND,           // chord
 
 	// comments
-	COMMENT_SINGLE,       // ?
-	COMMENT_MULTI_START,  // ?*
+	COMMENT_SINGLE,
+	COMMENT_MULTI_START,
 
 	// identifiers
 	IDENTIFIER,

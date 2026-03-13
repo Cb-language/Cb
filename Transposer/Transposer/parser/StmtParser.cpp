@@ -611,7 +611,7 @@ std::unique_ptr<ForStmt> StmtParser::parseForStmt()
     }
 
     Token varToken;
-    if (c.matchConsume(CbTokenType::PUNCTUATION_BACKSLASH))
+    if (c.matchConsume(CbTokenType::PUNCTUATION_DOUBLE_BACKSLASH))
         c.expect(CbTokenType::IDENTIFIER, std::make_unique<MissingIdentifier>(c.copyCurrent()), varToken);
 
     c.addBreakable();
