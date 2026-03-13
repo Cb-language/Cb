@@ -12,7 +12,7 @@ Var::Var(const Var& other) : Var(other.type ? other.type->copy() : nullptr, othe
 
 std::unique_ptr<IType> Var::getType() const
 {
-    return type->copy();
+    return type ? type->copy() : nullptr;
 }
 
 const FQN& Var::getName() const

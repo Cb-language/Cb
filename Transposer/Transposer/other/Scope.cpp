@@ -40,7 +40,7 @@ std::optional<Var> Scope::getVar(const FQN& name, const ClassNode* c) const
 
     if (c != nullptr)
     {
-        for (const auto& [access, field] : c->getClass().getFields())
+        for (const auto& field : c->getClass().getFields() | std::views::values)
         {
             if (name == field.getName())
             {

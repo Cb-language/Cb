@@ -10,7 +10,10 @@ ArrayIndexingExpr::ArrayIndexingExpr(const Token& token, std::unique_ptr<Call> c
 
 std::unique_ptr<IType> ArrayIndexingExpr::getType() const
 {
-    return call->getType()->getArrType()->copy();
+    const auto t = call->getType();
+    if (!t) return nullptr;
+    const auto arrT = t->getArrType();
+    return arrT ? arrT->copy() : nullptr;
 }
 
 std::string ArrayIndexingExpr::translateToCpp() const
@@ -23,6 +26,18 @@ std::string ArrayIndexingExpr::translateToCpp() const
 
 void ArrayIndexingExpr::analyze() const
 {
+    if (symTable == nullptr) return;
+
+    call->setSymbolTable(symTable);
+    call->setScope(scope);
+    call->setClassNode(currClass);
+    call->analyze();
+
+    index->setSymbolTable(symTable);
+    index->setScope(scope);
+    index->setClassNode(currClass);
+    index->analyze();
+
     if (call->getType()->getArrLevel() == 0)
     {
         throw IllegalOpOnType(token, call->getType()->toString());
@@ -32,8 +47,6 @@ void ArrayIndexingExpr::analyze() const
     {
         throw IllegalTypeCast(token, index->getType()->toString(), "degree");
     }
-
-    index->analyze();
 }
 
 std::string ArrayIndexingExpr::toString() const

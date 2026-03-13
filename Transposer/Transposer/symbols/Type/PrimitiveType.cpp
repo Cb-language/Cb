@@ -37,8 +37,9 @@ bool PrimitiveType::operator==(const IType& other) const
         return true;
     }
 
-    const auto it = castMap.find(type);
-    return it->second.contains(this->type);
+    const auto it = castMap.find(this->type);
+    if (it == castMap.end()) return false;
+    return it->second.contains(casted->type);
 }
 
 bool PrimitiveType::operator!=(const IType& other) const

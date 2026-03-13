@@ -14,6 +14,28 @@ ArraySlicingExpr::ArraySlicingExpr(const ArraySlicingExpr& other)
 
 void ArraySlicingExpr::analyze() const
 {
+    if (symTable == nullptr) return;
+
+    call->setSymbolTable(symTable);
+    call->setScope(scope);
+    call->setClassNode(currClass);
+    call->analyze();
+
+    start->setSymbolTable(symTable);
+    start->setScope(scope);
+    start->setClassNode(currClass);
+    start->analyze();
+
+    stop->setSymbolTable(symTable);
+    stop->setScope(scope);
+    stop->setClassNode(currClass);
+    stop->analyze();
+
+    step->setSymbolTable(symTable);
+    step->setScope(scope);
+    step->setClassNode(currClass);
+    step->analyze();
+
     if (call->getType()->getArrLevel() == 0)
     {
         throw IllegalOpOnType(token, call->getType()->toString());
@@ -33,11 +55,6 @@ void ArraySlicingExpr::analyze() const
     {
         throw IllegalTypeCast(token, stop->getType()->toString(), "degree");
     }
-
-    call->analyze();
-    start->analyze();
-    stop->analyze();
-    step->analyze();
 }
 
 std::string ArraySlicingExpr::translateToCpp() const
@@ -51,7 +68,8 @@ std::string ArraySlicingExpr::translateToCpp() const
 
 std::unique_ptr<IType> ArraySlicingExpr::getType() const
 {
-    return call->getType()->copy();
+    const auto t = call->getType();
+    return t ? t->copy() : nullptr;
 }
 
 std::string ArraySlicingExpr::toString() const

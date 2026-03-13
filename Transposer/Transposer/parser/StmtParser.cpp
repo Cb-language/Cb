@@ -552,7 +552,6 @@ std::unique_ptr<CaseStmt> StmtParser::parseCaseStmt()
 std::unique_ptr<ArrayDeclStmt> StmtParser::parseArrayDeclStmt() const
 {
     Token t = c.copyCurrent();
-    c.matchConsume(CbTokenType::TYPE_RIFF);
     auto type = typeParser.parseIType();
 
     if (!type)

@@ -5,6 +5,10 @@
 #include "errorHandling/Error.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
+#include "errorHandling/semanticErrors/IllegalVarName.h"
+#include "errorHandling/classErrors/IllegalFieldName.h"
+#include "other/SymbolTable.h"
+#include "other/Utils.h"
 
 void ArrayDeclStmt::analyzeSizes() const
 {
@@ -67,6 +71,21 @@ ArrayDeclStmt::ArrayDeclStmt(const Token& token, const bool hasStartingValue,
 void ArrayDeclStmt::analyze() const
 {
     if (symTable == nullptr) return;
+
+    const std::string varNameStr = translateFQNtoString(var.getName());
+    const bool startsWithNote = Utils::startsWithNote(varNameStr);
+
+    if (symTable->getCurrClass() == nullptr)
+    {
+        // local variable
+        if (startsWithNote) throw IllegalVarName(token);
+        symTable->addVar(var, token);
+    }
+    else
+    {
+        // Field (should already be registered in Pass 2, but let's check name here)
+        if (!startsWithNote) throw IllegalFieldName(token);
+    }
 
     if (!sizes.empty())
     {

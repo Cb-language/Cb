@@ -76,7 +76,7 @@ std::unique_ptr<IType> TypeParser::parseArrayType() const
 {
     c.matchConsume(CbTokenType::TYPE_RIFF);
 
-    std::unique_ptr<IType> arrType = parseType();
+    std::unique_ptr<IType> arrType = parseIType();
     if (!arrType)
         return nullptr;
 
