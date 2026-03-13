@@ -29,6 +29,10 @@ const ParserContext& Parser::getContext() const
 
 std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
 {
+    if (c.isEmpty())
+    {
+        return {};
+    }
     std::vector<std::pair<std::filesystem::path, Token>> v;
     if (c.getIncludes().empty())
     {
