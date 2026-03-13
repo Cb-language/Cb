@@ -18,7 +18,6 @@ private:
     std::vector<Method> methods;
     std::vector<Ctor> ctors;
 
-    AccessType inheritingPublic;
     FQN parentName;
 
     std::string generateToString() const;
@@ -26,7 +25,7 @@ private:
 
 public:
     ClassDeclStmt(const Token& token, const FQN& name, std::vector<Field>& fields,
-        std::vector<Method>& methods, std::vector<Ctor>& ctors, AccessType inheritingPublic, const FQN& parentName);
+        std::vector<Method>& methods, std::vector<Ctor>& ctors, const FQN& parentName);
     void analyze() const override;
     std::string translateToCpp() const override;
     std::string translateToH() const override;

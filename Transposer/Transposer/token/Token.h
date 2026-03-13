@@ -26,9 +26,6 @@ enum class CbTokenType : byte
 	KEYWORD_PLAYERSCORE,    // private
 	KEYWORD_CONDUCTORSCORE, // public
 	KEYWORD_SECTIONSCORE,   // protected
-	KEYWORD_TUTTI,          // public
-	KEYWORD_SORDINO,        // private
-	KEYWORD_SECTION,        // protected
 	KEYWORD_PAUSE,          // break
 	KEYWORD_RESUME,         // continue
 	KEYWORD_PLAY,           // std::cout

@@ -83,9 +83,9 @@ std::string ClassDeclStmt::generateEquals() const
 }
 
 ClassDeclStmt::ClassDeclStmt(const Token& token, const FQN& name, std::vector<Field>& fields,
-    std::vector<Method>& methods, std::vector<Ctor>& ctors, const AccessType inheritingPublic,
+    std::vector<Method>& methods, std::vector<Ctor>& ctors,
     const FQN& parentName)
-    : Stmt(token), name(name), inheritingPublic(inheritingPublic), parentName(parentName)
+    : Stmt(token), name(name), parentName(parentName)
 {
     for (auto& [isPublic, func] : fields) this->fields.emplace_back(isPublic, std::move(func));
     for (auto& [isPublic, method] : methods) this->methods.emplace_back(isPublic, std::move(method));
@@ -233,14 +233,6 @@ void ClassDeclStmt::analyze() const
 
     const_cast<ClassNode*>(this->currClass)->setAbstract(isAbstract);
 
-
-    if (!parentName.empty())
-    {
-        if (inheritingPublic == NONE)
-        {
-            throw HowDidYouGetHere(token);
-        }
-    }
 }
 
 std::string ClassDeclStmt::translateToCpp() const
@@ -284,20 +276,7 @@ std::string ClassDeclStmt::translateToH() const
     oss << "class " << translateFQNtoString(name);
     if (!parentName.empty())
     {
-        oss << " : ";
-        if (inheritingPublic == PUBLIC)
-        {
-            oss << "public ";
-        }
-        else if (inheritingPublic == PROTECTED)
-        {
-            oss << "protected ";
-        }
-        else
-        {
-            oss << "private ";
-        }
-
+        oss << " : public ";
         oss << translateFQNtoString(parentName);
     }
     else

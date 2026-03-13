@@ -639,18 +639,9 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
     const FQN className = c.parseFQN();
 
     FQN parentName = {};
-    AccessType inheretingPublicity = NONE;
 
     if (c.matchConsume(CbTokenType::PUNCTUATION_COLON))
     {
-        if (c.matchConsume(CbTokenType::KEYWORD_TUTTI)) inheretingPublicity = PUBLIC;
-        else if (c.matchConsume(CbTokenType::KEYWORD_SORDINO)) inheretingPublicity = PRIVATE;
-        else if (c.matchConsume(CbTokenType::KEYWORD_SECTION)) inheretingPublicity = PROTECTED;
-        else
-        {
-            c.addError(std::make_unique<InvalidAccessKeyword>(c.copyCurrent()));
-            return nullptr;
-        }
         parentName = c.parseFQN();
     }
 
@@ -714,7 +705,6 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
         fields,
         methods,
         ctors,
-        inheretingPublicity,
         parentName
     );
 }
