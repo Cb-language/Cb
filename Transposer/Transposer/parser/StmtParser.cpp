@@ -55,7 +55,8 @@ std::unique_ptr<Stmt> StmtParser::parseStmt()
 
     if (c.matchConsume(CbTokenType::KEYWORD_C_CLEF))
     {
-        throw HowDareYou(c.copyCurrent());
+        c.addError(std::make_unique<HowDareYou>(c.copyCurrent()));
+        return nullptr;
     }
     if (c.matchNonConsume(CbTokenType::TYPE_RIFF))
     {

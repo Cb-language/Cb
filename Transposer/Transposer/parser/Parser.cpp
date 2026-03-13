@@ -131,6 +131,11 @@ std::string Parser::translateToH(const bool isMain)
     return oss.str();
 }
 
+void Parser::addError(std::unique_ptr<Error> err)
+{
+    c.addError(std::move(err));
+}
+
 // bool Parser::shouldProduceCpp(const bool isMain) const
 // {
 //     if (isMain || c.getHasMain()) return true;

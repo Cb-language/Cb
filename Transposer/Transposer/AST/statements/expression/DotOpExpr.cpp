@@ -32,7 +32,7 @@ void DotOpExpr::analyze() const
 
     if (rightCasted == nullptr) symTable->addError(std::make_unique<HowDidYouGetHere>(token));
 
-    if (const FQN passing = {rightCasted->toString()}; !SymbolTable::isLegalFieldOrMethod(leftType, passing, token, currClass))
+    if (const FQN passing = {rightCasted->toString()}; !SymbolTable::isLegalFieldOrMethod(symTable, leftType, passing, token, currClass))
     {
         symTable->addError(std::make_unique<IllegalDotOpError>(token, left->translateToCpp(), rightCasted->toString()));
     }

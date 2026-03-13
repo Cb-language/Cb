@@ -3,6 +3,7 @@
 #include <ranges>
 
 #include "class/ClassNode.h"
+#include "SymbolTable.h"
 #include "../errorHandling/semanticErrors/IdentifierTaken.h"
 #include "../errorHandling/syntaxErrors/UnexpectedToken.h"
 
@@ -70,32 +71,35 @@ Scope* Scope::getParent() const
     return parent;
 }
 
-void Scope::addVar(std::unique_ptr<IType> type, const Token& token)
+void Scope::addVar(const SymbolTable* symTable, std::unique_ptr<IType> type, const Token& token)
 {
     if (token.type != CbTokenType::IDENTIFIER)
     {
-        throw UnexpectedToken(token);
+        if (symTable) symTable->addError(std::make_unique<UnexpectedToken>(token));
+        return;
     }
 
-    Var v = Var(std::move(type), FQN{token.value.value()});
+    auto v = Var(std::move(type), FQN{token.value.value()});
     for (const auto& var : vars | std::views::keys)
     {
         if (v == var)
         {
-            throw IdentifierTaken(token);
+            if (symTable) symTable->addError(std::make_unique<IdentifierTaken>(token));
+            return;
         }
     }
 
     vars.emplace_back(std::move(v), token);
 }
 
-void Scope::addVar(const Var& var, const Token& token)
+void Scope::addVar(const SymbolTable* symTable, const Var& var, const Token& token)
 {
     for (const auto& v : vars| std::views::keys)
     {
         if (var == v)
         {
-            throw IdentifierTaken(token);
+            if (symTable) symTable->addError(std::make_unique<IdentifierTaken>(token));
+            return;
         }
     }
 

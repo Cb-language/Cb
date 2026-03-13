@@ -39,7 +39,7 @@ void FileGraph::start()
 
     if (const auto path = symTable.getMainPath(); !path.has_value() || path != main->file.getInPath())
     {
-        throw NoMain(main->file.parser.getContext().getFirstToken());
+        symTable.addError(std::make_unique<NoMain>(main->file.parser.getContext().getFirstToken()));
     }
 }
 

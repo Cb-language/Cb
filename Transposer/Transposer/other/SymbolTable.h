@@ -73,5 +73,5 @@ public:
     static void clearClasses();
     static bool isClass(const FQN& name);
     static ClassNode* getClass(const FQN& name);
-    static bool isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const FQN& name, const Token& token, const ClassNode* currClass);
+    static bool isLegalFieldOrMethod(const SymbolTable* symTable, const std::unique_ptr<IType>& type, const FQN& name, const Token& token, const ClassNode* currClass);
 };

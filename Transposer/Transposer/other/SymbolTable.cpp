@@ -125,11 +125,7 @@ void SymbolTable::analyzePass2(const std::vector<std::unique_ptr<Stmt>>& stmts)
             // Register global variables so they are available in Pass 3 initializers
             varDecl->setScope(currScope);
             varDecl->setClassNode(nullptr);
-            try {
-                addVar(varDecl->getVar(), varDecl->getToken());
-            } catch (const Error& e) {
-                addError(std::unique_ptr<Error>(e.copy()));
-            }
+            addVar(varDecl->getVar(), varDecl->getToken());
         }
     }
 }
@@ -223,26 +219,12 @@ std::optional<Var> SymbolTable::getVar(const FQN &name, const ClassNode* context
 
 void SymbolTable::addVar(std::unique_ptr<IType> type, const Token& token) const
 {
-    try
-    {
-        currScope->addVar(std::move(type), token);
-    }
-    catch (const Error& e)
-    {
-        addError(std::unique_ptr<Error>(e.copy()));
-    }
+    currScope->addVar(this, std::move(type), token);
 }
 
 void SymbolTable::addVar(const Var& var, const Token& token) const
 {
-    try
-    {
-        currScope->addVar(var, token);
-    }
-    catch (const Error& e)
-    {
-        addError(std::unique_ptr<Error>(e.copy()));
-    }
+    currScope->addVar(this, var, token);
 }
 
 ClassNode* SymbolTable::getClass(const FQN& name)
@@ -313,7 +295,7 @@ std::unique_ptr<IType> SymbolTable::getCallType(const FuncCallExpr* expr, const 
         }
 
         if (targetClassNode != nullptr)
-        {
+            {
             const ClassNode* current = targetClassNode;
             while (current != nullptr)
             {
@@ -482,36 +464,37 @@ void SymbolTable::clearClasses()
     ClassTree::destroy();
 }
 
-bool SymbolTable::isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const FQN& name, const Token& token, const ClassNode* currClass)
+bool SymbolTable::isLegalFieldOrMethod(const SymbolTable* symTable, const std::unique_ptr<IType>& type, const FQN& name, const Token& token, const ClassNode* currClass)
 {
     const ClassNode* res = classTree.find(name);
 
-    if (res == nullptr) {
-        // Since this is static, we don't have easy access to a SymbolTable instance here
-        // Usually, isLegalFieldOrMethod is called from an AST node that HAS access to a symTable.
-        // We should probably pass the SymbolTable to this method or just keep throwing for static helpers.
-        throw HowDidYouGetHere(token);
+    if (res == nullptr)
+    {
+        if (symTable) symTable->addError(std::make_unique<HowDidYouGetHere>(token));
+        return false;
     }
 
     if (const Var* field = res->findField(name, currClass); field != nullptr)
     {
         if (res->isLegal(*field, currClass)) return true;
 
-        throw AccessError(token, translateFQNtoString(res->getClass().getClassName()), translateFQNtoString(name));
+        if (symTable) symTable->addError(std::make_unique<AccessError>(token, translateFQNtoString(res->getClass().getClassName()), translateFQNtoString(name)));
+        return false;
     }
 
     if (const Func* method = res->findMethod(name, currClass); method != nullptr)
     {
         if (res->isLegal(*method, currClass)) return true;
 
-        throw AccessError(token, translateFQNtoString(res->getClass().getClassName()), translateFQNtoString(name));
+        if (symTable) symTable->addError(std::make_unique<AccessError>(token, translateFQNtoString(res->getClass().getClassName()), translateFQNtoString(name)));
+        return false;
     }
 
     if (currClass != nullptr)
     {
         if (const auto parent = currClass->getParent(); parent != nullptr)
         {
-            return isLegalFieldOrMethod(std::make_unique<ClassType>(name), name, token, parent);
+            return isLegalFieldOrMethod(symTable, std::make_unique<ClassType>(name), name, token, parent);
         }
     }
 

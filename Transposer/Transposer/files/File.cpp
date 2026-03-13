@@ -6,13 +6,13 @@
 #include "errorHandling/preproccessorErrors/CouldntOpenFile.h"
 #include "token/Tokenizer.h"
 
-std::queue<Token> File::tokenize() const
+std::queue<Token> File::tokenize()
 {
     std::ifstream file(inPath, std::ios::binary);
 
     if(!file || !file.is_open())
     {
-        throw CouldntOpenFile(Token(CbTokenType::COMMENT_SINGLE, inPath.string(),0,0, inPath), inPath);
+        parser.addError(std::make_unique<CouldntOpenFile>(Token(CbTokenType::COMMENT_SINGLE, inPath.string(),0,0, inPath), inPath));
     }
 
     const auto data = std::string((std::istreambuf_iterator<char>(file)),
@@ -107,7 +107,7 @@ void File::write(const bool isMain)
 
         if(!fileH || !fileH.is_open())
         {
-            throw CouldntOpenFile(Token(CbTokenType::ERROR_TOKEN, inPath.string(),0,0, outPathH), outPathH);
+            parser.addError(std::make_unique<CouldntOpenFile>(Token(CbTokenType::ERROR_TOKEN, inPath.string(),0,0, outPathH), outPathH));
         }
         fileH << parser.translateToH();
 
@@ -118,7 +118,7 @@ void File::write(const bool isMain)
 
     if(!fileCpp || !fileCpp.is_open())
     {
-        throw CouldntOpenFile(Token(CbTokenType::ERROR_TOKEN, inPath.string(),0,0, outPathCpp), outPathCpp);
+        parser.addError(std::make_unique<CouldntOpenFile>(Token(CbTokenType::ERROR_TOKEN, inPath.string(),0,0, outPathCpp), outPathCpp));
     }
     fileCpp << parser.translateToCpp(outPathH, isMain);
 

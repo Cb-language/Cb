@@ -24,7 +24,7 @@ private:
     bool analyzed3 = false;
     bool writen = false;
 
-    std::queue<Token> tokenize() const;
+    std::queue<Token> tokenize();
 
     static std::filesystem::path mainPath;
     static std::filesystem::path outDir;
@@ -42,7 +42,6 @@ private:
     void analyzePass3(SymbolTable& symTable);
     void write(const bool isMain = false);
     const std::vector<std::unique_ptr<Error>>& getErrors() const;
-
 public:
     static void setMainPath(const std::filesystem::path& path);
     static const std::filesystem::path& getMainPath();

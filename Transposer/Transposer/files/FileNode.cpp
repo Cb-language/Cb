@@ -33,12 +33,14 @@ void FileNode::readAndAddChildren()
 
         if (!std::filesystem::exists(fullPath))
         {
-            throw IncludePathNotFound(t, fullPath);
+            file.parser.addError(std::make_unique<IncludePathNotFound>(t, fullPath));
+            continue;
         }
 
         if (!canAdd(fullPath))
         {
-            throw CircularDependency(t, file.getInPath(), fullPath);
+            file.parser.addError(std::make_unique<CircularDependency>(t, file.getInPath(), fullPath));
+            continue;
         }
 
         FileNode* f = getNode(fullPath);
@@ -70,8 +72,7 @@ FileNode* FileNode::getNode(const std::filesystem::path& path)
     const std::filesystem::path canonical =
         std::filesystem::weakly_canonical(path);
 
-    auto it = nodes.find(canonical);
-    if (it != nodes.end())
+    if (const auto it = nodes.find(canonical); it != nodes.end())
     {
         return it->second.get();
     }
