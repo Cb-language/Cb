@@ -605,7 +605,7 @@ std::unique_ptr<ForStmt> StmtParser::parseForStmt()
     }
 
     std::unique_ptr<Expr> stopExpr = nullptr;
-    if (c.matchConsume(CbTokenType::UNARY_OP_SHARP))
+    if (c.matchConsume(CbTokenType::UNARY_OP_DOUBLE_SHARP) || c.matchConsume(CbTokenType::UNARY_OP_DOUBLE_FLAT))
     {
         stopExpr = exprParser.parseExpr();
     }
