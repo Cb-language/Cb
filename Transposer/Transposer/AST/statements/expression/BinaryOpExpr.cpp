@@ -29,7 +29,7 @@ std::unique_ptr<IType> BinaryOpExpr::getType() const
     }
 
     // Logical operators
-    if (op == "chord" || op == "divis")
+    if (op == "div." || op == "non div.")
     {
         return std::make_unique<PrimitiveType>(Primitive::TYPE_MUTE);
     }
@@ -49,6 +49,8 @@ std::unique_ptr<IType> BinaryOpExpr::getType() const
             return std::make_unique<PrimitiveType>(Primitive::TYPE_FREQ);
         if (leftType->toString() == "note" || rightType->toString() == "note")
             return std::make_unique<PrimitiveType>(Primitive::TYPE_NOTE);
+        if (leftType->toString() == "degree" || rightType->toString() == "degree")
+            return std::make_unique<PrimitiveType>(Primitive::TYPE_DEGREE);
     }
 
     if (op == "-" ||

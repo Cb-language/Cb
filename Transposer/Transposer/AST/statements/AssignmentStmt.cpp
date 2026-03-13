@@ -24,7 +24,7 @@ void AssignmentStmt::analyze() const
 
     const auto leftType = call->getType();
 
-    if (const auto rightType = expr->getType(); *leftType != *rightType)
+    if (const auto rightType = expr->getType(); leftType->toString() != rightType->toString())
     {
         throw IllegalOpOnType(token, leftType->toString(), rightType->toString(), assignmentOp);
     }

@@ -31,7 +31,7 @@ std::string VarCallExpr::translateToCpp() const
 
 std::unique_ptr<IType> VarCallExpr::getType() const
 {
-    auto t = var.getType();
+    const auto t = var.getType();
     return t ? t->copy() : nullptr;
 }
 
