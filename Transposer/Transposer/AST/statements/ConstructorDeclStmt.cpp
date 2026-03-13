@@ -111,6 +111,11 @@ std::unique_ptr<IType> ConstructorDeclStmt::getReturnType() const
     return std::make_unique<ClassType>(constractor.getClassName());
 }
 
+bool ConstructorDeclStmt::getIsMethod() const
+{
+    return true;
+}
+
 const Constractor& ConstructorDeclStmt::getConstractor() const
 {
     return constractor;

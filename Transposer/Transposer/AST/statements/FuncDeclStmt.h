@@ -37,6 +37,7 @@ public:
 
     void setHasReturned(const bool hasReturned) override;
     bool getHasReturned() const;
+    bool getIsMethod() const override;
 
     const std::vector<std::unique_ptr<FuncCreditStmt>>& getCredited() const override;
 

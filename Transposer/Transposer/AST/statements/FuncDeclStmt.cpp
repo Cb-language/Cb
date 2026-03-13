@@ -65,6 +65,11 @@ bool FuncDeclStmt::getHasReturned() const
     return hasReturned;
 }
 
+bool FuncDeclStmt::getIsMethod() const
+{
+    return isMethod;
+}
+
 const std::vector<std::unique_ptr<FuncCreditStmt>>& FuncDeclStmt::getCredited() const
 {
     return credited;

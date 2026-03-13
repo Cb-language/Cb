@@ -25,6 +25,7 @@ public:
 
     const FQN& getName() const override;
     std::unique_ptr<IType> getReturnType() const override;
+    bool getIsMethod() const override;
 
     const Constractor& getConstractor() const;
 };

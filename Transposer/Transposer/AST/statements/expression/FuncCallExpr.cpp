@@ -50,6 +50,11 @@ void FuncCallExpr::analyze() const
         throw HowDidYouGetHere(token);
     }
 
+    if (funcDecl->getIsMethod())
+    {
+        return; // methods don't need to be credited
+    }
+
     if (translateFQNtoString(funcDecl->getName()) == "prelude")
     {
         return; // main doesnt have to copyright
