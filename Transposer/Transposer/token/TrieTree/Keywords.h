@@ -5,4 +5,4 @@
 
 extern const std::vector<KeywordInfo> KEYWORDS;
 
-inline constexpr std::string COMMENT_MULTY_END = "*?";
+inline constexpr std::string COMMENT_MULTY_END = "𝄩𝄢";

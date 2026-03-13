@@ -1,4 +1,4 @@
-﻿#include "Tokenizer.h"
+#include "Tokenizer.h"
 
 #include "TrieTree/Keywords.h"
 
@@ -54,38 +54,59 @@ bool Tokenizer::checkBoundary(const std::string& code, const KeywordInfo* keywor
     return true;
 }
 
-size_t Tokenizer::handleKeywordMatch(const std::string& code, size_t& row, size_t& col, const CbTokenType tokenType,
-            std::queue<Token>& tokens, const size_t keywordEnd, const std::filesystem::path& path)
+static void updatePos(const std::string& text, size_t& row, size_t& col)
 {
+    for (char c : text)
+    {
+        if (c == '\n')
+        {
+            row++;
+            col = 1;
+        }
+        else
+        {
+            col++;
+        }
+    }
+}
+
+size_t Tokenizer::handleKeywordMatch(const std::string& code, size_t& row, size_t& col, const CbTokenType tokenType,
+            std::queue<Token>& tokens, const size_t keywordEnd, const size_t keywordStart, const std::filesystem::path& path)
+{
+    const std::string matchedText = code.substr(keywordStart, keywordEnd - keywordStart);
+    
     switch (tokenType)
     {
         case CbTokenType::COMMENT_SINGLE:
         {
             // If it's a one-line comment, look for the end of the line.
-            if (const size_t end = code.find('\n', keywordEnd); end != std::string::npos) return end + 1;
-
-            return keywordEnd;
+            size_t end = code.find('\n', keywordEnd);
+            if (end == std::string::npos) end = code.size();
+            
+            updatePos(code.substr(keywordStart, end - keywordStart), row, col);
+            return (end < code.size()) ? end : code.size();
         }
 
         case CbTokenType::COMMENT_MULTI_START:
         {
             // If it's a multiline comment, look for a COMMENT_MULTY_END match.
-
-            if (const size_t end = code.find(COMMENT_MULTY_END, keywordEnd); end != std::string::npos)
-                return end + COMMENT_MULTY_END.length();
+            size_t end = code.find(COMMENT_MULTY_END, keywordEnd);
+            if (end != std::string::npos)
+            {
+                size_t actualEnd = end + COMMENT_MULTY_END.length();
+                updatePos(code.substr(keywordStart, actualEnd - keywordStart), row, col);
+                return actualEnd;
+            }
 
             tokens.emplace(CbTokenType::ERROR_TOKEN, std::nullopt, row, col, path);
-        }
-
-        case CbTokenType::PUNCTUATION_NEW_LINE:
-        {
-            row += 1;
-            col = 0;
+            updatePos(matchedText, row, col);
+            return keywordEnd;
         }
 
         default:
         {
             tokens.emplace(tokenType, std::nullopt, row, col, path);
+            updatePos(matchedText, row, col);
             return keywordEnd;
         }
     }
@@ -111,7 +132,7 @@ void Tokenizer::onRegexToken(Token* token)
         case CbTokenType::CONST_CHAR:
         {
             std::string content = token->value.value();
-            if (content.length() >= 2 && content.front() == '\'' && content.back() == '\"')
+            if (content.length() >= 2 && content.front() == '\'' && content.back() == '\'')
             {
                 content = content.substr(1, content.length() - 2);
             }
@@ -148,15 +169,14 @@ std::queue<Token> Tokenizer::tokenize(const std::string& code, const std::filesy
 {
     std::queue<Token> tokens;
     size_t row = 1;
-    size_t col = 0;
-    int codePos = 0;
+    size_t col = 1;
+    size_t codePos = 0;
 
     while (codePos < code.size())
     {
-        col++;
-
         if (isspace(code[codePos]) && code[codePos] != '\n')
         {
+            col++;
             codePos++;
             continue;
         }
@@ -178,7 +198,7 @@ std::queue<Token> Tokenizer::tokenize(const std::string& code, const std::filesy
 
         if (lastMatch && checkBoundary(code, lastMatch, codePos, lastMatchEnd))
         {
-            codePos = handleKeywordMatch(code, row, col, lastMatch->type, tokens, lastMatchEnd, path);
+            codePos = handleKeywordMatch(code, row, col, lastMatch->type, tokens, lastMatchEnd, codePos, path);
             continue;
         }
 
@@ -198,12 +218,13 @@ std::queue<Token> Tokenizer::tokenize(const std::string& code, const std::filesy
             onRegexToken(&token);
             tokens.emplace(token);
 
+            updatePos(match_str, row, col);
             codePos += match_str.length();
-            col += match_str.length() - 1; // col will be incremented at the start of next loop
             continue;
         }
 
         tokens.emplace(CbTokenType::ERROR_TOKEN, std::nullopt, row, col, path); // if didnt match throw error
+        col++;
         codePos++;
     }
     return tokens;
