@@ -22,6 +22,7 @@ private:
     std::vector<std::unique_ptr<Error>> errors;
 
     Token firstToken;
+    Token lastToken;
 
     int breakables;
     int continueables;
@@ -36,21 +37,21 @@ public:
 
     void addError(std::unique_ptr<Error> err);
 
-    const Token& current() const;
+    const Token& current();
     Token copyCurrent();
 
     Token advance();
     void expectSemiColon();
 
     bool matchConsume(const CbTokenType type, const std::optional<std::reference_wrapper<Token>> out = std::nullopt);
-    bool matchNonConsume(CbTokenType type) const;
+    bool matchNonConsume(CbTokenType type);
 
     bool expect(CbTokenType type, std::unique_ptr<Error> err = nullptr, std::optional<std::reference_wrapper<Token>> out = std::nullopt);
 
     FQN parseFQN();
 
-    bool isUnaryOp() const;
-    bool isBinaryOp() const;
+    bool isUnaryOp();
+    bool isBinaryOp();
     bool isType() const;
 
     const std::vector<std::unique_ptr<Stmt>>& getStmts() const;

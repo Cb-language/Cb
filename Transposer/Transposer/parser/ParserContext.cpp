@@ -9,16 +9,13 @@
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 
 ParserContext::ParserContext(const std::queue<Token>& tokens)
-    : tokens(tokens), len(tokens.size()), breakables(0), continueables(0), isNewLine(false),
-      isInFunc(false)
+    : tokens(tokens), len(tokens.size()), firstToken(CbTokenType::ERROR_TOKEN, std::nullopt, 0, 0, ""), lastToken(CbTokenType::ERROR_TOKEN, std::nullopt, 0, 0, ""), breakables(0),
+      continueables(0), isNewLine(false), isInFunc(false)
 {
-    if (!tokens.empty())
+    if (!this->tokens.empty())
     {
-        firstToken = tokens.front();
-    }
-    else
-    {
-        firstToken = Token(CbTokenType::PUNCTUATION_NEW_LINE, std::nullopt, 0, 0, "");
+        firstToken = this->tokens.front();
+        lastToken = firstToken;
     }
 }
 
@@ -27,9 +24,13 @@ void ParserContext::addError(std::unique_ptr<Error> err)
     errors.emplace_back(std::move(err));
 }
 
-const Token& ParserContext::current() const
+const Token& ParserContext::current()
 {
-    if (tokens.empty()) throw UnexpectedEOF(getFirstToken());
+    if (tokens.empty())
+    {
+        addError(std::make_unique<UnexpectedEOF>(lastToken));
+        return lastToken;
+    }
     return tokens.front();
 }
 
@@ -41,19 +42,21 @@ Token ParserContext::copyCurrent()
 
 Token ParserContext::advance()
 {
-    if (tokens.empty()) throw UnexpectedEOF(current());
-    auto t = tokens.front();
+    if (tokens.empty()) throw UnexpectedEOF(lastToken);
+
+    auto t = std::move(tokens.front());
+    tokens.pop();
+    lastToken = t;
+
     if (t.type == CbTokenType::PUNCTUATION_CLOSE_FUNC)
     {
         setIsInFunc(false);
     }
-    tokens.pop();
 
     if (!isNewLine)
     {
         isNewLine = true;
-
-        while (!tokens.empty() && current().type == CbTokenType::PUNCTUATION_NEW_LINE)
+        while (!tokens.empty() && tokens.front().type == CbTokenType::PUNCTUATION_NEW_LINE)
         {
             if (isInFunc)
             {
@@ -64,7 +67,6 @@ Token ParserContext::advance()
                 advance();
             }
         }
-
         isNewLine = false;
     }
 
@@ -119,7 +121,7 @@ void ParserContext::eatRest()
 
 bool ParserContext::matchConsume(const CbTokenType type, const std::optional<std::reference_wrapper<Token>> out)
 {
-    if (tokens.empty()) throw UnexpectedEOF(current());
+    if (tokens.empty()) addError(std::make_unique<UnexpectedEOF>(current()));
     if (current().type == type)
     {
         if (out.has_value())
@@ -133,9 +135,9 @@ bool ParserContext::matchConsume(const CbTokenType type, const std::optional<std
     return false;
 }
 
-bool ParserContext::matchNonConsume(const CbTokenType type) const
+bool ParserContext::matchNonConsume(const CbTokenType type)
 {
-    if (tokens.empty()) throw UnexpectedEOF(current());
+    if (tokens.empty()) addError(std::make_unique<UnexpectedEOF>(current()));
     return current().type == type;
 }
 
@@ -173,19 +175,20 @@ FQN ParserContext::parseFQN()
     return res;
 }
 
-bool ParserContext::isUnaryOp() const
+bool ParserContext::isUnaryOp()
 {
     return (current().type >= CbTokenType::UNARY_OP_SHARP && current().type <= CbTokenType::UNARY_OP_NATRUAL);
 }
 
-bool ParserContext::isBinaryOp() const
+bool ParserContext::isBinaryOp()
 {
     return (current().type >= CbTokenType::BINARY_OP_EQUAL && current().type <= CbTokenType::BINARY_OP_AND);
 }
 
 bool ParserContext::isType() const
 {
-    return (current().type >= CbTokenType::TYPE_FLAT && current().type <= CbTokenType::TYPE_FERMATA);
+    if (tokens.empty()) return false;
+    return (tokens.front().type >= CbTokenType::TYPE_FLAT && tokens.front().type <= CbTokenType::TYPE_FERMATA);
 }
 
 const std::vector<std::unique_ptr<Stmt>>& ParserContext::getStmts() const
