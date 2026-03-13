@@ -32,7 +32,7 @@ std::string PlayStmt::translateToCpp() const
     }
     if (printLine)
     {
-        ret += " << std::end";
+        ret += " << std::endl";
     }
     ret += ";";
     return ret;
