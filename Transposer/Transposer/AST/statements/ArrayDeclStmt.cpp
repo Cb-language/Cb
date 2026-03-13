@@ -14,8 +14,10 @@ void ArrayDeclStmt::analyzeSizes() const
 {
     if (symTable == nullptr) return;
 
-    // Can't get here but always check
-    if (var.getType()->getArrLevel() != sizes.size())
+    const auto t = var.getType();
+    if (!t) return;
+
+    if (t->getArrLevel() != sizes.size())
     {
         symTable->addError(std::make_unique<HowDidYouGetHere>(token));
     }
@@ -26,27 +28,26 @@ void ArrayDeclStmt::analyzeSizes() const
         size->setScope(scope);
         size->setClassNode(currClass);
         size->analyze();
-        if (!size->getType()->isNumberable())
+
+        const auto sizeType = size->getType();
+        if (!sizeType) continue; // error already reported in analyze()
+
+        if (!sizeType->isNumberable())
         {
-            symTable->addError(std::make_unique<IllegalTypeCast>(token, size->getType()->toString(), "degree"));
+            symTable->addError(std::make_unique<IllegalTypeCast>(token, sizeType->toString(), "degree"));
         }
     }
 }
 
-std::string ArrayDeclStmt::createConstructor(IType* type, const size_t dim) const
+std::string ArrayDeclStmt::createConstructor(const IType* type, const size_t dim) const
 {
     std::ostringstream oss;
 
     if (type->getArrLevel() == 0)
     {
-        if (hasStartingValue && startingValue->getType()->getArrLevel() == 0)
+        if (hasStartingValue && startingValue && startingValue->getType() && startingValue->getType()->getArrLevel() == 0)
         {
             return startingValue->translateToCpp();
-        }
-
-        if (type->isPrimitive())
-        {
-            return type->translateTypeToCpp() + "()";
         }
 
         return type->translateTypeToCpp() + "()";
@@ -72,72 +73,12 @@ void ArrayDeclStmt::analyze() const
 {
     if (symTable == nullptr) return;
 
-    const std::string varNameStr = translateFQNtoString(var.getName());
-    const bool startsWithNote = Utils::startsWithNote(varNameStr);
-
-    if (symTable->getCurrClass() == nullptr)
-    {
-        // local variable
-        if (startsWithNote) symTable->addError(std::make_unique<IllegalVarName>(token));
-        symTable->addVar(var, token);
-    }
-    else
-    {
-        // Field (should already be registered in Pass 2, but let's check name here)
-        if (!startsWithNote) symTable->addError(std::make_unique<IllegalFieldName>(token));
-    }
+    // Delegate basic registration and name checking to VarDeclStmt
+    VarDeclStmt::analyze();
 
     if (!sizes.empty())
     {
         analyzeSizes();
-    }
-
-    if (hasStartingValue)
-    {
-        startingValue->setSymbolTable(symTable);
-        startingValue->setScope(scope);
-        startingValue->setClassNode(currClass);
-        startingValue->analyze();
-
-        const std::unique_ptr<IType> startType = startingValue->getType()->copy();
-        const std::unique_ptr<IType> varType = var.getType()->copy();
-        const unsigned int arrLevel = varType->getArrLevel();
-        const unsigned int startArrLevel = startType->getArrLevel();
-
-        // Can't get here but always check
-        if (arrLevel == 0)
-        {
-            symTable->addError(std::make_unique<HowDidYouGetHere>(token));
-        }
-
-        if (arrLevel == startArrLevel) // Array<int> x = 3; Array<int> y = x;
-        {
-            if (*varType != *startType)
-            {
-                symTable->addError(std::make_unique<IllegalTypeCast>(token, startType->toString(), varType->toString()));
-            }
-        }
-        else if (arrLevel == startArrLevel + 1) // Array<int> x = 3; or Array<int> y; Array<Array<int>> x = y;
-        {
-            if (*(varType->getArrType()) != *startType)
-            {
-                symTable->addError(std::make_unique<IllegalTypeCast>(token, startType->toString(), varType->getArrType()->toString()));
-            }
-        }
-        else if (arrLevel > 1 && startArrLevel == 0) // Array<Array<int>> y = 3;
-        {
-            std::unique_ptr<IType> type = varType->getArrType()->copy();
-
-            while (type->getArrLevel() > 0)
-            {
-                type = type->getArrType()->copy();
-            }
-
-            if (*type != *startType)
-            {
-                symTable->addError(std::make_unique<IllegalTypeCast>(token, startType->toString(), type->toString()));
-            }
-        }
     }
 }
 
@@ -158,10 +99,14 @@ std::string ArrayDeclStmt::translateToCpp() const
 
     if (hasStartingValue && startingValue != nullptr)
     {
-        const unsigned int varArrLevel = var.getType()->getArrLevel();
-        if (const unsigned int startArrLevel = startingValue->getType()->getArrLevel(); startArrLevel != 0 && (varArrLevel == startArrLevel || varArrLevel == startArrLevel + 1))
+        const auto vt = var.getType();
+        if (const auto st = startingValue->getType(); vt && st)
         {
-            oss << std::endl << getTabs() << name << " = " << startingValue->translateToCpp() << ";";
+            const unsigned int varArrLevel = vt->getArrLevel();
+            if (const unsigned int startArrLevel = st->getArrLevel(); startArrLevel != 0 && (varArrLevel == startArrLevel || varArrLevel == startArrLevel + 1))
+            {
+                oss << std::endl << getTabs() << name << " = " << startingValue->translateToCpp() << ";";
+            }
         }
     }
 

@@ -79,24 +79,24 @@ void Scope::addVar(const SymbolTable* symTable, std::unique_ptr<IType> type, con
         return;
     }
 
-    auto v = Var(std::move(type), FQN{token.value.value()});
+    const FQN name = {token.value.value()};
     for (const auto& var : vars | std::views::keys)
     {
-        if (v == var)
+        if (name == var.getName())
         {
             if (symTable) symTable->addError(std::make_unique<IdentifierTaken>(token));
             return;
         }
     }
 
-    vars.emplace_back(std::move(v), token);
+    vars.emplace_back(Var(std::move(type), name), token);
 }
 
 void Scope::addVar(const SymbolTable* symTable, const Var& var, const Token& token)
 {
     for (const auto& v : vars| std::views::keys)
     {
-        if (var == v)
+        if (var.getName() == v.getName())
         {
             if (symTable) symTable->addError(std::make_unique<IdentifierTaken>(token));
             return;

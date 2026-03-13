@@ -34,7 +34,7 @@ instrument Animal 𝄋
 𝄌
 𝄢 ─── Derived class: Dog overrides voice ───
 
-instrument Dog : tutti Animal 𝄋
+instrument Dog : Animal 𝄋
     conductor score bar breed = "mutt" 𝄀
 
     player score 𝆫 Dog 𝄕 bar n, bar b 𝄇
@@ -56,7 +56,7 @@ instrument Dog : tutti Animal 𝄋
 
 𝄢 ─── Derived class: Cat overrides voice ───
 
-instrument Cat : tutti Animal 𝄋
+instrument Cat : Animal 𝄋
     conductor score mute isIndoor = 1 == 1 𝄀
 
     player score 𝆫 Cat 𝄕 bar n, mute indoor 𝄇
@@ -72,7 +72,7 @@ instrument Cat : tutti Animal 𝄋
 
 𝄢 ─── Derived class: Spider, different leg count ───
 
-instrument Spider : sordino Animal 𝄋
+instrument Spider : Animal 𝄋
     player score 𝆫 Spider 𝄕 bar n 𝄇
     𝄞   name = n 𝄀
     𝄞   legs = 8 𝄂 𝄀

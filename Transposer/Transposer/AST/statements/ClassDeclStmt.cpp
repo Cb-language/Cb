@@ -167,7 +167,9 @@ void ClassDeclStmt::analyze() const
             const Func* baseMethod = parent->findMethod(method->getName());
             if (baseMethod == nullptr)
             {
-                symTable->addError(std::make_unique<NoOverrideError>(token));}
+                symTable->addError(std::make_unique<InvalidOverrideSignature>(token));
+                return;
+            }
 
             if (baseMethod->getVirtual() != VirtualType::VIRTUAL && baseMethod->getVirtual() != VirtualType::PURE)
             {

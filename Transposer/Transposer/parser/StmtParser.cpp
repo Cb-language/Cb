@@ -26,7 +26,6 @@
 #include "AST/statements/ObjCreationStmt.h"
 
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
-#include "errorHandling/syntaxErrors/MissingSemicolon.h"
 #include "errorHandling/syntaxErrors/MissingBrace.h"
 #include "errorHandling/syntaxErrors/MissingIdentifier.h"
 #include "errorHandling/syntaxErrors/MissingParenthesis.h"
@@ -44,6 +43,18 @@
 
 #include "errorHandling/how/HowDareYou.h"
 
+// Helper to determine if a statement consumes its own trailing semicolon/terminator
+static bool isSelfTerminating(const Stmt* stmt)
+{
+    return dynamic_cast<const IfStmt*>(stmt) != nullptr ||
+           dynamic_cast<const ForStmt*>(stmt) != nullptr ||
+           dynamic_cast<const WhileStmt*>(stmt) != nullptr ||
+           dynamic_cast<const SwitchStmt*>(stmt) != nullptr ||
+           dynamic_cast<const ClassDeclStmt*>(stmt) != nullptr ||
+           dynamic_cast<const FuncDeclStmt*>(stmt) != nullptr ||
+           dynamic_cast<const BodyStmt*>(stmt) != nullptr;
+}
+
 StmtParser::StmtParser(ParserContext& c, TypeParser& typeParser, ExprParser& exprParser)
     : c(c), typeParser(typeParser), exprParser(exprParser)
 {
@@ -51,12 +62,11 @@ StmtParser::StmtParser(ParserContext& c, TypeParser& typeParser, ExprParser& exp
 
 std::unique_ptr<Stmt> StmtParser::parseStmt()
 {
-    while (c.matchConsume(CbTokenType::PUNCTUATION_NEW_LINE)) {} // if new lines got here they are in the global scope, and we can just eat them
+    while (c.matchConsume(CbTokenType::PUNCTUATION_NEW_LINE)) {} // if new lines got here they are in the global scope and we can just eat them
 
     if (c.matchConsume(CbTokenType::KEYWORD_C_CLEF))
     {
-        c.addError(std::make_unique<HowDareYou>(c.copyCurrent()));
-        return nullptr;
+        throw HowDareYou(c.copyCurrent());
     }
     if (c.matchNonConsume(CbTokenType::TYPE_RIFF))
     {
@@ -272,15 +282,30 @@ std::unique_ptr<BodyStmt> StmtParser::parseBodyStmt(const bool isGlobal, const b
     }
 
     std::vector<std::unique_ptr<Stmt>> bodyStmts;
-    while (!hasBrace || !c.matchConsume(CbTokenType::PUNCTUATION_CLOSE_CURLY_BRACKET)) // if  it doesn't have brace will automatically exit at the first endScope symbol
+    while (!hasBrace || !c.matchNonConsume(CbTokenType::PUNCTUATION_CLOSE_CURLY_BRACKET)) 
     {
-        if (auto stmt = parseStmt()) bodyStmts.push_back(std::move(stmt));
+        auto stmt = parseStmt();
+        if (stmt)
+        {
+            const bool selfTerminating = isSelfTerminating(stmt.get());
+            bodyStmts.push_back(std::move(stmt));
+            if (!selfTerminating)
+            {
+                c.expectSemiColon();
+            }
+        }
 
-        c.expectSemiColon();
-        if (!c.getIsInFunc())
+        if (!c.getIsInFunc() && !hasBrace)
         {
             break;
         }
+        
+        if (c.isEmpty()) break;
+    }
+
+    if (hasBrace)
+    {
+        c.expect(CbTokenType::PUNCTUATION_CLOSE_CURLY_BRACKET, std::make_unique<MissingBrace>(c.copyCurrent()));
     }
 
     return std::make_unique<BodyStmt>(
@@ -401,6 +426,7 @@ StmtWithBody StmtParser::parseConditionAndBody()
         return {nullptr, nullptr};
 
     auto body = parseBodyStmt(false, true);
+    c.expectSemiColon();
 
     return {std::move(condition), std::move(body)};
 }
@@ -408,6 +434,7 @@ StmtWithBody StmtParser::parseConditionAndBody()
 StmtWithBody StmtParser::parseElseBody()
 {
     auto body = parseBodyStmt(false, true);
+    c.expectSemiColon();
     return {nullptr, std::move(body)};
 }
 
@@ -463,6 +490,8 @@ std::unique_ptr<WhileStmt> StmtParser::parseWhileStmt()
     c.addContinueable();
 
     auto body = parseBodyStmt(false, true);
+    c.expectSemiColon();
+    
     auto stmt = StmtWithBody(std::move(condition), std::move(body));
 
     c.removeBreakable();
@@ -505,6 +534,8 @@ std::unique_ptr<SwitchStmt> StmtParser::parseSwitchStmt()
     }
 
     c.removeBreakable();
+
+    c.expectSemiColon();
 
     return std::make_unique<SwitchStmt>(
         c.copyCurrent(),
@@ -562,12 +593,8 @@ std::unique_ptr<ArrayDeclStmt> StmtParser::parseArrayDeclStmt() const
         c.expect(CbTokenType::PUNCTUATION_CLOSE_SQUARE_BRACE);
     }
 
-    if (!c.expect(CbTokenType::PUNCTUATION_SEMICOLON, std::make_unique<MissingSemicolon>(c.copyCurrent())) &&
-        !c.expect(CbTokenType::PUNCTUATION_CLOSE_FUNC, std::make_unique<MissingSemicolon>(c.copyCurrent())))
-        return nullptr;
-
     return std::make_unique<ArrayDeclStmt>(
-        c.copyCurrent(),
+        t,
         false,
         nullptr,
         Var(std::move(type), name),
@@ -691,6 +718,8 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
         }
     }
 
+    c.expectSemiColon();
+
     return std::make_unique<ClassDeclStmt>(
         c.copyCurrent(),
         className,
@@ -763,7 +792,12 @@ void StmtParser::parse()
     {
         if (auto stmt = parseStmt())
         {
+            bool selfTerm = isSelfTerminating(stmt.get());
             c.getStmts().push_back(std::move(stmt));
+            if (!selfTerm)
+            {
+                c.expectSemiColon();
+            }
         }
         else
         {

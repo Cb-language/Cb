@@ -8,7 +8,7 @@ class ArrayDeclStmt : public VarDeclStmt
     std::vector<std::unique_ptr<Expr>> sizes;
 
     void analyzeSizes() const;
-    std::string createConstructor(IType* type, const size_t dim) const;
+    std::string createConstructor(const IType* type, const size_t dim) const;
 public:
     ArrayDeclStmt(const Token& token,
         bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var &var, std::vector<std::unique_ptr<Expr>> sizes);
