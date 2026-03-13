@@ -33,7 +33,7 @@ public:
     void analyzePass3(const std::vector<std::unique_ptr<Stmt>>& stmts);
 
     // std::nullopt when not found
-    std::optional<Var> getVar(const FQN& name) const;
+    std::optional<Var> getVar(const FQN& name, const ClassNode* contextClass = nullptr) const;
     void addVar(std::unique_ptr<IType> type, const Token& token) const;
     void addVar(const Var& var, const Token& token) const;
 

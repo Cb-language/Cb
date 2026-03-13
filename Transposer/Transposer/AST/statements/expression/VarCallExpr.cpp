@@ -11,13 +11,13 @@ void VarCallExpr::analyze() const
 {
     if (symTable == nullptr) return;
 
-    if (const auto resolvedVar = symTable->getVar(var.getName()))
+    if (const auto resolvedVar = symTable->getVar(var.getName(), currClass))
     {
         const_cast<VarCallExpr*>(this)->var = resolvedVar->copy();
     }
     else
     {
-        throw UnrecognizedIdentifier(token);
+        throw UnrecognizedIdentifier(token, translateFQNtoString(var.getName()));
     }
 }
 

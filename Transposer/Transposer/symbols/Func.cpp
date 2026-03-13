@@ -81,7 +81,7 @@ std::string Func::translateToCpp(const std::string& className) const
 
 bool Func::operator==(const Func& other) const
 {
-    if (rType != other.rType)
+    if (translateFQNtoString(rType->getFQN()) != translateFQNtoString(other.rType->getFQN()))
     {
         return false;
     }

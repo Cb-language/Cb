@@ -152,16 +152,49 @@ void SymbolTable::analyzePass3(const std::vector<std::unique_ptr<Stmt>>& stmts)
     }
 }
 
-std::optional<Var> SymbolTable::getVar(const FQN &name) const
+std::optional<Var> SymbolTable::getVar(const FQN &name, const ClassNode* contextClass) const
 {
-    if (currClass != nullptr)
+    if (name.empty()) return std::nullopt;
+
+    // Use contextClass if provided, otherwise fallback to symTable's currClass (if any)
+    const ClassNode* currentContext = contextClass != nullptr ? contextClass : currClass;
+
+    // 1. Resolve the first part of the FQN
+    const FQN first = {name[0]};
+    std::optional<Var> currentVar;
+
+    if (currentContext != nullptr)
     {
-        if (const auto varPtr = currClass->findField(name))
+        if (const auto varPtr = currentContext->findField(first))
         {
-            return varPtr->copy();
+            currentVar = varPtr->copy();
         }
     }
-    return currScope->getVar(name, currClass);
+    
+    if (!currentVar)
+    {
+        currentVar = currScope->getVar(first, currentContext);
+    }
+
+    if (!currentVar) return std::nullopt;
+
+    // 2. Resolve remaining parts (member access)
+    for (size_t i = 1; i < name.size(); ++i)
+    {
+        auto type = currentVar->getType();
+        const auto* classType = dynamic_cast<ClassType*>(type.get());
+        if (!classType) return std::nullopt; // Not a class object, can't have fields
+
+        const ClassNode* node = classTree.find(classType->getFQN());
+        if (!node) return std::nullopt;
+
+        const Var* field = node->findField({name[i]}, currentContext);
+        if (!field) return std::nullopt;
+
+        currentVar = field->copy();
+    }
+
+    return currentVar;
 }
 
 void SymbolTable::addVar(std::unique_ptr<IType> type, const Token& token) const
@@ -186,12 +219,12 @@ bool SymbolTable::isClass(const FQN& name)
 
 bool SymbolTable::doesFuncExist(const Func& f) const
 {
-    return funcs.contains(f);
+    return funcs.find(f) != funcs.end();
 }
 
 bool SymbolTable::doesFuncExist(const FQN& name, const ClassNode* owner) const
 {
-    for (const auto& func : funcs | std::views::keys)
+    for (const auto& [func, info] : funcs)
     {
         if (func.getFuncName() == name && func.getOwner() == owner)
         {
@@ -203,7 +236,7 @@ bool SymbolTable::doesFuncExist(const FQN& name, const ClassNode* owner) const
 
 bool SymbolTable::isLegalCredit(const FuncCredit& credit) const
 {
-    for (const auto& func : funcs | std::views::keys)
+    for (const auto& [func, info] : funcs)
     {
         if (credit.isLegalCredit(func))
         {
@@ -216,7 +249,9 @@ bool SymbolTable::isLegalCredit(const FuncCredit& credit) const
 
 std::unique_ptr<IType> SymbolTable::getCallType(const FuncCallExpr* expr, const ClassNode* callClass) const
 {
-    if (const FQN& fqn = expr->getName(); fqn.size() > 1)
+    const FQN& fqn = expr->getName();
+
+    if (fqn.size() > 1)
     {
         // Member access: rex.speak() or Animal.kingdom()
         FQN targetName = fqn;
@@ -226,9 +261,10 @@ std::unique_ptr<IType> SymbolTable::getCallType(const FuncCallExpr* expr, const 
         const ClassNode* targetClassNode = nullptr;
 
         // 1. Try to resolve targetName as a variable (e.g., 'rex')
-        if (const auto var = getVar(targetName))
+        if (const auto var = getVar(targetName, callClass))
         {
-            if (const auto* classType = dynamic_cast<ClassType*>(var->getType().get()); classType == nullptr)
+            const auto type = var->getType();
+            if (const auto* classType = dynamic_cast<ClassType*>(type.get()))
             {
                 targetClassNode = classTree.find(classType->getFQN());
             }
@@ -335,7 +371,7 @@ IFuncDeclStmt* SymbolTable::getCurrFunc() const
 
 std::unique_ptr<Func> SymbolTable::getFunc(const FQN& name, const ClassNode* owner) const
 {
-    for (const auto& func : funcs | std::views::keys)
+    for (const auto& [func, info] : funcs)
     {
         if (func.getFuncName() == name && func.getOwner() == owner)
         {
