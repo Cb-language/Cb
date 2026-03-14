@@ -38,6 +38,7 @@ public:
     void addError(std::unique_ptr<Error> err);
 
     const Token& current();
+    Token getLastToken();
     Token copyCurrent();
 
     Token advance();
