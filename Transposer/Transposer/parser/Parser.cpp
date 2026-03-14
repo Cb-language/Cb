@@ -76,14 +76,7 @@ std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
 
 void Parser::parse()
 {
-    try
-    {
-        stmtParser.parse();
-    }
-    catch (UnexpectedEOF& e)
-    {
-        c.addError(std::make_unique<UnexpectedEOF>(e.getToken()));
-    }
+    stmtParser.parse();
 }
 
 std::string Parser::translateToCpp(const std::filesystem::path& hPath, const bool isMain)

@@ -36,7 +36,7 @@ const Token& ParserContext::current()
 
 Token ParserContext::copyCurrent()
 {
-    if (tokens.empty()) throw UnexpectedEOF(current());
+    if (tokens.empty()) throw UnexpectedEOF(lastToken);
     return tokens.front();
 }
 
