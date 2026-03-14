@@ -82,16 +82,14 @@ std::string ConstructorDeclStmt::translateToCpp() const
         oss << " : " << Utils::removeFirstTabs(str);
     }
 
-    const std::string tabs = getTabs(-1);
-    oss << std::endl << tabs << "{" << std::endl;
+    oss << std::endl << "{" << std::endl;
 
     for (const auto& stmt : body->getStmts())
     {
-        const std::string temp = stmt->translateToCpp();
-        oss << getTabs() << Utils::removeFirstTabs(temp) << std::endl;
+        oss << stmt->translateToCpp() << std::endl;
     }
 
-    oss << tabs << "}" << std::endl;
+    oss << "}" << std::endl;
 
     return oss.str();
 }

@@ -250,12 +250,12 @@ std::string ClassDeclStmt::translateToCpp() const
         }
     }
 
-    for (const auto& ctor : ctors | std::views::values) oss << Utils::removeAllFirstTabs(ctor->translateToCpp()) << std::endl;
+    for (const auto& ctor : ctors | std::views::values) oss << ctor->translateToCpp() << std::endl;
 
     oss << generateEquals() << std::endl;
     oss << generateToString() << std::endl;
 
-    for (const auto& method : methods | std::views::values) oss << Utils::removeAllFirstTabs(method->translateToCppClass(translateFQNtoString(name))) << std::endl;
+    for (const auto& method : methods | std::views::values) oss << method->translateToCppClass(translateFQNtoString(name)) << std::endl;
     return oss.str();
 }
 
@@ -265,11 +265,7 @@ std::string ClassDeclStmt::translateToH() const
     std::ostringstream privates;
     std::ostringstream publics;
     std::ostringstream protecteds;
-    const std::string tabs = getTabs();
-
-    privates << "private:";
-    publics << "public:";
-    protecteds << "protected: ";
+    const std::string tabs = getTabs(1);
 
     oss << "class " << translateFQNtoString(name);
     if (!parentName.empty())
@@ -306,7 +302,20 @@ std::string ClassDeclStmt::translateToH() const
 
     publics << std::endl << tabs << "std::string toString(int indents = 0) const override;" << std::endl << tabs << "Primitive<bool> equals(const Object& other) const override;" << std::endl;
 
-    oss << privates.str() << std::endl << std::endl << publics.str() << std::endl << protecteds.str() << std::endl << "};" << std::endl << std::endl;
+    if (!privates.str().empty())
+    {
+        oss << "private:" << privates.str() << std::endl;
+    }
+    if (!publics.str().empty())
+    {
+        oss << "public:" << publics.str() << std::endl;
+    }
+    if (!protecteds.str().empty())
+    {
+        oss << "protected:" << protecteds.str() << std::endl;
+    }
+    oss << "};" << std::endl;
+
     return oss.str();
 }
 

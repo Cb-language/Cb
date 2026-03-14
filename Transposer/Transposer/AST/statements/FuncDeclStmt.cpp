@@ -118,9 +118,19 @@ void FuncDeclStmt::analyze() const
 
 std::string FuncDeclStmt::translateToCpp() const
 {
-    std::string res = func.translateToCpp();
-    res += "\n" + body->translateToCpp() + "\n";
-    return res;
+    std::ostringstream oss;
+    oss << func.translateToCpp();
+
+    oss << std::endl << "{" << std::endl;
+
+    for (const auto& stmt : body->getStmts())
+    {
+        oss << stmt->translateToCpp() << std::endl;
+    }
+
+    oss << "}" << std::endl;
+
+    return oss.str();
 }
 
 std::string FuncDeclStmt::translateToH() const
@@ -143,7 +153,21 @@ std::string FuncDeclStmt::translateToH() const
 std::string FuncDeclStmt::translateToCppClass(const std::string& className) const
 {
     if (virtualType != VirtualType::PURE)
-        return func.translateToCpp(className) + "\n" + body->translateToCpp() + "\n";
+    {
+        std::ostringstream oss;
+        oss << func.translateToCpp(className);
+
+        oss << std::endl << "{" << std::endl;
+
+        for (const auto& stmt : body->getStmts())
+        {
+            oss << stmt->translateToCpp() << std::endl;
+        }
+
+        oss << "}" << std::endl;
+
+        return oss.str();
+    }
 
     return "";
 }
