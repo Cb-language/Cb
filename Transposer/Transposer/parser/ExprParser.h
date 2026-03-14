@@ -5,6 +5,8 @@
 #include <string>
 
 #include "AST/statements/expression/CastCallExpr.h"
+#include "AST/statements/expression/IsExpr.h"
+#include "AST/statements/expression/LenExpr.h"
 #include "AST/statements/expression/UnaryOpExpr.h"
 
 class Expr;
@@ -37,4 +39,6 @@ public:
     std::unique_ptr<Call> parseCallExpr();
     std::unique_ptr<Call> parseArrayAccess(std::unique_ptr<Call> call);
     std::unique_ptr<CastCallExpr> parseCastExpr();
+    std::unique_ptr<IsExpr> parseIsExpr(std::unique_ptr<Call> call);
+    std::unique_ptr<LenExpr> parseLenExpr();
 };

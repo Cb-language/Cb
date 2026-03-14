@@ -9,6 +9,7 @@
 #include "AST/statements/expression/ArrayIndexingExpr.h"
 #include "AST/statements/AssignmentStmt.h"
 #include "AST/statements/expression/ArraySlicingExpr.h"
+#include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 #include "errorHandling/syntaxErrors/MissingParenthesis.h"
@@ -219,6 +220,10 @@ std::unique_ptr<Expr> ExprParser::parseExpr()
         {
             left = parseCastExpr();
         }
+        else if (c.matchNonConsume(CbTokenType::KEYWORD_DURATION) || c.matchNonConsume(CbTokenType::KEYWORD_SUB_DURATION))
+        {
+            left = parseLenExpr();
+        }
         std::unique_ptr<Call> call = parseCallExpr();
 
         if (c.isUnaryOp())
@@ -236,6 +241,10 @@ std::unique_ptr<Expr> ExprParser::parseExpr()
         {
             left = parseExpr();
             c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.copyCurrent()));
+        }
+        else if (c.matchNonConsume(CbTokenType::KEYWORD_TIMBRE))
+        {
+            left = parseIsExpr(std::move(call));
         }
         else
         {
@@ -398,14 +407,14 @@ std::unique_ptr<Call> ExprParser::parseArrayAccess(std::unique_ptr<Call> call)
 std::unique_ptr<CastCallExpr> ExprParser::parseCastExpr()
 {
     Token startToken = c.copyCurrent();
-    c.expect(CbTokenType::KEYWORD_TRANSCRIBE);
-    c.expect(CbTokenType::PUNCTUATION_OPEN_TRIANGLE_BRACE);
+    c.expect(CbTokenType::KEYWORD_TRANSCRIBE),std::make_unique<HowDidYouGetHere>(c.copyCurrent());
+    c.expect(CbTokenType::PUNCTUATION_OPEN_TRIANGLE_BRACE, std::make_unique<MissingParenthesis>(c.copyCurrent()));
 
     auto type = typeParser.parseIType();
 
     if (type == nullptr) return nullptr;
 
-    c.expect(CbTokenType::PUNCTUATION_CLOSE_TRIANGLE_BRACE);
+    c.expect(CbTokenType::PUNCTUATION_CLOSE_TRIANGLE_BRACE, std::make_unique<MissingParenthesis>(c.copyCurrent()));
 
     c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent()));
 
@@ -413,4 +422,38 @@ std::unique_ptr<CastCallExpr> ExprParser::parseCastExpr()
 
     c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.copyCurrent()));
     return std::make_unique<CastCallExpr>(startToken, std::move(expr), std::move(type));
+}
+
+std::unique_ptr<IsExpr> ExprParser::parseIsExpr(std::unique_ptr<Call> call)
+{
+    Token startToken = c.copyCurrent();
+
+    if (call == nullptr) return nullptr;
+
+    c.expect(CbTokenType::KEYWORD_TIMBRE, std::make_unique<HowDidYouGetHere>(startToken));
+
+    auto type = typeParser.parseIType();
+
+    if (type == nullptr) return nullptr;
+
+    return std::make_unique<IsExpr>(startToken, std::move(call), std::move(type));
+}
+
+std::unique_ptr<LenExpr> ExprParser::parseLenExpr()
+{
+    Token startToken = c.copyCurrent();
+
+    bool isNeg = false;
+    if (!c.matchConsume(CbTokenType::KEYWORD_DURATION))
+    {
+        c.expect(CbTokenType::KEYWORD_SUB_DURATION, std::make_unique<HowDidYouGetHere>(startToken));
+        isNeg = true;
+    }
+
+    c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent()));
+    auto call = parseCallExpr();
+    if (call == nullptr) return nullptr;
+    c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.copyCurrent()));
+
+    return make_unique<LenExpr>(startToken, std::move(call), isNeg);
 }
