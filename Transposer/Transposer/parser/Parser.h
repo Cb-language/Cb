@@ -30,6 +30,5 @@ public:
     std::string translateToCpp(const std::filesystem::path& hPath, const bool isMain = false);
     std::string translateToH(const bool isMain = false);
     void addError(std::unique_ptr<Error> err);
-    //bool shouldProduceCpp(bool isMain) const;
 };
 

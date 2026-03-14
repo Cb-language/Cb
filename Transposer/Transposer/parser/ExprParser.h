@@ -42,6 +42,4 @@ public:
     std::unique_ptr<CastCallExpr> parseCastExpr();
     std::unique_ptr<IsExpr> parseIsExpr(std::unique_ptr<VarReference> ref) const;
     std::unique_ptr<LenExpr> parseLenExpr();
-
-    std::unique_ptr<ObjCreationStmt> parsePolyObjCreationStmt();
 };

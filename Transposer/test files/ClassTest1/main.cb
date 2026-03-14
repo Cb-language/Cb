@@ -115,7 +115,7 @@ instrument Counter 𝄋
 song prelude𝄕𝄇 𝅘𝅥=degree
 𝄞 𝄽 𝄀
 𝄞 𝄢 Create objects
-𝄞 𝆫 Dog rex 𝄕 "Rex", "Labrador" 𝄇 𝄀
+𝄞 Dog rex = 𝆫 Dog𝄕 "Rex", "Labrador" 𝄇 𝄀
 𝄞 𝆫 Cat whiskers 𝄕 "Whiskers", 1 == 1 𝄇 𝄀
 𝄞 𝆫 Spider charlotte 𝄕 "Charlotte" 𝄇 𝄀
 𝄞 𝆫 Counter c 𝄕 0 𝄇 𝄀

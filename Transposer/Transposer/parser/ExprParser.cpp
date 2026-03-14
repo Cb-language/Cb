@@ -250,12 +250,6 @@ std::unique_ptr<Expr> ExprParser::parseExpr()
         else
         {
             left = std::move(ref);
-
-            if (c.matchNonConsume(CbTokenType::IDENTIFIER))
-            {
-                return parsePolyObjCreationStmt();
-            }
-
         }
     }
 
@@ -429,40 +423,6 @@ std::unique_ptr<CastCallExpr> ExprParser::parseCastExpr()
 
     c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.copyCurrent()));
     return std::make_unique<CastCallExpr>(startToken, std::move(expr), std::move(type));
-}
-
-std::unique_ptr<ObjCreationStmt> ExprParser::parsePolyObjCreationStmt()
-{
-    auto type = typeParser.parseIType();
-    const FQN name = c.parseFQN();
-
-    c.expect(CbTokenType::BINARY_OP_EQUAL);
-    c.expect(CbTokenType::KEYWORD_CTOR_CALL);
-
-    const FQN ctorName = c.parseFQN();
-
-    bool hasCtorArgs;
-    std::vector<std::unique_ptr<Expr>> args;
-    if (c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
-    {
-        hasCtorArgs = true;
-        while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
-        {
-            args.push_back(parseExpr());
-            if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA);
-        }
-    }
-
-    auto ctorCall = std::make_unique<ConstractorCallStmt>(c.copyCurrent(), std::move(args));
-
-    return std::make_unique<ObjCreationStmt>(
-        c.copyCurrent(),
-        nullptr,
-        hasCtorArgs,
-        std::move(ctorCall),
-        Var(std::move(type), name),
-        ctorName
-    );
 }
 
 std::unique_ptr<IsExpr> ExprParser::parseIsExpr(std::unique_ptr<VarReference> ref) const

@@ -42,6 +42,7 @@
 #include "errorHandling/lexicalErrors/UnrecognizedToken.h"
 
 #include "errorHandling/how/HowDareYou.h"
+#include "symbols/Type/ClassType.h"
 
 // Helper to determine if a statement consumes its own trailing semicolon/terminator
 static bool isSelfTerminating(const Stmt* stmt)
@@ -80,7 +81,15 @@ std::unique_ptr<Stmt> StmtParser::parseStmt()
     if (c.matchNonConsume(CbTokenType::IDENTIFIER))
     {
         auto res = exprParser.parseExpr();
+
+        if (c.matchNonConsume(CbTokenType::IDENTIFIER))
+        {
+            const auto varRef = dynamic_cast<VarCallExpr&>(*res);
+            std::unique_ptr<IType> type = std::make_unique<ClassType>(varRef.getName());
+            return parsePolyObjCreationStmt(std::move(type));
+        }
         if (res) res->setNeedsSemicolon(true);
+
         return res;
     }
 
@@ -771,6 +780,39 @@ std::unique_ptr<ObjCreationStmt> StmtParser::parseObjCreationStmt() const
         std::move(ctorCall),
         Var(std::move(type), name)
     );
+}
+
+std::unique_ptr<ObjCreationStmt> StmtParser::parsePolyObjCreationStmt(std::unique_ptr<IType> type) const
+{
+        const FQN name = c.parseFQN();
+
+        c.expect(CbTokenType::BINARY_OP_EQUAL);
+        c.expect(CbTokenType::KEYWORD_CTOR_CALL);
+
+        const FQN ctorName = c.parseFQN();
+
+        bool hasCtorArgs;
+        std::vector<std::unique_ptr<Expr>> args;
+        if (c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
+        {
+            hasCtorArgs = true;
+            while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+            {
+                args.push_back(exprParser.parseExpr());
+                if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA);
+            }
+        }
+
+        auto ctorCall = std::make_unique<ConstractorCallStmt>(c.copyCurrent(), std::move(args));
+
+        return std::make_unique<ObjCreationStmt>(
+            c.copyCurrent(),
+            nullptr,
+            hasCtorArgs,
+            std::move(ctorCall),
+            Var(std::move(type), name),
+            ctorName
+        );
 }
 
 void StmtParser::parse()

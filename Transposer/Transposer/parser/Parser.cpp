@@ -135,34 +135,3 @@ void Parser::addError(std::unique_ptr<Error> err)
 {
     c.addError(std::move(err));
 }
-
-// bool Parser::shouldProduceCpp(const bool isMain) const
-// {
-//     if (isMain || c.getHasMain()) return true;
-//
-//     for (const auto& stmt : c.getStmts())
-//     {
-//         if (dynamic_cast<IncludeStmt*>(stmt.get())) continue;
-//
-//         if (const auto classStmt = dynamic_cast<ClassDeclStmt*>(stmt.get()))
-//         {
-//             // if (classStmt->getCurrClass() && !classStmt->getCurrClass()->isAbstract())
-//             // {
-//             // return true; // Found a concrete class
-//             // }
-//             return true;
-//         }
-//         else if (dynamic_cast<FuncDeclStmt*>(stmt.get()))
-//         {
-//             return true; // Found a global function implementation
-//         }
-//         else
-//         {
-//             // Any other statement in global scope (e.g. VarDeclStmt) needs a .cpp
-//             return true;
-//         }
-//     }
-//
-//     // If it only has includes or abstract classes, don't produce a .cpp
-//     return false;
-// } TODO add to output stage
