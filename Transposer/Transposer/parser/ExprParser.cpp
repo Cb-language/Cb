@@ -216,7 +216,7 @@ std::unique_ptr<Expr> ExprParser::parseExpr()
     {
         left = parseConstValue();
     }
-    else if (c.matchNonConsume(CbTokenType::KEYWORD_TRANSCRIBE))
+    else if (c.matchConsume(CbTokenType::KEYWORD_TRANSCRIBE))
     {
         left = parseCastExpr();
     }
@@ -408,7 +408,6 @@ std::unique_ptr<VarReference> ExprParser::parseArrayAccess(std::unique_ptr<VarRe
 std::unique_ptr<CastCallExpr> ExprParser::parseCastExpr()
 {
     Token startToken = c.copyCurrent();
-    c.expect(CbTokenType::KEYWORD_TRANSCRIBE),std::make_unique<HowDidYouGetHere>(c.copyCurrent());
     c.expect(CbTokenType::PUNCTUATION_OPEN_TRIANGLE_BRACE, std::make_unique<MissingParenthesis>(c.copyCurrent()));
 
     auto type = typeParser.parseIType();
