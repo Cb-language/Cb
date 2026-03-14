@@ -17,7 +17,7 @@ void CastCallExpr::analyze() const
     const auto exprType = expr->getType()->copy();
 
     if (exprType == nullptr) throw HowDidYouGetHere(token);
-
+    expr->analyze();
     if (exprType == type || type == exprType) return;
     throw IllegalTypeCast(token, translateFQNtoString(exprType->getFQN()), translateFQNtoString(type->getFQN()));
 }

@@ -285,6 +285,8 @@ add_executable(Transposer
         Transposer/errorHandling/classErrors/CtorWithReturnValue.h
         Transposer/AST/statements/expression/CastCallExpr.cpp
         Transposer/AST/statements/expression/CastCallExpr.h
+        Transposer/AST/statements/expression/IsExpr.cpp
+        Transposer/AST/statements/expression/IsExpr.h
 
 )
 

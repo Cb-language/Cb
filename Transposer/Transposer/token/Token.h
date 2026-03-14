@@ -47,6 +47,7 @@ enum class CbTokenType : byte
 	KEYWORD_CTOR_CALL,      // ctor call
 	KEYWORD_C_CLEF,        // 𝄡 (dosent compile)
 	KEYWORD_TRANSCRIBE,     // casting
+	KEYWORD_TIMBRE,         // is
 
 	// punctuation
 	PUNCTUATION_RET_TYPE_ARROW,       // 𝅘𝅥=
