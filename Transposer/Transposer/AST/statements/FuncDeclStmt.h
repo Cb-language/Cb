@@ -29,7 +29,7 @@ public:
 
     void setVirtual(const VirtualType vType);
     VirtualType getVirtual() const;
-    void setIsStatic(const bool isStatic) const;
+    void setIsStatic(const bool isStatic);
 
 
     // is called after the ctor

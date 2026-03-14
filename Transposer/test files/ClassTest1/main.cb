@@ -9,6 +9,7 @@
 
 instrument Animal 𝄋
     player score degree legs = 4 𝄀
+    player score unison degree temp = 4 𝄀
     player score bar name = "unknown" 𝄀
 
     player score 𝆫 Animal 𝄕 degree l, bar n 𝄇
