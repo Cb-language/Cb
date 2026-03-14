@@ -5,6 +5,7 @@
 #include "AST/statements/expression/ConstValueExpr.h"
 #include "AST/statements/expression/FuncCallExpr.h"
 #include "AST/statements/expression/VarCallExpr.h"
+#include "AST/statements/expression/CastCallExpr.h"
 #include "AST/statements/expression/ArrayIndexingExpr.h"
 #include "AST/statements/AssignmentStmt.h"
 #include "AST/statements/expression/ArraySlicingExpr.h"
@@ -212,12 +213,12 @@ std::unique_ptr<Expr> ExprParser::parseExpr()
     {
         left = parseConstValue();
     }
-    else if (c.matchNonConsume(CbTokenType::KEYWORD_TRANSCRIBE))
-    {
-        left = parseCastExpr();
-    }
     else
     {
+        if (c.matchNonConsume(CbTokenType::KEYWORD_TRANSCRIBE))
+        {
+            left = parseCastExpr();
+        }
         std::unique_ptr<Call> call = parseCallExpr();
 
         if (c.isUnaryOp())

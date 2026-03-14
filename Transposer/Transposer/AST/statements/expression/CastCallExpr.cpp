@@ -26,3 +26,8 @@ std::string CastCallExpr::translateToCpp() const
 {
     return "Utils::cast<" + type->translateTypeToCpp() + ">(SafePtr<Object>(" + expr->translateToCpp() + "))";
 }
+
+std::string CastCallExpr::toString() const
+{
+    return translateToCpp();
+}
