@@ -1,18 +1,18 @@
-#include "CastExpr.h"
+#include "CastCallExpr.h"
 
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
 
-CastExpr::CastExpr(const Token& token, std::unique_ptr<Expr> expr, std::unique_ptr<IType> type) : Expr(token), expr(std::move(expr)), type(std::move(type))
+CastCallExpr::CastCallExpr(const Token& token, std::unique_ptr<Expr> expr, std::unique_ptr<IType> type) : Call(token), expr(std::move(expr)), type(std::move(type))
 {
 }
 
-std::unique_ptr<IType> CastExpr::getType() const
+std::unique_ptr<IType> CastCallExpr::getType() const
 {
     return type->copy();
 }
 
-void CastExpr::analyze() const
+void CastCallExpr::analyze() const
 {
     const auto exprType = expr->getType()->copy();
 
@@ -22,7 +22,7 @@ void CastExpr::analyze() const
     throw IllegalTypeCast(token, translateFQNtoString(exprType->getFQN()), translateFQNtoString(type->getFQN()));
 }
 
-std::string CastExpr::translateToCpp() const
+std::string CastCallExpr::translateToCpp() const
 {
     return "Utils::cast<" + type->translateTypeToCpp() + ">(SafePtr<Object>(" + expr->translateToCpp() + "))";
 }

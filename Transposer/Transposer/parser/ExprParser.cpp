@@ -394,7 +394,7 @@ std::unique_ptr<Call> ExprParser::parseArrayAccess(std::unique_ptr<Call> call)
     return call;
 }
 
-std::unique_ptr<CastExpr> ExprParser::parseCastExpr()
+std::unique_ptr<CastCallExpr> ExprParser::parseCastExpr()
 {
     Token startToken = c.copyCurrent();
     c.expect(CbTokenType::KEYWORD_TRANSCRIBE);
@@ -411,5 +411,5 @@ std::unique_ptr<CastExpr> ExprParser::parseCastExpr()
     auto expr = parseExpr();
 
     c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.copyCurrent()));
-    return std::make_unique<CastExpr>(startToken, std::move(expr), std::move(type));
+    return std::make_unique<CastCallExpr>(startToken, std::move(expr), std::move(type));
 }
