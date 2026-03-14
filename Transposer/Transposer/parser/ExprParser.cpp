@@ -398,13 +398,13 @@ std::unique_ptr<CastExpr> ExprParser::parseCastExpr()
 {
     Token startToken = c.copyCurrent();
     c.expect(CbTokenType::KEYWORD_TRANSCRIBE);
-    c.expect(CbTokenType::BINARY_OP_LESS_THAN); // TODO: make this the triangle thingy
+    c.expect(CbTokenType::PUNCTUATION_OPEN_TRIANGLE_BRACE);
 
     auto type = typeParser.parseIType();
 
     if (type == nullptr) return nullptr;
 
-    c.expect(CbTokenType::BINARY_OP_MORE_THAN); // TODO: make this the triangle thingy
+    c.expect(CbTokenType::PUNCTUATION_CLOSE_TRIANGLE_BRACE);
 
     c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent()));
 

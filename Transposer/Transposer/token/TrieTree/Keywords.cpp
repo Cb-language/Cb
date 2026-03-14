@@ -52,6 +52,8 @@ const std::vector<KeywordInfo> KEYWORDS =
 	{CbTokenType::PUNCTUATION_CLOSE_CURLY_BRACKET, "𝄌", WordBoundary::NONE},
 	{CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, "𝄕", WordBoundary::NONE},
 	{CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, "𝄇", WordBoundary::NONE},
+	{CbTokenType::PUNCTUATION_OPEN_TRIANGLE_BRACE, "𝆒", WordBoundary::NONE},
+	{CbTokenType::PUNCTUATION_CLOSE_TRIANGLE_BRACE, "𝆓", WordBoundary::NONE},
 	{CbTokenType::PUNCTUATION_COLON, ":", WordBoundary::NONE},
 	{CbTokenType::PUNCTUATION_BACKSLASH, "𝄍", WordBoundary::NONE},
 	{CbTokenType::PUNCTUATION_DOUBLE_BACKSLASH, "𝄓", WordBoundary::NONE},
