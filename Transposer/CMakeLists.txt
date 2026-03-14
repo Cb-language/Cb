@@ -283,6 +283,8 @@ add_executable(Transposer
         Transposer/parser/FQN.h
         Transposer/errorHandling/classErrors/CtorWithReturnValue.cpp
         Transposer/errorHandling/classErrors/CtorWithReturnValue.h
+        Transposer/AST/statements/expression/CastExpr.cpp
+        Transposer/AST/statements/expression/CastExpr.h
 
 )
 

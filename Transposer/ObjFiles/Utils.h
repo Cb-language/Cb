@@ -1,14 +1,13 @@
 #pragma once
 #include "Object.h"
+#include "SafePtr.h"
 
 class Utils
 {
 public:
-    template <typename T>
-    static T& cast(Object& other);
 
     template <typename T>
-    static T& cast(SafePtr<Object>& other);
+    static T& cast(const SafePtr<Object>& other);
 };
 
 #include "Utils.tpp"
