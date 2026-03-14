@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 
+#include "AST/statements/expression/CastExpr.h"
 #include "AST/statements/expression/UnaryOpExpr.h"
 
 class Expr;
@@ -35,4 +36,5 @@ public:
     std::unique_ptr<Expr> parseBinaryOp(std::unique_ptr<Call> left);
     std::unique_ptr<Call> parseCallExpr();
     std::unique_ptr<Call> parseArrayAccess(std::unique_ptr<Call> call);
+    std::unique_ptr<CastExpr> parseCastExpr();
 };

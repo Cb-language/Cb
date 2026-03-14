@@ -212,7 +212,10 @@ std::unique_ptr<Expr> ExprParser::parseExpr()
     {
         left = parseConstValue();
     }
-
+    else if (c.matchNonConsume(CbTokenType::KEYWORD_TRANSCRIBE))
+    {
+        left = parseCastExpr();
+    }
     else
     {
         std::unique_ptr<Call> call = parseCallExpr();
@@ -389,4 +392,24 @@ std::unique_ptr<Call> ExprParser::parseArrayAccess(std::unique_ptr<Call> call)
     }
 
     return call;
+}
+
+std::unique_ptr<CastExpr> ExprParser::parseCastExpr()
+{
+    Token startToken = c.copyCurrent();
+    c.expect(CbTokenType::KEYWORD_TRANSCRIBE);
+    c.expect(CbTokenType::BINARY_OP_LESS_THAN); // TODO: make this the triangle thingy
+
+    auto type = typeParser.parseIType();
+
+    if (type == nullptr) return nullptr;
+
+    c.expect(CbTokenType::BINARY_OP_MORE_THAN); // TODO: make this the triangle thingy
+
+    c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent()));
+
+    auto expr = parseExpr();
+
+    c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.copyCurrent()));
+    return std::make_unique<CastExpr>(startToken, std::move(expr), std::move(type));
 }
