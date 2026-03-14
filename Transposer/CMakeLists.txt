@@ -111,7 +111,7 @@ add_executable(Transposer
         Transposer/AST/statements/expression/ArraySlicingExpr.h
         Transposer/AST/statements/expression/ArrayIndexingExpr.cpp
         Transposer/AST/statements/expression/ArrayIndexingExpr.h
-        Transposer/AST/abstract/Call.h
+        Transposer/AST/abstract/VarReference.h
         Transposer/AST/statements/SwitchStmt.cpp
         Transposer/AST/statements/SwitchStmt.h
         Transposer/AST/statements/CaseStmt.cpp

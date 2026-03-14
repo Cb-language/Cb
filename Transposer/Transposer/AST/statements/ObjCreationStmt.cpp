@@ -7,12 +7,22 @@
 #include "symbols/Type/ClassType.h"
 #include "other/SymbolTable.h"
 
-ObjCreationStmt::ObjCreationStmt(const Token& token,
-                                 const ClassNode* classNode, const bool hasStartingValue, std::unique_ptr<ConstractorCallStmt> startingValue,
-                                 const Var& var)
-: VarDeclStmt(token, hasStartingValue, std::move(startingValue), var),
+ObjCreationStmt::ObjCreationStmt(const Token& token, const ClassNode* classNode, const bool hasStartingValue,
+    std::unique_ptr<ConstractorCallStmt> startingValue, const Var& var, const FQN& cname)
+    : VarDeclStmt(token, hasStartingValue, std::move(startingValue), var),
       classNode(classNode)
 {
+    if (cname.empty())
+    {
+        ctorName = var.getName();
+    }
+    else
+    {
+        for (const auto& n : cname)
+        {
+            ctorName.emplace_back(n);
+        }
+    }
 }
 
 void ObjCreationStmt::analyze() const

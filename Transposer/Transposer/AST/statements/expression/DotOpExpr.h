@@ -1,16 +1,16 @@
 #pragma once
 #include "BinaryOpExpr.h"
-#include "AST/abstract/Call.h"
+#include "AST/abstract/VarReference.h"
 
-class DotOpExpr : public Call
+class DotOpExpr : public VarReference
 {
 private:
-    std::unique_ptr<Call> left;
-    std::unique_ptr<Call> right;
+    std::unique_ptr<VarReference> left;
+    std::unique_ptr<VarReference> right;
 
 public:
     DotOpExpr(const Token& token,
-        std::unique_ptr<Call> left, std::unique_ptr<Call> right);
+        std::unique_ptr<VarReference> left, std::unique_ptr<VarReference> right);
 
     std::unique_ptr<IType> getType() const override;
     void analyze() const override;

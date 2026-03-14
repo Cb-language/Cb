@@ -6,7 +6,7 @@
 #include "AST/abstract/Expression.h"
 #include "AST/abstract/Statement.h"
 
-class VarDeclStmt : public Stmt
+class VarDeclStmt : public Expr
 {
 protected:
     const bool hasStartingValue;
@@ -23,4 +23,5 @@ public:
     const Var& getVar() const;
     const Expr* getStartingValue() const;
     void setIsStatic(const bool isStatic);
+    std::unique_ptr<IType> getType() const override;
 };

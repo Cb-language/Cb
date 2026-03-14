@@ -7,7 +7,7 @@
 #include "other/Utils.h"
 
 VarDeclStmt::VarDeclStmt(const Token& token, const bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var& var) :
-    Stmt(token), hasStartingValue(hasStartingValue), startingValue(std::move(startingValue)) , var(var.copy())
+    Expr(token), hasStartingValue(hasStartingValue), startingValue(std::move(startingValue)) , var(var.copy())
 {
 }
 
@@ -73,4 +73,9 @@ const Expr* VarDeclStmt::getStartingValue() const
 void VarDeclStmt::setIsStatic(const bool isStatic)
 {
     this->var.setIsStatic(isStatic);
+}
+
+std::unique_ptr<IType> VarDeclStmt::getType() const
+{
+    return var.getType();
 }

@@ -184,7 +184,7 @@ std::unique_ptr<VarDeclStmt> StmtParser::parseVarDecStmt() const
     return stmt;
 }
 
-std::unique_ptr<AssignmentStmt> StmtParser::parseAssignmentStmt(std::unique_ptr<Call> left) const
+std::unique_ptr<AssignmentStmt> StmtParser::parseAssignmentStmt(std::unique_ptr<VarReference> left) const
 {
     if (!c.isBinaryOp())
     {
@@ -211,11 +211,11 @@ std::unique_ptr<HearStmt> StmtParser::parseHearStmt() const
     if (!c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent())))
         return nullptr;
 
-    std::vector<std::unique_ptr<Call>> calls;
+    std::vector<std::unique_ptr<VarReference>> calls;
 
     while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
     {
-        auto var = exprParser.parseCallExpr();
+        auto var = exprParser.parseVarExpr();
         calls.push_back(std::move(var));
 
         if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))

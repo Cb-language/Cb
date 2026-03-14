@@ -1,8 +1,8 @@
 #pragma once
-#include "AST/abstract/Call.h"
+#include "AST/abstract/VarReference.h"
 #include "../../../symbols/Var.h"
 
-class VarCallExpr : public Call
+class VarCallExpr : public VarReference
 {
 protected:
     Var var;

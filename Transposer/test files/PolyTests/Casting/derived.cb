@@ -5,3 +5,5 @@ instrument Derived : Base𝄋
     player score song f𝄕𝄇 𝅘𝅥=degree
     𝄞B𝄍x𝄂𝄀
 𝄌
+^ Base c(params)
+Base x = ^ Derived();

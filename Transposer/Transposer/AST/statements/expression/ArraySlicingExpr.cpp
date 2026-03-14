@@ -4,12 +4,12 @@
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
 #include "other/SymbolTable.h"
 
-ArraySlicingExpr::ArraySlicingExpr(const Token& token, std::unique_ptr<Call> call) : Call(token), call(std::move(call))
+ArraySlicingExpr::ArraySlicingExpr(const Token& token, std::unique_ptr<VarReference> ref) : VarReference(token), varRef(std::move(ref))
 {
 }
 
 ArraySlicingExpr::ArraySlicingExpr(const ArraySlicingExpr& other)
-    : Call(other.token), call(other.call.get()), start(other.start.get()), stop(other.stop.get()), step(other.step.get())
+    : VarReference(other.token), varRef(other.varRef.get()), start(other.start.get()), stop(other.stop.get()), step(other.step.get())
 {
 }
 
@@ -17,10 +17,10 @@ void ArraySlicingExpr::analyze() const
 {
     if (symTable == nullptr) return;
 
-    call->setSymbolTable(symTable);
-    call->setScope(scope);
-    call->setClassNode(currClass);
-    call->analyze();
+    varRef->setSymbolTable(symTable);
+    varRef->setScope(scope);
+    varRef->setClassNode(currClass);
+    varRef->analyze();
 
     start->setSymbolTable(symTable);
     start->setScope(scope);
@@ -37,9 +37,9 @@ void ArraySlicingExpr::analyze() const
     step->setClassNode(currClass);
     step->analyze();
 
-    if (call->getType()->getArrLevel() == 0)
+    if (varRef->getType()->getArrLevel() == 0)
     {
-        symTable->addError(std::make_unique<IllegalOpOnType>(token, call->getType()->toString()));
+        symTable->addError(std::make_unique<IllegalOpOnType>(token, varRef->getType()->toString()));
     }
 
     if (!start->getType()->isNumberable())
@@ -62,20 +62,20 @@ std::string ArraySlicingExpr::translateToCpp() const
 {
     std::ostringstream oss;
     if (needsSemicolon) oss << getTabs();
-    oss << call->translateToCpp() << "[" << start->translateToCpp() << " : " << stop->translateToCpp() << " : " << step->translateToCpp() << "]";
+    oss << varRef->translateToCpp() << "[" << start->translateToCpp() << " : " << stop->translateToCpp() << " : " << step->translateToCpp() << "]";
     if (needsSemicolon) oss << ";";
     return oss.str();
 }
 
 std::unique_ptr<IType> ArraySlicingExpr::getType() const
 {
-    const auto t = call->getType();
+    const auto t = varRef->getType();
     return t ? t->copy() : nullptr;
 }
 
 std::string ArraySlicingExpr::toString() const
 {
-    return call->toString();
+    return varRef->toString();
 }
 
 void ArraySlicingExpr::setStart(std::unique_ptr<Expr> start)

@@ -5,12 +5,12 @@
 #include "errorHandling/semanticErrors/IllegalHear.h"
 #include "other/SymbolTable.h"
 
-HearStmt::HearStmt(const Token& token, std::vector<std::unique_ptr<Call>>& calls)
+HearStmt::HearStmt(const Token& token, std::vector<std::unique_ptr<VarReference>>& refs)
     : Stmt(token)
 {
-    for (auto& call : calls)
+    for (auto& ref : refs)
     {
-        this->calls.push_back(std::move(call));
+        this->references.push_back(std::move(ref));
     }
 }
 
@@ -18,16 +18,16 @@ void HearStmt::analyze() const
 {
     if (symTable == nullptr) return;
 
-    for (const auto& call : calls)
+    for (const auto& ref : references)
     {
-        call->setSymbolTable(symTable);
-        call->setScope(scope);
-        call->setClassNode(currClass);
-        call->analyze();
+        ref->setSymbolTable(symTable);
+        ref->setScope(scope);
+        ref->setClassNode(currClass);
+        ref->analyze();
 
-        if (call->getType()->getArrLevel() > 0 || !(call->getType()->isPrimitive()))
+        if (ref->getType()->getArrLevel() > 0 || !(ref->getType()->isPrimitive()))
         {
-            symTable->addError(std::make_unique<IllegalHear>(token, call->getType()->toString()));
+            symTable->addError(std::make_unique<IllegalHear>(token, ref->getType()->toString()));
         }
     }
 }
@@ -36,7 +36,7 @@ std::string HearStmt::translateToCpp() const
 {
     std::ostringstream oss;
 
-    if (calls.empty())
+    if (references.empty())
     {
         oss << getTabs() << "system(\"pause\");";
         return oss.str();
@@ -44,9 +44,9 @@ std::string HearStmt::translateToCpp() const
 
     oss << getTabs() << "std::cin";
 
-    for (const auto& call : calls)
+    for (const auto& ref : references)
     {
-        oss << " >> " << Utils::removeAllFirstTabs(call->translateToCpp());
+        oss << " >> " << Utils::removeAllFirstTabs(ref->translateToCpp());
     }
 
     oss << ";";

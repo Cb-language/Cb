@@ -2,7 +2,7 @@
 
 #include "errorHandling/semanticErrors/IllegalLengthCall.h"
 
-LenExpr::LenExpr(const Token& token, std::unique_ptr<Call> call, const bool isNegative) : Expr(token), call(std::move(call)), isNegative(isNegative)
+LenExpr::LenExpr(const Token& token, std::unique_ptr<VarReference> ref, const bool isNegative) : Expr(token), varRef(std::move(ref)), isNegative(isNegative)
 {
 }
 
@@ -13,15 +13,15 @@ std::unique_ptr<IType> LenExpr::getType() const
 
 void LenExpr::analyze() const
 {
-    call->analyze();
+    varRef->analyze();
 
-    if (call->getType()->getArrLevel() == 0) // non-riff types have 0
+    if (varRef->getType()->getArrLevel() == 0) // non-riff types have 0
     {
-        throw IllegalLengthCall(token, call->getType()->toString());
+        throw IllegalLengthCall(token, varRef->getType()->toString());
     }
 }
 
 std::string LenExpr::translateToCpp() const
 {
-    return call->translateToCpp() + "." + (isNegative ? "NegLength" : "Length") + "()";
+    return varRef->translateToCpp() + "." + (isNegative ? "NegLength" : "Length") + "()";
 }

@@ -5,10 +5,10 @@
 #include <memory>
 
 #include "../../../symbols/Type/PrimitiveType.h"
-#include "AST/abstract/Call.h"
+#include "AST/abstract/VarReference.h"
 #include "symbols/Func.h"
 
-class FuncCallExpr : public Call
+class FuncCallExpr : public VarReference
 {
 private:
     const FQN name;

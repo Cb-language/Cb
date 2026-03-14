@@ -1,5 +1,6 @@
 #include "ExprParser.h"
 #include "TypeParser.h"
+#include "StmtParser.h"
 #include "AST/statements/expression/BinaryOpExpr.h"
 #include "AST/statements/expression/UnaryOpExpr.h"
 #include "AST/statements/expression/ConstValueExpr.h"
@@ -13,6 +14,7 @@
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 #include "errorHandling/syntaxErrors/MissingParenthesis.h"
+#include "symbols/Type/ClassType.h"
 #include "symbols/Type/PrimitiveType.h"
 
 std::unique_ptr<Expr> ExprParser::parseExprPrec(const int minPrec)
@@ -29,18 +31,18 @@ std::unique_ptr<Expr> ExprParser::parseExprPrec(const int minPrec)
     }
     else
     {
-        std::unique_ptr<Call> call = parseCallExpr();
+        std::unique_ptr<VarReference> ref = parseVarExpr();
 
         if (c.isUnaryOp())
         {
             Token t = c.copyCurrent();
             const std::string opStr = tokenToOp(t.type);
             c.advance();
-            left = std::make_unique<UnaryOpExpr>(t, std::move(call), strToUnaryOp(opStr), false);
+            left = std::make_unique<UnaryOpExpr>(t, std::move(ref), strToUnaryOp(opStr), false);
         }
         else
         {
-            left = std::move(call);
+            left = std::move(ref);
         }
     }
 
@@ -70,8 +72,8 @@ std::unique_ptr<Expr> ExprParser::parseExprPrec(const int minPrec)
             case CbTokenType::BINARY_OP_MULTIPLY_EQUAL:
             case CbTokenType::BINARY_OP_MODULUS_EQUAL:
             {
-                auto callLeft = std::unique_ptr<Call>(
-                    dynamic_cast<Call*>(left.release())
+                auto callLeft = std::unique_ptr<VarReference>(
+                    dynamic_cast<VarReference*>(left.release())
                 );
                 left = std::make_unique<AssignmentStmt>(
                     opToken, std::move(callLeft), op, std::move(right)
@@ -214,28 +216,27 @@ std::unique_ptr<Expr> ExprParser::parseExpr()
     {
         left = parseConstValue();
     }
+    else if (c.matchNonConsume(CbTokenType::KEYWORD_TRANSCRIBE))
+    {
+        left = parseCastExpr();
+    }
+    else if (c.matchNonConsume(CbTokenType::KEYWORD_DURATION) || c.matchNonConsume(CbTokenType::KEYWORD_SUB_DURATION))
+    {
+        left = parseLenExpr();
+    }
     else
     {
-        if (c.matchNonConsume(CbTokenType::KEYWORD_TRANSCRIBE))
-        {
-            left = parseCastExpr();
-        }
-        else if (c.matchNonConsume(CbTokenType::KEYWORD_DURATION) || c.matchNonConsume(CbTokenType::KEYWORD_SUB_DURATION))
-        {
-            left = parseLenExpr();
-        }
-        std::unique_ptr<Call> call = parseCallExpr();
-
+        std::unique_ptr<VarReference> ref = parseVarExpr();
         if (c.isUnaryOp())
         {
             Token t = c.copyCurrent();
             const std::string opStr = tokenToOp(t.type);
             c.advance();
-            left = std::make_unique<UnaryOpExpr>(t, std::move(call), strToUnaryOp(opStr), false);
+            left = std::make_unique<UnaryOpExpr>(t, std::move(ref), strToUnaryOp(opStr), false);
         }
         else if (c.isBinaryOp())
         {
-            left = parseBinaryOp(std::move(call));
+            left = parseBinaryOp(std::move(ref));
         }
         else if (c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
         {
@@ -244,11 +245,17 @@ std::unique_ptr<Expr> ExprParser::parseExpr()
         }
         else if (c.matchNonConsume(CbTokenType::KEYWORD_TIMBRE))
         {
-            left = parseIsExpr(std::move(call));
+            left = parseIsExpr(std::move(ref));
         }
         else
         {
-            left = std::move(call);
+            left = std::move(ref);
+
+            if (c.matchNonConsume(CbTokenType::IDENTIFIER))
+            {
+                return parsePolyObjCreationStmt();
+            }
+
         }
     }
 
@@ -286,7 +293,7 @@ FQN ExprParser::parseFQN() const
     return c.parseFQN();
 }
 
-std::unique_ptr<Call> ExprParser::parseFuncCall(const FQN& name)
+std::unique_ptr<VarReference> ExprParser::parseFuncCall(const FQN& name)
 {
     Token t = c.copyCurrent();
     c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN);
@@ -317,7 +324,7 @@ std::unique_ptr<Expr> ExprParser::parseUnaryOp()
     return nullptr;
 }
 
-std::unique_ptr<Expr> ExprParser::parseBinaryOp(std::unique_ptr<Call> left)
+std::unique_ptr<Expr> ExprParser::parseBinaryOp(std::unique_ptr<VarReference> left)
 {
     Token opToken = c.advance();
     std::string op = tokenToOp(opToken.type);
@@ -329,24 +336,24 @@ std::unique_ptr<Expr> ExprParser::parseBinaryOp(std::unique_ptr<Call> left)
     return std::make_unique<BinaryOpExpr>(opToken, op, std::move(left),  std::move(right));
 }
 
-std::unique_ptr<Call> ExprParser::parseCallExpr()
+std::unique_ptr<VarReference> ExprParser::parseVarExpr()
 {
     Token startToken = c.copyCurrent();
     const FQN name = parseFQN();
-    std::unique_ptr<Call> call;
+    std::unique_ptr<VarReference> ref;
     if (c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
     {
-        call = parseFuncCall(name);
+        ref = parseFuncCall(name);
     }
     else
     {
-        call = std::make_unique<VarCallExpr>(startToken, Var(nullptr, name));
+        ref = std::make_unique<VarCallExpr>(startToken, Var(nullptr, name));
     }
 
-    return parseArrayAccess(std::move(call));
+    return parseArrayAccess(std::move(ref));
 }
 
-std::unique_ptr<Call> ExprParser::parseArrayAccess(std::unique_ptr<Call> call)
+std::unique_ptr<VarReference> ExprParser::parseArrayAccess(std::unique_ptr<VarReference> ref)
 {
     while (c.matchConsume(CbTokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
     {
@@ -361,7 +368,7 @@ std::unique_ptr<Call> ExprParser::parseArrayAccess(std::unique_ptr<Call> call)
         {
             Token t = c.copyCurrent();
 
-            auto slicingExpr = std::make_unique<ArraySlicingExpr>(t, std::move(call));
+            auto slicingExpr = std::make_unique<ArraySlicingExpr>(t, std::move(ref));
             slicingExpr->setStart(std::move(firstExpr));
 
             auto stopExpr = parseExpr();
@@ -388,7 +395,7 @@ std::unique_ptr<Call> ExprParser::parseArrayAccess(std::unique_ptr<Call> call)
                     std::make_unique<MissingParenthesis>(c.copyCurrent())))
                 return nullptr;
 
-            call = std::move(slicingExpr);
+            ref = std::move(slicingExpr);
         }
         else
         {
@@ -396,12 +403,12 @@ std::unique_ptr<Call> ExprParser::parseArrayAccess(std::unique_ptr<Call> call)
                     std::make_unique<MissingParenthesis>(c.copyCurrent())))
                 return nullptr;
 
-            call = std::make_unique<ArrayIndexingExpr>(
-                c.copyCurrent(), std::move(call), std::move(firstExpr));
+            ref = std::make_unique<ArrayIndexingExpr>(
+                c.copyCurrent(), std::move(ref), std::move(firstExpr));
         }
     }
 
-    return call;
+    return ref;
 }
 
 std::unique_ptr<CastCallExpr> ExprParser::parseCastExpr()
@@ -424,11 +431,45 @@ std::unique_ptr<CastCallExpr> ExprParser::parseCastExpr()
     return std::make_unique<CastCallExpr>(startToken, std::move(expr), std::move(type));
 }
 
-std::unique_ptr<IsExpr> ExprParser::parseIsExpr(std::unique_ptr<Call> call)
+std::unique_ptr<ObjCreationStmt> ExprParser::parsePolyObjCreationStmt()
+{
+    auto type = typeParser.parseIType();
+    const FQN name = c.parseFQN();
+
+    c.expect(CbTokenType::BINARY_OP_EQUAL);
+    c.expect(CbTokenType::KEYWORD_CTOR_CALL);
+
+    const FQN ctorName = c.parseFQN();
+
+    bool hasCtorArgs;
+    std::vector<std::unique_ptr<Expr>> args;
+    if (c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
+    {
+        hasCtorArgs = true;
+        while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+        {
+            args.push_back(parseExpr());
+            if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA);
+        }
+    }
+
+    auto ctorCall = std::make_unique<ConstractorCallStmt>(c.copyCurrent(), std::move(args));
+
+    return std::make_unique<ObjCreationStmt>(
+        c.copyCurrent(),
+        nullptr,
+        hasCtorArgs,
+        std::move(ctorCall),
+        Var(std::move(type), name),
+        ctorName
+    );
+}
+
+std::unique_ptr<IsExpr> ExprParser::parseIsExpr(std::unique_ptr<VarReference> ref) const
 {
     Token startToken = c.copyCurrent();
 
-    if (call == nullptr) return nullptr;
+    if (ref == nullptr) return nullptr;
 
     c.expect(CbTokenType::KEYWORD_TIMBRE, std::make_unique<HowDidYouGetHere>(startToken));
 
@@ -436,7 +477,7 @@ std::unique_ptr<IsExpr> ExprParser::parseIsExpr(std::unique_ptr<Call> call)
 
     if (type == nullptr) return nullptr;
 
-    return std::make_unique<IsExpr>(startToken, std::move(call), std::move(type));
+    return std::make_unique<IsExpr>(startToken, std::move(ref), std::move(type));
 }
 
 std::unique_ptr<LenExpr> ExprParser::parseLenExpr()
@@ -451,9 +492,9 @@ std::unique_ptr<LenExpr> ExprParser::parseLenExpr()
     }
 
     c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent()));
-    auto call = parseCallExpr();
-    if (call == nullptr) return nullptr;
+    auto ref = parseVarExpr();
+    if (ref == nullptr) return nullptr;
     c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.copyCurrent()));
 
-    return make_unique<LenExpr>(startToken, std::move(call), isNeg);
+    return make_unique<LenExpr>(startToken, std::move(ref), isNeg);
 }

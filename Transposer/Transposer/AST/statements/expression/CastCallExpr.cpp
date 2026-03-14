@@ -3,7 +3,7 @@
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
 
-CastCallExpr::CastCallExpr(const Token& token, std::unique_ptr<Expr> expr, std::unique_ptr<IType> type) : Call(token), expr(std::move(expr)), type(std::move(type))
+CastCallExpr::CastCallExpr(const Token& token, std::unique_ptr<Expr> expr, std::unique_ptr<IType> type) : VarReference(token), expr(std::move(expr)), type(std::move(type))
 {
 }
 

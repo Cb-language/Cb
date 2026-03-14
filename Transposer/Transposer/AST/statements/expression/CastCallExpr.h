@@ -1,7 +1,7 @@
 #pragma once
-#include "AST/abstract/Call.h"
+#include "AST/abstract/VarReference.h"
 
-class CastCallExpr : public Call
+class CastCallExpr : public VarReference
 {
 private:
     std::unique_ptr<Expr> expr;

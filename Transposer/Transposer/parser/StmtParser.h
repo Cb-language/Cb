@@ -33,7 +33,7 @@ public:
     std::unique_ptr<Stmt> parseStmt();
 
     std::unique_ptr<VarDeclStmt> parseVarDecStmt() const;
-    std::unique_ptr<AssignmentStmt> parseAssignmentStmt(std::unique_ptr<Call> left) const;
+    std::unique_ptr<AssignmentStmt> parseAssignmentStmt(std::unique_ptr<VarReference> left) const;
 
     std::unique_ptr<HearStmt> parseHearStmt() const;
     std::unique_ptr<PlayStmt> parsePlayStmt() const;

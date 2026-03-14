@@ -7,8 +7,8 @@
 #include "other/SymbolTable.h"
 
 StaticDotOpExpr::StaticDotOpExpr(const Token& token,
-                                 std::unique_ptr<ClassType> left, std::unique_ptr<Call> right,const bool needsSemicolon)
-        : Call(token), left(std::move(left)), right(std::move(right))
+                                 std::unique_ptr<ClassType> left, std::unique_ptr<VarReference> right,const bool needsSemicolon)
+        : VarReference(token), left(std::move(left)), right(std::move(right))
 {
     Expr::setNeedsSemicolon(needsSemicolon);
 }

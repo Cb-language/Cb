@@ -3,7 +3,7 @@
 #include "errorHandling/semanticErrors/UnrecognizedIdentifier.h"
 
 VarCallExpr::VarCallExpr(const Token& token, const Var& var)
-    : Call(token), var(var.copy())
+    : VarReference(token), var(var.copy())
 {
 }
 

@@ -1,15 +1,15 @@
 #pragma once
-#include "AST/abstract/Call.h"
+#include "AST/abstract/VarReference.h"
 #include "symbols/Type/ClassType.h"
 
-class StaticDotOpExpr : public Call
+class StaticDotOpExpr : public VarReference
 {
 private:
     std::unique_ptr<ClassType> left;
-    std::unique_ptr<Call> right;
+    std::unique_ptr<VarReference> right;
 
 public:
-    StaticDotOpExpr(const Token& token, std::unique_ptr<ClassType> left, std::unique_ptr<Call> right, const bool needsSemicolon = false);
+    StaticDotOpExpr(const Token& token, std::unique_ptr<ClassType> left, std::unique_ptr<VarReference> right, const bool needsSemicolon = false);
 
     std::unique_ptr<IType> getType() const override;
     void analyze() const override;

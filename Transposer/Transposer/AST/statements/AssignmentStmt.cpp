@@ -4,8 +4,8 @@
 #include "other/SymbolTable.h"
 
 AssignmentStmt::AssignmentStmt(const Token& token,
-                               std::unique_ptr<Call> call, const std::string& assignmentOp, std::unique_ptr<Expr> expr)
-        : Expr(token), call(std::move(call)), assignmentOp(assignmentOp), expr(std::move(expr))
+                               std::unique_ptr<VarReference> ref, const std::string& assignmentOp, std::unique_ptr<Expr> expr)
+        : Expr(token), varRef(std::move(ref)), assignmentOp(assignmentOp), expr(std::move(expr))
 {
 }
 
@@ -13,17 +13,17 @@ void AssignmentStmt::analyze() const
 {
     if (symTable == nullptr) return;
 
-    call->setSymbolTable(symTable);
-    call->setScope(scope);
-    call->setClassNode(currClass);
-    call->analyze();
+    varRef->setSymbolTable(symTable);
+    varRef->setScope(scope);
+    varRef->setClassNode(currClass);
+    varRef->analyze();
 
     expr->setSymbolTable(symTable);
     expr->setScope(scope);
     expr->setClassNode(currClass);
     expr->analyze();
 
-    const auto leftType = call->getType();
+    const auto leftType = varRef->getType();
 
     if (const auto rightType = expr->getType(); leftType->toString() != rightType->toString())
     {
@@ -34,12 +34,12 @@ void AssignmentStmt::analyze() const
 std::string AssignmentStmt::translateToCpp() const
 {
     std::string res = needsSemicolon ? getTabs() : "";
-    res += call->translateToCpp() + " " + assignmentOp + " " + expr->translateToCpp();
+    res += varRef->translateToCpp() + " " + assignmentOp + " " + expr->translateToCpp();
     if (needsSemicolon) res += ";";
     return res;
 }
 
 std::unique_ptr<IType> AssignmentStmt::getType() const
 {
-    return call->getType()->copy();
+    return varRef->getType()->copy();
 }

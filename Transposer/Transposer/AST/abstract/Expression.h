@@ -13,10 +13,7 @@ protected:
 public:
     ~Expr() override = default;
     virtual std::unique_ptr<IType> getType() const = 0;
-    void analyze() const override = 0;
-    std::string translateToCpp() const override = 0;
-
-
+    
     virtual void setHasParens(const bool hasParens);
     virtual void setNeedsSemicolon(const bool needsSemicolon);
 };

@@ -10,7 +10,7 @@
 
 
 DotOpExpr::DotOpExpr(const Token& token,
-    std::unique_ptr<Call> left, std::unique_ptr<Call> right) : Call(token), left(std::move(left)), right(std::move(right))
+    std::unique_ptr<VarReference> left, std::unique_ptr<VarReference> right) : VarReference(token), left(std::move(left)), right(std::move(right))
 {
 }
 
@@ -28,7 +28,7 @@ void DotOpExpr::analyze() const
         symTable->addError(std::make_unique<IllegalOpOnType>(token, leftType->toString()));
     }
 
-    const auto rightCasted = dynamic_cast<const Call*>(right.get());
+    const auto rightCasted = dynamic_cast<const VarReference*>(right.get());
 
     if (rightCasted == nullptr) symTable->addError(std::make_unique<HowDidYouGetHere>(token));
 

@@ -4,14 +4,14 @@
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
 #include "other/SymbolTable.h"
 
-ArrayIndexingExpr::ArrayIndexingExpr(const Token& token, std::unique_ptr<Call> call, std::unique_ptr<Expr> index)
-    : Call(token), call(std::move(call)) ,index(std::move(index))
+ArrayIndexingExpr::ArrayIndexingExpr(const Token& token, std::unique_ptr<VarReference> ref, std::unique_ptr<Expr> index)
+    : VarReference(token), varRef(std::move(ref)) ,index(std::move(index))
 {
 }
 
 std::unique_ptr<IType> ArrayIndexingExpr::getType() const
 {
-    const auto t = call->getType();
+    const auto t = varRef->getType();
     if (!t) return nullptr;
     const auto arrT = t->getArrType();
     return arrT ? arrT->copy() : nullptr;
@@ -20,7 +20,7 @@ std::unique_ptr<IType> ArrayIndexingExpr::getType() const
 std::string ArrayIndexingExpr::translateToCpp() const
 {
     std::string res = needsSemicolon ? getTabs() : "";
-    res += call->translateToCpp() + "[" + index->translateToCpp() + "]";
+    res += varRef->translateToCpp() + "[" + index->translateToCpp() + "]";
     if (needsSemicolon) res += ";";
     return res;
 }
@@ -29,19 +29,19 @@ void ArrayIndexingExpr::analyze() const
 {
     if (symTable == nullptr) return;
 
-    call->setSymbolTable(symTable);
-    call->setScope(scope);
-    call->setClassNode(currClass);
-    call->analyze();
+    varRef->setSymbolTable(symTable);
+    varRef->setScope(scope);
+    varRef->setClassNode(currClass);
+    varRef->analyze();
 
     index->setSymbolTable(symTable);
     index->setScope(scope);
     index->setClassNode(currClass);
     index->analyze();
 
-    if (call->getType()->getArrLevel() == 0)
+    if (varRef->getType()->getArrLevel() == 0)
     {
-        symTable->addError(std::make_unique<IllegalOpOnType>(token, call->getType()->toString()));
+        symTable->addError(std::make_unique<IllegalOpOnType>(token, varRef->getType()->toString()));
     }
 
     if (!index->getType()->isNumberable())
@@ -52,5 +52,5 @@ void ArrayIndexingExpr::analyze() const
 
 std::string ArrayIndexingExpr::toString() const
 {
-    return call->toString();
+    return varRef->toString();
 }

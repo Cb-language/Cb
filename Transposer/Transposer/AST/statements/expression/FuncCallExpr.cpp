@@ -10,7 +10,7 @@
 
 FuncCallExpr::FuncCallExpr(const Token& token,
     const FQN& name, std::vector<std::unique_ptr<Expr>> args, const bool needsSemicolon)
-    : Call(token), name(name), type(std::make_unique<PrimitiveType>(Primitive::TYPE_FERMATA)),
+    : VarReference(token), name(name), type(std::make_unique<PrimitiveType>(Primitive::TYPE_FERMATA)),
       needsSemicolon(needsSemicolon), funcDecl(nullptr)
 {
     for (auto& arg : args)
