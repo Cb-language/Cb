@@ -287,6 +287,10 @@ add_executable(Transposer
         Transposer/AST/statements/expression/CastCallExpr.h
         Transposer/AST/statements/expression/IsExpr.cpp
         Transposer/AST/statements/expression/IsExpr.h
+        Transposer/AST/statements/expression/LenExpr.cpp
+        Transposer/AST/statements/expression/LenExpr.h
+        Transposer/errorHandling/semanticErrors/IllegalLengthCall.cpp
+        Transposer/errorHandling/semanticErrors/IllegalLengthCall.h
 
 )
 

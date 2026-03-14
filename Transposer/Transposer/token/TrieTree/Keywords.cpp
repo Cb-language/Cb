@@ -42,6 +42,8 @@ const std::vector<KeywordInfo> KEYWORDS =
 	{CbTokenType::KEYWORD_C_CLEF, "𝄡", WordBoundary::NONE},
 	{CbTokenType::KEYWORD_TRANSCRIBE, "transcribe", WordBoundary::BOTH},
 	{CbTokenType::KEYWORD_TIMBRE, "timbre", WordBoundary::BOTH},
+	{CbTokenType::KEYWORD_DURATION, "duration", WordBoundary::BOTH},
+	{CbTokenType::KEYWORD_SUB_DURATION, "sub duration", WordBoundary::BOTH},
 
 	// punctuation
 	{CbTokenType::PUNCTUATION_RET_TYPE_ARROW, "𝅘𝅥=", WordBoundary::NONE},
