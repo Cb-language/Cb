@@ -738,15 +738,32 @@ std::unique_ptr<ConstructorDeclStmt> StmtParser::parseCtor(const FQN& className)
         if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA);
     }
 
-
-
     auto stmt = std::make_unique<ConstructorDeclStmt>(
         c.getLastToken(),
         className,
         args
     );
 
-    stmt->setBody(parseBodyStmt(false, false));
+    if (c.matchConsume(CbTokenType::PUNCTUATION_BACKSLASH))
+    {
+        c.expect(CbTokenType::KEYWORD_BASS);
+        c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN);
+        std::vector<std::unique_ptr<Expr>> parentArgs;
+        while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+        {
+            parentArgs.push_back(exprParser.parseExpr());
+            if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA);
+        }
+        stmt->setParentCtorCall(std::move(parentArgs));
+    }
+    if (c.getIsInFunc())
+    {
+        stmt->setBody(parseBodyStmt(false, false));
+    }
+    else
+    {
+        stmt->setBody(nullptr);
+    }
     return stmt;
 }
 
