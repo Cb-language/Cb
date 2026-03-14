@@ -28,10 +28,10 @@ public:
     explicit SafePtr(const T& t);
     SafePtr(const SafePtr& other);
 
-    template <typename U>
+    template <typename U> requires std::is_base_of_v<T, U>
     explicit SafePtr(std::unique_ptr<U>& otherPtr);
 
-    template <typename U>
+    template <typename U> requires std::is_base_of_v<T, U>
     explicit SafePtr(const U& u);
 
     template <typename U>

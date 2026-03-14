@@ -4,5 +4,5 @@
 class ExpectedAPath : public Error
 {
 public:
-    ExpectedAPath(const Token& token);
+    explicit ExpectedAPath(const Token& token);
 };

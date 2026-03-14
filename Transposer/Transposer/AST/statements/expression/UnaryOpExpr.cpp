@@ -2,12 +2,14 @@
 
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
+#include "other/SymbolTable.h"
 
-UnaryOpExpr::UnaryOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-    std::unique_ptr<Call> call, const UnaryOp op, const bool isStmt)
-        : Expr(token, scope, funcDecl, currClass), call(std::move(call)), op(op), isStmt(isStmt)
+UnaryOpExpr::UnaryOpExpr(const Token& token,
+    std::unique_ptr<Expr> operand, const UnaryOp op, const bool needsSemicolon)
+        : Expr(token), operand(std::move(operand)), op(op)
 {
-    if (!isStmt && op == UnaryOp::Zero)
+    this->needsSemicolon = needsSemicolon;
+    if (!needsSemicolon && op == UnaryOp::Zero)
     {
         hasParens = true;
     }
@@ -15,47 +17,67 @@ UnaryOpExpr::UnaryOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDe
 
 void UnaryOpExpr::analyze() const
 {
-    if (op == UnaryOp::Not && *(call->getType()) != L"mute")
+    if (symTable == nullptr) return;
+
+    operand->setSymbolTable(symTable);
+    operand->setScope(scope);
+    operand->setClassNode(currClass);
+    operand->analyze();
+
+    if (op == UnaryOp::Not && operand->getType()->toString() != "mute")
     {
-        throw IllegalTypeCast(token, call->getType()->toString(), "mute");
+        symTable->addError(std::make_unique<IllegalTypeCast>(token, operand->getType()->toString(), "mute"));
     }
 
-    if (call->getType()->getArrLevel() != 0 || !call->getType()->isPrimitive())
+    if (operand->getType()->getArrLevel() != 0 || !operand->getType()->isPrimitive())
     {
-        throw IllegalOpOnType(token, call->getType()->toString());
+        symTable->addError(std::make_unique<IllegalOpOnType>(token, operand->getType()->toString()));
     }
 }
 
 std::string UnaryOpExpr::translateToCpp() const
 {
-    std::string ret = getTabs() + call->translateToCpp();
-    switch (op)
+    std::string ret = needsSemicolon ? getTabs() : "";
+    
+    if (op == UnaryOp::Not)
     {
-    case UnaryOp::Zero:
-        if (call->getType()->getType() == L"bar")
+        ret += "!" + operand->translateToCpp();
+    }
+    else
+    {
+        ret += operand->translateToCpp();
+        switch (op)
         {
-            ret += " = \"\"";
+        case UnaryOp::Zero:
+            if (operand->getType()->toString() == "bar")
+            {
+                ret += " = \"\"";
+            }
+            else
+            {
+                ret += " = 0";
+            }
+            break;
+
+        case UnaryOp::PlusPlus:
+            ret += "++";
+            break;
+
+        case UnaryOp::MinusMinus:
+            ret += "--";
+            break;
+
+        case UnaryOp::PlusPlusPlusPlus:
+            ret += " += 2";
+            break;
+
+        case UnaryOp::MinusMinusMinusMinus:
+            ret += " -= 2";
+            break;
         }
-        else
-        {
-            ret += " = 0";
-        }
-        break;
-
-    case UnaryOp::PlusPlus:
-        ret += "++";
-        break;
-
-    case UnaryOp::MinusMinus:
-        ret += "--";
-        break;
-
-    case UnaryOp::Not:
-        ret += "!";
-        break;
     }
 
-    if (isStmt)
+    if (needsSemicolon)
     {
         ret += ";";
     }
@@ -65,5 +87,5 @@ std::string UnaryOpExpr::translateToCpp() const
 
 std::unique_ptr<IType> UnaryOpExpr::getType() const
 {
-    return call->getType()->copy();
+    return operand->getType()->copy();
 }

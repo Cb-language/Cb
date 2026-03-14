@@ -5,6 +5,7 @@
 #include "Scope.h"
 #include "class/ClassNode.h"
 #include "class/ClassTree.h"
+#include "errorHandling/Error.h"
 #include "symbols/Func.h"
 #include "symbols/FuncCredit.h"
 
@@ -17,8 +18,11 @@ private:
     std::unique_ptr<Scope> head;
     Scope* currScope;
     IFuncDeclStmt* currFunc;
-    std::set<std::pair<Func, bool>> funcs; // the bool means is it included to this file
+    std::map<Func, std::pair<bool, IFuncDeclStmt*>> funcs; // the bool means is it included to this file
     ClassNode* currClass = nullptr;
+    bool hasMainFound = false;
+    std::filesystem::path mainPath;
+    mutable std::vector<std::unique_ptr<Error>> errors;
 
     static ClassTree& classTree;
 
@@ -26,15 +30,22 @@ public:
     SymbolTable();
     ~SymbolTable();
 
+    void analyzePass1(const std::vector<std::unique_ptr<Stmt>>& stmts);
+    void analyzePass2(const std::vector<std::unique_ptr<Stmt>>& stmts);
+    void analyzePass3(const std::vector<std::unique_ptr<Stmt>>& stmts);
+
+    void addError(std::unique_ptr<Error> err) const;
+    std::vector<Error*> getErrors() const;
+
     // std::nullopt when not found
-    std::optional<Var> getVar(const std::wstring& name) const;
+    std::optional<Var> getVar(const FQN& name, const ClassNode* contextClass = nullptr) const;
     void addVar(std::unique_ptr<IType> type, const Token& token) const;
     void addVar(const Var& var, const Token& token) const;
 
     bool doesFuncExist(const Func& f) const;
-    bool doesFuncExist(const std::wstring& name, const ClassNode* owner = nullptr) const;
+    bool doesFuncExist(const FQN& name, const ClassNode* owner = nullptr) const;
     bool isLegalCredit(const FuncCredit& credit) const;
-    std::unique_ptr<IType> getCallType(FuncCallExpr* expr, const ClassNode* callClass = nullptr) const;
+    std::unique_ptr<IType> getCallType(const FuncCallExpr* expr, const ClassNode* callClass = nullptr) const;
     void addFunc(const Func& f, const bool isIncluded = false);
 
     void enterScope(bool isBreakable, bool isContinueAble);
@@ -46,7 +57,7 @@ public:
 
     Scope* getCurrScope() const;
     IFuncDeclStmt* getCurrFunc() const;
-    std::unique_ptr<Func> getFunc(const std::wstring& name, const ClassNode* owner = nullptr) const;
+    std::unique_ptr<Func> getFunc(const FQN& name, const ClassNode* owner = nullptr) const;
 
     std::string getFuncsHeaders() const;
 
@@ -58,10 +69,9 @@ public:
     bool addMethod(const AccessType accessType, const Func& method, const Token& token) const;
     bool addCtor(const AccessType accessType, const Constractor& ctor, const Token& token) const;
 
-    SymbolTable& operator+=(const SymbolTable& other);
-
+    std::optional<std::filesystem::path> getMainPath() const;
     static void clearClasses();
-    static bool isClass(const std::wstring& name);
-    static ClassNode* getClass(const std::wstring& name);
-    static bool isLegalFieldOrMethod(const std::unique_ptr<IType>& type, const std::wstring& name, const Token& token, const ClassNode* currClass);
+    static bool isClass(const FQN& name);
+    static ClassNode* getClass(const FQN& name);
+    static bool isLegalFieldOrMethod(const SymbolTable* symTable, const std::unique_ptr<IType>& type, const FQN& name, const Token& token, const ClassNode* currClass);
 };

@@ -43,7 +43,7 @@ std::string LSPPacker::pack(const std::vector<Error*>& errors)
             oss << "        {\n";
             oss << "          \"range\": {\n";
             oss << "            \"start\": { \"line\": " << line << ", \"character\": " << col << " },\n";
-            oss << "            \"end\": { \"line\": " << line << ", \"character\": " << col + token.value.length() << " }\n";
+            oss << "            \"end\": { \"line\": " << line << ", \"character\": " << col + token.value.value().length() << " }\n";
             oss << "          },\n";
             oss << "          \"severity\": 1,\n";
             oss << "          \"source\": \"transpiler\",\n";

@@ -7,18 +7,19 @@ enum class UnaryOp
     Zero = 0,
     PlusPlus,
     MinusMinus,
+    PlusPlusPlusPlus,
+    MinusMinusMinusMinus,
     Not
 };
 
 class UnaryOpExpr : public Expr
 {
 private:
-    const std::unique_ptr<Call> call;
+    const std::unique_ptr<Expr> operand;
     const UnaryOp op;
-    const bool isStmt;
 public:
-    UnaryOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-        std::unique_ptr<Call> call, const UnaryOp op, const bool isStmt = false);
+    UnaryOpExpr(const Token& token,
+        std::unique_ptr<Expr> operand, const UnaryOp op, bool needsSemicolon = false);
     void analyze() const override;
     std::string translateToCpp() const override;
     std::unique_ptr<IType> getType() const override;

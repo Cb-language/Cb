@@ -6,14 +6,14 @@
 class Constractor
 {
 private:
-    std::wstring className;
+    FQN className;
     std::vector<Var> args;
 
 public:
-    Constractor(const std::vector<Var>& args, const std::wstring& className);
+    Constractor(const std::vector<Var>& args, const FQN& className);
 
     const std::vector<Var>& getArgs() const;
-    const std::wstring& getClassName() const;
+    const FQN& getClassName() const;
 
     std::string translateToCpp() const;
 

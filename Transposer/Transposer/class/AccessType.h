@@ -4,5 +4,6 @@ enum AccessType
 {
     PUBLIC = 0,
     PROTECTED = 1,
-    PRIVATE = 2
+    PRIVATE = 2,
+    NONE
 };

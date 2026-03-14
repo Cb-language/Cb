@@ -1,10 +1,10 @@
 #include "ClassType.h"
 
 #include "errorHandling/how/HowDidYouGetHere.h"
+#include "other/SymbolTable.h"
 
-ClassType::ClassType(const ClassNode* c) : IType(c != nullptr ? c->getClass().getClassName() : L""), c(c)
+ClassType::ClassType(const FQN& name) : name(name), c(nullptr)
 {
-    if (c == nullptr) throw HowDidYouGetHere(Token());
 }
 
 ClassType::~ClassType()
@@ -14,22 +14,13 @@ ClassType::~ClassType()
 
 bool ClassType::operator==(const IType& other) const
 {
-    return getType() == other.getType();
+    if (const auto otherPtr = dynamic_cast<const ClassType*>(&other)) return c->isDescendantOf(otherPtr->c) || otherPtr->c->isDescendantOf(c);
+    return false;
 }
 
 bool ClassType::operator!=(const IType& other) const
 {
-    return getType() != other.getType();
-}
-
-bool ClassType::operator==(const std::wstring& other) const
-{
-    return getType() == other;
-}
-
-bool ClassType::operator!=(const std::wstring& other) const
-{
-    return getType() != other;
+    return !(*this == other);
 }
 
 bool ClassType::isNumberable() const
@@ -47,22 +38,37 @@ bool ClassType::isPrimitive() const
     return false;
 }
 
-std::wstring ClassType::getType() const
-{
-    return type;
-}
-
-const ClassNode* ClassType::getClass() const
+const ClassNode* ClassType::getClassNode() const
 {
     return c;
 }
 
+void ClassType::setClassNode(const ClassNode& node)
+{
+    c = &node;
+}
+
+std::string ClassType::getName() const
+{
+    return translateFQNtoString(name);
+}
+
 std::string ClassType::translateTypeToCpp() const
 {
-    return "SafePtr<" + Utils::wstrToStr(type) + ">";
+    return "SafePtr<" + translateFQNtoString(name) + ">";
 }
 
 std::unique_ptr<IType> ClassType::copy() const
 {
-    return std::make_unique<ClassType>(c);
+    return std::make_unique<ClassType>(name);
+}
+
+std::string ClassType::toString() const
+{
+    return translateFQNtoString(name);
+}
+
+FQN ClassType::getFQN() const
+{
+    return name;
 }

@@ -11,6 +11,12 @@ const ClassNode* ClassNode::getParent() const
     return parent;
 }
 
+void ClassNode::setParent(ClassNode* parent)
+{
+    this->parent = parent;
+    if (parent != nullptr) parent->addChild(this);
+}
+
 const std::vector<ClassNode*>& ClassNode::getChildren() const
 {
     return children;
@@ -93,7 +99,7 @@ bool ClassNode::isDescendantOf(const ClassNode* other) const
     return parent->isDescendantOf(other);
 }
 
-const Var* ClassNode::findField(const std::wstring& name, const ClassNode* currClass, const bool isBase) const
+const Var* ClassNode::findField(const FQN& name, const ClassNode* currClass, const bool isBase) const
 {
     for (const auto& [accessType, field] : c.getFields())
     {
@@ -108,7 +114,7 @@ const Var* ClassNode::findField(const std::wstring& name, const ClassNode* currC
     return nullptr;
 }
 
-const Func* ClassNode::findMethod(const std::wstring& name, const ClassNode* currClass, const bool isBase) const
+const Func* ClassNode::findMethod(const FQN& name, const ClassNode* currClass, const bool isBase) const
 {
     for (const auto& [accessType, method] : c.getMethods())
     {

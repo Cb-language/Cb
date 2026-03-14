@@ -5,12 +5,11 @@
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "other/Utils.h"
 #include "symbols/Type/ClassType.h"
+#include "other/SymbolTable.h"
 
-ConstractorCallStmt::ConstractorCallStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl,
-                                         const ClassNode* currClass, const ClassNode* classNode, std::vector<std::unique_ptr<Expr>> args)
-        : Expr(token, scope, funcDecl, currClass), classNode(classNode)
+ConstractorCallStmt::ConstractorCallStmt(const Token& token, std::vector<std::unique_ptr<Expr>> args)
+        : Expr(token)
 {
-    if (classNode == nullptr) throw HowDidYouGetHere(token);
     for (auto& arg : args)
     {
         this->args.emplace_back(std::move(arg));
@@ -19,14 +18,26 @@ ConstractorCallStmt::ConstractorCallStmt(const Token& token, Scope* scope, IFunc
 
 std::unique_ptr<IType> ConstractorCallStmt::getType() const
 {
-    return std::make_unique<ClassType>(classNode);
+    if (targetClass != nullptr) return std::make_unique<ClassType>(targetClass->getClass().getClassName());
+    return std::make_unique<ClassType>(currClass->getClass().getClassName());
 }
 
 void ConstractorCallStmt::analyze() const
 {
-    for (const auto& [accessType, ctor] : classNode->getClass().getConstractors())
+    const ClassNode* target = targetClass != nullptr ? targetClass : currClass;
+    if (target == nullptr) symTable->addError(std::make_unique<HowDidYouGetHere>(token));
+
+    for (const auto& arg : args)
     {
-        auto ctorArgs = ctor.getArgs();
+        arg->setSymbolTable(symTable);
+        arg->setScope(scope);
+        arg->setClassNode(currClass);
+        arg->analyze();
+    }
+
+    for (const auto& [accessType, ctor] : target->getClass().getConstractors())
+    {
+        const auto& ctorArgs = ctor.getArgs();
         if (args.size() != ctorArgs.size()) continue;
 
         bool differ = false;
@@ -38,25 +49,26 @@ void ConstractorCallStmt::analyze() const
 
         if (!differ)
         {
-            if (classNode->isLegalAccess(accessType, currClass)) return;
+            if (target->isLegalAccess(accessType, currClass)) return;
 
-            throw AccessError(token, Utils::wstrToStr(classNode->getClass().getClassName()), Utils::wstrToStr(classNode->getClass().getClassName()) + "_call");
+            symTable->addError(std::make_unique<AccessError>(token, translateFQNtoString(target->getClass().getClassName()), translateFQNtoString(target->getClass().getClassName()) + "_call"));
         }
     }
 
-    throw InvalidCtorArgs(token);
+    symTable->addError(std::make_unique<InvalidCtorArgs>(token));
 }
 
 std::string ConstractorCallStmt::translateToCpp() const
 {
     std::ostringstream oss;
+    const ClassNode* target = targetClass != nullptr ? targetClass : currClass;
 
-    if (isStmt)
+    if (needsSemicolon)
     {
         oss << getTabs();
     }
 
-    oss << Utils::wstrToStr(classNode->getClass().getClassName()) << "(";
+    oss << translateFQNtoString(target->getClass().getClassName()) << "(";
 
     bool first = true;
     for (const auto& arg : args)
@@ -66,13 +78,12 @@ std::string ConstractorCallStmt::translateToCpp() const
             oss << ", ";
         }
         first = false;
-
         oss << arg->translateToCpp();
     }
 
     oss << ")";
 
-    if (isStmt)
+    if (needsSemicolon)
     {
         oss << ";";
     }
@@ -80,12 +91,17 @@ std::string ConstractorCallStmt::translateToCpp() const
     return oss.str();
 }
 
-void ConstractorCallStmt::setIsStmt(const bool isStmt)
+void ConstractorCallStmt::setNeedsSemicolon(const bool needsSemicolon)
 {
-    this->isStmt = isStmt;
+    this->needsSemicolon = needsSemicolon;
 }
 
 const ClassNode* ConstractorCallStmt::getClassNode() const
 {
-    return classNode;
+    return targetClass != nullptr ? targetClass : currClass;
+}
+
+void ConstractorCallStmt::setTargetClass(const ClassNode* targetClass)
+{
+    this->targetClass = targetClass;
 }

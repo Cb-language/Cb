@@ -4,5 +4,5 @@
 class MissingPipe : public Error
 {
 public:
-    MissingPipe(const Token& token);
+    explicit MissingPipe(const Token& token);
 };

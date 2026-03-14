@@ -3,6 +3,7 @@
 #include <ranges>
 
 #include "FuncDeclStmt.h"
+#include "errorHandling/classErrors/ClassDosentExisit.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "other/SymbolTable.h"
 #include "errorHandling/classErrors/InvalidOverrideSignature.h"
@@ -12,7 +13,7 @@
 std::string ClassDeclStmt::generateToString() const
 {
     std::ostringstream oss;
-    const std::string className = Utils::wstrToStr(name);
+    const std::string className = translateFQNtoString(name);
 
     // Function signature
     oss << "std::string " << className << "::toString(int indents) const" << std::endl;
@@ -25,7 +26,7 @@ std::string ClassDeclStmt::generateToString() const
     for (auto& field : fields | std::views::values)
     {
         if (field->getVar().getStatic()) continue;
-        const std::string fieldName = Utils::wstrToStr(field->getVar().getName());
+        const std::string fieldName = translateFQNtoString(field->getVar().getName());
         oss << "\tstr += getIndents(indents + 1) + \"" << fieldName << " = ";
         if (field->getVar().isPrimitive())
             oss << "\" + " << fieldName << ".toString() + \"\\n\";" << std::endl;
@@ -36,9 +37,9 @@ std::string ClassDeclStmt::generateToString() const
     // Include parent class toString if applicable
     if (const auto parent = currClass->getParent())
     {
-        if (parent->getClass().getClassName() != L"Object")
+        if (translateFQNtoString(parent->getClass().getClassName()) != "Object")
         {
-            oss << "\tstr += getIndents(indents + 1) + " << Utils::wstrToStr(parent->getClass().getClassName())
+            oss << "\tstr += getIndents(indents + 1) + " << translateFQNtoString(parent->getClass().getClassName())
                 << "::toString(indents + 1) + \"\\n\";" << std::endl;
         }
     }
@@ -54,7 +55,7 @@ std::string ClassDeclStmt::generateToString() const
 std::string ClassDeclStmt::generateEquals() const
 {
     std::ostringstream oss;
-    const std::string strName = Utils::wstrToStr(name);
+    const std::string strName = translateFQNtoString(name);
     oss << "Primitive<bool> " << strName << "::equals(const Object& other) const" << std::endl <<
     "{" << std::endl <<
         "\tif (this == &other) return Primitive<bool>(true);" << std::endl <<
@@ -63,28 +64,28 @@ std::string ClassDeclStmt::generateEquals() const
         "\t{" << std::endl <<
             "\t\tif (";
 
-    if (auto parent = currClass->getParent()) oss << Utils::wstrToStr(parent->getClass().getClassName()) << "::equals(other)";
+    if (const auto parent = currClass->getParent()) oss << translateFQNtoString(parent->getClass().getClassName()) << "::equals(other)";
     else oss << "true"; // shouldn't get here tho
 
     for (const auto& field : fields | std::views::values)
     {
         if (field->getVar().getStatic()) continue;
-        const std::string fieldName = Utils::wstrToStr(field->getVar().getName());
+        const std::string fieldName = translateFQNtoString(field->getVar().getName());
         oss << " && ";
         oss << fieldName << " == otherPtr->" << fieldName;
     }
-    oss << ") return Primitive<bool>(true);" << std::endl <<
-        "\t}" << std::endl <<
-        "\treturn Primitive<bool>(false);" << std::endl <<
-        "}" << std::endl;
+    oss << ") return Primitive<bool>(true);" << std::endl;
+    oss << "\t}" << std::endl;
+    oss << "\treturn Primitive<bool>(false);" << std::endl;
+    oss << "}" << std::endl;
 
     return oss.str();
 }
 
-ClassDeclStmt::ClassDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-                             const std::wstring& name, std::vector<Field>& fields, std::vector<Method>& methods, std::vector<Ctor>& ctors,
-                             const bool isInheriting, const std::wstring& inheritingPublic, const std::wstring& inheritingName)
-    : Stmt(token, scope, funcDecl, currClass), name(name), isInheriting(isInheriting), inheritingPublic(inheritingPublic), inheritingName(inheritingName)
+ClassDeclStmt::ClassDeclStmt(const Token& token, const FQN& name, std::vector<Field>& fields,
+    std::vector<Method>& methods, std::vector<Ctor>& ctors,
+    const FQN& parentName)
+    : Stmt(token), name(name), parentName(parentName)
 {
     for (auto& [isPublic, func] : fields) this->fields.emplace_back(isPublic, std::move(func));
     for (auto& [isPublic, method] : methods) this->methods.emplace_back(isPublic, std::move(method));
@@ -98,18 +99,13 @@ ClassDeclStmt::ClassDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* fu
     {
         std::vector<Var> emptyArgs;
         std::vector<std::unique_ptr<Stmt>> emptyBodyStmts;
-        auto ctor = std::make_unique<ConstractorDeclStmt>(
+        auto ctor = std::make_unique<ConstructorDeclStmt>(
                 token,
-                scope,
-                currClass,
                 name,
                 std::move(emptyArgs)
             );
         ctor->setBody(std::make_unique<BodyStmt>(
                 token,
-                scope,
-                nullptr,
-                currClass,
                 emptyBodyStmts
             )
         );
@@ -117,17 +113,42 @@ ClassDeclStmt::ClassDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* fu
         this->ctors.emplace_back(PUBLIC, std::move(ctor));
     }
 }
-
 void ClassDeclStmt::analyze() const
 {
-    for (const auto& field : fields | std::views::values) field->analyze();
-    for (const auto& ctor : ctors | std::views::values) ctor->analyze();
+    if (symTable == nullptr) return;
+
+    if (!parentName.empty())
+    {
+        if (SymbolTable::getClass(parentName) == nullptr)
+        {
+            symTable->addError(std::make_unique<ClassDosentExisit>(token, translateFQNtoString(parentName)));
+        }
+    }
+
+    for (const auto& field : fields | std::views::values)
+    {
+        field->setSymbolTable(symTable);
+        field->setScope(scope);
+        field->setClassNode(currClass);
+        field->analyze();
+    }
+    for (const auto& ctor : ctors | std::views::values)
+    {
+        ctor->setSymbolTable(symTable);
+        ctor->setScope(scope);
+        ctor->setClassNode(currClass);
+        ctor->analyze();
+    }
 
     bool isAbstract = false;
 
     for (const auto& method : methods | std::views::values)
     {
+        method->setSymbolTable(symTable);
+        method->setScope(scope);
+        method->setClassNode(currClass);
         method->analyze();
+
         switch (method->getVirtual())
         {
         case VirtualType::PURE:
@@ -139,25 +160,24 @@ void ClassDeclStmt::analyze() const
         case VirtualType::OVERRIDE:
         {
             const ClassNode* parent = this->currClass->getParent();
-            if (parent == nullptr || parent->getClass().getClassName() == L"Object")
+            if (parent == nullptr || translateFQNtoString(parent->getClass().getClassName()) == "Object")
             {
-                throw NoOverrideError(token);
-            }
+                symTable->addError(std::make_unique<NoOverrideError>(token));}
 
             const Func* baseMethod = parent->findMethod(method->getName());
             if (baseMethod == nullptr)
             {
-                throw NoOverrideError(token);
+                symTable->addError(std::make_unique<InvalidOverrideSignature>(token));
+                return;
             }
 
             if (baseMethod->getVirtual() != VirtualType::VIRTUAL && baseMethod->getVirtual() != VirtualType::PURE)
             {
-                throw NoOverrideError(token);
-            }
+                symTable->addError(std::make_unique<NoOverrideError>(token));}
 
             if (!baseMethod->isSameNameAndArgs(method->getFunc()))
             {
-                throw InvalidOverrideSignature(token);
+                symTable->addError(std::make_unique<InvalidOverrideSignature>(token));
             }
             break;
         }
@@ -170,8 +190,7 @@ void ClassDeclStmt::analyze() const
                 {
                     if (baseMethod->getVirtual() != VirtualType::NONE)
                     {
-                        throw NoOverrideError(token);
-                    }
+                        symTable->addError(std::make_unique<NoOverrideError>(token));}
                 }
             }
         }
@@ -203,7 +222,7 @@ void ClassDeclStmt::analyze() const
                 {
                     if (!isAbstract)
                     {
-                        throw UnimplementedPureVirtualMethod(token, Utils::wstrToStr(baseMethod.getFuncName()));
+                        symTable->addError(std::make_unique<UnimplementedPureVirtualMethod>(token, translateFQNtoString(baseMethod.getFuncName())));
                     }
                 }
             }
@@ -212,18 +231,6 @@ void ClassDeclStmt::analyze() const
 
     const_cast<ClassNode*>(this->currClass)->setAbstract(isAbstract);
 
-
-    if (isInheriting)
-    {
-        if (inheritingName.empty())
-        {
-            throw HowDidYouGetHere(token);
-        }
-        if (inheritingPublic != L"tutti" && inheritingPublic != L"section" && inheritingPublic != L"sordino")
-        {
-            throw HowDidYouGetHere(token);
-        }
-    }
 }
 
 std::string ClassDeclStmt::translateToCpp() const
@@ -234,7 +241,7 @@ std::string ClassDeclStmt::translateToCpp() const
     {
         if (field->getVar().getStatic())
         {
-            oss << field->getVar().getType()->translateTypeToCpp() << " " << Utils::wstrToStr(name) << "::" << Utils::wstrToStr(field->getVar().getName());
+            oss << field->getVar().getType()->translateTypeToCpp() << " " << translateFQNtoString(name) << "::" << translateFQNtoString(field->getVar().getName());
             if (const auto expr = field->getStartingValue())
             {
                 oss << " = " << expr->translateToCpp();
@@ -243,12 +250,12 @@ std::string ClassDeclStmt::translateToCpp() const
         }
     }
 
-    for (const auto& ctor : ctors | std::views::values) oss << Utils::removeAllFirstTabs(ctor->translateToCpp()) << std::endl;
+    for (const auto& ctor : ctors | std::views::values) oss << ctor->translateToCpp() << std::endl;
 
     oss << generateEquals() << std::endl;
     oss << generateToString() << std::endl;
 
-    for (const auto& method : methods | std::views::values) oss << Utils::removeAllFirstTabs(method->translateToCppClass(name)) << std::endl;
+    for (const auto& method : methods | std::views::values) oss << method->translateToCppClass(translateFQNtoString(name)) << std::endl;
     return oss.str();
 }
 
@@ -258,30 +265,13 @@ std::string ClassDeclStmt::translateToH() const
     std::ostringstream privates;
     std::ostringstream publics;
     std::ostringstream protecteds;
-    const std::string tabs = getTabs();
+    const std::string tabs = getTabs(1);
 
-    privates << "private:";
-    publics << "public:";
-    protecteds << "protected: ";
-
-    oss << "class " << Utils::wstrToStr(name);
-    if (isInheriting)
+    oss << "class " << translateFQNtoString(name);
+    if (!parentName.empty())
     {
-        oss << " : ";
-        if (inheritingPublic == L"tutti")
-        {
-            oss << "public ";
-        }
-        else if (inheritingPublic == L"section")
-        {
-            oss << "protected ";
-        }
-        else
-        {
-            oss << "private ";
-        }
-
-        oss << Utils::wstrToStr(inheritingName);
+        oss << " : public ";
+        oss << translateFQNtoString(parentName);
     }
     else
     {
@@ -312,11 +302,56 @@ std::string ClassDeclStmt::translateToH() const
 
     publics << std::endl << tabs << "std::string toString(int indents = 0) const override;" << std::endl << tabs << "Primitive<bool> equals(const Object& other) const override;" << std::endl;
 
-    oss << privates.str() << std::endl << std::endl << publics.str() << std::endl << protecteds.str() << std::endl << "};" << std::endl << std::endl;
+    if (!privates.str().empty())
+    {
+        oss << "private:" << privates.str() << std::endl;
+    }
+    if (!publics.str().empty())
+    {
+        oss << "public:" << publics.str() << std::endl;
+    }
+    if (!protecteds.str().empty())
+    {
+        oss << "protected:" << protecteds.str() << std::endl;
+    }
+    oss << "};" << std::endl;
+
     return oss.str();
 }
 
 bool ClassDeclStmt::getHasEmptyCtor() const
 {
     return hasEmptyCtor;
+}
+
+void ClassDeclStmt::setClassDetails(std::vector<Field> fields, std::vector<Method> methods, std::vector<Ctor> ctors)
+{
+    this->fields = std::move(fields);
+    this->methods = std::move(methods);
+    this->ctors = std::move(ctors);
+}
+
+const FQN& ClassDeclStmt::getName() const
+{
+    return name;
+}
+
+const FQN& ClassDeclStmt::getParentName() const
+{
+    return parentName;
+}
+
+const std::vector<Field>& ClassDeclStmt::getFields() const
+{
+    return fields;
+}
+
+const std::vector<Method>& ClassDeclStmt::getMethods() const
+{
+    return methods;
+}
+
+const std::vector<Ctor>& ClassDeclStmt::getCtors() const
+{
+    return ctors;
 }

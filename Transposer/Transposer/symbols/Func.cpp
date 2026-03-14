@@ -2,7 +2,7 @@
 
 #include "other/Utils.h"
 
-Func::Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std::vector<Var>& args, const VirtualType vType, const ClassNode* owner, bool isStatic) : rType(std::move(rType)), funcName(funcName), virtualType(vType), owner(owner), isStatic(isStatic)
+Func::Func(std::unique_ptr<IType> rType, const FQN& funcName, const std::vector<Var>& args, const VirtualType vType, const ClassNode* owner, const bool isStatic) : rType(std::move(rType)), funcName(funcName), virtualType(vType), owner(owner), isStatic(isStatic)
 {
     for (const auto& arg : args)
     {
@@ -19,7 +19,7 @@ const std::vector<Var>& Func::getArgs() const
     return args;
 }
 
-const std::wstring& Func::getFuncName() const
+const FQN& Func::getFuncName() const
 {
     return funcName;
 }
@@ -49,16 +49,16 @@ const ClassNode* Func::getOwner() const
     return owner;
 }
 
-std::string Func::translateToCpp(const std::wstring& className) const
+std::string Func::translateToCpp(const std::string& className) const
 {
-    std::string funcNameStr = Utils::wstrToStr(funcName);
+    const std::string funcNameStr = translateFQNtoString(funcName);
     std::string header;
 
     header += rType->translateTypeToCpp() + " ";
 
     if (!className.empty())
     {
-        header += Utils::wstrToStr(className) + "::";
+        header += className + "::";
     }
 
     header += funcNameStr + "(";
@@ -70,7 +70,7 @@ std::string Func::translateToCpp(const std::wstring& className) const
         {
             header += ", ";
         }
-        header += arg.getType()->translateTypeToCpp() + " " + Utils::wstrToStr(arg.getName());
+        header += arg.getType()->translateTypeToCpp() + " " + translateFQNtoString(arg.getName());
         first = false;
     }
 
@@ -81,7 +81,7 @@ std::string Func::translateToCpp(const std::wstring& className) const
 
 bool Func::operator==(const Func& other) const
 {
-    if (rType->getType() != other.rType->getType())
+    if (translateFQNtoString(rType->getFQN()) != translateFQNtoString(other.rType->getFQN()))
     {
         return false;
     }
@@ -151,9 +151,9 @@ bool Func::operator<(const Func& other) const
 
     for (size_t i = 0; i < args.size(); ++i)
     {
-        if (args[i].getType()->getType() != other.args[i].getType()->getType())
+        if (args[i].getType()->toString() != other.args[i].getType()->toString())
         {
-            return args[i].getType()->getType() < other.args[i].getType()->getType();
+            return args[i].getType()->toString() < other.args[i].getType()->toString();
         }
     }
 

@@ -37,10 +37,10 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/InvalidExpression.h
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.cpp
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.h
-        Transposer/parser/Parser.cpp
+        Transposer/parser/Parser_org.cpp
         Transposer/parser/Parser.h
-        Transposer/symbols/Type/Type.cpp
-        Transposer/symbols/Type/Type.h
+        Transposer/symbols/Type/PrimitiveType.cpp
+        Transposer/symbols/Type/PrimitiveType.h
         Transposer/AST/abstract/Expression.h
         Transposer/AST/statements/expression/ConstValueExpr.cpp
         Transposer/AST/statements/expression/ConstValueExpr.h
@@ -191,8 +191,8 @@ add_executable(Transposer
         Transposer/AST/statements/ClassDeclStmt.h
         Transposer/errorHandling/classErrors/MissingClassPipe.cpp
         Transposer/errorHandling/classErrors/MissingClassPipe.h
-        Transposer/AST/statements/ConstractorDeclStmt.cpp
-        Transposer/AST/statements/ConstractorDeclStmt.h
+        Transposer/AST/statements/ConstructorDeclStmt.cpp
+        Transposer/AST/statements/ConstructorDeclStmt.h
         Transposer/symbols/Class.cpp
         Transposer/symbols/Class.h
         Transposer/symbols/Constractor.cpp
@@ -210,8 +210,8 @@ add_executable(Transposer
         Transposer/symbols/Type/ClassType.h
         Transposer/AST/statements/ConstractorCallStmt.cpp
         Transposer/AST/statements/ConstractorCallStmt.h
-        Transposer/errorHandling/syntaxErrors/IllegalVarName.cpp
-        Transposer/errorHandling/syntaxErrors/IllegalVarName.h
+        Transposer/errorHandling/semanticErrors/IllegalVarName.cpp
+        Transposer/errorHandling/semanticErrors/IllegalVarName.h
         Transposer/errorHandling/classErrors/AccessError.cpp
         Transposer/errorHandling/classErrors/AccessError.h
         Transposer/errorHandling/classErrors/InvalidCtorArgs.cpp
@@ -251,6 +251,38 @@ add_executable(Transposer
         Transposer/AST/statements/expression/StaticDotOpExpr.h
         Transposer/errorHandling/classErrors/IllegalDotOpError.cpp
         Transposer/errorHandling/classErrors/IllegalDotOpError.h
+        Transposer/token/TrieTree/TrieNode.cpp
+        Transposer/token/TrieTree/TrieNode.h
+        Transposer/token/TrieTree/KeywordInfo.h
+        Transposer/token/TrieTree/WordBoundary.h
+        Transposer/token/TrieTree/Keywords.cpp
+        Transposer/token/TrieTree/Keywords.h
+        Transposer/parser/Parser.cpp
+        Transposer/parser/ParserContext.h
+        Transposer/parser/ParserContext.cpp
+        Transposer/parser/StmtParser.cpp
+        Transposer/parser/StmtParser.h
+        Transposer/parser/ExprParser.cpp
+        Transposer/parser/ExprParser.h
+        Transposer/parser/TypeParser.cpp
+        Transposer/parser/TypeParser.h
+        Transposer/errorHandling/syntaxErrors/NoLineOpener.cpp
+        Transposer/errorHandling/syntaxErrors/NoLineOpener.h
+        Transposer/errorHandling/how/HowDareYou.cpp
+        Transposer/errorHandling/how/HowDareYou.h
+        Transposer/errorHandling/syntaxErrors/NoNewLine.cpp
+        Transposer/errorHandling/syntaxErrors/NoNewLine.h
+        Transposer/errorHandling/syntaxErrors/NoRest.cpp
+        Transposer/errorHandling/syntaxErrors/NoRest.h
+        Transposer/errorHandling/classErrors/InvalidCtorName.cpp
+        Transposer/errorHandling/classErrors/InvalidCtorName.h
+        Transposer/errorHandling/classErrors/StaticCtor.cpp
+        Transposer/errorHandling/classErrors/StaticCtor.h
+        Transposer/errorHandling/classErrors/VirtualCtor.cpp
+        Transposer/errorHandling/classErrors/VirtualCtor.h
+        Transposer/parser/FQN.h
+        Transposer/errorHandling/classErrors/CtorWithReturnValue.cpp
+        Transposer/errorHandling/classErrors/CtorWithReturnValue.h
 
 )
 

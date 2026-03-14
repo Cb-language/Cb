@@ -1,18 +1,25 @@
 #include "FuncCreditStmt.h"
+#include "other/SymbolTable.h"
+#include "errorHandling/semanticErrors/IllegalCredit.h"
 
-FuncCreditStmt::FuncCreditStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const FuncCredit& funcCredit)
-    : Stmt(token, scope, funcDecl, currClass), funcCredit(funcCredit)
+FuncCreditStmt::FuncCreditStmt(const Token& token, const FuncCredit& funcCredit)
+    : Stmt(token), funcCredit(funcCredit)
 {
 }
 
-const std::wstring& FuncCreditStmt::getName() const
+std::string FuncCreditStmt::getName() const
 {
-    return funcCredit.getName();
+    return translateFQNtoString(funcCredit.getName());
 }
 
 // checked after the parsing via the credit queue
 void FuncCreditStmt::analyze() const
 {
+    if (symTable == nullptr) return;
+    if (!symTable->isLegalCredit(funcCredit))
+    {
+        symTable->addError(std::make_unique<IllegalCredit>(token, getName()));
+    }
 }
 
 // no such thing in cpp -> no translating

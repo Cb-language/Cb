@@ -8,21 +8,21 @@
 class Class
 {
 private:
-    const std::wstring name;
+    FQN name;
     std::vector<std::pair<AccessType, Func>> methods;
     std::vector<std::pair<AccessType, Var>> fields;
     std::vector<std::pair<AccessType, Constractor>> constractors;
     bool _isAbstract;
 
 public:
-    Class(const std::wstring& name, const std::vector<std::pair<AccessType, Func>>& methods,
+    Class(const FQN& name, const std::vector<std::pair<AccessType, Func>>& methods,
         const std::vector<std::pair<AccessType, Var>>& fields, const std::vector<std::pair<AccessType, Constractor>>& constractors, bool isAbstract = false);
 
     Class(const Class& other);
 
-    explicit Class(const std::wstring& name);
+    explicit Class(const FQN& name);
 
-    const std::wstring& getClassName() const;
+    const FQN& getClassName() const;
     const std::vector<std::pair<AccessType, Func>>& getMethods() const;
     const std::vector<std::pair<AccessType, Var>>& getFields() const;
     const std::vector<std::pair<AccessType, Constractor>>& getConstractors() const;
@@ -37,8 +37,8 @@ public:
     bool hasField(const Var& field) const;
     bool hasConstractor(const Constractor& constractor) const;
 
-    bool hasMethod(const std::wstring& name) const;
-    bool hasField(const std::wstring& name) const;
+    bool hasMethod(FQN& name) const;
+    bool hasField(const FQN& name) const;
 
     Class copy() const;
 };

@@ -2,27 +2,45 @@
 
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
+#include "other/SymbolTable.h"
 
-CaseStmt::CaseStmt(const Token& token, Scope *scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::unique_ptr<Expr> expr, std::unique_ptr<BodyStmt> body,
-                   const bool isDefault) : Stmt(token, scope, funcDecl, currClass), expr(std::move(expr)), body(std::move(body)), isDefault(isDefault)
+CaseStmt::CaseStmt(const Token& token, StmtWithBody stmt,
+                   const bool isDefault) : Stmt(token), stmt(std::move(stmt)), isDefault(isDefault)
 {
 }
 
 void CaseStmt::analyze() const
 {
+    if (symTable == nullptr) return;
+
     // Can't really get here, but it's good to check
-    if (body == nullptr)
+    if (stmt.body == nullptr)
     {
-        throw HowDidYouGetHere(token);
+        symTable->addError(std::make_unique<HowDidYouGetHere>(token));
     }
 
-    if (!expr->getType()->isNumberable())
+    if (!isDefault)
     {
-        throw IllegalTypeCast(token, expr->getType()->toString(), "degree");
+        stmt.expr->setSymbolTable(symTable);
+        stmt.expr->setScope(scope);
+        stmt.expr->setClassNode(currClass);
+        stmt.expr->analyze();
+
+        if (!stmt.expr->getType()->isNumberable())
+        {
+            symTable->addError(std::make_unique<IllegalTypeCast>(token, stmt.expr->getType()->toString(), "degree"));
+        }
     }
 
-    body->analyze();
-    expr->analyze();
+    if (auto* body = dynamic_cast<BodyStmt*>(stmt.body.get()))
+    {
+        body->setBreakable(true);
+    }
+
+    stmt.body->setSymbolTable(symTable);
+    stmt.body->setScope(scope);
+    stmt.body->setClassNode(currClass);
+    stmt.body->analyze();
 }
 
 std::string CaseStmt::translateToCpp() const
@@ -36,8 +54,8 @@ std::string CaseStmt::translateToCpp() const
     }
     else
     {
-        os << "case " << expr->translateToCpp();
+        os << "case " << stmt.expr->translateToCpp();
     }
-    os << ":\n" << body->translateToCpp() << "\n";
+    os << ":\n" << stmt.body->translateToCpp() << "\n";
     return os.str();
 }

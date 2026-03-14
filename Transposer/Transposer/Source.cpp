@@ -1,9 +1,9 @@
-﻿#include <iostream>
+﻿// ReSharper disable CppDFAUnreachableCode
+// ReSharper disable CppDFAConstantConditions
+#include <iostream>
 #include <sstream>
 #include <filesystem>
 #include <vector>
-#include <map>
-#include <iomanip>
 
 #include "token/Tokenizer.h"
 #include "errorHandling/Error.h"
@@ -25,8 +25,6 @@ int main(int argc, char* argv[])
     std::unique_ptr<CMD> cmd = CMDFactory::createCMD();
 
     cmd->setupConsole();
-
-    Tokenizer::init();
 
     if (argc != 4)
     {
@@ -84,7 +82,7 @@ int main(int argc, char* argv[])
     }
     catch (Error& e) // Catch known semantic/syntax errors (like NoReturn)
     {
-        std::vector<Error*> errors = FileGraph::getAllErrors();
+        std::vector<Error*> errors = graph.getAllErrors();
         errors.push_back(&e); // Add the fatal error to the list
 
         if (mode == LSP)
@@ -111,10 +109,8 @@ int main(int argc, char* argv[])
         SymbolTable::clearClasses();
         return -1;
     }
-    
-    std::vector<Error*> errors = FileGraph::getAllErrors();
 
-    if (!errors.empty())
+    if (std::vector<Error*> errors = graph.getAllErrors(); !errors.empty())
     {
         if (mode == LSP)
         {
@@ -139,8 +135,7 @@ int main(int argc, char* argv[])
     }
 
     std::filesystem::path exePath = outPath;
-    std::string ext = cmd->getExeExtension();
-    if (!ext.empty())
+    if (std::string ext = cmd->getExeExtension(); !ext.empty())
     {
         exePath.replace_extension(ext);
     }
@@ -153,9 +148,8 @@ int main(int argc, char* argv[])
     {
         std::ostringstream cmdBuild;
         std::string filesStr;
-        const auto paths = FileGraph::getAllCppPaths();
 
-        for (const auto& path : paths)
+        for (const auto paths = FileGraph::getAllCppPaths(); const auto& path : paths)
         {
             filesStr += " \"" + path.string() + "\" ";
         }

@@ -4,5 +4,5 @@
 class InvalidNumberLiteral : public Error
 {
 public:
-    InvalidNumberLiteral(const Token& token);
+    explicit InvalidNumberLiteral(const Token& token);
 };

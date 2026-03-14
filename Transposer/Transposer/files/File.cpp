@@ -6,18 +6,35 @@
 #include "errorHandling/preproccessorErrors/CouldntOpenFile.h"
 #include "token/Tokenizer.h"
 
+std::queue<Token> File::tokenize()
+{
+    std::ifstream file(inPath, std::ios::binary);
+
+    if(!file || !file.is_open())
+    {
+        parser.addError(std::make_unique<CouldntOpenFile>(Token(CbTokenType::COMMENT_SINGLE, inPath.string(),0,0, inPath), inPath));
+    }
+
+    const auto data = std::string((std::istreambuf_iterator<char>(file)),
+                                  std::istreambuf_iterator<char>());
+
+    file.close();
+
+    return tokenizer.tokenize(data, inPath);
+}
 std::filesystem::path File::mainPath = "C\\:";
+
 std::filesystem::path File::outDir = "C\\:";
 
-File::File(const std::wstring& inFilename, const std::wstring& outFilename)
+File::File(const std::string& inFilename, const std::string& outFilename)
     : inPath(mainPath / inFilename), outPathH((outDir / outFilename).replace_extension("h")),
-    outPathCpp((outDir / outFilename).replace_extension("cpp")), parser(Parser(tokenize()))
+      outPathCpp((outDir / outFilename).replace_extension("cpp")), parser(Parser(tokenize()))
 {
 }
 
 File::File(const std::filesystem::path& inPath, const std::filesystem::path& outPath)
     : inPath(mainPath / Utils::normalizePath(inPath)), outPathH((outDir / Utils::normalizePath(outPath)).replace_extension("h")),
-        outPathCpp((outDir / Utils::normalizePath(outPath)).replace_extension("cpp")), parser(Parser(tokenize()))
+      outPathCpp((outDir / Utils::normalizePath(outPath)).replace_extension("cpp")), parser(Parser(tokenize()))
 {
 }
 
@@ -56,12 +73,26 @@ void File::parse()
     parser.parse();
 }
 
-void File::analyze()
+void File::analyzePass1(SymbolTable& symTable)
 {
-    if (analyzed) return;
+    if (analyzed1) return;
     if (!parsed) parse();
-    analyzed = true;
-    parser.analyze();
+    analyzed1 = true;
+    symTable.analyzePass1(parser.getContext().getStmts());
+}
+
+void File::analyzePass2(SymbolTable& symTable)
+{
+    if (analyzed2) return;
+    analyzed2 = true;
+    symTable.analyzePass2(parser.getContext().getStmts());
+}
+
+void File::analyzePass3(SymbolTable& symTable)
+{
+    if (analyzed3) return;
+    analyzed3 = true;
+    symTable.analyzePass3(parser.getContext().getStmts());
 }
 
 void File::write(const bool isMain)
@@ -76,7 +107,7 @@ void File::write(const bool isMain)
 
         if(!fileH || !fileH.is_open())
         {
-            throw CouldntOpenFile(Token(Token::UNDEFINED_TOKEN, inPath.wstring(),0,0, outPathH), outPathH);
+            parser.addError(std::make_unique<CouldntOpenFile>(Token(CbTokenType::ERROR_TOKEN, inPath.string(),0,0, outPathH), outPathH));
         }
         fileH << parser.translateToH();
 
@@ -87,7 +118,7 @@ void File::write(const bool isMain)
 
     if(!fileCpp || !fileCpp.is_open())
     {
-        throw CouldntOpenFile(Token(Token::UNDEFINED_TOKEN, inPath.wstring(),0,0, outPathCpp), outPathCpp);
+        parser.addError(std::make_unique<CouldntOpenFile>(Token(CbTokenType::ERROR_TOKEN, inPath.string(),0,0, outPathCpp), outPathCpp));
     }
     fileCpp << parser.translateToCpp(outPathH, isMain);
 
@@ -96,33 +127,12 @@ void File::write(const bool isMain)
 
 const std::vector<std::unique_ptr<Error>>& File::getErrors() const
 {
-    return parser.getErrors();
+    return parser.getContext().getErrors();
 }
 
-std::vector<Token> File::tokenize() const
+void File::setMainPath(const std::filesystem::path& path)
 {
-    std::wifstream file(inPath, std::ios::binary);
-
-    if(!file || !file.is_open())
-    {
-        throw CouldntOpenFile(Token(Token::COMMENT_SINGLE, inPath.wstring(),0,0, inPath), inPath);
-    }
-    file.imbue(std::locale(file.getloc(), new std::codecvt_utf8<wchar_t>));
-
-    file.clear();
-    file.seekg(0);
-
-    const std::wstring data = std::wstring((std::istreambuf_iterator<wchar_t>(file)),
-                             std::istreambuf_iterator<wchar_t>());
-
-    file.close();
-
-    return Tokenizer::tokenize(data, inPath);
-}
-
-void File::setMainPath(const std::filesystem::path& mainPath)
-{
-    File::mainPath = mainPath.parent_path();
+    File::mainPath = path.parent_path();
 }
 
 const std::filesystem::path& File::getMainPath()
@@ -130,12 +140,17 @@ const std::filesystem::path& File::getMainPath()
     return mainPath;
 }
 
-void File::setOutDir(const std::filesystem::path& outDir)
+void File::setOutDir(const std::filesystem::path& path)
 {
-    File::outDir = outDir.parent_path();
+    File::outDir = path.parent_path();
 }
 
 const std::filesystem::path& File::getOutDir()
 {
     return outDir;
+}
+
+Parser& File::getParser()
+{
+    return parser;
 }

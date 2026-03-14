@@ -4,5 +4,5 @@
 class NoCtor : public Error
 {
 public:
-    NoCtor(const Token& token);
+    explicit NoCtor(const Token& token);
 };

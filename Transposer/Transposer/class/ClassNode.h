@@ -14,6 +14,7 @@ public:
     ~ClassNode() = default;
 
     const ClassNode* getParent() const;
+    void setParent(ClassNode* parent);
     const std::vector<ClassNode*>& getChildren() const;
 
     bool isLegal(const Var& field, const ClassNode* curr) const;
@@ -29,8 +30,8 @@ public:
 
     bool isDescendantOf(const ClassNode* other) const;
 
-    const Var* findField(const std::wstring& name, const ClassNode* currClass = nullptr, const bool isBase = true) const;
-    const Func* findMethod(const std::wstring& name, const ClassNode* currClass = nullptr, const bool isBase = true) const;
+    const Var* findField(const FQN& name, const ClassNode* currClass = nullptr, const bool isBase = true) const;
+    const Func* findMethod(const FQN& name, const ClassNode* currClass = nullptr, const bool isBase = true) const;
 
     const Class& getClass() const;
     void setAbstract(const bool isAbstract);

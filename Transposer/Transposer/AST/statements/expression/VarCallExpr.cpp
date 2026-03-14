@@ -1,30 +1,46 @@
 #include "VarCallExpr.h"
+#include "other/SymbolTable.h"
+#include "errorHandling/semanticErrors/UnrecognizedIdentifier.h"
 
-VarCallExpr::VarCallExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const Var& var)
-    : Call(token, scope, funcDecl, currClass), var(var.copy())
+VarCallExpr::VarCallExpr(const Token& token, const Var& var)
+    : Call(token), var(var.copy())
 {
 }
 
 void VarCallExpr::analyze() const
 {
+    if (symTable == nullptr) return;
+
+    if (const auto resolvedVar = symTable->getVar(var.getName(), currClass))
+    {
+        const_cast<VarCallExpr*>(this)->var = resolvedVar->copy();
+    }
+    else
+    {
+        symTable->addError(std::make_unique<UnrecognizedIdentifier>(token, translateFQNtoString(var.getName())));
+    }
 }
 
 std::string VarCallExpr::translateToCpp() const
 {
-    return Utils::wstrToStr(var.getName());
+    std::string res = needsSemicolon ? getTabs() : "";
+    res += translateFQNtoString(var.getName());
+    if (needsSemicolon) res += ";";
+    return res;
 }
 
 std::unique_ptr<IType> VarCallExpr::getType() const
 {
-    return var.getType()->copy();
+    const auto t = var.getType();
+    return t ? t->copy() : nullptr;
 }
 
-std::wstring VarCallExpr::getName() const
+std::string VarCallExpr::getName() const
 {
-    return var.getName();
+    return translateFQNtoString(var.getName());
 }
 
-std::wstring VarCallExpr::toString() const
+std::string VarCallExpr::toString() const
 {
-    return var.getName();
+    return translateFQNtoString(var.getName());
 }

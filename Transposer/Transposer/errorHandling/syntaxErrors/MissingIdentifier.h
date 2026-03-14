@@ -4,5 +4,5 @@
 class MissingIdentifier : public Error
 {
 public:
-    MissingIdentifier(const Token &token);
+    explicit MissingIdentifier(const Token &token);
 };

@@ -16,12 +16,13 @@ public:
 
     void reset();
     void build(const std::filesystem::path& main, const std::filesystem::path& outDir);
-    void start() const;
+    void start();
     void write() const;
     static std::vector<std::filesystem::path> getAllCppPaths();
-    static std::vector<Error*> getAllErrors();
+    std::vector<Error*> getAllErrors() const;
 
 private:
     ~FileGraph();
     FileNode* main = nullptr;
+    SymbolTable symTable;
 };

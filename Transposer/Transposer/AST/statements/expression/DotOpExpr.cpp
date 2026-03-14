@@ -9,8 +9,8 @@
 #include "symbols/Type/ClassType.h"
 
 
-DotOpExpr::DotOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-    std::unique_ptr<Call> left, std::unique_ptr<Call> right, const bool hasParens) : Call(token, scope, funcDecl, currClass, hasParens), left(std::move(left)), right(std::move(right))
+DotOpExpr::DotOpExpr(const Token& token,
+    std::unique_ptr<Call> left, std::unique_ptr<Call> right) : Call(token), left(std::move(left)), right(std::move(right))
 {
 }
 
@@ -25,16 +25,16 @@ void DotOpExpr::analyze() const
 
     if (leftType->isPrimitive())
     {
-        throw IllegalOpOnType(token, leftType->toString());
+        symTable->addError(std::make_unique<IllegalOpOnType>(token, leftType->toString()));
     }
 
     const auto rightCasted = dynamic_cast<const Call*>(right.get());
 
-    if (rightCasted == nullptr) throw HowDidYouGetHere(token);
+    if (rightCasted == nullptr) symTable->addError(std::make_unique<HowDidYouGetHere>(token));
 
-    if (!SymbolTable::isLegalFieldOrMethod(leftType, rightCasted->toString(), token, currClass))
+    if (const FQN passing = {rightCasted->toString()}; !SymbolTable::isLegalFieldOrMethod(symTable, leftType, passing, token, currClass))
     {
-        throw IllegalDotOpError(token, left->translateToCpp(), Utils::wstrToStr(rightCasted->toString()), leftType->toString());
+        symTable->addError(std::make_unique<IllegalDotOpError>(token, left->translateToCpp(), rightCasted->toString()));
     }
 }
 
@@ -43,7 +43,7 @@ std::string DotOpExpr::translateToCpp() const
     return getTabs() + left->translateToCpp() + "->" + right->translateToCpp();
 }
 
-std::wstring DotOpExpr::toString() const
+std::string DotOpExpr::toString() const
 {
-    return left->toString() + L"\\" + right->toString();
+    return left->toString() + "\\" + right->toString();
 }

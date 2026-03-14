@@ -14,15 +14,11 @@ public:
 
     bool operator==(const IType& other) const override;
     bool operator!=(const IType& other) const override;
-    bool operator==(const std::wstring &other) const override;
-    bool operator!=(const std::wstring &other) const override;
 
     bool isNumberable() const override;
     bool isStringable() const override;
 
     bool isPrimitive() const override;
-
-    std::wstring getType() const override;
 
     std::string translateTypeToCpp() const override;
 
@@ -31,4 +27,8 @@ public:
     unsigned int getArrLevel() const override;
 
     std::unique_ptr<IType> getArrType() const override;
+
+    std::string toString() const override;
+
+    FQN getFQN() const override;
 };

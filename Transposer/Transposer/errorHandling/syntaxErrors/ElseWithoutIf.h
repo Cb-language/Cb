@@ -4,5 +4,5 @@
 class ElseWithoutIf : public Error
 {
 public:
-    ElseWithoutIf(const Token &token);
+    explicit ElseWithoutIf(const Token &token);
 };

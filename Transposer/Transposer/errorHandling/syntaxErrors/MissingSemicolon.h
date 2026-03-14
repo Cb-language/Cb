@@ -4,5 +4,5 @@
 class MissingSemicolon : public Error
 {
 public:
-    MissingSemicolon(const Token &token);
+    explicit MissingSemicolon(const Token &token);
 };

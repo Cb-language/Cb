@@ -5,10 +5,13 @@
 #include "AST/statements/FuncDeclStmt.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/semanticErrors/CallWithoutCopyright.h"
+#include "other/SymbolTable.h"
+#include "errorHandling/semanticErrors/IllegalCall.h"
 
-FuncCallExpr::FuncCallExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-    const std::wstring& name,std::vector<std::unique_ptr<Expr>> args, const bool isStmt)
-    : Call(token, scope, funcDecl, currClass), name(name), type(std::make_unique<Type>(L"fermata")), isStmt(isStmt)
+FuncCallExpr::FuncCallExpr(const Token& token,
+    const FQN& name, std::vector<std::unique_ptr<Expr>> args, const bool needsSemicolon)
+    : Call(token), name(name), type(std::make_unique<PrimitiveType>(Primitive::TYPE_FERMATA)),
+      needsSemicolon(needsSemicolon), funcDecl(nullptr)
 {
     for (auto& arg : args)
     {
@@ -23,14 +26,38 @@ std::unique_ptr<IType> FuncCallExpr::getType() const
 
 void FuncCallExpr::analyze() const
 {
-    if (funcDecl == nullptr)
+    if (symTable == nullptr) return;
+
+    for (const auto& arg : args)
     {
-        throw HowDidYouGetHere(token);
+        arg->setSymbolTable(symTable);
+        arg->setScope(scope);
+        arg->setClassNode(currClass);
+        arg->analyze();
     }
 
-    if (funcDecl->getName() == L"prelude")
+    if (auto t = symTable->getCallType(this, currClass))
     {
-        return; // main doesnt have to copy right
+        const_cast<FuncCallExpr*>(this)->type = std::move(t);
+    }
+    else
+    {
+        symTable->addError(std::make_unique<IllegalCall>(token, translateFQNtoString(this->getName())));
+    }
+
+    if (funcDecl == nullptr)
+    {
+        symTable->addError(std::make_unique<HowDidYouGetHere>(token));
+    }
+
+    if (funcDecl->getIsMethod())
+    {
+        return; // methods don't need to be credited
+    }
+
+    if (translateFQNtoString(funcDecl->getName()) == "prelude")
+    {
+        return; // main doesnt have to copyright
     }
 
     if (funcDecl->getName() == name)
@@ -40,12 +67,12 @@ void FuncCallExpr::analyze() const
 
     for (const auto& credit : funcDecl->getCredited())
     {
-        if (credit->getName() == name)
+        if (credit->getName() == translateFQNtoString(name))
         {
             return;
         }
     }
-   throw CallWithoutCopyright(token, Utils::wstrToStr(name));
+   symTable->addError(std::make_unique<CallWithoutCopyright>(token, translateFQNtoString(name)));
 }
 
 std::string FuncCallExpr::translateToCpp() const
@@ -53,12 +80,21 @@ std::string FuncCallExpr::translateToCpp() const
     std::ostringstream oss;
     bool first = true;
 
-    if (isStmt && !isClassItem)
+    if (needsSemicolon && !isClassItem)
     {
         oss << getTabs();
     }
 
-    oss << Utils::wstrToStr(name) << "(";
+    if (targetClass != nullptr && !name.empty() && translateFQNtoString({name[0]}) == translateFQNtoString(targetClass->getClass().getClassName()))
+    {
+        // Static call: Animal::kingdom()
+        oss << translateFQNtoString({name[0]}) << "::" << name.back() << "(";
+    }
+    else
+    {
+        // Member call (->) or global call
+        oss << translateFQNtoString(name) << "(";
+    }
 
     for (const auto& arg : args)
     {
@@ -73,7 +109,7 @@ std::string FuncCallExpr::translateToCpp() const
 
     oss << ")";
 
-    if (isStmt)
+    if (needsSemicolon)
     {
         oss << ";";
     }
@@ -86,6 +122,16 @@ void FuncCallExpr::setType(std::unique_ptr<IType> type)
     this->type = std::move(type);
 }
 
+void FuncCallExpr::setClassDecl(IFuncDeclStmt& decl)
+{
+    this->funcDecl = &decl;
+}
+
+void FuncCallExpr::setTargetClass(const ClassNode* targetClass)
+{
+    this->targetClass = targetClass;
+}
+
 bool FuncCallExpr::isLegalCall(const Func& func) const
 {
     if (name != func.getFuncName() || args.size() != func.getArgs().size())
@@ -93,7 +139,17 @@ bool FuncCallExpr::isLegalCall(const Func& func) const
         return false;
     }
 
-    for (int i = 0; i < func.getArgs().size(); i++)
+    return argsMatch(func);
+}
+
+bool FuncCallExpr::argsMatch(const Func& func) const
+{
+    if (args.size() != func.getArgs().size())
+    {
+        return false;
+    }
+
+    for (size_t i = 0; i < args.size(); i++)
     {
         if (*(func.getArgs()[i].getType()) != *(args[i]->getType()))
         {
@@ -108,17 +164,17 @@ const Token& FuncCallExpr::getToken() const
     return token;
 }
 
-const std::wstring& FuncCallExpr::getName() const
+const FQN& FuncCallExpr::getName() const
 {
     return name;
 }
 
-std::wstring FuncCallExpr::toString() const
+std::string FuncCallExpr::toString() const
 {
-    return name;
+    return translateFQNtoString(name);
 }
 
-void FuncCallExpr::setIsStmt(const bool isStmt)
+void FuncCallExpr::setNeedsSemicolon(const bool needsSemicolon)
 {
-    this->isStmt = isStmt;
+    this->needsSemicolon = needsSemicolon;
 }

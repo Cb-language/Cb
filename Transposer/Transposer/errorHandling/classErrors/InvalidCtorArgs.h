@@ -4,5 +4,5 @@
 class InvalidCtorArgs : public Error
 {
 public:
-    InvalidCtorArgs(const Token& token);
+    explicit InvalidCtorArgs(const Token& token);
 };

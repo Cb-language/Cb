@@ -1,13 +1,12 @@
 #include "FuncDeclStmt.h"
 
-#include "errorHandling/semanticErrors/FuncInsideFunc.h"
 #include "errorHandling/semanticErrors/NoReturn.h"
 #include "../../errorHandling/classErrors/VirtualNonMethod.h"
+#include "other/SymbolTable.h"
 
-FuncDeclStmt::FuncDeclStmt(const Token& token, Scope* scope, const ClassNode* currClass,
-    const std::wstring& funcName, std::unique_ptr<IType> returnType, const std::vector<Var>& args,
-    std::vector<std::unique_ptr<FuncCreditStmt>>& credited, bool isMethod, const VirtualType& virtualType, bool isStatic)
-        : IFuncDeclStmt(token, scope, currClass), func(Func(std::move(returnType), funcName, args, virtualType, currClass, isStatic)), body(nullptr), hasReturned(false), isMethod(isMethod), virtualType(virtualType)
+FuncDeclStmt::FuncDeclStmt(const Token& token,  const FQN& funcName, std::unique_ptr<IType> returnType, const std::vector<Var>& args,
+    std::vector<std::unique_ptr<FuncCreditStmt>>& credited, const bool isMethod, const VirtualType& virtualType, const bool isStatic)
+        : IFuncDeclStmt(token), func(Func(std::move(returnType), funcName, args, virtualType, nullptr, isStatic)), body(nullptr), hasReturned(false), virtualType(virtualType), isMethod(isMethod)
 {
     for (auto& c : credited)
     {
@@ -20,7 +19,7 @@ const std::vector<Var>& FuncDeclStmt::getArgs() const
     return func.getArgs();
 }
 
-std::wstring FuncDeclStmt::getName() const
+const FQN& FuncDeclStmt::getName() const
 {
     return func.getFuncName();
 }
@@ -46,6 +45,11 @@ VirtualType FuncDeclStmt::getVirtual() const
     return virtualType;
 }
 
+void FuncDeclStmt::setIsStatic(const bool isStatic)
+{
+    func.setStatic(isStatic);
+}
+
 void FuncDeclStmt::setBody(std::unique_ptr<BodyStmt> body)
 {
     this->body = std::move(body);
@@ -61,6 +65,11 @@ bool FuncDeclStmt::getHasReturned() const
     return hasReturned;
 }
 
+bool FuncDeclStmt::getIsMethod() const
+{
+    return isMethod;
+}
+
 const std::vector<std::unique_ptr<FuncCreditStmt>>& FuncDeclStmt::getCredited() const
 {
     return credited;
@@ -68,36 +77,65 @@ const std::vector<std::unique_ptr<FuncCreditStmt>>& FuncDeclStmt::getCredited() 
 
 void FuncDeclStmt::analyze() const
 {
+    if (symTable == nullptr) return;
+
     if (virtualType != VirtualType::NONE && !isMethod)
     {
-        throw VirtualNonMethod(token);
-    }
-
-    if (func.getType()->getType() != L"fermata" && !hasReturned && virtualType != VirtualType::PURE)
-    {
-        throw NoReturn(token);
-    }
-
-    if (this->funcDecl != nullptr)
-    {
-        throw FuncInsideFunc(token);
+        symTable->addError(std::make_unique<VirtualNonMethod>(token));
     }
 
     if (virtualType != VirtualType::PURE)
     {
-        body->analyze();
+        symTable->changeFunc(const_cast<FuncDeclStmt*>(this));
+        
+        symTable->enterScope(false, false);
+        for (const auto& arg : func.getArgs())
+        {
+            symTable->addVar(arg, token);
+        }
+        
+        body->setSymbolTable(symTable);
+        body->setScope(symTable->getCurrScope());
+        body->setClassNode(symTable->getCurrClass());
+
+        for (const auto& stmt : body->getStmts())
+        {
+            stmt->setSymbolTable(symTable);
+            stmt->setScope(symTable->getCurrScope());
+            stmt->setClassNode(symTable->getCurrClass());
+            stmt->analyze();
+        }
+        
+        symTable->exitScope();
+
+        if (func.getType()->toString() != "fermata" && !hasReturned)
+        {
+            symTable->addError(std::make_unique<NoReturn>(token));
+        }
     }
 }
 
 
 std::string FuncDeclStmt::translateToCpp() const
 {
-    return func.translateToCpp() + "\n" + body->translateToCpp() + "\n";
+    std::ostringstream oss;
+    oss << func.translateToCpp();
+
+    oss << std::endl << "{" << std::endl;
+
+    for (const auto& stmt : body->getStmts())
+    {
+        oss << stmt->translateToCpp() << std::endl;
+    }
+
+    oss << "}" << std::endl;
+
+    return oss.str();
 }
 
 std::string FuncDeclStmt::translateToH() const
 {
-    if (func.getFuncName() == L"prelude") return "";
+    if (translateFQNtoString(func.getFuncName()) == "prelude") return "";
 
     const std::string fStr = func.translateToCpp();
     std::string prefix = "";
@@ -112,10 +150,24 @@ std::string FuncDeclStmt::translateToH() const
     }
 }
 
-std::string FuncDeclStmt::translateToCppClass(const std::wstring& className) const
+std::string FuncDeclStmt::translateToCppClass(const std::string& className) const
 {
     if (virtualType != VirtualType::PURE)
-        return func.translateToCpp(className) + "\n" + body->translateToCpp() + "\n";
+    {
+        std::ostringstream oss;
+        oss << func.translateToCpp(className);
+
+        oss << std::endl << "{" << std::endl;
+
+        for (const auto& stmt : body->getStmts())
+        {
+            oss << stmt->translateToCpp() << std::endl;
+        }
+
+        oss << "}" << std::endl;
+
+        return oss.str();
+    }
 
     return "";
 }

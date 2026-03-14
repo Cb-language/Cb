@@ -4,5 +4,5 @@
 class VirtualNonMethod : public Error
 {
 public:
-    VirtualNonMethod(const Token& token);
+    explicit VirtualNonMethod(const Token& token);
 };

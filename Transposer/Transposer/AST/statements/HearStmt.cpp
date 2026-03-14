@@ -3,9 +3,10 @@
 #include <sstream>
 
 #include "errorHandling/semanticErrors/IllegalHear.h"
+#include "other/SymbolTable.h"
 
-HearStmt::HearStmt(const Token& token,  Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::vector<std::unique_ptr<Call>>& calls)
-    : Stmt(token, scope, funcDecl, currClass)
+HearStmt::HearStmt(const Token& token, std::vector<std::unique_ptr<Call>>& calls)
+    : Stmt(token)
 {
     for (auto& call : calls)
     {
@@ -15,11 +16,18 @@ HearStmt::HearStmt(const Token& token,  Scope* scope, IFuncDeclStmt* funcDecl, c
 
 void HearStmt::analyze() const
 {
+    if (symTable == nullptr) return;
+
     for (const auto& call : calls)
     {
+        call->setSymbolTable(symTable);
+        call->setScope(scope);
+        call->setClassNode(currClass);
+        call->analyze();
+
         if (call->getType()->getArrLevel() > 0 || !(call->getType()->isPrimitive()))
         {
-            throw IllegalHear(token, call->getType()->toString());
+            symTable->addError(std::make_unique<IllegalHear>(token, call->getType()->toString()));
         }
     }
 }
