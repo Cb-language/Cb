@@ -26,7 +26,7 @@ void CastCallExpr::analyze() const
 
 std::string CastCallExpr::translateToCpp() const
 {
-    return "Utils::cast<" + type->translateTypeToCpp() + ">(SafePtr<Object>(" + expr->translateToCpp() + "))";
+    return "Utils::cast<" + type->toString() + ">(SafePtr<Object>(" + expr->translateToCpp() + "))";
 }
 
 std::string CastCallExpr::toString() const

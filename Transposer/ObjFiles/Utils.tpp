@@ -2,15 +2,13 @@
 #include "Primitive.h"
 #include "Utils.h"
 
-const std::string Utils::badCastMsg = "Illegal cast";
-
 template <typename T>
-T& Utils::cast(const SafePtr<Object>& other)
+SafePtr<T> Utils::cast(const SafePtr<Object>& other)
 {
     if (auto o = other.get())
     {
         if (auto p = dynamic_cast<T*>(o))
-            return *p;
+            return SafePtr<T>(*p);
     }
 
     throw std::logic_error(badCastMsg);

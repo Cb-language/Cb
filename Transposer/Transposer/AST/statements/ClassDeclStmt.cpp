@@ -300,7 +300,9 @@ std::string ClassDeclStmt::translateToH() const
         else privates << std::endl << tabs << Utils::removeAllFirstTabs(ctor->translateToH());
     }
 
-    publics << std::endl << tabs << "std::string toString(int indents = 0) const override;" << std::endl << tabs << "Primitive<bool> equals(const Object& other) const override;" << std::endl;
+    publics << std::endl << tabs << "std::string toString(int indents = 0) const override;" << std::endl
+    << tabs << "Primitive<bool> equals(const Object& other) const override;" << std::endl
+    << tabs << "~" << translateFQNtoString(name) << "() override = default;" << std::endl;
 
     if (!privates.str().empty())
     {

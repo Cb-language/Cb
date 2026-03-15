@@ -60,7 +60,7 @@ void ObjCreationPolyStmt::analyze() const
 std::string ObjCreationPolyStmt::translateToCpp() const
 {
     std::ostringstream oss;
-    if (classNode == nullptr) symTable->addError(std::make_unique<HowDidYouGetHere>(token));
+    if (classNode == nullptr) throw HowDidYouGetHere(token);
 
     const std::string className = translateFQNtoString(classNode->getClass().getClassName());
     const std::string classSafePtr = "SafePtr<" + className + ">";

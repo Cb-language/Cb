@@ -5,9 +5,9 @@
 class Utils
 {
 public:
-    static const std::string badCastMsg;
+    inline static const std::string badCastMsg = "Illegal cast";
     template <typename T>
-    static T& cast(const SafePtr<Object>& other);
+    static SafePtr<T> cast(const SafePtr<Object>& other);
 
     template <typename T>
     static bool is(const SafePtr<Object>& other);
