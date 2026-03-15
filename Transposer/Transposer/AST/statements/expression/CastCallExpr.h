@@ -6,7 +6,6 @@ class CastCallExpr : public VarReference
 private:
     std::unique_ptr<Expr> expr;
     std::unique_ptr<IType> type;
-
 public:
     CastCallExpr(const Token& token, std::unique_ptr<Expr> expr, std::unique_ptr<IType> type);
 

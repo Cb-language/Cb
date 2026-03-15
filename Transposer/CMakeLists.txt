@@ -198,8 +198,8 @@ add_executable(Transposer
         Transposer/symbols/Constractor.cpp
         Transposer/symbols/Constractor.h
         Transposer/AST/abstract/IFuncDeclStmt.h
-        Transposer/AST/statements/ObjCreationStmt.cpp
-        Transposer/AST/statements/ObjCreationStmt.h
+        Transposer/AST/statements/ObjCreationPolyStmt.cpp
+        Transposer/AST/statements/ObjCreationPolyStmt.h
         Transposer/errorHandling/classErrors/NoCtor.cpp
         Transposer/errorHandling/classErrors/NoCtor.h
         Transposer/class/ClassNode.cpp
@@ -291,6 +291,9 @@ add_executable(Transposer
         Transposer/AST/statements/expression/LenExpr.h
         Transposer/errorHandling/semanticErrors/IllegalLengthCall.cpp
         Transposer/errorHandling/semanticErrors/IllegalLengthCall.h
+        Transposer/AST/statements/ObjCreationCastStmt.cpp
+        Transposer/AST/statements/ObjCreationCastStmt.h
+        Transposer/AST/abstract/ObjectCreationStmt.h
 
 )
 

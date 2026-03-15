@@ -14,6 +14,7 @@ ClassType::~ClassType()
 
 bool ClassType::operator==(const IType& other) const
 {
+    if (translateFQNtoString(other.getFQN()) == translateFQNtoString(name)) return true;
     if (const auto otherPtr = dynamic_cast<const ClassType*>(&other)) return c->isDescendantOf(otherPtr->c) || otherPtr->c->isDescendantOf(c);
     return false;
 }

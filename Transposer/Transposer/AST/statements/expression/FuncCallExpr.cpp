@@ -47,7 +47,7 @@ void FuncCallExpr::analyze() const
 
     if (funcDecl == nullptr)
     {
-        symTable->addError(std::make_unique<HowDidYouGetHere>(token));
+        return;
     }
 
     if (funcDecl->getIsMethod())

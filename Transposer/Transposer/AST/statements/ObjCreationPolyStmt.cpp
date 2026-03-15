@@ -1,4 +1,4 @@
-#include "ObjCreationStmt.h"
+#include "ObjCreationPolyStmt.h"
 
 #include "class/ClassNode.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
@@ -7,9 +7,9 @@
 #include "symbols/Type/ClassType.h"
 #include "other/SymbolTable.h"
 
-ObjCreationStmt::ObjCreationStmt(const Token& token, const ClassNode* classNode, const bool hasStartingValue,
+ObjCreationPolyStmt::ObjCreationPolyStmt(const Token& token, const ClassNode* classNode, const bool hasStartingValue,
     std::unique_ptr<ConstractorCallStmt> startingValue, const Var& var, const FQN& cname)
-    : VarDeclStmt(token, hasStartingValue, std::move(startingValue), var),
+    : ObjectCreationStmt(token, hasStartingValue, std::move(startingValue), var),
       classNode(classNode)
 {
     if (cname.empty())
@@ -25,7 +25,7 @@ ObjCreationStmt::ObjCreationStmt(const Token& token, const ClassNode* classNode,
     }
 }
 
-void ObjCreationStmt::analyze() const
+void ObjCreationPolyStmt::analyze() const
 {
     if (symTable == nullptr) return;
 
@@ -34,7 +34,7 @@ void ObjCreationStmt::analyze() const
     {
         target = symTable->getClass(var.getType()->getFQN());
         if (target == nullptr) symTable->addError(std::make_unique<ClassDosentExisit>(token, var.getType()->toString()));
-        const_cast<ObjCreationStmt*>(this)->classNode = target;
+        const_cast<ObjCreationPolyStmt*>(this)->classNode = target;
     }
 
     if (startingValue != nullptr)
@@ -57,7 +57,7 @@ void ObjCreationStmt::analyze() const
     VarDeclStmt::analyze();
 }
 
-std::string ObjCreationStmt::translateToCpp() const
+std::string ObjCreationPolyStmt::translateToCpp() const
 {
     std::ostringstream oss;
     if (classNode == nullptr) symTable->addError(std::make_unique<HowDidYouGetHere>(token));
