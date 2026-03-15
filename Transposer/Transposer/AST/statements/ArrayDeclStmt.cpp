@@ -112,3 +112,9 @@ std::string ArrayDeclStmt::translateToCpp() const
 
     return oss.str();
 }
+
+void ArrayDeclStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    VarDeclStmt::setSymbolTable(symTable);
+    for (const auto& expr : sizes) expr->setSymbolTable(symTable);
+}

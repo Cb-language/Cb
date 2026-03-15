@@ -33,3 +33,9 @@ std::string CastCallExpr::toString() const
 {
     return translateToCpp();
 }
+
+void CastCallExpr::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    expr->setSymbolTable(symTable);
+}

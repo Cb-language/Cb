@@ -80,3 +80,9 @@ void BodyStmt::setContinueAble(const bool isContinueAble)
 {
     this->isContinueAble = isContinueAble;
 }
+
+void BodyStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    for (const auto& stmt : stmts) stmt->setSymbolTable(symTable);
+}

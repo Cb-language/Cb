@@ -319,6 +319,14 @@ std::string ClassDeclStmt::translateToH() const
     return oss.str();
 }
 
+void ClassDeclStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    for (const auto& field : fields | std::views::values) field->setSymbolTable(symTable);
+    for (const auto& method : methods | std::views::values) method->setSymbolTable(symTable);
+    for (const auto& ctor : ctors | std::views::values) ctor->setSymbolTable(symTable);
+}
+
 bool ClassDeclStmt::getHasEmptyCtor() const
 {
     return hasEmptyCtor;

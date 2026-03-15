@@ -54,3 +54,10 @@ std::string ArrayIndexingExpr::toString() const
 {
     return varRef->toString();
 }
+
+void ArrayIndexingExpr::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    varRef->setSymbolTable(symTable);
+    index->setSymbolTable(symTable);
+}

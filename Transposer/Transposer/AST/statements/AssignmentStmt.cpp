@@ -43,3 +43,10 @@ std::unique_ptr<IType> AssignmentStmt::getType() const
 {
     return varRef->getType()->copy();
 }
+
+void AssignmentStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    varRef->setSymbolTable(symTable);
+    expr->setSymbolTable(symTable);
+}

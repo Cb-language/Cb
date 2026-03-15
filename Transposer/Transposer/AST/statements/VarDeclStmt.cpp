@@ -60,6 +60,12 @@ std::string VarDeclStmt::translateToCpp() const
     return ret;
 }
 
+void VarDeclStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    if (startingValue != nullptr) startingValue->setSymbolTable(symTable);
+}
+
 const Var& VarDeclStmt::getVar() const
 {
     return var;

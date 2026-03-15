@@ -18,3 +18,9 @@ std::string IsExpr::translateToCpp() const
 {
     return "Utils::is<" + type->translateTypeToCpp() + ">(SafePtr<Object>(" + expr->translateToCpp() + "))";
 }
+
+void IsExpr::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    expr->setSymbolTable(symTable);
+}

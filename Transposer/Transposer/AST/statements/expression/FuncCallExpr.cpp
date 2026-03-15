@@ -117,6 +117,12 @@ std::string FuncCallExpr::translateToCpp() const
     return oss.str();
 }
 
+void FuncCallExpr::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    for (const auto& arg : args) arg->setSymbolTable(symTable);
+}
+
 void FuncCallExpr::setType(std::unique_ptr<IType> type)
 {
     this->type = std::move(type);

@@ -25,6 +25,7 @@ public:
     std::unique_ptr<IType> getType() const override;
     void analyze() const override;
     std::string translateToCpp() const override;
+    void setSymbolTable(SymbolTable* symTable) const override;
 
     void setType(std::unique_ptr<IType> type);
     void setClassDecl(IFuncDeclStmt& decl);

@@ -19,6 +19,7 @@ public:
     std::unique_ptr<IType> getType() const override;
     void analyze() const override;
     std::string translateToCpp() const override;
+    void setSymbolTable(SymbolTable* symTable) const override;
 
     static int getPrecedence(const std::string &op);
 };

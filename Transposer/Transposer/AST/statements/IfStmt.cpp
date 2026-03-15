@@ -61,3 +61,16 @@ std::string IfStmt::translateToCpp() const
 
     return oss.str();
 }
+
+void IfStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    ifStmt.expr->setSymbolTable(symTable);
+    ifStmt.body->setSymbolTable(symTable);
+
+    for (auto& stmt : elseStmts)
+    {
+        stmt.expr->setSymbolTable(symTable);
+        stmt.body->setSymbolTable(symTable);
+    }
+}

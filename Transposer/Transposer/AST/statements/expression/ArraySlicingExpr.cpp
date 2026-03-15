@@ -78,6 +78,15 @@ std::string ArraySlicingExpr::toString() const
     return varRef->toString();
 }
 
+void ArraySlicingExpr::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    varRef->setSymbolTable(symTable);
+    start->setSymbolTable(symTable);
+    stop->setSymbolTable(symTable);
+    step->setSymbolTable(symTable);
+}
+
 void ArraySlicingExpr::setStart(std::unique_ptr<Expr> start)
 {
     this->start = std::move(start);

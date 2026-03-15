@@ -99,6 +99,13 @@ std::string ConstructorDeclStmt::translateToH() const
     return constractor.translateToCpp() + ";";
 }
 
+void ConstructorDeclStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    if (parentCtorCall != nullptr) parentCtorCall->setSymbolTable(symTable);
+    body->setSymbolTable(symTable);
+}
+
 const FQN& ConstructorDeclStmt::getName() const
 {
     return constractor.getClassName();

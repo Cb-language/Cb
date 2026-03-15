@@ -241,6 +241,13 @@ std::string BinaryOpExpr::translateToCpp() const
     return oss.str();
 }
 
+void BinaryOpExpr::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    if (left != nullptr) left->setSymbolTable(symTable);
+    right->setSymbolTable(symTable);
+}
+
 int BinaryOpExpr::getPrecedence(const std::string& op)
 {
     // Dot op

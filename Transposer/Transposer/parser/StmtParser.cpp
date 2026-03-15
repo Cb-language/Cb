@@ -850,8 +850,6 @@ std::unique_ptr<ObjectCreationStmt> StmtParser::parsePolyObjCreationStmt(std::un
     c.expect(CbTokenType::BINARY_OP_EQUAL);
     std::unique_ptr<CastCallExpr> right = exprParser.parseCastExpr();
 
-    c.expectSemiColon();
-
     return std::make_unique<ObjCreationCastStmt>(c.getLastToken(), true, std::move(right), Var(std::move(type), name));
 }
 

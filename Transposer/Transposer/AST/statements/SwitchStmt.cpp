@@ -48,3 +48,10 @@ std::string SwitchStmt::translateToCpp() const
     os << getTabs() << "}\n";
     return os.str();
 }
+
+void SwitchStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    expr->setSymbolTable(symTable);
+    for (const auto& c : cases) c->setSymbolTable(symTable);
+}

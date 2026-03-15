@@ -22,6 +22,7 @@ public:
     void analyze() const override;
     std::string translateToCpp() const override;
     std::string translateToH() const override;
+    void setSymbolTable(SymbolTable* symTable) const override;
 
     const FQN& getName() const override;
     std::unique_ptr<IType> getReturnType() const override;
