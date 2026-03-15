@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-#include "AST/statements/ObjCreationStmt.h"
+#include "AST/statements/ObjCreationPolyStmt.h"
 #include "AST/statements/expression/CastCallExpr.h"
 #include "AST/statements/expression/IsExpr.h"
 #include "AST/statements/expression/LenExpr.h"

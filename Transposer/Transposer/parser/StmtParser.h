@@ -10,7 +10,7 @@
 #include "AST/statements/ForStmt.h"
 #include "AST/statements/HearStmt.h"
 #include "AST/statements/IfStmt.h"
-#include "AST/statements/ObjCreationStmt.h"
+#include "AST/statements/ObjCreationPolyStmt.h"
 #include "AST/statements/PlayStmt.h"
 #include "AST/statements/ReturnStmt.h"
 #include "AST/statements/SwitchStmt.h"
@@ -54,8 +54,8 @@ public:
 
     std::unique_ptr<ClassDeclStmt> parseClassDeclStmt();
     std::unique_ptr<ConstructorDeclStmt> parseCtor(const FQN& className);
-    std::unique_ptr<ObjCreationStmt> parseObjCreationStmt() const;
-    std::unique_ptr<ObjCreationStmt> parsePolyObjCreationStmt(std::unique_ptr<IType> type) const;
+    std::unique_ptr<ObjectCreationStmt> parseObjCreationStmt() const;
+    std::unique_ptr<ObjectCreationStmt> parsePolyObjCreationStmt(std::unique_ptr<IType> type) const;
 
     void parse();
 };

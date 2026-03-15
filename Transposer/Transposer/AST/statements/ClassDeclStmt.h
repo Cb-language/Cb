@@ -29,6 +29,7 @@ public:
     void analyze() const override;
     std::string translateToCpp() const override;
     std::string translateToH() const override;
+    void setSymbolTable(SymbolTable* symTable) const override;
     bool getHasEmptyCtor() const;
 
     void setClassDetails(std::vector<Field> fields, std::vector<Method> methods, std::vector<Ctor> ctors);

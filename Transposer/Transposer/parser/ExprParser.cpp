@@ -1,4 +1,7 @@
 #include "ExprParser.h"
+
+#include <algorithm>
+
 #include "TypeParser.h"
 #include "StmtParser.h"
 #include "AST/statements/expression/BinaryOpExpr.h"
@@ -421,6 +424,7 @@ std::unique_ptr<CastCallExpr> ExprParser::parseCastExpr()
     auto expr = parseExpr();
 
     c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.copyCurrent()));
+
     return std::make_unique<CastCallExpr>(startToken, std::move(expr), std::move(type));
 }
 

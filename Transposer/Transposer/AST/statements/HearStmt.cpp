@@ -53,3 +53,9 @@ std::string HearStmt::translateToCpp() const
 
     return oss.str();
 }
+
+void HearStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    for (const auto& ref : references) ref->setSymbolTable(symTable);
+}

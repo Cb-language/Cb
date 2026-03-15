@@ -33,6 +33,12 @@ void ConstructorDeclStmt::analyze() const
 
     symTable->changeFunc(const_cast<ConstructorDeclStmt*>(this));
 
+    symTable->enterScope(false, false);
+    for (const auto& arg : constractor.getArgs())
+    {
+        symTable->addVar(arg, token);
+    }
+
     if (parentCtorCall != nullptr)
     {
         const ClassNode* parentNode = currClass->getParent();
@@ -43,12 +49,6 @@ void ConstructorDeclStmt::analyze() const
         parentCtorCall->setScope(scope);
         parentCtorCall->setClassNode(currClass);
         parentCtorCall->analyze();
-    }
-
-    symTable->enterScope(false, false);
-    for (const auto& arg : constractor.getArgs())
-    {
-        symTable->addVar(arg, token);
     }
 
     body->setSymbolTable(symTable);
@@ -97,6 +97,13 @@ std::string ConstructorDeclStmt::translateToCpp() const
 std::string ConstructorDeclStmt::translateToH() const
 {
     return constractor.translateToCpp() + ";";
+}
+
+void ConstructorDeclStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    if (parentCtorCall != nullptr) parentCtorCall->setSymbolTable(symTable);
+    body->setSymbolTable(symTable);
 }
 
 const FQN& ConstructorDeclStmt::getName() const

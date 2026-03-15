@@ -171,3 +171,9 @@ std::string FuncDeclStmt::translateToCppClass(const std::string& className) cons
 
     return "";
 }
+
+void FuncDeclStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    body->setSymbolTable(symTable);
+}

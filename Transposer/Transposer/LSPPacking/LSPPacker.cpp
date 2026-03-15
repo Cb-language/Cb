@@ -16,8 +16,10 @@ std::string LSPPacker::pack(const std::vector<Error*>& errors)
     oss << "[\n";
 
     bool firstFile = true;
-    for (const auto& pair : errorsByFile) {
-        if (!firstFile) {
+    for (const auto& [frst, scnd] : errorsByFile)
+    {
+        if (!firstFile)
+        {
             oss << ",\n";
         }
         firstFile = false;
@@ -26,12 +28,14 @@ std::string LSPPacker::pack(const std::vector<Error*>& errors)
         oss << "    \"jsonrpc\": \"2.0\",\n";
         oss << "    \"method\": \"textDocument/publishDiagnostics\",\n";
         oss << "    \"params\": {\n";
-        oss << "      \"uri\": \"file://" << Utils::escapeJson(Utils::normalizePath(pair.first)) << "\",\n";
+        oss << "      \"uri\": \"file://" << Utils::escapeJson(Utils::normalizePath(frst)) << "\",\n";
         oss << "      \"diagnostics\": [\n";
 
         bool first = true;
-        for (Error* error : pair.second) {
-            if (!first) {
+        for (const Error* error : scnd)
+        {
+            if (!first)
+            {
                 oss << ",\n";
             }
             first = false;
@@ -43,7 +47,7 @@ std::string LSPPacker::pack(const std::vector<Error*>& errors)
             oss << "        {\n";
             oss << "          \"range\": {\n";
             oss << "            \"start\": { \"line\": " << line << ", \"character\": " << col << " },\n";
-            oss << "            \"end\": { \"line\": " << line << ", \"character\": " << col + token.value.value().length() << " }\n";
+            oss << "            \"end\": { \"line\": " << line << ", \"character\": " << col + (token.value.has_value() ? token.value.value().length() : 0) << " }\n";
             oss << "          },\n";
             oss << "          \"severity\": 1,\n";
             oss << "          \"source\": \"transpiler\",\n";

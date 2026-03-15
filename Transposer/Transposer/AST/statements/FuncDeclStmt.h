@@ -45,4 +45,5 @@ public:
     std::string translateToCpp() const override;
     std::string translateToH() const override;
     std::string translateToCppClass(const std::string& className) const;
+    void setSymbolTable(SymbolTable* symTable) const override;
 };

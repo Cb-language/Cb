@@ -89,3 +89,12 @@ std::string ForStmt::translateToCpp() const
     oss << body->translateToCpp();
     return oss.str();
 }
+
+void ForStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    if (startExpr != nullptr) startExpr->setSymbolTable(symTable);
+    if (stepExpr != nullptr) stepExpr->setSymbolTable(symTable);
+    if (stopExpr != nullptr) stopExpr->setSymbolTable(symTable);
+    body->setSymbolTable(symTable);
+}

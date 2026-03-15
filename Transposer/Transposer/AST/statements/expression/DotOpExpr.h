@@ -16,4 +16,5 @@ public:
     void analyze() const override;
     std::string translateToCpp() const override;
     std::string toString() const override;
+    void setSymbolTable(SymbolTable* symTable) const override;
 };

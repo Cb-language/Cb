@@ -19,6 +19,7 @@ public:
 
     void analyze() const override;
     std::string translateToCpp() const override;
+    void setSymbolTable(SymbolTable* symTable) const override;
 
     const Var& getVar() const;
     const Expr* getStartingValue() const;

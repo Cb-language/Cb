@@ -300,7 +300,9 @@ std::string ClassDeclStmt::translateToH() const
         else privates << std::endl << tabs << Utils::removeAllFirstTabs(ctor->translateToH());
     }
 
-    publics << std::endl << tabs << "std::string toString(int indents = 0) const override;" << std::endl << tabs << "Primitive<bool> equals(const Object& other) const override;" << std::endl;
+    publics << std::endl << tabs << "std::string toString(int indents = 0) const override;" << std::endl
+    << tabs << "Primitive<bool> equals(const Object& other) const override;" << std::endl
+    << tabs << "~" << translateFQNtoString(name) << "() override = default;" << std::endl;
 
     if (!privates.str().empty())
     {
@@ -317,6 +319,14 @@ std::string ClassDeclStmt::translateToH() const
     oss << "};" << std::endl;
 
     return oss.str();
+}
+
+void ClassDeclStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    for (const auto& field : fields | std::views::values) field->setSymbolTable(symTable);
+    for (const auto& method : methods | std::views::values) method->setSymbolTable(symTable);
+    for (const auto& ctor : ctors | std::views::values) ctor->setSymbolTable(symTable);
 }
 
 bool ClassDeclStmt::getHasEmptyCtor() const

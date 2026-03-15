@@ -25,3 +25,9 @@ std::string LenExpr::translateToCpp() const
 {
     return varRef->translateToCpp() + "." + (isNegative ? "NegLength" : "Length") + "()";
 }
+
+void LenExpr::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    varRef->setSymbolTable(symTable);
+}

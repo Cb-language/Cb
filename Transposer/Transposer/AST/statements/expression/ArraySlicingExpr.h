@@ -17,6 +17,7 @@ public:
     std::string translateToCpp() const override;
     std::unique_ptr<IType> getType() const override;
     std::string toString() const override;
+    void setSymbolTable(SymbolTable* symTable) const override;
 
     void setStart(std::unique_ptr<Expr> start);
     void setStop(std::unique_ptr<Expr> stop);

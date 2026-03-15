@@ -47,3 +47,10 @@ std::string DotOpExpr::toString() const
 {
     return left->toString() + "\\" + right->toString();
 }
+
+void DotOpExpr::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    left->setSymbolTable(symTable);
+    right->setSymbolTable(symTable);
+}

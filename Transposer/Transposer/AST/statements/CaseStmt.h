@@ -13,5 +13,5 @@ public:
     CaseStmt(const Token& token, StmtWithBody stmt, const bool isDefault = false);
     void analyze() const override;
     std::string translateToCpp() const override;
-
+    void setSymbolTable(SymbolTable* symTable) const override;
 };

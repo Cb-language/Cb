@@ -91,6 +91,12 @@ std::string ConstractorCallStmt::translateToCpp() const
     return oss.str();
 }
 
+void ConstractorCallStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    for (const auto& arg : args) arg->setSymbolTable(symTable);
+}
+
 void ConstractorCallStmt::setNeedsSemicolon(const bool needsSemicolon)
 {
     this->needsSemicolon = needsSemicolon;

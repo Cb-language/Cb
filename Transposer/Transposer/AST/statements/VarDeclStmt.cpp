@@ -36,7 +36,7 @@ void VarDeclStmt::analyze() const
         startingValue->setClassNode(symTable->getCurrClass());
         startingValue->analyze();
         
-        if (translateFQNtoString(var.getType()->getFQN()) != translateFQNtoString(startingValue->getType()->getFQN()))
+        if (*(var.getType()) != *(startingValue->getType()))
         {
             symTable->addError(std::make_unique<IllegalTypeCast>(token, var.getType()->toString(), startingValue->getType()->toString()));
         }
@@ -58,6 +58,12 @@ std::string VarDeclStmt::translateToCpp() const
 
     ret += ";";
     return ret;
+}
+
+void VarDeclStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    if (startingValue != nullptr) startingValue->setSymbolTable(symTable);
 }
 
 const Var& VarDeclStmt::getVar() const

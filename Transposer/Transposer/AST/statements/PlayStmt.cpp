@@ -37,3 +37,9 @@ std::string PlayStmt::translateToCpp() const
     ret += ";";
     return ret;
 }
+
+void PlayStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    for (const auto& expr : exprs) expr->setSymbolTable(symTable);
+}

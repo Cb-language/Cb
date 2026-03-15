@@ -89,3 +89,9 @@ std::unique_ptr<IType> UnaryOpExpr::getType() const
 {
     return operand->getType()->copy();
 }
+
+void UnaryOpExpr::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    operand->setSymbolTable(symTable);
+}

@@ -97,7 +97,8 @@ std::string Parser::translateToCpp(const std::filesystem::path& hPath, const boo
     {
         oss << "int main()" << std::endl <<
             "{" << std::endl <<
-            "\treturn prelude().getValue();" << std::endl <<
+            "\ttry{return prelude().getValue();}" << std::endl <<
+            "\tcatch(std::exception& e)\n\t{\n\t\tstd::cerr << e.what() << std::endl;\n\t\treturn -1;\n\t}" << std::endl <<
             "}" << std::endl;
     }
 

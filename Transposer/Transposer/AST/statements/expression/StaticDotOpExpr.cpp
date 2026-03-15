@@ -35,3 +35,9 @@ std::string StaticDotOpExpr::toString() const
 {
     return left->toString() + "\\" + right->toString();
 }
+
+void StaticDotOpExpr::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    right->setSymbolTable(symTable);
+}

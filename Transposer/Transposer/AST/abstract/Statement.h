@@ -27,7 +27,7 @@ public:
     virtual const Token& getToken() const;
     void setScope(Scope* scope);
     void setClassNode(const ClassNode* currClass);
-    void setSymbolTable(SymbolTable* symTable) const;
+    virtual void setSymbolTable(SymbolTable* symTable) const;
 
 };
 

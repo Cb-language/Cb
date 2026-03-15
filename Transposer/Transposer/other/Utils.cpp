@@ -95,6 +95,7 @@ std::string Utils::getAllObjIncludes()
     std::ostringstream oss;
 
     oss << R"(#include "includes/Object.h")" << std::endl <<
+        R"(#include "includes/Utils.h")" << std::endl <<
         R"(#include "includes/String.h")" << std::endl <<
         R"(#include "includes/Array.h")" << std::endl <<
         R"(#include "includes/Primitive.h")" << std::endl <<

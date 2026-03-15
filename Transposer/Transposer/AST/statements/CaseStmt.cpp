@@ -59,3 +59,10 @@ std::string CaseStmt::translateToCpp() const
     os << ":\n" << stmt.body->translateToCpp() << "\n";
     return os.str();
 }
+
+void CaseStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    stmt.expr->setSymbolTable(symTable);
+    stmt.body->setSymbolTable(symTable);
+}

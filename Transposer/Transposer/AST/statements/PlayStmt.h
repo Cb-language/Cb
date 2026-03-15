@@ -12,4 +12,5 @@ public:
     PlayStmt(const Token& token, std::vector<std::unique_ptr<Expr>> exprs, bool printLine = false);
     void analyze() const override;
     std::string translateToCpp() const override;
+    void setSymbolTable(SymbolTable* symTable) const override;
 };

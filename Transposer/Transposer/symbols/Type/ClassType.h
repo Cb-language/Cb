@@ -2,6 +2,7 @@
 #include "IType.h"
 #include "class/ClassNode.h"
 #include "parser/FQN.h"
+#include "class/ClassTree.h"
 
 class ClassType : public IType
 {
@@ -9,6 +10,7 @@ private:
     const FQN name;
     const ClassNode* c;
 
+    static ClassTree& classTree;
 public:
     explicit ClassType(const FQN& name);
     ~ClassType() override;

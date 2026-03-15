@@ -1,5 +1,7 @@
 #include "StmtParser.h"
 
+#include <algorithm>
+
 #include "TypeParser.h"
 #include "ExprParser.h"
 
@@ -23,7 +25,8 @@
 #include "AST/statements/ClassDeclStmt.h"
 #include "AST/statements/ConstructorDeclStmt.h"
 #include "AST/statements/ConstractorCallStmt.h"
-#include "AST/statements/ObjCreationStmt.h"
+#include "AST/statements/ObjCreationCastStmt.h"
+#include "AST/statements/ObjCreationPolyStmt.h"
 
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 #include "errorHandling/syntaxErrors/MissingBrace.h"
@@ -770,12 +773,13 @@ std::unique_ptr<ConstructorDeclStmt> StmtParser::parseCtor(const FQN& className)
     }
     else
     {
-        stmt->setBody(nullptr);
+        std::vector<std::unique_ptr<Stmt>> empty;
+        stmt->setBody(std::make_unique<BodyStmt>(c.copyCurrent(), empty));
     }
     return stmt;
 }
 
-std::unique_ptr<ObjCreationStmt> StmtParser::parseObjCreationStmt() const
+std::unique_ptr<ObjectCreationStmt> StmtParser::parseObjCreationStmt() const
 {
     auto type = typeParser.parseIType();
     const FQN name = c.parseFQN();
@@ -794,7 +798,7 @@ std::unique_ptr<ObjCreationStmt> StmtParser::parseObjCreationStmt() const
 
     auto ctorCall = std::make_unique<ConstractorCallStmt>(c.getLastToken(), std::move(args));
 
-    return std::make_unique<ObjCreationStmt>(
+    return std::make_unique<ObjCreationPolyStmt>(
         c.getLastToken(),
         nullptr,
         hasCtorArgs,
@@ -803,13 +807,13 @@ std::unique_ptr<ObjCreationStmt> StmtParser::parseObjCreationStmt() const
     );
 }
 
-std::unique_ptr<ObjCreationStmt> StmtParser::parsePolyObjCreationStmt(std::unique_ptr<IType> type) const
+std::unique_ptr<ObjectCreationStmt> StmtParser::parsePolyObjCreationStmt(std::unique_ptr<IType> type) const
 {
-        const FQN name = c.parseFQN();
+    const FQN name = c.parseFQN();
 
-        c.expect(CbTokenType::BINARY_OP_EQUAL);
-        c.expect(CbTokenType::KEYWORD_CTOR_CALL);
-
+    c.expect(CbTokenType::BINARY_OP_EQUAL);
+    if (c.matchConsume(CbTokenType::KEYWORD_CTOR_CALL))
+    {
         const FQN ctorName = c.parseFQN();
 
         bool hasCtorArgs;
@@ -826,7 +830,7 @@ std::unique_ptr<ObjCreationStmt> StmtParser::parsePolyObjCreationStmt(std::uniqu
 
         auto ctorCall = std::make_unique<ConstractorCallStmt>(c.getLastToken(), std::move(args));
 
-        return std::make_unique<ObjCreationStmt>(
+        return std::make_unique<ObjCreationPolyStmt>(
             c.getLastToken(),
             nullptr,
             hasCtorArgs,
@@ -834,6 +838,19 @@ std::unique_ptr<ObjCreationStmt> StmtParser::parsePolyObjCreationStmt(std::uniqu
             Var(std::move(type), name),
             ctorName
         );
+    }
+
+    c.expect(CbTokenType::KEYWORD_TRANSCRIBE);
+
+    if (c.matchConsume(CbTokenType::PUNCTUATION_SEMICOLON))
+    {
+        return std::make_unique<ObjCreationCastStmt>(c.getLastToken(), false, nullptr, Var(std::move(type), name));
+    }
+
+    c.expect(CbTokenType::BINARY_OP_EQUAL);
+    std::unique_ptr<CastCallExpr> right = exprParser.parseCastExpr();
+
+    return std::make_unique<ObjCreationCastStmt>(c.getLastToken(), true, std::move(right), Var(std::move(type), name));
 }
 
 void StmtParser::parse()

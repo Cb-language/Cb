@@ -942,13 +942,13 @@ class SafePtr : public Object
 {
 private:
     std::unique_ptr<T> ptr;
+public:
     using InnerT = typename std::conditional_t<
         is_array_specialization<T>::value,
         is_array_specialization<T>,
         is_array_specialization<Array<T>> // Dummy fallback that won't trigger SafePtr<void>
     >::inner_type;
     using InnerSafePtr = SafePtr<InnerT>;
-public:
     SafePtr();
     explicit SafePtr(const std::unique_ptr<T>& ptr);
     explicit SafePtr(const T& t);
@@ -1388,13 +1388,12 @@ protected:
 class Utils
 {
 public:
-    static const std::string badCastMsg;
-    template <typename T>
-    static T& cast(const SafePtr<Object>& other);
+    inline static const std::string badCastMsg = "Illegal cast";
+    template <typename T, typename U>
+    static T cast(const U& other);
 
-
-    template <typename T>
-    static bool is(const SafePtr<Object>& other);
+    template <typename T, typename U>
+    static bool is(const U& other);
 };
 
 #include "Utils.tpp")" },
@@ -1402,26 +1401,24 @@ public:
 #include "Primitive.h"
 #include "Utils.h"
 
-const std::string Utils::badCastMsg = "Illegal cast";
-
-template <typename T>
-T& Utils::cast(const SafePtr<Object>& other)
+template <typename T, typename U>
+T Utils::cast(const U& other)
 {
     if (auto o = other.get())
     {
-        if (auto p = dynamic_cast<T*>(o))
-            return *p;
+        if (auto p = dynamic_cast<typename T::InnerT*>(o))
+            return SafePtr(*p);
     }
 
     throw std::logic_error(badCastMsg);
 }
 
-template <typename T>
-bool Utils::is(const SafePtr<Object>& other)
+template <typename T, typename U>
+bool Utils::is(const U& other)
 {
     try
     {
-        cast<T>(other);
+        cast<T, U>(other);
     }
     catch (std::logic_error& e)
     {
