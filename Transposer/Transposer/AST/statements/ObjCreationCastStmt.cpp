@@ -20,7 +20,7 @@ void ObjCreationCastStmt::analyze() const
 
         if (type == nullptr || varType == nullptr) throw HowDidYouGetHere(token);
 
-        if (varType != type && type != varType)
+        if (*varType != *type && *type != *varType)
         {
             throw IllegalTypeCast(token, type->toString(), varType->toString());
         }
