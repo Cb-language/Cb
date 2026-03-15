@@ -70,7 +70,9 @@ void IfStmt::setSymbolTable(SymbolTable* symTable) const
 
     for (auto& stmt : elseStmts)
     {
-        stmt.expr->setSymbolTable(symTable);
         stmt.body->setSymbolTable(symTable);
+
+        if (stmt.expr != nullptr) // if its an else stmt there's no else
+            stmt.expr->setSymbolTable(symTable);
     }
 }

@@ -45,6 +45,8 @@
 #include "errorHandling/lexicalErrors/UnrecognizedToken.h"
 
 #include "errorHandling/how/HowDareYou.h"
+#include "errorHandling/syntaxErrors/CaseNotInsideIf.h"
+#include "errorHandling/syntaxErrors/ElseWithoutIf.h"
 #include "symbols/Type/ClassType.h"
 
 // Helper to determine if a statement consumes its own trailing semicolon/terminator
@@ -156,6 +158,16 @@ std::unique_ptr<Stmt> StmtParser::parseStmt()
     if (c.matchConsume(CbTokenType::KEYWORD_FEAT))
     {
         c.addError(std::make_unique<IncludeNotInTop>(c.getLastToken()));
+        return nullptr;
+    }
+    if (c.matchConsume(CbTokenType::KEYWORD_ELSE))
+    {
+        c.addError(std::make_unique<ElseWithoutIf>(c.getLastToken()));
+        return nullptr;
+    }
+    if (c.matchConsume(CbTokenType::KEYWORD_CASE))
+    {
+        std::make_unique<CaseNotInsideIf>(c.getLastToken());
     }
 
     c.addError(std::make_unique<UnrecognizedToken>(c.advance()));
@@ -527,7 +539,11 @@ std::unique_ptr<SwitchStmt> StmtParser::parseSwitchStmt()
         {
             if (auto cs = parseCaseStmt()) cases.push_back(std::move(cs));
         }
-        else c.advance();
+        else
+        {
+            c.addError(std::make_unique<InvalidExpression>(c.getLastToken()));
+            c.advance();
+        }
     }
 
     c.removeBreakable();
