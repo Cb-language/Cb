@@ -16,13 +16,13 @@ class SafePtr : public Object
 {
 private:
     std::unique_ptr<T> ptr;
+public:
     using InnerT = typename std::conditional_t<
         is_array_specialization<T>::value,
         is_array_specialization<T>,
         is_array_specialization<Array<T>> // Dummy fallback that won't trigger SafePtr<void>
     >::inner_type;
     using InnerSafePtr = SafePtr<InnerT>;
-public:
     SafePtr();
     explicit SafePtr(const std::unique_ptr<T>& ptr);
     explicit SafePtr(const T& t);

@@ -2,24 +2,24 @@
 #include "Primitive.h"
 #include "Utils.h"
 
-template <typename T>
-SafePtr<T> Utils::cast(const SafePtr<Object>& other)
+template <typename T, typename U>
+T Utils::cast(const U& other)
 {
     if (auto o = other.get())
     {
-        if (auto p = dynamic_cast<T*>(o))
-            return SafePtr<T>(*p);
+        if (auto p = dynamic_cast<typename T::InnerT*>(o))
+            return SafePtr(*p);
     }
 
     throw std::logic_error(badCastMsg);
 }
 
-template <typename T>
-bool Utils::is(const SafePtr<Object>& other)
+template <typename T, typename U>
+bool Utils::is(const U& other)
 {
     try
     {
-        cast<T>(other);
+        cast<T, U>(other);
     }
     catch (std::logic_error& e)
     {
