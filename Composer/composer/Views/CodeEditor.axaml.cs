@@ -264,7 +264,7 @@ public partial class CodeEditor : UserControl
     private void ToggleComment()
     {
         var document = Editor.Document;
-        const string commentPrefix = "?";
+        const string commentPrefix = "𝄢 ";
 
         // 1. Single Line Logic (No Selection)
         if (Editor.SelectionLength == 0)
