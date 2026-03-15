@@ -84,9 +84,17 @@ std::unique_ptr<Stmt> StmtParser::parseStmt()
 
         if (c.matchNonConsume(CbTokenType::IDENTIFIER))
         {
-            const auto varRef = dynamic_cast<VarCallExpr&>(*res);
-            std::unique_ptr<IType> type = std::make_unique<ClassType>(varRef.getName());
-            return parsePolyObjCreationStmt(std::move(type));
+            try
+            {
+                const auto varRef = dynamic_cast<VarCallExpr&>(*res);
+                std::unique_ptr<IType> type = std::make_unique<ClassType>(varRef.getName());
+                return parsePolyObjCreationStmt(std::move(type));
+            }
+            catch (...)
+            {
+                if (res) res->setNeedsSemicolon(true);
+                return res;
+            }
         }
         if (res) res->setNeedsSemicolon(true);
 
