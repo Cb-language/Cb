@@ -43,7 +43,9 @@ void SymbolTable::analyzePass1(const std::vector<std::unique_ptr<Stmt>>& stmts)
     {
         if (const auto* classDecl = dynamic_cast<ClassDeclStmt*>(stmt.get()))
         {
-            addClass(Class(classDecl->getName()));
+            ClassNode* parentNode = nullptr;
+            if (const FQN& parentName = classDecl->getParentName(); !parentName.empty()) parentNode = classTree.find(parentName);
+            addClass(Class(classDecl->getName()), parentNode);
         }
         else if (auto* funcDecl = dynamic_cast<FuncDeclStmt*>(stmt.get()))
         {

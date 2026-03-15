@@ -4,6 +4,7 @@
 
 ClassNode::ClassNode(const Class& c, ClassNode* parent) : parent(parent), c(c.copy())
 {
+    if (parent != nullptr) parent->addChild(this);
 }
 
 const ClassNode* ClassNode::getParent() const
