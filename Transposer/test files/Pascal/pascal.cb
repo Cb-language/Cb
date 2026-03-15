@@ -8,7 +8,7 @@ song prelude𝄕𝄇 𝅘𝅥=degree
 song pascal𝄕sharp degree size𝄇
 𝄞 riff riff sharp degree arr[size][size] 𝄀
 𝄞 arr[0][0] = 1 𝄀
-𝄞 bar b = "]" 𝄀
+𝄞 bar b = "]"
 𝄞 Fmaj1𝄪size𝄓i 𝄋
 𝄞   Fmaj0𝄪size𝄓j 𝄋
 𝄞       D 𝄕j == 0𝄇 𝄋
