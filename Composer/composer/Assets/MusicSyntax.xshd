@@ -12,7 +12,7 @@
     <Color name="Numbers" foreground="#B5CEA8" />
     <Color name="CClef" foreground="#FF0000" />         
             
-    <RuleSet ignoreCase="true">
+    <RuleSet ignoreCase="false">
         <Span color="Comment" multiline="true" begin="𝄢𝄩" end="𝄩𝄢" />
         <Span color="Comment" begin="𝄢" />
 
@@ -26,7 +26,7 @@
         </Rule>
         
         <Rule color="MusicalSymbols">
-            (𝄞|𝄀|𝄂|𝄋|𝄌|©|𝄽|♯|𝄪|♭|𝄫|♮|\#|𝄍|𝄓|𝄇|𝄕|𝅘𝅥=)
+            (𝄞|𝄀|𝄂|𝄋|𝄌|©|𝄽|♯|𝄪|♭|𝄫|♮|\#|𝄍|𝄓|𝄇|𝄕|𝅘𝅥=|𝆒|𝆓|==|!=|&lt;=|&gt;=|\+=|-=|\/=|%=|\*=|!|=|&lt;|&gt;|\+|-|\/|\*|%|\[|\]|,|:)
         </Rule>
 
         <Rule color="CClef">
@@ -43,8 +43,8 @@
             <Word>bar</Word>
             <Word>riff</Word>
             <Word>fermata</Word>
-            <Word>cres</Word>
-            <Word>demen</Word>
+            <Word>div.</Word>
+            <Word>non div.</Word>
         </Keywords>
 
         <Rule color="Keywords">
@@ -76,6 +76,10 @@
             <Word>Fmaj</Word>
             <Word>Fmin</Word>
             <Word>G</Word>
+            <Word>transcribe</Word>
+            <Word>timbre</Word>
+            <Word>duration</Word>
+            <Word>sub duration</Word>
         </Keywords>
 
         <Rule color="Keywords">
