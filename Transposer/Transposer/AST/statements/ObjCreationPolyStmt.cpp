@@ -32,8 +32,13 @@ void ObjCreationPolyStmt::analyze() const
     const ClassNode* target = classNode;
     if (target == nullptr)
     {
-        target = symTable->getClass(var.getType()->getFQN());
-        if (target == nullptr) symTable->addError(std::make_unique<ClassDosentExisit>(token, var.getType()->toString()));
+        auto searchingName = var.getType()->getFQN();
+        target = symTable->getClass(searchingName);
+        if (target == nullptr) symTable->addError(std::make_unique<ClassDosentExisit>(token, translateFQNtoString(searchingName)));
+
+        searchingName = ctorName.empty() ? var.getType()->getFQN() : ctorName;
+        target = symTable->getClass(searchingName);
+        if (target == nullptr) symTable->addError(std::make_unique<ClassDosentExisit>(token, translateFQNtoString(searchingName)));
         const_cast<ObjCreationPolyStmt*>(this)->classNode = target;
     }
 
@@ -62,13 +67,15 @@ std::string ObjCreationPolyStmt::translateToCpp() const
     std::ostringstream oss;
     if (classNode == nullptr) throw HowDidYouGetHere(token);
 
-    const std::string className = translateFQNtoString(classNode->getClass().getClassName());
+    const std::string className = translateFQNtoString(var.getType()->getFQN());
     const std::string classSafePtr = "SafePtr<" + className + ">";
+    const std::string ctorCall = translateFQNtoString(classNode->getClass().getClassName());
+    const std::string ctorSafePtr = "SafePtr<" + ctorCall + ">";
 
     oss << getTabs() << classSafePtr << " " << translateFQNtoString(var.getName()) << " = " << classSafePtr << "(";
 
     if (hasStartingValue && startingValue != nullptr) oss  << startingValue->translateToCpp();
-    else oss << className << "()";
+    else oss << ctorCall << "()";
 
     oss << ");";
 
