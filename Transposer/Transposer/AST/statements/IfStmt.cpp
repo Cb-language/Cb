@@ -42,19 +42,20 @@ void IfStmt::analyze() const
 std::string IfStmt::translateToCpp() const
 {
     std::ostringstream oss;
-    oss << getTabs() <<  "if (" << ifStmt.expr->translateToCpp() << ")" << std::endl;
+    const std::string tabs = getTabs();
+    oss << tabs <<  "if (" << ifStmt.expr->translateToCpp() << ")" << std::endl;
     oss << ifStmt.body->translateToCpp();
 
     for (auto& stmt : elseStmts)
     {
         if (stmt.expr != nullptr)
         {
-            oss << "else if (" << stmt.expr->translateToCpp() << ")" << std::endl;
+            oss << std::endl << tabs << "else if (" << stmt.expr->translateToCpp() << ")" << std::endl;
             oss << stmt.body->translateToCpp();
         }
         else
         {
-            oss << "else " << std::endl;
+            oss << std::endl << tabs << "else " << std::endl;
             oss << stmt.body->translateToCpp();
         }
     }
