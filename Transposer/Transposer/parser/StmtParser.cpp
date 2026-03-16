@@ -733,6 +733,7 @@ std::unique_ptr<ConstructorDeclStmt> StmtParser::parseCtor(const FQN& className)
     }
 
     c.setIsInFunc(true);
+    c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingBrace>(c.copyCurrent()));
     std::vector<Var> args = exprParser.getArgsWithTypes();
 
     auto stmt = std::make_unique<ConstructorDeclStmt>(
