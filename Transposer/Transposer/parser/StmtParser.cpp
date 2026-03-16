@@ -351,22 +351,7 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
 
     c.setIsInFunc(true);
 
-    std::vector<Var> args;
-    while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
-    {
-        auto type = typeParser.parseIType();
-        if (!type)
-            return nullptr;
-
-        const FQN argName = c.parseFQN();
-        args.emplace_back(std::move(type), argName);
-
-        if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
-        {
-            if (!c.expect(CbTokenType::PUNCTUATION_COMMA, std::make_unique<UnexpectedToken>(c.getLastToken())))
-                return nullptr;
-        }
-    }
+    std::vector<Var> args = exprParser.getArgsWithTypes();
 
     std::unique_ptr<IType> retType = nullptr;
     if (c.matchConsume(CbTokenType::PUNCTUATION_RET_TYPE_ARROW))
@@ -748,15 +733,7 @@ std::unique_ptr<ConstructorDeclStmt> StmtParser::parseCtor(const FQN& className)
     }
 
     c.setIsInFunc(true);
-    std::vector<Var> args;
-    c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN);
-    while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
-    {
-        auto type = typeParser.parseIType();
-        const FQN argName = c.parseFQN();
-        args.emplace_back(std::move(type), argName);
-        if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA);
-    }
+    std::vector<Var> args = exprParser.getArgsWithTypes();
 
     auto stmt = std::make_unique<ConstructorDeclStmt>(
         c.getLastToken(),
@@ -768,12 +745,7 @@ std::unique_ptr<ConstructorDeclStmt> StmtParser::parseCtor(const FQN& className)
     {
         c.expect(CbTokenType::KEYWORD_BASS);
         c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN);
-        std::vector<std::unique_ptr<Expr>> parentArgs;
-        while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
-        {
-            parentArgs.push_back(exprParser.parseExpr());
-            if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA);
-        }
+        std::vector<std::unique_ptr<Expr>> parentArgs = exprParser.getArgsWithoutTypes();
         stmt->setParentCtorCall(std::move(parentArgs));
     }
     if (c.getIsInFunc())
@@ -798,11 +770,7 @@ std::unique_ptr<ObjectCreationStmt> StmtParser::parseObjCreationStmt() const
     if (c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
     {
         hasCtorArgs = true;
-        while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
-        {
-            args.push_back(exprParser.parseExpr());
-            if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA);
-        }
+        args = exprParser.getArgsWithoutTypes();
     }
 
     auto ctorCall = std::make_unique<ConstractorCallStmt>(c.getLastToken(), std::move(args));
@@ -830,11 +798,7 @@ std::unique_ptr<ObjectCreationStmt> StmtParser::parsePolyObjCreationStmt(std::un
         if (c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
         {
             hasCtorArgs = true;
-            while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
-            {
-                args.push_back(exprParser.parseExpr());
-                if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA);
-            }
+            args = exprParser.getArgsWithoutTypes();
         }
 
         auto ctorCall = std::make_unique<ConstractorCallStmt>(c.getLastToken(), std::move(args));
