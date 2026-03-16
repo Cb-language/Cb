@@ -26,8 +26,8 @@
 | `E𝄋...𝄌` | `else{...}` |
 | `A𝄍<param>𝄋...𝄌` | `Switch(param){...}` |
 | `C𝄍<value>𝄋...𝄌` | `case value: ...` |
-| `div.` | `||` (or) |
-| `non div.` | `&&` (and) |
+| `div.` | `or` |
+| `non div.` | `and` |
 
 ### Variables
 To create a variable:
@@ -78,7 +78,7 @@ The default value of an item inside an array is the default of the type unless s
 #### Return
 `B[𝄍return_value]`, by default return value is fermata.
 
-#### Tranposer Set-Up 🪟 Windows
+## Tranposer Set-Up 🪟 Windows
 This step is for running the Transposer solution, if you're running the exe itselft its not neccessery.
  
 Install `vcpkg` directly under your C drive:
