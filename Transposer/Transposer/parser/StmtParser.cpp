@@ -337,10 +337,10 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
             return nullptr;
         }
 
-        while (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+        while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
         {
             if (auto credit = parseFuncCreditStmt()) credited.push_back(std::move(credit));
-            if (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA, std::make_unique<UnexpectedToken>(c.getLastToken()));
+            if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA, std::make_unique<UnexpectedToken>(c.getLastToken()));
         }
     }
 
