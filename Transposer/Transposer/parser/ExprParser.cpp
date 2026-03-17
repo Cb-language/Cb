@@ -13,6 +13,7 @@
 #include "AST/statements/expression/ArrayIndexingExpr.h"
 #include "AST/statements/AssignmentStmt.h"
 #include "AST/statements/expression/ArraySlicingExpr.h"
+#include "errorHandling/classErrors/InvalidCtorName.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
@@ -315,21 +316,33 @@ std::unique_ptr<Expr> ExprParser::parseUnaryOp()
 
 std::unique_ptr<Expr> ExprParser::parseBinaryOp(std::unique_ptr<VarReference> left)
 {
-    if (c.matchConsume(CbTokenType::KEYWORD_CTOR_CALL))
-    {
-        auto type = typeParser.parseIType();
-
-        c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN);
-        std::vector<std::unique_ptr<Expr>> args = getArgsWithoutTypes();
-
-
-    }
-
     Token opToken = c.advance();
     std::string op = tokenToOp(opToken.type);
     auto right = parseExpr();
 
     if (op == "=" || op == "+=" || op == "-=" || op == "*=" || op == "/=" || op == "%=")
+        if (op == "="  && c.matchConsume(CbTokenType::KEYWORD_CTOR_CALL))
+        {
+            Token ctorToken = c.getLastToken();
+            const auto type = typeParser.parseIType();
+            if (!type)
+            {
+                return nullptr;
+            }
+
+            if (const auto* classType = dynamic_cast<ClassType*>(type.get()); !classType)
+            {
+                c.addError(std::make_unique<InvalidCtorName>(ctorToken, ctorToken.value.value_or("")));
+                return nullptr;
+            }
+
+            c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent()));
+            std::vector<std::unique_ptr<Expr>> args = getArgsWithoutTypes();
+
+            auto ctorCall = std::make_unique<FuncCallExpr>(ctorToken, type->getFQN(), std::move(args), false);
+            return std::make_unique<AssignmentStmt>(ctorToken, std::move(left), "=", std::move(ctorCall));
+        }
+
         return std::make_unique<AssignmentStmt>(opToken, std::move(left), op, std::move(right));
 
     return std::make_unique<BinaryOpExpr>(opToken, op, std::move(left),  std::move(right));

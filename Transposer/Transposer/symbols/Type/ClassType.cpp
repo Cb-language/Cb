@@ -58,9 +58,9 @@ void ClassType::setClassNode(const ClassNode& node)
     c = &node;
 }
 
-std::string ClassType::getName() const
+const FQN& ClassType::getName() const
 {
-    return translateFQNtoString(name);
+    return name;
 }
 
 std::string ClassType::translateTypeToCpp() const
