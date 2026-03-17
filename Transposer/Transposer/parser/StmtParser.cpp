@@ -25,6 +25,7 @@
 #include "AST/statements/ClassDeclStmt.h"
 #include "AST/statements/ConstructorDeclStmt.h"
 #include "AST/statements/ConstractorCallStmt.h"
+#include "AST/statements/ContinueStmt.h"
 #include "AST/statements/ObjCreationCastStmt.h"
 #include "AST/statements/ObjCreationPolyStmt.h"
 
@@ -696,7 +697,7 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
         }
         else if (c.matchConsume(CbTokenType::KEYWORD_SONG))
         {
-            if (auto method = parseFuncDeclStmt(true))
+            if (auto method = parseFuncDeclStmt(true, virtualType))
             {
                 method->setIsStatic(isStatic);
                 method->setVirtual(virtualType);
