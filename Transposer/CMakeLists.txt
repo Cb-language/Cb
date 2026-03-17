@@ -294,6 +294,8 @@ add_executable(Transposer
         Transposer/AST/statements/ObjCreationCastStmt.cpp
         Transposer/AST/statements/ObjCreationCastStmt.h
         Transposer/AST/abstract/ObjectCreationStmt.h
+        Transposer/errorHandling/syntaxErrors/CaseNotInsideIf.cpp
+        Transposer/errorHandling/syntaxErrors/CaseNotInsideIf.h
 
 )
 

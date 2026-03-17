@@ -2,7 +2,15 @@ feat. "base.cb"𝄀
 feat. "derived.cb"𝄀
 
 song prelude𝄕𝄇 𝅘𝅥=degree
-𝄞 Base b = 𝆫 Derived𝄕5𝄇 𝄀
-𝄞 Derived d = transcribe𝆒Derived𝆓𝄕b𝄇 𝄀
-𝄞 play bar𝄕d 𝄍 f𝄕𝄇𝄇 𝄀
+𝄞 riff Base[2] b𝄀
+𝄞 b[0] = 𝆫 Derived𝄕5𝄇 𝄀
+𝄞 b[1] = 𝆫 Base𝄕5𝄇 𝄀
+𝄞 D𝄕b[0] timbre Derived𝄇𝄋 
+𝄞  Derived temp = transcribe𝆒Derived𝆓𝄕b[0]𝄇𝄀
+𝄞  play bar𝄕temp𝄍f𝄕𝄇𝄇𝄇𝄀    
+𝄞𝄀𝄌 𝄀
+𝄞 D𝄕b[1] timbre Derived𝄇𝄋 
+𝄞  Derived temp = transcribe𝆒Derived𝆓𝄕b[1]𝄇𝄀
+𝄞  play bar𝄕temp𝄍f𝄕𝄇𝄇𝄇𝄀    
+𝄞𝄀𝄌 𝄀
 𝄞B𝄍0𝄂

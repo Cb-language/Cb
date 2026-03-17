@@ -23,7 +23,7 @@ public:
     bool isPrimitive() const override;
     const ClassNode* getClassNode() const;
     void setClassNode(const ClassNode& node);
-    std::string getName() const;
+    const FQN& getName() const;
 
     std::string translateTypeToCpp() const override;
     std::unique_ptr<IType> copy() const override;

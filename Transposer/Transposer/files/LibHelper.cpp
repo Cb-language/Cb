@@ -173,7 +173,7 @@ Array<T>& Array<T>::operator=(const Array<T>& other)
     data.reserve(size);
     for (Primitive<int> i; i < size; ++i)
     {
-        data.push_back(other.data[i].cloneSafePtr());
+        data.push_back(other.data[i.getValue()].cloneSafePtr());
     }
     return *this;
 }
@@ -201,7 +201,7 @@ Array<T>& Array<T>::operator=(const Array<U>& other)
         }
     }
 
-    defaultValueSet = data[0].clonePtr();
+    defaultValueSet = data[0].cloneSafePtrPtr();
     return *this;
 }
 
@@ -215,7 +215,7 @@ Array<T>& Array<T>::operator=(const T& defaultValue)
     defaultValueSet = SafePtr<T>(defaultValue);
     for (Primitive<int> i; i < size; ++i)
     {
-        data.push_back(defaultValueSet.clone());
+        data.push_back(defaultValueSet.cloneSafePtr());
     }
     return *this;
 }
@@ -282,7 +282,7 @@ requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 template <typename U>
 std::enable_if_t<std::is_base_of_v<Object, U>, void> Array<T>::add(const U& obj)
 {
-    data.push_back(SafePtr<T>(obj.clone()));
+    data.push_back(SafePtr<T>(obj.cloneSafePtr()));
     ++size;
 }
 
@@ -323,11 +323,11 @@ Array<T> Array<T>::slice(Primitive<int> start, Primitive<int> stop, Primitive<in
 
     for (Primitive<int> i = start; (step > 0 ? i < stop : i > stop); i += step)
     {
-        result.data.push_back(data[i].clone());
+        result.data.push_back(data[i.getValue()].cloneSafePtr());
         ++result.size;
     }
 
-    result.defaultValueSet = defaultValueSet.clone();
+    result.defaultValueSet = defaultValueSet.cloneSafePtr();
     return result;
 }
 

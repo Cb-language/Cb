@@ -45,6 +45,8 @@
 #include "errorHandling/lexicalErrors/UnrecognizedToken.h"
 
 #include "errorHandling/how/HowDareYou.h"
+#include "errorHandling/syntaxErrors/CaseNotInsideIf.h"
+#include "errorHandling/syntaxErrors/ElseWithoutIf.h"
 #include "symbols/Type/ClassType.h"
 
 // Helper to determine if a statement consumes its own trailing semicolon/terminator
@@ -87,20 +89,13 @@ std::unique_ptr<Stmt> StmtParser::parseStmt()
 
         if (c.matchNonConsume(CbTokenType::IDENTIFIER))
         {
-            try
+            if (const auto varRef = dynamic_cast<VarCallExpr*>(res.get()))
             {
-                const auto varRef = dynamic_cast<VarCallExpr&>(*res);
-                std::unique_ptr<IType> type = std::make_unique<ClassType>(varRef.getName());
+                std::unique_ptr<IType> type = std::make_unique<ClassType>(varRef->getName());
                 return parsePolyObjCreationStmt(std::move(type));
-            }
-            catch (...)
-            {
-                if (res) res->setNeedsSemicolon(true);
-                return res;
             }
         }
         if (res) res->setNeedsSemicolon(true);
-
         return res;
     }
 
@@ -163,6 +158,16 @@ std::unique_ptr<Stmt> StmtParser::parseStmt()
     if (c.matchConsume(CbTokenType::KEYWORD_FEAT))
     {
         c.addError(std::make_unique<IncludeNotInTop>(c.getLastToken()));
+        return nullptr;
+    }
+    if (c.matchConsume(CbTokenType::KEYWORD_ELSE))
+    {
+        c.addError(std::make_unique<ElseWithoutIf>(c.getLastToken()));
+        return nullptr;
+    }
+    if (c.matchConsume(CbTokenType::KEYWORD_CASE))
+    {
+        std::make_unique<CaseNotInsideIf>(c.getLastToken());
     }
 
     c.addError(std::make_unique<UnrecognizedToken>(c.advance()));
@@ -332,10 +337,10 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
             return nullptr;
         }
 
-        while (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+        while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
         {
             if (auto credit = parseFuncCreditStmt()) credited.push_back(std::move(credit));
-            if (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA, std::make_unique<UnexpectedToken>(c.getLastToken()));
+            if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA, std::make_unique<UnexpectedToken>(c.getLastToken()));
         }
     }
 
@@ -346,22 +351,7 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
 
     c.setIsInFunc(true);
 
-    std::vector<Var> args;
-    while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
-    {
-        auto type = typeParser.parseIType();
-        if (!type)
-            return nullptr;
-
-        const FQN argName = c.parseFQN();
-        args.emplace_back(std::move(type), argName);
-
-        if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
-        {
-            if (!c.expect(CbTokenType::PUNCTUATION_COMMA, std::make_unique<UnexpectedToken>(c.getLastToken())))
-                return nullptr;
-        }
-    }
+    std::vector<Var> args = exprParser.getArgsWithTypes();
 
     std::unique_ptr<IType> retType = nullptr;
     if (c.matchConsume(CbTokenType::PUNCTUATION_RET_TYPE_ARROW))
@@ -534,7 +524,11 @@ std::unique_ptr<SwitchStmt> StmtParser::parseSwitchStmt()
         {
             if (auto cs = parseCaseStmt()) cases.push_back(std::move(cs));
         }
-        else c.advance();
+        else
+        {
+            c.addError(std::make_unique<InvalidExpression>(c.getLastToken()));
+            c.advance();
+        }
     }
 
     c.removeBreakable();
@@ -679,8 +673,8 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
         auto virtualType = VirtualType::NONE;
         AccessType access = PRIVATE;
 
-        if (c.matchConsume(CbTokenType::KEYWORD_PLAYERSCORE)) access = PUBLIC;
-        else if (c.matchConsume(CbTokenType::KEYWORD_CONDUCTORSCORE)) access = PRIVATE;
+        if (c.matchConsume(CbTokenType::KEYWORD_PLAYERSCORE)) access = PRIVATE;
+        else if (c.matchConsume(CbTokenType::KEYWORD_CONDUCTORSCORE)) access = PUBLIC;
         else if (c.matchConsume(CbTokenType::KEYWORD_SECTIONSCORE)) access = PROTECTED;
 
         if (c.matchConsume(CbTokenType::KEYWORD_UNISON)) isStatic = true;
@@ -739,15 +733,8 @@ std::unique_ptr<ConstructorDeclStmt> StmtParser::parseCtor(const FQN& className)
     }
 
     c.setIsInFunc(true);
-    std::vector<Var> args;
-    c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN);
-    while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
-    {
-        auto type = typeParser.parseIType();
-        const FQN argName = c.parseFQN();
-        args.emplace_back(std::move(type), argName);
-        if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA);
-    }
+    c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingBrace>(c.copyCurrent()));
+    std::vector<Var> args = exprParser.getArgsWithTypes();
 
     auto stmt = std::make_unique<ConstructorDeclStmt>(
         c.getLastToken(),
@@ -759,12 +746,7 @@ std::unique_ptr<ConstructorDeclStmt> StmtParser::parseCtor(const FQN& className)
     {
         c.expect(CbTokenType::KEYWORD_BASS);
         c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN);
-        std::vector<std::unique_ptr<Expr>> parentArgs;
-        while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
-        {
-            parentArgs.push_back(exprParser.parseExpr());
-            if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA);
-        }
+        std::vector<std::unique_ptr<Expr>> parentArgs = exprParser.getArgsWithoutTypes();
         stmt->setParentCtorCall(std::move(parentArgs));
     }
     if (c.getIsInFunc())
@@ -789,11 +771,7 @@ std::unique_ptr<ObjectCreationStmt> StmtParser::parseObjCreationStmt() const
     if (c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
     {
         hasCtorArgs = true;
-        while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
-        {
-            args.push_back(exprParser.parseExpr());
-            if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA);
-        }
+        args = exprParser.getArgsWithoutTypes();
     }
 
     auto ctorCall = std::make_unique<ConstractorCallStmt>(c.getLastToken(), std::move(args));
@@ -821,11 +799,7 @@ std::unique_ptr<ObjectCreationStmt> StmtParser::parsePolyObjCreationStmt(std::un
         if (c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
         {
             hasCtorArgs = true;
-            while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
-            {
-                args.push_back(exprParser.parseExpr());
-                if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA);
-            }
+            args = exprParser.getArgsWithoutTypes();
         }
 
         auto ctorCall = std::make_unique<ConstractorCallStmt>(c.getLastToken(), std::move(args));

@@ -14,7 +14,7 @@ ObjCreationPolyStmt::ObjCreationPolyStmt(const Token& token, const ClassNode* cl
 {
     if (cname.empty())
     {
-        ctorName = var.getName();
+        ctorName = var.getType()->getFQN();
     }
     else
     {

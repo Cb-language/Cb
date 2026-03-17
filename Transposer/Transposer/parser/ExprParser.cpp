@@ -13,6 +13,7 @@
 #include "AST/statements/expression/ArrayIndexingExpr.h"
 #include "AST/statements/AssignmentStmt.h"
 #include "AST/statements/expression/ArraySlicingExpr.h"
+#include "errorHandling/classErrors/InvalidCtorName.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
@@ -294,15 +295,7 @@ std::unique_ptr<VarReference> ExprParser::parseFuncCall(const FQN& name)
 {
     Token t = c.copyCurrent();
     c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN);
-    std::vector<std::unique_ptr<Expr>> args;
-    while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
-    {
-        args.push_back(parseExpr());
-        if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
-        {
-            c.expect(CbTokenType::PUNCTUATION_COMMA);
-        }
-    }
+    std::vector<std::unique_ptr<Expr>> args = getArgsWithoutTypes();
     return std::make_unique<FuncCallExpr>(t, name, std::move(args), false);
 }
 
@@ -328,6 +321,28 @@ std::unique_ptr<Expr> ExprParser::parseBinaryOp(std::unique_ptr<VarReference> le
     auto right = parseExpr();
 
     if (op == "=" || op == "+=" || op == "-=" || op == "*=" || op == "/=" || op == "%=")
+        if (op == "="  && c.matchConsume(CbTokenType::KEYWORD_CTOR_CALL))
+        {
+            Token ctorToken = c.getLastToken();
+            const auto type = typeParser.parseIType();
+            if (!type)
+            {
+                return nullptr;
+            }
+
+            if (const auto* classType = dynamic_cast<ClassType*>(type.get()); !classType)
+            {
+                c.addError(std::make_unique<InvalidCtorName>(ctorToken, ctorToken.value.value_or("")));
+                return nullptr;
+            }
+
+            c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent()));
+            std::vector<std::unique_ptr<Expr>> args = getArgsWithoutTypes();
+
+            auto ctorCall = std::make_unique<FuncCallExpr>(ctorToken, type->getFQN(), std::move(args), false);
+            return std::make_unique<AssignmentStmt>(ctorToken, std::move(left), "=", std::move(ctorCall));
+        }
+
         return std::make_unique<AssignmentStmt>(opToken, std::move(left), op, std::move(right));
 
     return std::make_unique<BinaryOpExpr>(opToken, op, std::move(left),  std::move(right));
@@ -461,3 +476,36 @@ std::unique_ptr<LenExpr> ExprParser::parseLenExpr()
 
     return make_unique<LenExpr>(startToken, std::move(ref), isNeg);
 }
+
+std::vector<Var> ExprParser::getArgsWithTypes() const
+{
+    std::vector<Var> args;
+    while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+    {
+        auto type = typeParser.parseIType();
+        if (!type)
+            return {};
+
+        const FQN argName = c.parseFQN();
+        args.emplace_back(std::move(type), argName);
+
+        if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+        {
+            if (!c.expect(CbTokenType::PUNCTUATION_COMMA, std::make_unique<UnexpectedToken>(c.getLastToken())))
+                return {};
+        }
+    }
+    return args;
+}
+
+std::vector<std::unique_ptr<Expr>> ExprParser::getArgsWithoutTypes()
+{
+    std::vector<std::unique_ptr<Expr>> args;
+    while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+    {
+        args.push_back(parseExpr());
+        if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA);
+    }
+    return args;
+}
+
