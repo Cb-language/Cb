@@ -15,6 +15,7 @@ song pascal𝄕sharp degree size𝄇
 𝄞       𝄌 𝄀
 𝄞   𝄌 𝄀
 𝄞 Fmaj0𝄪size𝄓i 𝄋
+𝄞   play𝄕"["𝄇 𝄀
 𝄞   Fmaj0𝄪size𝄓j 𝄋
 𝄞       play𝄕 "[", arr[i][j],  "]" 𝄇 𝄀
 𝄞       D 𝄕j != size - 1𝄇 𝄋
@@ -26,7 +27,4 @@ song pascal𝄕sharp degree size𝄇
 𝄞       play bar𝄕𝄇 𝄀
 𝄞   𝄌 𝄀
 𝄞 𝄌 𝄀
-𝄞 play bar𝄕𝄇 𝄀
-𝄞 play bar𝄕duration𝄕arr𝄇𝄇 𝄀
-𝄞 play bar𝄕arr[0:10:2]𝄇 𝄀
-𝄞 play bar𝄕sub duration𝄕arr𝄇𝄇 𝄂
+𝄞 play bar𝄕𝄇 𝄂
