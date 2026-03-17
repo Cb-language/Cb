@@ -217,11 +217,13 @@ Usage: `[sub ]duration𝄕<array_var>𝄇`
 `<var> timbre <type>` will return true if `var` is `type` or inheriting it.
 
 For this example `AA` inherits from `BB` and: 
-```
-AA a = combining up bow[^3]AA𝄕𝄇
-BB b1 = combining up bow[^3]AA𝄕𝄇
-BB b2 = combining up bow[^3]BB𝄕𝄇
-```
+
+`AA a =` combining up bow[^3] `AA𝄕𝄇`
+
+`BB b1 =` combining up bow[^3] `AA𝄕𝄇`
+
+`BB b2 =` combining up bow[^3] `BB𝄕𝄇`
+
 
 - `a timbre AA` is true
 - `b1 timbre AA` is true
@@ -232,11 +234,12 @@ BB b2 = combining up bow[^3]BB𝄕𝄇
 `transcribe𝆒<type>𝆓𝄕<expr>𝄇`
 
 This will cast `expr` to `type`. For example `AA` inherits from `BB` and: 
-```
-AA a = combining up bow[^3]AA𝄕𝄇
-BB b1 = combining up bow[^3]AA𝄕𝄇
-BB b2 = combining up bow[^3]BB𝄕𝄇
-```
+
+`AA a =` combining up bow[^3] `AA𝄕𝄇`
+
+`BB b1 =` combining up bow[^3] `AA𝄕𝄇`
+
+`BB b2 =` combining up bow[^3] `BB𝄕𝄇`
 
 - `transcribe𝆒<AA>𝆓𝄕a𝄇` will compile and run.
 - `transcribe𝆒<BB>𝆓𝄕a𝄇` will compile and run.
