@@ -248,6 +248,7 @@ public partial class CodeEditor : UserControl
                     case Key.OemPlus: replacement = "𝅘𝅥="; break; // ALT + Numpad +
                     case Key.D3: replacement = "𝄪"; break;  // ALT+ #
                     case Key.B: replacement = "♭"; break; // ALT + B
+                    case Key.OemPipe: replacement = "𝄓"; break;
 
                 }
             }
