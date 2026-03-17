@@ -350,7 +350,10 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod,
     if (!c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.getLastToken())))
         return nullptr;
 
-    c.setIsInFunc(true);
+    if (vType != VirtualType::NONE)
+    {
+        c.setIsInFunc(true);
+    }
 
     std::vector<Var> args = exprParser.getArgsWithTypes();
 

@@ -2,6 +2,7 @@
 
 #include "errorHandling/semanticErrors/NoReturn.h"
 #include "../../errorHandling/classErrors/VirtualNonMethod.h"
+#include "errorHandling/classErrors/PureWithBody.h"
 #include "other/SymbolTable.h"
 
 FuncDeclStmt::FuncDeclStmt(const Token& token,  const FQN& funcName, std::unique_ptr<IType> returnType, const std::vector<Var>& args,
@@ -117,7 +118,7 @@ void FuncDeclStmt::analyze() const
     {
         if (body != nullptr)
         {
-            symTable->addError()
+            symTable->addError(std::make_unique<PureWithBody>(token));
         }
     }
 }
