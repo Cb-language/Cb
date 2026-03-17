@@ -183,5 +183,9 @@ std::string FuncDeclStmt::translateToCppClass(const std::string& className) cons
 void FuncDeclStmt::setSymbolTable(SymbolTable* symTable) const
 {
     Stmt::setSymbolTable(symTable);
-    body->setSymbolTable(symTable);
+
+    if (virtualType != VirtualType::PURE)
+    {
+        body->setSymbolTable(symTable);
+    }
 }

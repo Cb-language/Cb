@@ -350,7 +350,7 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod,
     if (!c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.getLastToken())))
         return nullptr;
 
-    if (vType != VirtualType::NONE)
+    if (vType != VirtualType::PURE)
     {
         c.setIsInFunc(true);
     }
@@ -378,7 +378,7 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod,
         false
     );
 
-    if (vType == VirtualType::NONE)
+    if (vType == VirtualType::PURE)
     {
         funcStmt->setBody(nullptr);
     }

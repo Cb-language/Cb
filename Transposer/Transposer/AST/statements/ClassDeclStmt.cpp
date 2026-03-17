@@ -4,6 +4,7 @@
 
 #include "FuncDeclStmt.h"
 #include "errorHandling/classErrors/ClassDosentExisit.h"
+#include "errorHandling/classErrors/InvalidCtorName.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "other/SymbolTable.h"
 #include "errorHandling/classErrors/InvalidOverrideSignature.h"
@@ -148,6 +149,11 @@ void ClassDeclStmt::analyze() const
         method->setScope(scope);
         method->setClassNode(currClass);
         method->analyze();
+
+        if (translateFQNtoString(method->getName()) == translateFQNtoString(name))
+        {
+            symTable->addError(std::make_unique<InvalidCtorName>(token, translateFQNtoString(name)));
+        }
 
         switch (method->getVirtual())
         {
