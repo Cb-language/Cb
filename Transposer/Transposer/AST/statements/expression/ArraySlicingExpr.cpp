@@ -62,7 +62,7 @@ std::string ArraySlicingExpr::translateToCpp() const
 {
     std::ostringstream oss;
     if (needsSemicolon) oss << getTabs();
-    oss << varRef->translateToCpp() << "[" << start->translateToCpp() << " : " << stop->translateToCpp() << " : " << step->translateToCpp() << "]";
+    oss << varRef->translateToCpp() << ".slice(" << start->translateToCpp() << ", " << stop->translateToCpp() << ", " << step->translateToCpp() << ")";
     if (needsSemicolon) oss << ";";
     return oss.str();
 }
@@ -82,9 +82,9 @@ void ArraySlicingExpr::setSymbolTable(SymbolTable* symTable) const
 {
     Stmt::setSymbolTable(symTable);
     varRef->setSymbolTable(symTable);
-    start->setSymbolTable(symTable);
-    stop->setSymbolTable(symTable);
-    step->setSymbolTable(symTable);
+    if (start != nullptr) start->setSymbolTable(symTable);
+    if (stop != nullptr) stop->setSymbolTable(symTable);
+    if (step != nullptr) step->setSymbolTable(symTable);
 }
 
 void ArraySlicingExpr::setStart(std::unique_ptr<Expr> start)

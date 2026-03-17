@@ -28,4 +28,5 @@ song pascal𝄕sharp degree size𝄇
 𝄞 𝄌 𝄀
 𝄞 play bar𝄕𝄇 𝄀
 𝄞 play bar𝄕duration𝄕arr𝄇𝄇 𝄀
+𝄞 play bar𝄕arr[0:10:2]𝄇 𝄀
 𝄞 play bar𝄕sub duration𝄕arr𝄇𝄇 𝄂
