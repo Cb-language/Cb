@@ -325,7 +325,7 @@ std::unique_ptr<BodyStmt> StmtParser::parseBodyStmt(const bool isGlobal, const b
     );
 }
 
-std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
+std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod, const VirtualType vType)
 {
 
     std::vector<std::unique_ptr<FuncCreditStmt>> credited;
@@ -374,7 +374,14 @@ std::unique_ptr<FuncDeclStmt> StmtParser::parseFuncDeclStmt(const bool isMethod)
         false
     );
 
-    funcStmt->setBody(parseBodyStmt(false, false));
+    if (vType == VirtualType::NONE)
+    {
+        funcStmt->setBody(nullptr);
+    }
+    else
+    {
+        funcStmt->setBody(parseBodyStmt(false, false));
+    }
 
     return funcStmt;
 }

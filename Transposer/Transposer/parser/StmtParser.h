@@ -4,9 +4,7 @@
 
 #include "AST/statements/ArrayDeclStmt.h"
 #include "AST/statements/AssignmentStmt.h"
-#include "AST/statements/BreakStmt.h"
 #include "AST/statements/CaseStmt.h"
-#include "AST/statements/ContinueStmt.h"
 #include "AST/statements/ForStmt.h"
 #include "AST/statements/HearStmt.h"
 #include "AST/statements/IfStmt.h"
@@ -39,7 +37,7 @@ public:
     std::unique_ptr<PlayStmt> parsePlayStmt() const;
 
     std::unique_ptr<BodyStmt> parseBodyStmt(bool isGlobal = false, bool hasBrace = true);
-    std::unique_ptr<FuncDeclStmt> parseFuncDeclStmt(const bool isMethod = false);
+    std::unique_ptr<FuncDeclStmt> parseFuncDeclStmt(const bool isMethod = false, VirtualType vType = VirtualType::NONE);
     std::unique_ptr<ReturnStmt> parseReturnStmt() const;
     std::unique_ptr<FuncCreditStmt> parseFuncCreditStmt() const;
 

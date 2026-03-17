@@ -113,6 +113,13 @@ void FuncDeclStmt::analyze() const
             symTable->addError(std::make_unique<NoReturn>(token));
         }
     }
+    else
+    {
+        if (body != nullptr)
+        {
+            symTable->addError()
+        }
+    }
 }
 
 
