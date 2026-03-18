@@ -130,12 +130,7 @@ std::string FuncDeclStmt::translateToCpp() const
     oss << func.translateToCpp();
 
     oss << std::endl << "{" << std::endl;
-
-    for (const auto& stmt : body->getStmts())
-    {
-        oss << stmt->translateToCpp() << std::endl;
-    }
-
+    if (!body->getStmts().empty()) oss << body->translateToCpp() << std::endl;
     oss << "}" << std::endl;
 
     return oss.str();
@@ -166,12 +161,7 @@ std::string FuncDeclStmt::translateToCppClass(const std::string& className) cons
         oss << func.translateToCpp(className);
 
         oss << std::endl << "{" << std::endl;
-
-        for (const auto& stmt : body->getStmts())
-        {
-            oss << stmt->translateToCpp() << std::endl;
-        }
-
+        if (!body->getStmts().empty()) oss << body->translateToCpp() << std::endl;
         oss << "}" << std::endl;
 
         return oss.str();

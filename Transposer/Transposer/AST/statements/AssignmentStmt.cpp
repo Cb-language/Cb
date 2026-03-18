@@ -34,7 +34,9 @@ void AssignmentStmt::analyze() const
 std::string AssignmentStmt::translateToCpp() const
 {
     std::string res = needsSemicolon ? getTabs() : "";
-    res += varRef->translateToCpp() + " " + assignmentOp + " " + expr->translateToCpp();
+    const std::string inner = varRef->translateToCpp() + " " + assignmentOp + " " + expr->translateToCpp();
+    if (hasParens) res += "(" + inner + ")";
+    else res += inner;
     if (needsSemicolon) res += ";";
     return res;
 }

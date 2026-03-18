@@ -5,12 +5,15 @@ song prelude𝄕𝄇 𝅘𝅥=degree
 𝄞 riff Base b[2]𝄀
 𝄞 b[0] = 𝆫 Derived𝄕5𝄇 𝄀
 𝄞 b[1] = 𝆫 Base𝄕5𝄇 𝄀
-𝄞 D𝄕b[0] timbre Derived𝄇𝄋 
+𝄞 D𝄕b[0] timbre Derived𝄇𝄋
 𝄞  Derived temp = transcribe𝆒Derived𝆓𝄕b[0]𝄇𝄀
-𝄞  play bar𝄕temp𝄍f𝄕𝄇𝄇 𝄀
+𝄞 play bar𝄕temp𝄍f𝄕𝄇𝄇 𝄀
 𝄞 𝄌 𝄀
-𝄞 D𝄕b[1] timbre Derived𝄇𝄋 
+𝄞 D𝄕b[1] timbre Derived𝄇𝄋
 𝄞  Derived temp = transcribe𝆒Derived𝆓𝄕b[1]𝄇𝄀
-𝄞  play bar𝄕temp𝄍f𝄕𝄇𝄇𝄀
+𝄞 play bar𝄕temp𝄍f𝄕𝄇𝄇𝄀
 𝄞 𝄌 𝄀
-𝄞B𝄍0𝄂
+𝄞 𝄢 b[1]𝄍f𝄕𝄇 𝄀
+𝄞 𝆫 Derived test𝄕3𝄇 𝄀
+𝄞 test𝄍som𝄕𝄇𝄍f𝄕𝄇𝄀
+𝄞 B𝄍0𝄂

@@ -84,10 +84,7 @@ std::string ConstructorDeclStmt::translateToCpp() const
 
     oss << std::endl << "{" << std::endl;
 
-    for (const auto& stmt : body->getStmts())
-    {
-        oss << stmt->translateToCpp() << std::endl;
-    }
+    if (!body->getStmts().empty()) oss << body->translateToCpp() << std::endl;
 
     oss << "}" << std::endl;
 
