@@ -8,7 +8,7 @@
 𝄢 ─── Base class: Instrument with fields and methods ───
 
 instrument Animal 𝄋
-    conductor  score degree legs = 4 𝄀
+    conductor score degree legs = 4 𝄀
     conductor score unison degree temp = 4 𝄀
     conductor score bar name = "unknown" 𝄀
 
