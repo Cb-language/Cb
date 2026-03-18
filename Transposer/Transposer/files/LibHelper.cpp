@@ -1054,11 +1054,11 @@ public:
     template <typename U>
     SafePtr& operator=(const SafePtr<U>& u);
 
-    // Existing Template Constructors and Assignment Operators...
-    // (Omitted for brevity, keep your existing implementations)
+    template <typename U>
+    SafePtr& operator=(const Primitive<U>& other);
 
-    SafePtr& operator=(const T& t);
-    SafePtr& operator=(const SafePtr& t);
+    SafePtr& operator=(const T& other);
+    SafePtr& operator=(const SafePtr& other);
 
     // --- Math & Assignment Operators ---
 
@@ -1248,22 +1248,30 @@ SafePtr<T>& SafePtr<T>::operator=(const SafePtr<U>& u)
     return *this;
 }
 
-template <typename T>
-requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-SafePtr<T>& SafePtr<T>::operator=(const T& t)
+template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+template <typename U>
+SafePtr<T>& SafePtr<T>::operator=(const Primitive<U>& other)
 {
-    if constexpr (std::is_same_v<T, Object>)
-        ptr = t.clone();
-    else
-        ptr = std::make_unique<T>(t);
+    ptr = std::make_unique<T>(other);
     return *this;
 }
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-SafePtr<T>& SafePtr<T>::operator=(const SafePtr& t)
+SafePtr<T>& SafePtr<T>::operator=(const T& other)
 {
-    if (this != &t) ptr = t.clonePtr();
+    if constexpr (std::is_same_v<T, Object>)
+        ptr = other.clone();
+    else
+        ptr = std::make_unique<T>(other);
+    return *this;
+}
+
+template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+SafePtr<T>& SafePtr<T>::operator=(const SafePtr& other)
+{
+    if (this != &other) ptr = other.clonePtr();
     return *this;
 }
 

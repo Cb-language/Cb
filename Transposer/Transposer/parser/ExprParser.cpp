@@ -117,7 +117,7 @@ std::unique_ptr<Expr> ExprParser::parseExprPrec(const int minPrec)
                 left = std::make_unique<AssignmentStmt>(
                     opToken, std::move(callLeft), op, std::move(right)
                 );
-                left->setHasParens(true);
+                //left->setHasParens(true);
                 break;
             }
             default:
@@ -125,7 +125,7 @@ std::unique_ptr<Expr> ExprParser::parseExprPrec(const int minPrec)
                 left = std::make_unique<BinaryOpExpr>(
                     opToken, op, std::move(left), std::move(right)
                 );
-                left->setHasParens(true);
+                //left->setHasParens(true);
                 break;
             }
         }

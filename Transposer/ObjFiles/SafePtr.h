@@ -43,11 +43,11 @@ public:
     template <typename U>
     SafePtr& operator=(const SafePtr<U>& u);
 
-    // Existing Template Constructors and Assignment Operators...
-    // (Omitted for brevity, keep your existing implementations)
+    template <typename U>
+    SafePtr& operator=(const Primitive<U>& other);
 
-    SafePtr& operator=(const T& t);
-    SafePtr& operator=(const SafePtr& t);
+    SafePtr& operator=(const T& other);
+    SafePtr& operator=(const SafePtr& other);
 
     // --- Math & Assignment Operators ---
 

@@ -5,7 +5,7 @@
 class Expr : public Stmt
 {
 protected:
-    bool hasParens;
+    bool hasParens = false;
     bool needsSemicolon;
 
     explicit Expr(const Token& token);
