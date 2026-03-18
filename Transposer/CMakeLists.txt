@@ -298,6 +298,8 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/CaseNotInsideIf.h
         Transposer/errorHandling/classErrors/PureWithBody.cpp
         Transposer/errorHandling/classErrors/PureWithBody.h
+        Transposer/AST/statements/ObjCreationAssigmentStmt.cpp
+        Transposer/AST/statements/ObjCreationAssigmentStmt.h
 
 )
 

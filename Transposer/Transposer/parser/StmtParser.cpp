@@ -26,6 +26,7 @@
 #include "AST/statements/ConstructorDeclStmt.h"
 #include "AST/statements/ConstractorCallStmt.h"
 #include "AST/statements/ContinueStmt.h"
+#include "AST/statements/ObjCreationAssigmentStmt.h"
 #include "AST/statements/ObjCreationCastStmt.h"
 #include "AST/statements/ObjCreationPolyStmt.h"
 
@@ -837,17 +838,25 @@ std::unique_ptr<ObjectCreationStmt> StmtParser::parsePolyObjCreationStmt(std::un
         );
     }
 
-    c.expect(CbTokenType::KEYWORD_TRANSCRIBE);
 
     if (c.matchConsume(CbTokenType::PUNCTUATION_SEMICOLON))
     {
         return std::make_unique<ObjCreationCastStmt>(c.getLastToken(), false, nullptr, Var(std::move(type), name));
     }
 
-    c.expect(CbTokenType::BINARY_OP_EQUAL);
-    std::unique_ptr<CastCallExpr> right = exprParser.parseCastExpr();
 
-    return std::make_unique<ObjCreationCastStmt>(c.getLastToken(), true, std::move(right), Var(std::move(type), name));
+    return parsePolyObjCreationAssignmentStmt(std::move(type), name);
+}
+
+std::unique_ptr<ObjectCreationStmt> StmtParser::parsePolyObjCreationAssignmentStmt(std::unique_ptr<IType> type,
+    const FQN& name) const
+{
+    if (c.matchConsume(CbTokenType::KEYWORD_TRANSCRIBE))
+    {
+        return std::make_unique<ObjCreationCastStmt>(c.getLastToken(), true, exprParser.parseCastExpr(), Var(std::move(type), name));
+    }
+
+    return std::make_unique<ObjCreationAssigmentStmt>(c.getLastToken(), exprParser.parseExpr(), Var(std::move(type),name));
 }
 
 void StmtParser::parse()

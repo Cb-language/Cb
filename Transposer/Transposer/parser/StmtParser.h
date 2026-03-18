@@ -54,6 +54,7 @@ public:
     std::unique_ptr<ConstructorDeclStmt> parseCtor(const FQN& className);
     std::unique_ptr<ObjectCreationStmt> parseObjCreationStmt() const;
     std::unique_ptr<ObjectCreationStmt> parsePolyObjCreationStmt(std::unique_ptr<IType> type) const;
+    std::unique_ptr<ObjectCreationStmt> parsePolyObjCreationAssignmentStmt(std::unique_ptr<IType> type, const FQN& name) const;
 
     void parse();
 };
