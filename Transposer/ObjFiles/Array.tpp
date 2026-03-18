@@ -46,7 +46,7 @@ Array<T>::Array(const Array<T>& other)
     data.reserve(size.getValue());
     for (Primitive<int> i; i < size; ++i)
     {
-        data.push_back(SafePtr<T>(other.data[i.getValue()].cloneSafePtr()));
+        data.push_back(SafePtr<UnderlyingT>(other.data[i.getValue()].cloneSafePtr()));
     }
 }
 
@@ -92,7 +92,7 @@ Array<T>& Array<T>::operator=(const Array<T>& other)
     defaultValueSet = other.defaultValueSet;
 
     data.clear();
-    data.reserve(size);
+    data.reserve(size.getValue());
     for (Primitive<int> i; i < size; ++i)
     {
         data.push_back(other.data[i.getValue()].cloneSafePtr());
@@ -123,7 +123,7 @@ Array<T>& Array<T>::operator=(const Array<U>& other)
         }
     }
 
-    defaultValueSet = data[0].cloneSafePtrPtr();
+    defaultValueSet = data[0].cloneSafePtr();
     return *this;
 }
 

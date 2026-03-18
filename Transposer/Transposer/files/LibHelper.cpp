@@ -139,7 +139,7 @@ Array<T>::Array(const Array<T>& other)
     data.reserve(size.getValue());
     for (Primitive<int> i; i < size; ++i)
     {
-        data.push_back(SafePtr<T>(other.data[i.getValue()].cloneSafePtr()));
+        data.push_back(SafePtr<UnderlyingT>(other.data[i.getValue()].cloneSafePtr()));
     }
 }
 
@@ -185,7 +185,7 @@ Array<T>& Array<T>::operator=(const Array<T>& other)
     defaultValueSet = other.defaultValueSet;
 
     data.clear();
-    data.reserve(size);
+    data.reserve(size.getValue());
     for (Primitive<int> i; i < size; ++i)
     {
         data.push_back(other.data[i.getValue()].cloneSafePtr());
@@ -216,7 +216,7 @@ Array<T>& Array<T>::operator=(const Array<U>& other)
         }
     }
 
-    defaultValueSet = data[0].cloneSafePtrPtr();
+    defaultValueSet = data[0].cloneSafePtr();
     return *this;
 }
 
@@ -1097,7 +1097,7 @@ requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 std::unique_ptr<T> SafePtr<T>::clonePtr() const
 {
     if (ptr == nullptr) return nullptr;
-    return std::make_unique<T>(ptr->clone());
+    return std::unique_ptr<T>(const_cast<T*>(this->ptr->clone()));
 }
 
 template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
@@ -1145,9 +1145,9 @@ SafePtr<T>::SafePtr()
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-SafePtr<T>::SafePtr(const std::unique_ptr<T>& otherPtr)
+SafePtr<T>::SafePtr(const std::unique_ptr<T>& ptr)
 {
-    this->ptr = otherPtr->clone();
+    this->ptr = ptr->clonePtr();
 }
 
 template <typename T>

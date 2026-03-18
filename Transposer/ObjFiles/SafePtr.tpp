@@ -9,7 +9,7 @@ requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 std::unique_ptr<T> SafePtr<T>::clonePtr() const
 {
     if (ptr == nullptr) return nullptr;
-    return std::make_unique<T>(ptr->clone());
+    return std::unique_ptr<T>(const_cast<T*>(this->ptr->clone()));
 }
 
 template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
@@ -57,9 +57,9 @@ SafePtr<T>::SafePtr()
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-SafePtr<T>::SafePtr(const std::unique_ptr<T>& otherPtr)
+SafePtr<T>::SafePtr(const std::unique_ptr<T>& ptr)
 {
-    this->ptr = otherPtr->clone();
+    this->ptr = ptr->clonePtr();
 }
 
 template <typename T>
