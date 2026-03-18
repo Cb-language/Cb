@@ -39,7 +39,7 @@
   * [Set up](#set-up)
   * [GUI](#gui)
   * [Composer Shortcuts](#composer-shortcuts)
-    * [Charectars Shortcuts](#charectars-shortcuts)
+  * [Charectars Shortcuts](#charectars-shortcuts)
 * [Tranposer Set-Up Windows](#tranposer-set-up-windows)
 * [Tranposer Set-Up Linux](#tranposer-set-up-linux)
 
@@ -378,7 +378,7 @@ To create a new file click the plus button, then Save (`Ctrl+S`) to save and to 
 On the top left there will be the tabs. Click the x button to close it. Click any tabs to view it.
 
 ---
-### Composer Shortcuts
+#### Composer Shortcuts
 
 |Shortcut / Key             |Action / Resulting Symbol     |
 |-------------------------  |:----------------------------:|
