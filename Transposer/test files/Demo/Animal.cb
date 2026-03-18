@@ -9,4 +9,8 @@ instrument Animal𝄋
     conductor score rest song speak𝄕𝄇𝄀
     conductor score motif song pet𝄕𝄇
     𝄞play bar𝄕"You petted ", name𝄇𝄂𝄀
+    conductor score song getName𝄕𝄇 𝅘𝅥=bar
+    𝄞B𝄍name𝄂𝄀
+    conductor score song getAge𝄕𝄇 𝅘𝅥=degree
+    𝄞B𝄍age𝄂𝄀
 𝄌𝄀

@@ -14,10 +14,16 @@ instrument Zoo 𝄋
     
     conductor score song pet𝄕𝄇
     𝄞 Fmaj0𝄪currSize𝄋
-    𝄞     Animal t = zoo[i]𝄀
     𝄞     D𝄕zoo[i] timbre Snake𝄇𝄋
     𝄞          Snake temp = transcribe𝆒Snake𝆓𝄕zoo[i]𝄇𝄀
     𝄞          temp𝄍pet𝄕𝄇𝄀
     𝄞     𝄌𝄀
+    𝄞𝄌𝄂𝄀
+    
+    conductor score song talk𝄕𝄇
+    𝄞 Fmaj0𝄪currSize𝄋
+    𝄞     Animal t = zoo[i]𝄀
+    𝄞     play 𝄕t𝄍getName𝄕𝄇, "'s is age: ", t𝄍getAge𝄕𝄇, ". They say: "𝄇𝄀
+    𝄞     t𝄍speak𝄕𝄇𝄀
     𝄞𝄌𝄂𝄀
 𝄌𝄀
