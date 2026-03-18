@@ -122,7 +122,7 @@ public partial class CodeEditor : UserControl
         if (_bracketPairs.TryGetValue(text, out var closingChar))
         {
             Editor.Document.Insert(Editor.CaretOffset, closingChar);
-            Editor.CaretOffset--; 
+            Editor.CaretOffset -= closingChar.Length; 
         }
     }
 
