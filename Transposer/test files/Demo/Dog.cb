@@ -1,0 +1,9 @@
+feat. "Animal.cb"𝄀
+
+instrument Dog : Animal𝄋
+    player score bar type𝄀
+    conductor score 𝆫Dog𝄕bar _name, degree _age, bar _type𝄇 𝄍 bass𝄕_name, _age𝄇
+    𝄞type=_type𝄂𝄀
+    conductor score variation song speak𝄕𝄇
+    𝄞play bar 𝄕"woof"𝄇𝄂𝄀
+𝄌𝄀

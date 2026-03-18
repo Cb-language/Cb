@@ -1,5 +1,6 @@
 #include "AssignmentStmt.h"
 
+#include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/semanticErrors/IllegalOpOnType.h"
 #include "other/SymbolTable.h"
 
@@ -24,10 +25,9 @@ void AssignmentStmt::analyze() const
     expr->analyze();
 
     const auto leftType = varRef->getType();
-
-    if (const auto rightType = expr->getType(); *leftType != *rightType)
+    if (const auto rightType = expr->getType(); rightType == nullptr || *leftType != *rightType)
     {
-        symTable->addError(std::make_unique<IllegalOpOnType>(token, leftType->toString(), rightType->toString(), assignmentOp));
+        if (rightType != nullptr) symTable->addError(std::make_unique<IllegalOpOnType>(token, leftType->toString(), rightType->toString(), assignmentOp));
     }
 }
 

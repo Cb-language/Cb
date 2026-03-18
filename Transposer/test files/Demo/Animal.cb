@@ -1,7 +1,8 @@
 instrument Animal𝄋
     section score bar name𝄀
-    conductor score 𝆫Animal𝄕bar _name𝄇
-    𝄞name = _name𝄂𝄀
-    conductor score rest song speak𝄕𝄇
-    𝄞𝄽𝄂
+    section score degree age𝄀
+    conductor score 𝆫Animal𝄕bar _name, degree _age𝄇
+    𝄞name = _name𝄀
+    𝄞age = _age𝄂𝄀
+    conductor score rest song speak𝄕𝄇𝄀
 𝄌𝄀
