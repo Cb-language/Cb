@@ -76,6 +76,7 @@ public:
     }
 
     std::string toString(int indents = 0) const override;
+    const Array* clone() const override;
 
 protected:
     Primitive<bool> equals(const Object& other) const override;
@@ -138,7 +139,7 @@ Array<T>::Array(const Array<T>& other)
     data.reserve(size.getValue());
     for (Primitive<int> i; i < size; ++i)
     {
-        data.push_back(SafePtr<T>(other.data[i.getValue()].cloneSafePtr()));
+        data.push_back(SafePtr<UnderlyingT>(other.data[i.getValue()].cloneSafePtr()));
     }
 }
 
@@ -184,7 +185,7 @@ Array<T>& Array<T>::operator=(const Array<T>& other)
     defaultValueSet = other.defaultValueSet;
 
     data.clear();
-    data.reserve(size);
+    data.reserve(size.getValue());
     for (Primitive<int> i; i < size; ++i)
     {
         data.push_back(other.data[i.getValue()].cloneSafePtr());
@@ -215,7 +216,7 @@ Array<T>& Array<T>::operator=(const Array<U>& other)
         }
     }
 
-    defaultValueSet = data[0].cloneSafePtrPtr();
+    defaultValueSet = data[0].cloneSafePtr();
     return *this;
 }
 
@@ -363,6 +364,12 @@ std::string Array<T>::toString(int indents) const
     return str;
 }
 
+template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+const Array<T>* Array<T>::clone() const
+{
+    return new Array(*this);
+}
+
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 Primitive<bool> Array<T>::equals(const Object& other) const
@@ -433,6 +440,11 @@ const Object* Object::get() const
     return this;
 }
 
+const Object* Object::clone() const
+{
+    return new Object(*this);
+}
+
 Primitive<bool> Object::equals(const Object& other) const
 {
     return Primitive<bool>(true);
@@ -471,6 +483,7 @@ public:
     virtual Object& operator*();
 
     virtual const Object* get() const;
+    virtual const Object* clone() const;
 
 protected:
     virtual Primitive<bool> equals(const Object& other) const;
@@ -530,6 +543,7 @@ public:
     Primitive<T>& operator=(const Object& other);
 
     std::string toString(int indents = 0) const override;
+    const Primitive* clone() const override;
     T getValue() const;
 
     friend std::istream& operator>>(std::istream& is, Primitive<T>& obj)
@@ -710,6 +724,12 @@ std::string Primitive<T>::toString(int indents) const {
         return getIndents(indents) + s;
     }
     return getIndents(indents) + std::to_string(value);
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
+const Primitive<T>* Primitive<T>::clone() const
+{
+    return new Primitive(*this);
 }
 
 template <typename T>
@@ -1013,6 +1033,7 @@ public:
 
     // --- Existing Accessors ---
     SafePtr cloneSafePtr() const;
+    const SafePtr* clone() const override;
 
     T* operator->() const;
     T& operator*() const;
@@ -1075,7 +1096,8 @@ template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 std::unique_ptr<T> SafePtr<T>::clonePtr() const
 {
-    return std::make_unique<T>(*ptr);
+    if (ptr == nullptr) return nullptr;
+    return std::unique_ptr<T>(const_cast<T*>(this->ptr->clone()));
 }
 
 template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
@@ -1115,15 +1137,17 @@ SafePtr<T>::SafePtr()
 {
     if constexpr (std::is_same_v<T, Object>)
         ptr = std::make_unique<String>();
+    else if constexpr(std::is_abstract_v<T>)
+        ptr = nullptr;
     else
         ptr = std::make_unique<T>();
 }
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-SafePtr<T>::SafePtr(const std::unique_ptr<T>& otherPtr)
+SafePtr<T>::SafePtr(const std::unique_ptr<T>& ptr)
 {
-    this->ptr = otherPtr->clone();
+    this->ptr = ptr->clonePtr();
 }
 
 template <typename T>
@@ -1204,6 +1228,12 @@ requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 SafePtr<T> SafePtr<T>::cloneSafePtr() const
 {
     return SafePtr<T>(*this);
+}
+
+template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+const SafePtr<T>* SafePtr<T>::clone() const
+{
+    return new SafePtr(*this);
 }
 
 template <typename T>
@@ -1296,6 +1326,11 @@ String& String::operator+=(const Object& obj)
     return *this;
 }
 
+const String* String::clone() const
+{
+    return new String(*this);
+}
+
 Primitive<bool> String::equals(const Object& other) const
 {
     if (this == &other) return Primitive<bool>(true);
@@ -1319,9 +1354,9 @@ private:
 
 public:
     String();
-    explicit String(const std::string& basicString);
-    explicit String(const String& string);
-    explicit String(const char* basicCharPtr);
+    String(const std::string& basicString);
+    String(const String& string);
+    String(const char* basicCharPtr);
     std::string toString(int indents = 0) const override;
     String& operator=(const String& other);
     String& operator=(const Object& other);
@@ -1331,6 +1366,8 @@ public:
 
     String operator+(const Object& obj) const;
     String& operator+=(const Object& obj);
+
+    const String* clone() const override;
 
     template <typename T>
     String& operator=(const Primitive<T>& other)

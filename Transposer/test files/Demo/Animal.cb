@@ -7,6 +7,6 @@ instrument Animal𝄋
     𝄞counter♯𝄀
     𝄞age = _age𝄂𝄀
     conductor score rest song speak𝄕𝄇𝄀
-    conductor score unison song f𝄕𝄇
-    𝄞play bar𝄕"f"𝄇𝄂𝄀
+    conductor score motif song pet𝄕𝄇
+    𝄞play bar𝄕"You petted ", name𝄇𝄂𝄀
 𝄌𝄀

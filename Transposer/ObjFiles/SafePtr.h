@@ -66,6 +66,7 @@ public:
 
     // --- Existing Accessors ---
     SafePtr cloneSafePtr() const;
+    const SafePtr* clone() const override;
 
     T* operator->() const;
     T& operator*() const;

@@ -67,6 +67,11 @@ String& String::operator+=(const Object& obj)
     return *this;
 }
 
+const String* String::clone() const
+{
+    return new String(*this);
+}
+
 Primitive<bool> String::equals(const Object& other) const
 {
     if (this == &other) return Primitive<bool>(true);

@@ -17,11 +17,15 @@ private:
     std::vector<Field> fields;
     std::vector<Method> methods;
     std::vector<Ctor> ctors;
+    mutable bool isAbstract = false;
 
     FQN parentName;
 
     std::string generateToString() const;
     std::string generateEquals() const;
+    std::string generateClone() const;
+    std::string generateCopyConstructorCpp() const;
+    std::string generateCopyConstructorH() const;
 
 public:
     ClassDeclStmt(const Token& token, const FQN& name, std::vector<Field>& fields,
