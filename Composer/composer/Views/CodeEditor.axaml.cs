@@ -47,7 +47,8 @@ public partial class CodeEditor : UserControl
         { "𝄞", "𝄀" },
         { "𝄋", "𝄌"},
         { "𝄕", "𝄇"},
-        { "𝄢𝄩", "𝄩𝄢"}
+        { "𝄢𝄩", "𝄩𝄢"},
+        {"𝆒", "𝆓"}
     };
 
     public CodeEditor()
@@ -97,6 +98,8 @@ public partial class CodeEditor : UserControl
             case "\\": replacement = "𝄍"; break;
             case "#": replacement = "♯"; break;
             case "?": replacement = "𝄢"; break;
+            case "<": replacement = "𝆒"; break;
+            case ">": replacement = "𝆓"; break;
         }
 
         if (replacement != null)
