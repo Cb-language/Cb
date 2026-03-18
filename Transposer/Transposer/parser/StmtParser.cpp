@@ -710,7 +710,16 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
         }
         else if (c.isType())
         {
-            if (auto field = parseVarDecStmt())
+            if (c.matchNonConsume(CbTokenType::TYPE_RIFF))
+            {
+                if (auto field = parseArrayDeclStmt())
+                {
+                    field->setIsStatic(isStatic);
+                    fields.emplace_back(access, std::move(field));
+                    c.expectSemiColon();
+                }
+            }
+            else if (auto field = parseVarDecStmt())
             {
                 field->setIsStatic(isStatic);
                 fields.emplace_back(access, std::move(field));

@@ -72,6 +72,7 @@ public:
     }
 
     std::string toString(int indents = 0) const override;
+    const Array* clone() const override;
 
 protected:
     Primitive<bool> equals(const Object& other) const override;

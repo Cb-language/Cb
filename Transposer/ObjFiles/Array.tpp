@@ -271,6 +271,12 @@ std::string Array<T>::toString(int indents) const
     return str;
 }
 
+template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+const Array<T>* Array<T>::clone() const
+{
+    return new Array(*this);
+}
+
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 Primitive<bool> Array<T>::equals(const Object& other) const

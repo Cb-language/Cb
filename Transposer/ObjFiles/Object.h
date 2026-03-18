@@ -20,6 +20,7 @@ public:
     virtual Object& operator*();
 
     virtual const Object* get() const;
+    virtual const Object* clone() const;
 
 protected:
     virtual Primitive<bool> equals(const Object& other) const;
