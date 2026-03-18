@@ -1,4 +1,4 @@
-# KiryatGat-1401-C♭
+# C♭
 
 ## Syntax
 ### Types
@@ -33,6 +33,8 @@
 To create a variable:
 `<type> <name> [= value]`
 
+*If there isn't a value, it uses default values.*
+
 ---
 ### Loops
 #### *While*
@@ -65,6 +67,8 @@ The default value of an item inside an array is the default of the type unless s
 `riff riff degree[3][2] y = -1` will create a 2D array of ints, 3 by 2 where each **item** is -1. 
 `riff riff degree[3][2] z = x` will create a 2D array of ints, 3 by 2 where each **row** is a copy of `x`.
 
+If there isn't a default value, it uses the type's default value.
+
 *note: the default value can be either the base type or an array 1 dimantion lower then the declered type.*
 
 ---
@@ -85,7 +89,11 @@ For example:
 > arr[-1:-5:-1] is reversed array until 6th index from last
 >```
 
-
+***Note: you can't do*** `𝄍` ***operation directly from*** `arr[i]`***, do it with a temp variable like:***
+```
+Class temp = arr[i]𝄀
+temp𝄍f𝄕𝄇𝄀
+```
 
 ---
 ### Operations
@@ -124,7 +132,9 @@ A string can do: `+`, `+=`
 
 - All classes are inheriting from `Object` 
 
-*note: each decleration of an attribute[^1] must end with `𝄀`.*
+*Note: each decleration of an attribute[^1] must end with `𝄀`.*
+
+***Bigger Note: The variables are ALWAYS passes/returned by value.***
 
 ---
 #### Access Types
@@ -166,6 +176,7 @@ A string can do: `+`, `+=`
 
 - bass is the parent constructor
 - bass is the empty constructor by default
+- If there isn't an empty constructor, it creates it and puts the variables default value. **There will be always an empty constructor**
 
 ---
 #### Static
@@ -247,9 +258,131 @@ This will cast `expr` to `type`. For example `AA` inherits from `BB` and:
 - `transcribe𝆒<AA>𝆓𝄕b1𝄇` will compile and run.
 - `transcribe𝆒<AA>𝆓𝄕b2𝄇` will compile **but will crush while running**.
 
+***Note: you can't do*** `𝄍` ***operation directly from*** `transcribe𝆒<BB>𝆓𝄕a𝄇`***, do it with a temp variable like:***
+
+```
+BB temp = transcribe𝆒<BB>𝆓𝄕a𝄇𝄀
+temp𝄍f𝄕𝄇𝄀
+```
+---
+#### Comments
+`𝄢 [comment]` for a single line comment.
+
+`𝄢𝄩 [comment] 𝄩𝄢` for multi line comments.
+
+---
+## Transposer
+### Set up
+Install g++ and make it a gloabal 
+- [Win11 tutorial](https://www.youtube.com/watch?v=GxFiUEO_3zM)
+- [Unix(~~Ubuntu~~) g++ download tutorial](https://www.youtube.com/watch?v=yXMb7SC9gHg)
+- If the program can't find g++, [How to set environment variable in linux permanently](https://stackoverflow.com/questions/45502996/how-to-set-environment-variable-in-linux-permanently)
+
+Download the vertion compatible to your OS in [Releases](https://gitlab.com/elisha.schafman/kiryatgat-1401-c/-/releases) 
+
+Save it, we recommend as `Transposer.exe`
+
+---
+### Usage
+
+Open the exact location of the exe file or set the exe at global varible like the g++ tutorial, then open the CMD/Terminal etc.
+
+Write: `Transposer.exe <path_to_the_main_cb_file> <mode> <output_main_path.cpp>`
+
+|Mode| Usage |
+|:--:|:--:|
+| T | translate to cpp |
+| C | T + calling g++|
+| R | C + running the output exe file|
+
+**The output exe file is:* `output_main_path.exe`
+
+---
+## Composer
+### Set up
+Download the vertion compatible to your OS in [Releases](https://gitlab.com/elisha.schafman/kiryatgat-1401-c/-/releases) 
+
+---
+### GUI
+
+When opening up the *Composer* at the left side a side bar appears
+
+![side bar](image.png)
+
+You can open a file or folder, set up the destination and save the current file.
+
+In addition you can Translate, Compile and Run the your code.
+
+![opening files](image-2.png)
+
+At the bottom, any files that are in the folder you opened will appear, click them and they will open up in the code editor.
+
+![editor](image-1.png)
+
+At the top-right corner there is a setting button, plus button, LSP button and a path
+
+The path is the transposer, you must set it up before T/C/R. To set it up click the settings button.
+
+The LSP button is to toggle on/of realtime errors, blue means on.
+
+~~The realtime errors may take up a lot of RAM.~~
+
+To create a new file click the plus button, then Save (`Ctrl+S`) to save and to name it.
+
+![tabs](image-3.png)
+
+On the top left there will be the tabs. Click the x button to close it. Click any tabs to view it.
+
+---
+### Composer Shortcuts
+
+|Shortcut / Key             |Action / Resulting Symbol     |
+|-------------------------  |:----------------------------:|
+|`Ctrl + /  `               |Toggle Comment          |
+|`Ctrl + S `                |Saves File        |
+|`Ctrl + Num +  `               |Zoom In          |
+|`Ctrl + Num -  `               |Zoom Out          |
+|`Ctrl + T  `               |Transpiles         |
+|`Ctrl + C  `               |Transpiles + Compiles         |
+|`Ctrl + R  `               |Transpiles + Compiles + Runs      |
+|`Ctrl + Z  `               |Undo         |
+|`Ctrl + Y  `               |Redo         |
+
+---
+#### Charectars Shortcuts
+
+|Shortcut / Key             |Action / Resulting Symbol     |
+|-------------------------  |:----------------------------:|
+|`Alt + ~  `                |Inserts 𝄡                    |
+|`Alt + 0  `                |Inserts ♮                    |
+|`Alt + C `                 |Inserts ©                    |
+|`Alt + / or Alt + Numpad /`|Inserts 𝄢𝄩𝄩𝄢                |
+|`Alt + ;`                  |Inserts 𝄂                    |
+|`Alt + + or Alt + =`       |Inserts 𝅘𝅥=                   |
+|`Alt + 3`                  |Inserts 𝄪                    |
+|`Alt + B`                  |Inserts ♭                    |
+|`Alt + Shift + B `         |Inserts 𝄫                   |
+|`Alt + \`                  |Inserts 𝄓                   |
+|`Alt + ,`                  |Inserts 𝆒                   |
+|`Alt + .`                  |Inserts 𝆓                   |
+|`{ (Shift+])`              |Automatically replaced with 𝄋|
+|`} (Shift+[)`              |Automatically replaced with 𝄌|
+|`( (Shift+0)`              |Automatically replaced with 𝄕|
+|`) (Shift+9)`              |Automatically replaced with 𝄇|
+|`& (Shift+7)`              |Automatically replaced with 𝄞|
+|`;`                        |Automatically replaced with 𝄀|
+|```~ (Shift + `)```        |Automatically replaced with 𝄽|
+|`^ (Shift+6)`              |Automatically replaced with combining up bow[^3]|
+|`\`                        |Automatically replaced with 𝄍|
+|`# (Shift+3)`              |Automatically replaced with ♯ |
+|`?`                        |Automatically replaced with 𝄢|
+
+
  ---
-## Tranposer Set-Up 🪟 Windows
+## Tranposer Set-Up Windows
 This step is for running the Transposer solution, if you're running the exe itselft its not neccessery.
+
+Clone this repository.
  
 Install `vcpkg` directly under your C drive:
 
@@ -268,4 +401,9 @@ When done, install the following dependencies:
 ```powershell
 .\vcpkg install boost-regex:x64-windows
 ```
+
+ ---
+## Tranposer Set-Up Linux
+Boost regex and vcpkg usally are already in Linux, ~~if not then google it~~.
+
  ---
