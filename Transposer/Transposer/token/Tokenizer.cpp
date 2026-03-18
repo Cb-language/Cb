@@ -9,6 +9,7 @@ const std::vector<std::string> Tokenizer::captureBlocks = {
     R"((?<ConstInt>\d+))",
     R"((?<ConstChar>'(\\.|[^\\'\n])'))",
     R"((?<ConstStr>"(\\.|[\s\S])*?"))",
+    R"((?<ConstBool>\b(?:cres|demen)\b))",
     R"((?<Identifier>[a-zA-Z_][a-zA-Z_0-9]*))"
 };
 
@@ -211,6 +212,7 @@ std::queue<Token> Tokenizer::tokenize(const std::string& code, const std::filesy
             else if (match["ConstInt"].matched) type = CbTokenType::CONST_INT;
             else if (match["ConstChar"].matched) type = CbTokenType::CONST_CHAR;
             else if (match["ConstStr"].matched) type = CbTokenType::CONST_STR;
+            else if (match["ConstBool"].matched) type = CbTokenType::CONST_BOOL;
             else if (match["Identifier"].matched) type = CbTokenType::IDENTIFIER;
 
             std::string match_str = match.str();

@@ -7,7 +7,7 @@ T Utils::cast(const U& other)
 {
     if (auto o = other.get())
     {
-        if (auto p = dynamic_cast<typename T::InnerT*>(o))
+        if (auto p = dynamic_cast<const typename T::InnerT*>(o))
             return SafePtr(*p);
     }
 

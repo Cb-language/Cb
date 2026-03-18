@@ -45,5 +45,5 @@ std::string ReturnStmt::translateToCpp() const
 void ReturnStmt::setSymbolTable(SymbolTable* symTable) const
 {
     Stmt::setSymbolTable(symTable);
-    rExpr->setSymbolTable(symTable);
+    if (rExpr != nullptr) rExpr->setSymbolTable(symTable);
 }

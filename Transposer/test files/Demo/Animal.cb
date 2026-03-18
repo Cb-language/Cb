@@ -1,7 +1,12 @@
 instrument Animal𝄋
     section score bar name𝄀
-    conductor score 𝆫Animal𝄕bar _name𝄇
-    𝄞name = _name𝄂𝄀
-    conductor score rest song speak𝄕𝄇
-    𝄞𝄽𝄂
+    section score degree age𝄀
+    section score unison sharp degree counter = 0𝄀
+    conductor score 𝆫Animal𝄕bar _name, degree _age𝄇
+    𝄞name = _name𝄀
+    𝄞counter♯𝄀
+    𝄞age = _age𝄂𝄀
+    conductor score rest song speak𝄕𝄇𝄀
+    conductor score unison song f𝄕𝄇
+    𝄞play bar𝄕"f"𝄇𝄂𝄀
 𝄌𝄀
