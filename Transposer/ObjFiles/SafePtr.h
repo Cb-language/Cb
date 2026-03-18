@@ -24,18 +24,18 @@ public:
     >::inner_type;
     using InnerSafePtr = SafePtr<InnerT>;
     SafePtr();
-    explicit SafePtr(const std::unique_ptr<T>& ptr);
-    explicit SafePtr(const T& t);
+    SafePtr(const std::unique_ptr<T>& ptr);
+    SafePtr(const T& t);
     SafePtr(const SafePtr& other);
 
     template <typename U> requires std::is_base_of_v<T, U>
-    explicit SafePtr(std::unique_ptr<U>& otherPtr);
+    SafePtr(std::unique_ptr<U>& otherPtr);
 
     template <typename U> requires std::is_base_of_v<T, U>
-    explicit SafePtr(const U& u);
+    SafePtr(const U& u);
 
     template <typename U>
-    explicit SafePtr(const SafePtr<U>& other);
+    SafePtr(const SafePtr<U>& other);
 
     template <typename U>
     SafePtr& operator=(const U& u);
