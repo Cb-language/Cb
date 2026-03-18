@@ -648,6 +648,9 @@ std::unique_ptr<ForStmt> StmtParser::parseForStmt()
     c.removeBreakable();
     c.removeContinueable();
 
+    std::string varName = varToken.value.value();
+    if (varName.empty()) varName = "i";
+
     return std::make_unique<ForStmt>(
         c.getLastToken(),
         std::move(body),
@@ -655,7 +658,7 @@ std::unique_ptr<ForStmt> StmtParser::parseForStmt()
         std::move(startExpr),
         std::move(stepExpr),
         std::move(stopExpr),
-        varToken.value.value_or("i")
+        varName
     );
 }
 
