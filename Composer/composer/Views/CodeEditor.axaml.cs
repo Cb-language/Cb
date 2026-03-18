@@ -98,8 +98,6 @@ public partial class CodeEditor : UserControl
             case "\\": replacement = "𝄍"; break;
             case "#": replacement = "♯"; break;
             case "?": replacement = "𝄢"; break;
-            case "<": replacement = "𝆒"; break;
-            case ">": replacement = "𝆓"; break;
         }
 
         if (replacement != null)
@@ -252,6 +250,8 @@ public partial class CodeEditor : UserControl
                     case Key.D3: replacement = "𝄪"; break;  // ALT+ #
                     case Key.B: replacement = "♭"; break; // ALT + B
                     case Key.OemPipe: replacement = "𝄓"; break;
+                    case Key.OemComma: replacement = "𝆒"; break;
+                    case Key.OemPeriod: replacement = "𝆓"; break;
 
                 }
             }
