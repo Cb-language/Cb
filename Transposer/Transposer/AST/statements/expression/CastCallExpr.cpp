@@ -17,7 +17,11 @@ std::unique_ptr<IType> CastCallExpr::getType() const
 
 void CastCallExpr::analyze() const
 {
+    expr->setSymbolTable(symTable);
+    expr->setScope(scope);
+    expr->setClassNode(currClass);
     expr->analyze();
+
     const auto exprType = expr->getType()->copy();
 
     if (exprType == nullptr) symTable->addError(std::make_unique<HowDidYouGetHere>((token)));

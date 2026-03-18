@@ -38,6 +38,7 @@ public:
     std::unique_ptr<Expr> parseUnaryOp();
     std::unique_ptr<Expr> parseBinaryOp(std::unique_ptr<VarReference> left);
     std::unique_ptr<VarReference> parseVarExpr();
+    std::unique_ptr<VarReference> parsePostfix(std::unique_ptr<VarReference> ref);
     std::unique_ptr<VarReference> parseArrayAccess(std::unique_ptr<VarReference> ref);
     std::unique_ptr<CastCallExpr> parseCastExpr();
     std::unique_ptr<IsExpr> parseIsExpr(std::unique_ptr<VarReference> ref) const;

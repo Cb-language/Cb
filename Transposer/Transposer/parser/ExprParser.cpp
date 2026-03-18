@@ -36,7 +36,7 @@ std::unique_ptr<Expr> ExprParser::parseExprPrec(const int minPrec)
     }
     else if (c.matchConsume(CbTokenType::KEYWORD_TRANSCRIBE))
     {
-        left = parseCastExpr();
+        left = parsePostfix(parseCastExpr());
     }
     else if (c.matchNonConsume(CbTokenType::KEYWORD_DURATION) || c.matchNonConsume(CbTokenType::KEYWORD_SUB_DURATION))
     {
@@ -57,17 +57,25 @@ std::unique_ptr<Expr> ExprParser::parseExprPrec(const int minPrec)
         c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent()));
         std::vector<std::unique_ptr<Expr>> args = getArgsWithoutTypes();
 
-        left = std::make_unique<FuncCallExpr>(ctorToken, type->getFQN(), std::move(args), false);
+        left = parsePostfix(std::make_unique<FuncCallExpr>(ctorToken, type->getFQN(), std::move(args), false));
     }
     else if (c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
     {
         left = parseExprPrec(0);
         c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.copyCurrent()));
-        if (left) left->setHasParens(true);
+        if (left)
+        {
+            left->setHasParens(true);
+            if (auto* varRef = dynamic_cast<VarReference*>(left.get()))
+            {
+                auto ref = std::unique_ptr<VarReference>(static_cast<VarReference*>(left.release()));
+                left = parsePostfix(std::move(ref));
+            }
+        }
     }
     else
     {
-        std::unique_ptr<VarReference> ref = parseVarExpr();
+        auto ref = parseVarExpr();
 
         if (c.isUnaryOp())
         {
@@ -345,24 +353,40 @@ std::unique_ptr<VarReference> ExprParser::parseVarExpr()
         ref = std::make_unique<VarCallExpr>(startToken, Var(nullptr, name));
     }
 
-    ref = parseArrayAccess(std::move(ref));
+    return parsePostfix(std::move(ref));
+}
 
-    while (c.matchConsume(CbTokenType::PUNCTUATION_BACKSLASH))
+std::unique_ptr<VarReference> ExprParser::parsePostfix(std::unique_ptr<VarReference> ref)
+{
+    if (ref == nullptr) return nullptr;
+
+    while (true)
     {
-        Token rightToken = c.copyCurrent();
-        const FQN rightName = parseFQN();
-        std::unique_ptr<VarReference> rightRef;
-        if (c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
+        if (c.matchNonConsume(CbTokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
         {
-            rightRef = parseFuncCall(rightName);
+            ref = parseArrayAccess(std::move(ref));
+        }
+        else if (c.matchConsume(CbTokenType::PUNCTUATION_BACKSLASH))
+        {
+            Token rightToken = c.copyCurrent();
+            const FQN rightName = parseFQN();
+            std::unique_ptr<VarReference> rightRef;
+            if (c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
+            {
+                rightRef = parseFuncCall(rightName);
+            }
+            else
+            {
+                rightRef = std::make_unique<VarCallExpr>(rightToken, Var(nullptr, rightName));
+            }
+
+            rightRef = parseArrayAccess(std::move(rightRef));
+            ref = std::make_unique<DotOpExpr>(rightToken, std::move(ref), std::move(rightRef));
         }
         else
         {
-            rightRef = std::make_unique<VarCallExpr>(rightToken, Var(nullptr, rightName));
+            break;
         }
-
-        rightRef = parseArrayAccess(std::move(rightRef));
-        ref = std::make_unique<DotOpExpr>(rightToken, std::move(ref), std::move(rightRef));
     }
 
     return ref;
