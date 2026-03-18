@@ -90,10 +90,10 @@ std::string ForStmt::translateToCpp() const
 
     for (const auto& s : body->getStmts())
     {
-        oss << s->translateToCpp();
+        oss << s->translateToCpp() << std::endl;
     }
 
-    oss << std::endl << getTabs() << "}";
+    oss << getTabs() << "}";
 
     return oss.str();
 }

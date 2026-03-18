@@ -130,7 +130,7 @@ std::string FuncDeclStmt::translateToCpp() const
     oss << func.translateToCpp();
 
     oss << std::endl << "{" << std::endl;
-    if (!body->getStmts().empty()) oss << body->translateToCpp() << std::endl;
+    for (const auto& s : body->getStmts()) oss << s->translateToCpp() << std::endl;
     oss << "}" << std::endl;
 
     return oss.str();
