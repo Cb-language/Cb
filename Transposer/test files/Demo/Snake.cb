@@ -1,0 +1,18 @@
+feat. "Animal.cb"𝄀
+
+instrument Snake : Animal𝄋
+    player score mute isVenomous𝄀
+    
+    conductor score 𝆫Snake𝄕bar _name, degree _age, mute _isVenomous𝄇 𝄍 bass𝄕_name, _age𝄇
+    𝄞 isVenomous = _isVenomous𝄂𝄀
+    
+    conductor score variation song speak𝄕𝄇
+    𝄞play bar 𝄕"sSSssSs"𝄇𝄂𝄀
+    
+    
+    conductor score variation song pet𝄕𝄇
+    𝄞 D𝄕isVenomous𝄇 𝄋
+    𝄞   play bar 𝄕"You've been bitten by ", name𝄇𝄀
+    𝄞𝄌𝄀
+    𝄞 E 𝄋play bar𝄕"You petted ", name𝄇𝄀𝄌𝄂𝄀
+𝄌𝄀

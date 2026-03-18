@@ -6,4 +6,14 @@ feat. "Zoo.cb"𝄀
 
 song prelude𝄕𝄇 𝅘𝅥=degree
 𝄞 𝆫 Zoo z𝄕𝄇𝄀
+𝄞 𝆫 Dog d𝄕"Zak", 3, "Golden retriever"𝄇𝄀
+𝄞 𝆫 Cat c𝄕"Molly", 10𝄇𝄀
+𝄞 𝆫 Snake s1𝄕"King Cobra", 5, cres𝄇𝄀
+𝄞 𝆫 Snake s2𝄕"Corn Snake", 3, demen𝄇𝄀
+𝄞 𝆫 Snake s3𝄕"Black Mamba", 8, cres𝄇𝄀
+𝄞 z𝄍add𝄕d𝄇𝄀
+𝄞 z𝄍add𝄕c𝄇𝄀
+𝄞 z𝄍add𝄕s1𝄇𝄀
+𝄞 z𝄍add𝄕s2𝄇𝄀
+𝄞 z𝄍add𝄕s3𝄇𝄀
 𝄞B𝄍0𝄂
