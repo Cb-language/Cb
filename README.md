@@ -307,17 +307,17 @@ Download the vertion compatible to your OS in [Releases](https://gitlab.com/elis
 
 When opening up the *Composer* at the left side a side bar appears
 
-![side bar](images/side_bar.png)
+![side bar](Images/side_bar.png)
 
 You can open a file or folder, set up the destination and save the current file.
 
 In addition you can Translate, Compile and Run the your code.
 
-![opening files](images/opening_files.png)
+![opening files](Images/opening_files.png)
 
 At the bottom, any files that are in the folder you opened will appear, click them and they will open up in the code editor.
 
-![editor](images/editor.png)
+![editor](Images/editor.png)
 
 At the top-right corner there is a setting button, plus button, LSP button and a path
 
@@ -329,7 +329,7 @@ The LSP button is to toggle on/of realtime errors, blue means on.
 
 To create a new file click the plus button, then Save (`Ctrl+S`) to save and to name it.
 
-![tabs](images/tabs.png)
+![tabs](Images/tabs.png)
 
 On the top left there will be the tabs. Click the x button to close it. Click any tabs to view it.
 
