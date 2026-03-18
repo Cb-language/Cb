@@ -85,7 +85,9 @@ std::unique_ptr<Stmt> StmtParser::parseStmt()
         return parseVarDecStmt();
     }
 
-    if (c.matchNonConsume(CbTokenType::IDENTIFIER))
+    if (c.matchNonConsume(CbTokenType::IDENTIFIER) || 
+        c.matchNonConsume(CbTokenType::KEYWORD_TRANSCRIBE) || 
+        c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
     {
         auto res = exprParser.parseExpr();
 

@@ -31,7 +31,10 @@ void CastCallExpr::analyze() const
 
 std::string CastCallExpr::translateToCpp() const
 {
-    return "Utils::cast<" + type->translateTypeToCpp() + ", " + expr->getType()->translateTypeToCpp() + ">(" + expr->translateToCpp() + ")";
+    std::string res = (needsSemicolon && !isClassItem) ? getTabs() : "";
+    res += "Utils::cast<" + type->translateTypeToCpp() + ", " + expr->getType()->translateTypeToCpp() + ">(" + expr->translateToCpp() + ")";
+    if (needsSemicolon) res += ";";
+    return res;
 }
 
 std::string CastCallExpr::toString() const
