@@ -6,6 +6,7 @@
 
 #include "../../../symbols/Type/PrimitiveType.h"
 #include "AST/abstract/VarReference.h"
+#include "symbols/Constractor.h"
 #include "symbols/Func.h"
 
 class FuncCallExpr : public VarReference
@@ -32,6 +33,7 @@ public:
     void setTargetClass(const ClassNode* targetClass);
     bool isLegalCall(const Func& func) const;
     bool argsMatch(const Func& func) const;
+    bool argsMatch(const Constractor& ctor) const;
 
     const Token& getToken() const override;
     const FQN& getName() const;

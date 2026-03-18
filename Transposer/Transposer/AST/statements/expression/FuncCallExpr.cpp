@@ -7,6 +7,7 @@
 #include "errorHandling/semanticErrors/CallWithoutCopyright.h"
 #include "other/SymbolTable.h"
 #include "errorHandling/semanticErrors/IllegalCall.h"
+#include "symbols/Constractor.h"
 
 FuncCallExpr::FuncCallExpr(const Token& token,
     const FQN& name, std::vector<std::unique_ptr<Expr>> args, const bool needsSemicolon)
@@ -85,7 +86,7 @@ std::string FuncCallExpr::translateToCpp() const
         oss << getTabs();
     }
 
-    if (targetClass != nullptr && !name.empty() && translateFQNtoString({name[0]}) == translateFQNtoString(targetClass->getClass().getClassName()))
+    if (targetClass != nullptr && name.size() > 1 && translateFQNtoString({name[0]}) == translateFQNtoString(targetClass->getClass().getClassName()))
     {
         // Static call: Animal::kingdom()
         oss << translateFQNtoString({name[0]}) << "::" << name.back() << "(";
@@ -158,6 +159,23 @@ bool FuncCallExpr::argsMatch(const Func& func) const
     for (size_t i = 0; i < args.size(); i++)
     {
         if (*(func.getArgs()[i].getType()) != *(args[i]->getType()))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool FuncCallExpr::argsMatch(const Constractor& ctor) const
+{
+    if (args.size() != ctor.getArgs().size())
+    {
+        return false;
+    }
+
+    for (size_t i = 0; i < args.size(); i++)
+    {
+        if (*(ctor.getArgs()[i].getType()) != *(args[i]->getType()))
         {
             return false;
         }

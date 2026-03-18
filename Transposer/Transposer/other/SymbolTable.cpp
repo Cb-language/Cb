@@ -271,6 +271,19 @@ bool SymbolTable::isLegalCredit(const FuncCredit& credit) const
 
 std::unique_ptr<IType> SymbolTable::getCallType(const FuncCallExpr* expr, const ClassNode* callClass) const
 {
+    // Check for constructor call (the name is a class name)
+    if (const ClassNode* classNode = classTree.find(expr->getName()))
+    {
+        for (const auto& [accessType, ctor] : classNode->getClass().getConstractors())
+        {
+            if (expr->argsMatch(ctor))
+            {
+                const_cast<FuncCallExpr*>(expr)->setTargetClass(classNode);
+                return std::make_unique<ClassType>(classNode->getClass().getClassName());
+            }
+        }
+    }
+
     if (const FQN& fqn = expr->getName(); fqn.size() > 1)
     {
         // Member access: rex.speak() or Animal.kingdom()
@@ -297,14 +310,15 @@ std::unique_ptr<IType> SymbolTable::getCallType(const FuncCallExpr* expr, const 
         }
 
         if (targetClassNode != nullptr)
-            {
+        {
             const ClassNode* current = targetClassNode;
             while (current != nullptr)
             {
                 for (const auto& [func, info] : funcs)
                 {
                     if (func.getOwner() == current && 
-                        translateFQNtoString(func.getFuncName()) == methodName && 
+                        func.getFuncName().size() == 1 &&
+                        func.getFuncName()[0] == methodName && 
                         expr->argsMatch(func))
                     {
                         // Check access rights

@@ -682,7 +682,7 @@ std::unique_ptr<ClassDeclStmt> StmtParser::parseClassDeclStmt()
     {
         bool isStatic = false;
         auto virtualType = VirtualType::NONE;
-        AccessType access = PRIVATE;
+        AccessType access = PUBLIC; // default public
 
         if (c.matchConsume(CbTokenType::KEYWORD_PLAYERSCORE)) access = PRIVATE;
         else if (c.matchConsume(CbTokenType::KEYWORD_CONDUCTORSCORE)) access = PUBLIC;

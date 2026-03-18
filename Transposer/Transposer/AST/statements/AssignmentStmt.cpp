@@ -25,7 +25,7 @@ void AssignmentStmt::analyze() const
 
     const auto leftType = varRef->getType();
 
-    if (const auto rightType = expr->getType(); leftType->toString() != rightType->toString())
+    if (const auto rightType = expr->getType(); *leftType != *rightType)
     {
         symTable->addError(std::make_unique<IllegalOpOnType>(token, leftType->toString(), rightType->toString(), assignmentOp));
     }

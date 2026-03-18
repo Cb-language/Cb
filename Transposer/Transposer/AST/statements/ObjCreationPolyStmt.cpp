@@ -32,11 +32,7 @@ void ObjCreationPolyStmt::analyze() const
     const ClassNode* target = classNode;
     if (target == nullptr)
     {
-        auto searchingName = var.getType()->getFQN();
-        target = symTable->getClass(searchingName);
-        if (target == nullptr) symTable->addError(std::make_unique<ClassDosentExisit>(token, translateFQNtoString(searchingName)));
-
-        searchingName = ctorName.empty() ? var.getType()->getFQN() : ctorName;
+        const auto searchingName = ctorName.empty() ? var.getType()->getFQN() : ctorName;
         target = symTable->getClass(searchingName);
         if (target == nullptr) symTable->addError(std::make_unique<ClassDosentExisit>(token, translateFQNtoString(searchingName)));
         const_cast<ObjCreationPolyStmt*>(this)->classNode = target;
@@ -44,12 +40,13 @@ void ObjCreationPolyStmt::analyze() const
 
     if (startingValue != nullptr)
     {
+        startingValue->setSymbolTable(symTable);
+        startingValue->setScope(scope);
+        startingValue->setClassNode(currClass);
+
         if (auto* ctorCall = dynamic_cast<ConstractorCallStmt*>(const_cast<Expr*>(startingValue.get())))
         {
             ctorCall->setTargetClass(target);
-            ctorCall->setSymbolTable(symTable);
-            ctorCall->setScope(scope);
-            ctorCall->setClassNode(currClass);
             ctorCall->analyze();
             
             if (target->isAbstract())
