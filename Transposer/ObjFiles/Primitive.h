@@ -79,6 +79,14 @@ public:
     Primitive& operator/=(const Primitive& other);
     Primitive& operator%=(const Primitive& other);
 
+    // Comparison
+    Primitive<bool> operator>(const Primitive& other) const;
+    Primitive<bool> operator>=(const Primitive& other) const;
+    Primitive<bool> operator<(const Primitive& other) const;
+    Primitive<bool> operator<=(const Primitive& other) const;
+    Primitive<bool> operator==(const Primitive& other) const;
+    Primitive<bool> operator!=(const Primitive& other) const;
+
     // Template Math vs Raw Types
     template <typename U> Primitive operator+(const U& other) const;
     template <typename U> Primitive operator-(const U& other) const;

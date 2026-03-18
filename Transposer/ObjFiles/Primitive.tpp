@@ -176,6 +176,42 @@ Primitive<T>& Primitive<T>::operator%=(const Primitive& other)
 }
 
 template <typename T> requires std::is_arithmetic_v<T>
+Primitive<bool> Primitive<T>::operator>(const Primitive& other) const
+{
+    return Primitive<bool>(value > other.value);
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
+Primitive<bool> Primitive<T>::operator>=(const Primitive& other) const
+{
+    return Primitive<bool>(value >= other.value);
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
+Primitive<bool> Primitive<T>::operator<(const Primitive& other) const
+{
+    return Primitive<bool>(value < other.value);
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
+Primitive<bool> Primitive<T>::operator<=(const Primitive& other) const
+{
+    return Primitive<bool>(value <= other.value);
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
+Primitive<bool> Primitive<T>::operator==(const Primitive& other) const
+{
+    return Primitive<bool>(value == other.value);
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
+Primitive<bool> Primitive<T>::operator!=(const Primitive& other) const
+{
+    return Primitive<bool>(value != other.value);
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
 template <typename U>
 Primitive<T> Primitive<T>::operator%(const U& other) const
 {

@@ -86,7 +86,15 @@ std::string ForStmt::translateToCpp() const
     oss << getTabs() << "for (Primitive<int> " << nameStr << " = " << startStr << "; ";
     oss << nameStr << (isIncreasing ? " < " : " >= ") << stopStr << "; ";
     oss << stepFullStr << ")" << std::endl;
-    oss << body->translateToCpp();
+    oss << getTabs() << "{" << std::endl;
+
+    for (const auto& s : body->getStmts())
+    {
+        oss << s->translateToCpp();
+    }
+
+    oss << std::endl << getTabs() << "}";
+
     return oss.str();
 }
 
