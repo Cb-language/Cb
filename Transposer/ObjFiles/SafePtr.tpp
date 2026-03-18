@@ -101,7 +101,7 @@ template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Obje
 template <typename U>
 SafePtr<T>& SafePtr<T>::operator=(const U& u)
 {
-    ptr = std::make_unique<T>(u);
+    ptr = std::make_unique<U>(u);
     return *this;
 }
 
@@ -155,7 +155,7 @@ T& SafePtr<T>::operator*() const
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-T* SafePtr<T>::get() const
+const T* SafePtr<T>::get() const
 {
-    return static_cast<T*>(ptr.get());
+    return ptr.get();
 }

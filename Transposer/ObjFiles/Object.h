@@ -19,6 +19,8 @@ public:
     virtual std::string toString(Primitive<int> indent) const;
     virtual Object& operator*();
 
+    virtual const Object* get() const;
+
 protected:
     virtual Primitive<bool> equals(const Object& other) const;
     static std::string getIndents(int indents);

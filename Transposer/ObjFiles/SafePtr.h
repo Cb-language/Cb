@@ -69,7 +69,7 @@ public:
 
     T* operator->() const;
     T& operator*() const;
-    T* get() const;
+    const T* get() const override;
     std::unique_ptr<T> clonePtr() const;
 
     InnerSafePtr& operator[](int index)

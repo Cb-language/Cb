@@ -26,6 +26,11 @@ Object& Object::operator*()
     return *this;
 }
 
+const Object* Object::get() const
+{
+    return this;
+}
+
 Primitive<bool> Object::equals(const Object& other) const
 {
     return Primitive<bool>(true);
