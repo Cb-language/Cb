@@ -3,6 +3,7 @@
 #include <ranges>
 
 #include "errorHandling/entryPointErrors/NoMain.h"
+#include "errorHandling/lexicalErrors/UnexpectedEOF.h"
 
 FileGraph& FileGraph::Instance()
 {
@@ -31,13 +32,22 @@ void FileGraph::build(const std::filesystem::path& main, const std::filesystem::
     this->main = FileNode::build(main.filename(), outDir.filename());
 }
 
-void FileGraph::start() const
+void FileGraph::start()
 {
-    main->start();
-
-    if (!main->hasMain())
+    try
     {
-        throw NoMain(main->file.parser.getLast());
+        main->analyzePass1(symTable);
+    }
+    catch (UnexpectedEOF& e)
+    {
+        symTable.addError(std::make_unique<UnexpectedEOF>(e.getToken()));
+    }
+    main->analyzePass2(symTable);
+    main->analyzePass3(symTable);
+
+    if (const auto path = symTable.getMainPath(); !path.has_value() || path != main->file.getInPath())
+    {
+        symTable.addError(std::make_unique<NoMain>(main->file.parser.getContext().getFirstToken()));
     }
 }
 
@@ -51,9 +61,16 @@ std::vector<std::filesystem::path> FileGraph::getAllCppPaths()
     return FileNode::getAllCppPath();
 }
 
-std::vector<Error*> FileGraph::getAllErrors()
+std::vector<Error*> FileGraph::getAllErrors() const
 {
-    return FileNode::getAllErrors();
+    auto err = FileNode::getAllErrors();
+
+    for (auto& e : symTable.getErrors())
+    {
+        err.emplace_back(e);
+    }
+
+    return err;
 }
 
 FileGraph::~FileGraph()

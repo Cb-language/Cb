@@ -2,55 +2,67 @@
 
 #include <ranges>
 
-Class::Class(const std::wstring& name, const std::vector<std::pair<bool, Func>>& methods,
-             const std::vector<std::pair<bool, Var>>& fields, const std::vector<std::pair<bool, Constractor>>& constractors) : name(name)
+Class::Class(const FQN& name, const std::vector<std::pair<AccessType, Func>>& methods,
+    const std::vector<std::pair<AccessType, Var>>& fields,
+    const std::vector<std::pair<AccessType, Constractor>>& constractors, bool isAbstract)
+    : name(name), _isAbstract(isAbstract)
 {
-    for (const auto& [isPublic, method] : methods) this->methods.emplace_back(isPublic, method.copy());
-    for (const auto& [isPublic, field] : fields) this->fields.emplace_back(isPublic, field.copy());
-    for (const auto& [isPublic, constractor] : constractors) this->constractors.emplace_back(isPublic, constractor.copy());
+    for (const auto& [accessType, method] : methods) this->methods.emplace_back(accessType, method.copy());
+    for (const auto& [accessType, field] : fields) this->fields.emplace_back(accessType, field.copy());
+    for (const auto& [accessType, constractor] : constractors) this->constractors.emplace_back(accessType, constractor.copy());
 }
 
-Class::Class(const Class& other) : Class(other.name, other.methods, other.fields, other.constractors)
-{
-}
-
-Class::Class(const std::wstring& name) : name(name)
+Class::Class(const Class& other) : Class(other.name, other.methods, other.fields, other.constractors, other._isAbstract)
 {
 }
 
-const std::wstring& Class::getClassName() const
+Class::Class(const FQN& name) : name(name), _isAbstract(false)
+{
+}
+
+const FQN& Class::getClassName() const
 {
     return name;
 }
 
-const std::vector<std::pair<bool, Func>>& Class::getMethods() const
+const std::vector<std::pair<AccessType, Func>>& Class::getMethods() const
 {
     return methods;
 }
 
-const std::vector<std::pair<bool, Var>>& Class::getFields() const
+const std::vector<std::pair<AccessType, Var>>& Class::getFields() const
 {
     return fields;
 }
 
-const std::vector<std::pair<bool, Constractor>>& Class::getConstractors() const
+const std::vector<std::pair<AccessType, Constractor>>& Class::getConstractors() const
 {
     return constractors;
 }
 
-void Class::addMethod(const bool isPublic, const Func& method)
+void Class::setAbstract(const bool isAbstract)
 {
-    methods.emplace_back(isPublic, method.copy());
+    this->_isAbstract = isAbstract;
 }
 
-void Class::addField(const bool isPublic, const Var& field)
+bool Class::isAbstract() const
 {
-    fields.emplace_back(isPublic, field.copy());
+    return _isAbstract;
 }
 
-void Class::addConstractor(const bool isPublic, const Constractor& constractor)
+void Class::addMethod(const AccessType accessType, const Func& method)
 {
-    constractors.emplace_back(isPublic, constractor.copy());
+    methods.emplace_back(accessType, method.copy());
+}
+
+void Class::addField(const AccessType accessType, const Var& field)
+{
+    fields.emplace_back(accessType, field.copy());
+}
+
+void Class::addConstractor(const AccessType accessType, const Constractor& constractor)
+{
+    constractors.emplace_back(accessType, constractor.copy());
 }
 
 bool Class::hasMethod(const Func& method) const
@@ -80,20 +92,20 @@ bool Class::hasConstractor(const Constractor& constractor) const
     return false;
 }
 
-bool Class::hasMethod(const std::wstring& name) const
+bool Class::hasMethod(FQN& name) const
 {
     for (const auto& m : methods | std::views::values)
     {
-        if (m.getFuncName() == name) return true;
+        if (translateFQNtoString(m.getFuncName()) == translateFQNtoString(name)) return true;
     }
     return false;
 }
 
-bool Class::hasField(const std::wstring& name) const
+bool Class::hasField(const FQN& name) const
 {
     for (const auto& f : fields | std::views::values)
     {
-        if (f.getName() == name) return true;
+        if (translateFQNtoString(f.getName()) == translateFQNtoString(name)) return true;
     }
     return false;
 }

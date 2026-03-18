@@ -1,10 +1,12 @@
 #include "ClassType.h"
 
 #include "errorHandling/how/HowDidYouGetHere.h"
+#include "other/SymbolTable.h"
 
-ClassType::ClassType(const ClassNode* c) : IType(c != nullptr ? c->getClass().getClassName() : L""), c(c)
+ClassTree& ClassType::classTree = ClassTree::instance();
+
+ClassType::ClassType(const FQN& name) : name(name), c(nullptr)
 {
-    if (c == nullptr) throw HowDidYouGetHere(Token());
 }
 
 ClassType::~ClassType()
@@ -14,22 +16,21 @@ ClassType::~ClassType()
 
 bool ClassType::operator==(const IType& other) const
 {
-    return getType() == other.getType();
+    if (translateFQNtoString(other.getFQN()) == translateFQNtoString(name)) return true;
+
+    if (const auto otherPtr = dynamic_cast<const ClassType*>(&other))
+    {
+        const auto self = classTree.find(name);
+        const auto otherNode = classTree.find(otherPtr->getFQN());
+
+        if (self != nullptr && otherNode != nullptr && (self->isDescendantOf(otherNode) || otherNode->isDescendantOf(self))) return true;
+    }
+    return false;
 }
 
 bool ClassType::operator!=(const IType& other) const
 {
-    return getType() != other.getType();
-}
-
-bool ClassType::operator==(const std::wstring& other) const
-{
-    return getType() == other;
-}
-
-bool ClassType::operator!=(const std::wstring& other) const
-{
-    return getType() != other;
+    return !(*this == other);
 }
 
 bool ClassType::isNumberable() const
@@ -47,17 +48,37 @@ bool ClassType::isPrimitive() const
     return false;
 }
 
-std::wstring ClassType::getType() const
+const ClassNode* ClassType::getClassNode() const
 {
-    return type;
+    return c;
+}
+
+void ClassType::setClassNode(const ClassNode& node)
+{
+    c = &node;
+}
+
+const FQN& ClassType::getName() const
+{
+    return name;
 }
 
 std::string ClassType::translateTypeToCpp() const
 {
-    return Utils::wstrToStr(type);
+    return "SafePtr<" + translateFQNtoString(name) + ">";
 }
 
 std::unique_ptr<IType> ClassType::copy() const
 {
-    return std::make_unique<ClassType>(c);
+    return std::make_unique<ClassType>(name);
+}
+
+std::string ClassType::toString() const
+{
+    return translateFQNtoString(name);
+}
+
+FQN ClassType::getFQN() const
+{
+    return name;
 }

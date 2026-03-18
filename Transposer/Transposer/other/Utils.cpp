@@ -3,11 +3,13 @@
 #include <iomanip>
 #include <codecvt>
 #include <locale>
+#include <vector>
 
-std::string Utils::wstrToStr(const std::wstring& wstr)
+#include "files/File.h"
+
+std::string Utils::wstrToStr(const std::string& wstr)
 {
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> conv;
-    return conv.to_bytes(wstr);
+    return wstr;
 }
 
 void Utils::logMsg(const std::string& msg)
@@ -18,7 +20,7 @@ void Utils::logMsg(const std::string& msg)
         << std::endl;
 }
 
-std::string Utils::removeFirstTabs(std::string& str)
+std::string Utils::removeFirstTabs(std::string str)
 {
     if (!str.starts_with("\t"))
     {
@@ -28,28 +30,44 @@ std::string Utils::removeFirstTabs(std::string& str)
     return removeFirstTabs(str);
 }
 
-std::string Utils::normalizePath(const std::filesystem::path& path)
+std::string Utils::removeAllFirstTabs(std::string str)
 {
-    std::string res;
-    bool dontAddBackslash = true;
-    for (auto& part : path)
+    bool atLineStart = true;
+
+    for (size_t i = 0; i < str.size(); )
     {
-        if (!dontAddBackslash)
+        if (atLineStart && str[i] == '\t')
         {
-            if (part == "\\") continue;
-            res += "/";
+            str.erase(i, 1);
+            atLineStart = false;
+            continue;
         }
-        else dontAddBackslash = false;
-        res += part.string();
+
+        if (str[i] == '\n')
+        {
+            atLineStart = true;
+        }
+        else
+        {
+            atLineStart = false;
+        }
+
+        ++i;
     }
-    return res;
+
+    return str;
 }
 
-bool Utils::startsWithNote(const std::wstring& wstr)
+std::string Utils::normalizePath(const std::filesystem::path& path)
 {
-    return wstr.starts_with(L"do_") || wstr.starts_with(L"re_") || wstr.starts_with(L"mi_") ||
-            wstr.starts_with(L"fa_") || wstr.starts_with(L"sol_") || wstr.starts_with(L"la_") ||
-            wstr.starts_with(L"si_") || wstr.starts_with(L"ti_");
+    return path.generic_string();
+}
+
+bool Utils::startsWithNote(const std::string& wstr)
+{
+    return wstr.starts_with("do_") || wstr.starts_with("re_") || wstr.starts_with("mi_") ||
+            wstr.starts_with("fa_") || wstr.starts_with("sol_") || wstr.starts_with("la_") ||
+            wstr.starts_with("si_") || wstr.starts_with("ti_");
 }
 
 std::string Utils::escapeJson(const std::string& str)
@@ -70,4 +88,29 @@ std::string Utils::escapeJson(const std::string& str)
         }
     }
     return res;
+}
+
+std::string Utils::getAllObjIncludes()
+{
+    std::ostringstream oss;
+
+    oss << R"(#include "includes/Object.h")" << std::endl <<
+        R"(#include "includes/Utils.h")" << std::endl <<
+        R"(#include "includes/String.h")" << std::endl <<
+        R"(#include "includes/Array.h")" << std::endl <<
+        R"(#include "includes/Primitive.h")" << std::endl <<
+        R"(#include "includes/SafePtr.h")" << std::endl;
+
+    return oss.str();
+}
+
+std::vector<std::filesystem::path> Utils::getAllObjCppPaths()
+{
+    const std::filesystem::path out = File::getOutDir() / "includes";
+    std::vector<std::filesystem::path> p = {
+        out / "Object.cpp",
+        out / "String.cpp"
+    };
+
+    return p;
 }

@@ -7,5 +7,5 @@ IdentifierTaken::IdentifierTaken(const Token& token) : Error(token, "identifier 
     fullMessage = (this->errorMessage +
                    " at line: " + std::to_string(token.line) +
                    " at column: " + std::to_string(token.column) +
-                   " identifier: " + Utils::wstrToStr(token.value) + "\n");
+                   " identifier: " + token.value.value()) + "\n";
 }

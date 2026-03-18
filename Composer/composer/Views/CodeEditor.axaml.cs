@@ -40,12 +40,15 @@ public partial class CodeEditor : UserControl
     // Auto-Complete Pairs
     private readonly Dictionary<string, string> _bracketPairs = new()
     {
-        { "(", ")" },
         { "[", "]" },
         { "{", "}" },
         { "\"", "\"" },
         { "'", "'" },
-        { "∮", "☉" }
+        { "𝄞", "𝄀" },
+        { "𝄋", "𝄌"},
+        { "𝄕", "𝄇"},
+        { "𝄢𝄩", "𝄩𝄢"},
+        {"𝆒", "𝆓"}
     };
 
     public CodeEditor()
@@ -84,9 +87,17 @@ public partial class CodeEditor : UserControl
 
         switch (e.Text)
         {
-            case "{": replacement = "∮"; break;
-            case "}": replacement = "☉"; break;
-            case ";": replacement = "║"; break;
+            case "{": replacement = "𝄋"; break;
+            case "}": replacement = "𝄌"; break;
+            case "(": replacement = "𝄕"; break;
+            case ")": replacement = "𝄇"; break;
+            case "&": replacement = "𝄞"; break;
+            case ";": replacement = "𝄀"; break;
+            case "~": replacement = "𝄽"; break;
+            case "^": replacement = "𝆫"; break;
+            case "\\": replacement = "𝄍"; break;
+            case "#": replacement = "♯"; break;
+            case "?": replacement = "𝄢"; break;
         }
 
         if (replacement != null)
@@ -109,7 +120,7 @@ public partial class CodeEditor : UserControl
         if (_bracketPairs.TryGetValue(text, out var closingChar))
         {
             Editor.Document.Insert(Editor.CaretOffset, closingChar);
-            Editor.CaretOffset--; 
+            Editor.CaretOffset -= closingChar.Length; 
         }
     }
 
@@ -206,15 +217,58 @@ public partial class CodeEditor : UserControl
 
     private void OnEditorKeyDown(object? sender, KeyEventArgs e)
     {
-        if (e is not { KeyModifiers: KeyModifiers.Control, Key: Key.OemQuestion }) return;
-        ToggleComment();
-        e.Handled = true;
+        // 1. Handle Comment Toggle (Ctrl + /)
+        if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.OemQuestion)
+        {
+            ToggleComment();
+            e.Handled = true;
+            return;
+        }
+
+        // 2. Handle Alt Keymaps
+        if (e.KeyModifiers.HasFlag(KeyModifiers.Alt))
+        {
+            string? replacement = null;
+            if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+            {
+                switch (e.Key)
+                {
+                    case Key.B: replacement = "𝄫"; break;       // ALT + SHIFT + B
+                }
+            }
+            else
+            {
+                switch (e.Key)
+                {
+                    case Key.OemTilde: replacement = "𝄡"; break; // ALT + ~ (or ` key)
+                    case Key.D0: replacement = "♮"; break; // ALT + 0
+                    case Key.C: replacement = "©"; break; // ALT + C
+                    case Key.OemQuestion: // ALT + / (or ? key)
+                    case Key.Divide: replacement = "𝄢𝄩"; break; // ALT + Numpad /
+                    case Key.OemSemicolon: replacement = "𝄂"; break;
+                    case Key.OemPlus: replacement = "𝅘𝅥="; break; // ALT + Numpad +
+                    case Key.D3: replacement = "𝄪"; break;  // ALT+ #
+                    case Key.B: replacement = "♭"; break; // ALT + B
+                    case Key.OemPipe: replacement = "𝄓"; break;
+                    case Key.OemComma: replacement = "𝆒"; break;
+                    case Key.OemPeriod: replacement = "𝆓"; break;
+
+                }
+            }
+
+            if (replacement != null)
+            {
+                e.Handled = true;
+                Editor.TextArea.Selection.ReplaceSelectionWithText(replacement);
+                HandleAutoCompletion(replacement);
+            }
+        }
     }
 
     private void ToggleComment()
     {
         var document = Editor.Document;
-        const string commentPrefix = "?";
+        const string commentPrefix = "𝄢 ";
 
         // 1. Single Line Logic (No Selection)
         if (Editor.SelectionLength == 0)
@@ -303,14 +357,18 @@ public partial class CodeEditor : UserControl
         try 
         {
             var uri = new Uri(resourceUri);
-            if (!AssetLoader.Exists(uri)) return;
             using var stream = AssetLoader.Open(uri);
-            using var reader = new XmlTextReader(stream);
-            Editor.SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
+            using var reader = XmlReader.Create(stream);
+            var definition = HighlightingLoader.Load(reader, HighlightingManager.Instance);
+            
+            // Register it so it can be found by name if needed
+            HighlightingManager.Instance.RegisterHighlighting("MusicLang", new[] { ".music" }, definition);
+            
+            Editor.SyntaxHighlighting = definition;
         }
-        catch
+        catch (Exception ex)
         {
-            // ignored
+            System.Diagnostics.Debug.WriteLine($"Error loading syntax: {ex.Message}");
         }
     }
 }

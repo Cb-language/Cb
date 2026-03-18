@@ -4,5 +4,5 @@
 class NoMain : public Error
 {
 public:
-    NoMain(const Token &token);
+    explicit NoMain(const Token &token);
 };

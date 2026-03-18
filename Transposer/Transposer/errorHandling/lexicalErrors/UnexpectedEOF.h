@@ -4,5 +4,5 @@
 class UnexpectedEOF : public Error
 {
 public:
-    UnexpectedEOF(const Token &token);
+    explicit UnexpectedEOF(const Token &token);
 };

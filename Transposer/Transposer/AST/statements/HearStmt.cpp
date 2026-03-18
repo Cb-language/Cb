@@ -3,23 +3,31 @@
 #include <sstream>
 
 #include "errorHandling/semanticErrors/IllegalHear.h"
+#include "other/SymbolTable.h"
 
-HearStmt::HearStmt(const Token& token,  Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::vector<std::unique_ptr<Call>>& calls)
-    : Stmt(token, scope, funcDecl, currClass)
+HearStmt::HearStmt(const Token& token, std::vector<std::unique_ptr<VarReference>>& refs)
+    : Stmt(token)
 {
-    for (auto& call : calls)
+    for (auto& ref : refs)
     {
-        this->calls.push_back(std::move(call));
+        this->references.push_back(std::move(ref));
     }
 }
 
 void HearStmt::analyze() const
 {
-    for (const auto& call : calls)
+    if (symTable == nullptr) return;
+
+    for (const auto& ref : references)
     {
-        if (call->getType()->getArrLevel() > 0 || !(call->getType()->isPrimitive()))
+        ref->setSymbolTable(symTable);
+        ref->setScope(scope);
+        ref->setClassNode(currClass);
+        ref->analyze();
+
+        if (ref->getType()->getArrLevel() > 0 || !(ref->getType()->isPrimitive()))
         {
-            throw IllegalHear(token, call->getType()->toString());
+            symTable->addError(std::make_unique<IllegalHear>(token, ref->getType()->toString()));
         }
     }
 }
@@ -28,7 +36,7 @@ std::string HearStmt::translateToCpp() const
 {
     std::ostringstream oss;
 
-    if (calls.empty())
+    if (references.empty())
     {
         oss << getTabs() << "system(\"pause\");";
         return oss.str();
@@ -36,12 +44,18 @@ std::string HearStmt::translateToCpp() const
 
     oss << getTabs() << "std::cin";
 
-    for (const auto& call : calls)
+    for (const auto& ref : references)
     {
-        oss << " >> " << call->translateToCpp();
+        oss << " >> " << Utils::removeAllFirstTabs(ref->translateToCpp());
     }
 
     oss << ";";
 
     return oss.str();
+}
+
+void HearStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    for (const auto& ref : references) ref->setSymbolTable(symTable);
 }

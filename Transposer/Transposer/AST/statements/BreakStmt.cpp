@@ -1,14 +1,15 @@
 #include "BreakStmt.h"
-
+#include "other/SymbolTable.h"
 #include "errorHandling/semanticErrors/StmtNotBreakable.h"
 
-BreakStmt::BreakStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass) : Stmt(token, scope, funcDecl, currClass)
+BreakStmt::BreakStmt(const Token& token) : Stmt(token)
 {
 }
 
 void BreakStmt::analyze() const
 {
-    if (!scope->getIsBreakable()) throw StmtNotBreakable(token);
+    if (symTable == nullptr) return;
+    if (!symTable->getCurrScope()->getIsBreakable()) symTable->addError(std::make_unique<StmtNotBreakable>(token));
 }
 
 std::string BreakStmt::translateToCpp() const

@@ -4,5 +4,5 @@
 class InvalidMainReturnType : public Error
 {
 public:
-    InvalidMainReturnType(const Token& token);
+    explicit InvalidMainReturnType(const Token& token);
 };

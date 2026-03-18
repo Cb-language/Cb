@@ -2,7 +2,7 @@
 
 #include "other/Utils.h"
 
-Func::Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std::vector<Var>& args) : rType(std::move(rType)), funcName(funcName)
+Func::Func(std::unique_ptr<IType> rType, const FQN& funcName, const std::vector<Var>& args, const VirtualType vType, const ClassNode* owner, const bool isStatic) : rType(std::move(rType)), funcName(funcName), virtualType(vType), owner(owner), isStatic(isStatic)
 {
     for (const auto& arg : args)
     {
@@ -10,7 +10,7 @@ Func::Func(std::unique_ptr<IType> rType, const std::wstring& funcName, const std
     }
 }
 
-Func::Func(const Func& other) : Func(other.rType->copy(), other.funcName, other.args)
+Func::Func(const Func& other) : Func(other.rType ? other.rType->copy() : nullptr, other.funcName, other.args, other.virtualType, other.owner, other.isStatic)
 {
 }
 
@@ -19,7 +19,7 @@ const std::vector<Var>& Func::getArgs() const
     return args;
 }
 
-const std::wstring& Func::getFuncName() const
+const FQN& Func::getFuncName() const
 {
     return funcName;
 }
@@ -29,20 +29,36 @@ std::unique_ptr<IType> Func::getType() const
     return rType->copy();
 }
 
-std::string Func::translateToCpp(const std::wstring& className) const
+void Func::setVirtual(const VirtualType vType)
 {
-    std::string funcNameStr = Utils::wstrToStr(funcName);
+    this->virtualType = vType;
+}
 
-    if (funcNameStr == "prelude")
-    {
-        funcNameStr = "main";
-    }
+VirtualType Func::getVirtual() const
+{
+    return virtualType;
+}
 
-    std::string header = rType->translateTypeToCpp() + " ";
+void Func::setOwner(const ClassNode* owner)
+{
+    this->owner = owner;
+}
+
+const ClassNode* Func::getOwner() const
+{
+    return owner;
+}
+
+std::string Func::translateToCpp(const std::string& className) const
+{
+    const std::string funcNameStr = translateFQNtoString(funcName);
+    std::string header;
+
+    header += rType->translateTypeToCpp() + " ";
 
     if (!className.empty())
     {
-        header += Utils::wstrToStr(className) + "::";
+        header += className + "::";
     }
 
     header += funcNameStr + "(";
@@ -54,25 +70,45 @@ std::string Func::translateToCpp(const std::wstring& className) const
         {
             header += ", ";
         }
-        header += arg.getType()->translateTypeToCpp() + " " + Utils::wstrToStr(arg.getName());
+        header += arg.getType()->translateTypeToCpp() + " " + translateFQNtoString(arg.getName());
         first = false;
     }
 
     header += ")";
+
     return header;
 }
 
 bool Func::operator==(const Func& other) const
 {
-    if (rType->getType() != other.rType->getType() || funcName != other.funcName)
+    if (translateFQNtoString(rType->getFQN()) != translateFQNtoString(other.rType->getFQN()))
     {
         return false;
     }
 
-    for (const auto& arg : other.args)
+    if (owner != other.owner)
     {
-        // arg name doesn't matter for func
-        if (*(arg.getType()) != rType->getType())
+        return false;
+    }
+
+    return this->isSameNameAndArgs(other);
+}
+
+bool Func::operator!=(const Func& other) const
+{
+    return !(*this == other);
+}
+
+bool Func::isSameNameAndArgs(const Func& other) const
+{
+    if (funcName != other.funcName || args.size() != other.args.size())
+    {
+        return false;
+    }
+
+    for (size_t i = 0; i < args.size(); ++i)
+    {
+        if (*(args[i].getType()) != *(other.args[i].getType()))
         {
             return false;
         }
@@ -81,23 +117,14 @@ bool Func::operator==(const Func& other) const
     return true;
 }
 
-bool Func::isLegalCall(const Func& other) const
+bool Func::getStatic() const
 {
-    if (funcName != other.funcName)
-    {
-        return false;
-    }
+    return isStatic;
+}
 
-    for (const auto& arg : other.args)
-    {
-        // arg name doesn't matter for func
-        if (*(arg.getType()) != rType->getType())
-        {
-            return false;
-        }
-    }
-
-    return true;
+void Func::setStatic(const bool isStatic)
+{
+    this->isStatic = isStatic;
 }
 
 Func Func::copy() const
@@ -107,5 +134,28 @@ Func Func::copy() const
 
 bool Func::operator<(const Func& other) const
 {
-    return funcName < other.funcName;
+    if (owner != other.owner)
+    {
+        return owner < other.owner;
+    }
+
+    if (funcName != other.funcName)
+    {
+        return funcName < other.funcName;
+    }
+
+    if (args.size() != other.args.size())
+    {
+        return args.size() < other.args.size();
+    }
+
+    for (size_t i = 0; i < args.size(); ++i)
+    {
+        if (args[i].getType()->toString() != other.args[i].getType()->toString())
+        {
+            return args[i].getType()->toString() < other.args[i].getType()->toString();
+        }
+    }
+
+    return false;
 }

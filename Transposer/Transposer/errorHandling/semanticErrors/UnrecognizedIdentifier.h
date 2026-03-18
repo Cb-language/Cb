@@ -4,5 +4,5 @@
 class UnrecognizedIdentifier : public Error
 {
 public:
-    UnrecognizedIdentifier(const Token& token);
+    UnrecognizedIdentifier(const Token& token, const std::string& identifier);
 };

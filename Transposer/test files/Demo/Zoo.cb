@@ -1,0 +1,27 @@
+feat. "Animal.cb"𝄀
+feat. "Snake.cb"𝄀
+
+instrument Zoo 𝄋
+    player score unison sharp degree size = 5𝄀
+    player score sharp degree currSize = 0𝄀
+    player score riff Animal zoo[size]𝄀
+    
+    𝄢  Return value: is succssesful
+    conductor score song add𝄕Animal a𝄇 𝅘𝅥=mute
+    𝄞 D𝄕currSize >= size𝄇 𝄋B𝄍demen𝄀𝄌𝄀
+    𝄞 zoo[currSize♯] = a𝄀
+    𝄞B𝄍cres𝄂𝄀
+    
+    conductor score song pet𝄕𝄇
+    𝄞 Fmaj0𝄪currSize𝄋
+    𝄞     D𝄕zoo[i] timbre Snake𝄇𝄋
+    𝄞          transcribe𝆒Snake𝆓𝄕zoo[i]𝄇𝄍pet𝄕𝄇𝄀
+    𝄞     𝄌𝄀
+    𝄞𝄌𝄂𝄀
+    
+    conductor score song talk𝄕𝄇
+    𝄞 Fmaj0𝄪currSize𝄋
+    𝄞     play 𝄕zoo[i]𝄍getName𝄕𝄇, "'s is age: ", zoo[i]𝄍getAge𝄕𝄇, ". They say: "𝄇𝄀
+    𝄞     zoo[i]𝄍speak𝄕𝄇𝄀
+    𝄞𝄌𝄂𝄀
+𝄌𝄀

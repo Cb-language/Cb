@@ -37,10 +37,9 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/InvalidExpression.h
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.cpp
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.h
-        Transposer/parser/Parser.cpp
         Transposer/parser/Parser.h
-        Transposer/symbols/Type/Type.cpp
-        Transposer/symbols/Type/Type.h
+        Transposer/symbols/Type/PrimitiveType.cpp
+        Transposer/symbols/Type/PrimitiveType.h
         Transposer/AST/abstract/Expression.h
         Transposer/AST/statements/expression/ConstValueExpr.cpp
         Transposer/AST/statements/expression/ConstValueExpr.h
@@ -94,8 +93,6 @@ add_executable(Transposer
         Transposer/AST/statements/FuncCreditStmt.h
         Transposer/AST/statements/expression/FuncCallExpr.cpp
         Transposer/AST/statements/expression/FuncCallExpr.h
-        Transposer/files/ArrayHelper.cpp
-        Transposer/files/ArrayHelper.h
         Transposer/symbols/Type/IType.h
         Transposer/AST/statements/IfStmt.cpp
         Transposer/AST/statements/IfStmt.h
@@ -113,7 +110,7 @@ add_executable(Transposer
         Transposer/AST/statements/expression/ArraySlicingExpr.h
         Transposer/AST/statements/expression/ArrayIndexingExpr.cpp
         Transposer/AST/statements/expression/ArrayIndexingExpr.h
-        Transposer/AST/abstract/Call.h
+        Transposer/AST/abstract/VarReference.h
         Transposer/AST/statements/SwitchStmt.cpp
         Transposer/AST/statements/SwitchStmt.h
         Transposer/AST/statements/CaseStmt.cpp
@@ -193,15 +190,15 @@ add_executable(Transposer
         Transposer/AST/statements/ClassDeclStmt.h
         Transposer/errorHandling/classErrors/MissingClassPipe.cpp
         Transposer/errorHandling/classErrors/MissingClassPipe.h
-        Transposer/AST/statements/ConstractorDeclStmt.cpp
-        Transposer/AST/statements/ConstractorDeclStmt.h
+        Transposer/AST/statements/ConstructorDeclStmt.cpp
+        Transposer/AST/statements/ConstructorDeclStmt.h
         Transposer/symbols/Class.cpp
         Transposer/symbols/Class.h
         Transposer/symbols/Constractor.cpp
         Transposer/symbols/Constractor.h
         Transposer/AST/abstract/IFuncDeclStmt.h
-        Transposer/AST/statements/ObjCreationStmt.cpp
-        Transposer/AST/statements/ObjCreationStmt.h
+        Transposer/AST/statements/ObjCreationPolyStmt.cpp
+        Transposer/AST/statements/ObjCreationPolyStmt.h
         Transposer/errorHandling/classErrors/NoCtor.cpp
         Transposer/errorHandling/classErrors/NoCtor.h
         Transposer/class/ClassNode.cpp
@@ -210,20 +207,99 @@ add_executable(Transposer
         Transposer/AST/statements/expression/DotOpExpr.h
         Transposer/symbols/Type/ClassType.cpp
         Transposer/symbols/Type/ClassType.h
-        Transposer/AST/statements/expression/ConstractorCallStmt.cpp
-        Transposer/AST/statements/expression/ConstractorCallStmt.h
-        Transposer/errorHandling/syntaxErrors/IllegalVarName.cpp
-        Transposer/errorHandling/syntaxErrors/IllegalVarName.h
+        Transposer/AST/statements/ConstractorCallStmt.cpp
+        Transposer/AST/statements/ConstractorCallStmt.h
+        Transposer/errorHandling/semanticErrors/IllegalVarName.cpp
+        Transposer/errorHandling/semanticErrors/IllegalVarName.h
         Transposer/errorHandling/classErrors/AccessError.cpp
         Transposer/errorHandling/classErrors/AccessError.h
         Transposer/errorHandling/classErrors/InvalidCtorArgs.cpp
         Transposer/errorHandling/classErrors/InvalidCtorArgs.h
         Transposer/errorHandling/classErrors/RedefOfCtor.cpp
         Transposer/errorHandling/classErrors/RedefOfCtor.h
+        Transposer/errorHandling/classErrors/ParentNotInitialized.cpp
+        Transposer/errorHandling/classErrors/ParentNotInitialized.h
         Transposer/errorHandling/classErrors/ClassDosentExisit.cpp
         Transposer/errorHandling/classErrors/ClassDosentExisit.h
         Transposer/LSPPacking/LSPPacker.cpp
         Transposer/LSPPacking/LSPPacker.h
+        Transposer/files/LibHelper.cpp
+        Transposer/files/LibHelper.h
+        Transposer/errorHandling/classErrors/InvalidAccessKeyword.cpp
+        Transposer/errorHandling/classErrors/InvalidAccessKeyword.h
+        Transposer/class/ClassTree.cpp
+        Transposer/class/ClassTree.h
+        Transposer/class/AccessType.h
+        Transposer/errorHandling/classErrors/VirtualNonMethod.h
+        Transposer/errorHandling/classErrors/VirtualNonMethod.cpp
+        Transposer/errorHandling/classErrors/OverrideError.h
+        Transposer/errorHandling/classErrors/OverrideError.cpp
+        Transposer/errorHandling/classErrors/NoOverrideError.h
+        Transposer/errorHandling/classErrors/NoOverrideError.cpp
+        Transposer/errorHandling/classErrors/InvalidOverrideSignature.h
+        Transposer/errorHandling/classErrors/InvalidOverrideSignature.cpp
+        Transposer/errorHandling/classErrors/InstantiateAbstractClass.h
+        Transposer/errorHandling/classErrors/InstantiateAbstractClass.cpp
+        Transposer/errorHandling/classErrors/UnimplementedPureVirtualMethod.h
+        Transposer/errorHandling/classErrors/UnimplementedPureVirtualMethod.cpp
+        Transposer/errorHandling/syntaxErrors/ExpectedKeywordNotFound.cpp
+        Transposer/errorHandling/syntaxErrors/ExpectedKeywordNotFound.h
+        Transposer/errorHandling/semanticErrors/StaticFuncCantVirtual.cpp
+        Transposer/errorHandling/semanticErrors/StaticFuncCantVirtual.h
+        Transposer/AST/statements/expression/StaticDotOpExpr.cpp
+        Transposer/AST/statements/expression/StaticDotOpExpr.h
+        Transposer/errorHandling/classErrors/IllegalDotOpError.cpp
+        Transposer/errorHandling/classErrors/IllegalDotOpError.h
+        Transposer/token/TrieTree/TrieNode.cpp
+        Transposer/token/TrieTree/TrieNode.h
+        Transposer/token/TrieTree/KeywordInfo.h
+        Transposer/token/TrieTree/WordBoundary.h
+        Transposer/token/TrieTree/Keywords.cpp
+        Transposer/token/TrieTree/Keywords.h
+        Transposer/parser/Parser.cpp
+        Transposer/parser/ParserContext.h
+        Transposer/parser/ParserContext.cpp
+        Transposer/parser/StmtParser.cpp
+        Transposer/parser/StmtParser.h
+        Transposer/parser/ExprParser.cpp
+        Transposer/parser/ExprParser.h
+        Transposer/parser/TypeParser.cpp
+        Transposer/parser/TypeParser.h
+        Transposer/errorHandling/syntaxErrors/NoLineOpener.cpp
+        Transposer/errorHandling/syntaxErrors/NoLineOpener.h
+        Transposer/errorHandling/how/HowDareYou.cpp
+        Transposer/errorHandling/how/HowDareYou.h
+        Transposer/errorHandling/syntaxErrors/NoNewLine.cpp
+        Transposer/errorHandling/syntaxErrors/NoNewLine.h
+        Transposer/errorHandling/syntaxErrors/NoRest.cpp
+        Transposer/errorHandling/syntaxErrors/NoRest.h
+        Transposer/errorHandling/classErrors/InvalidCtorName.cpp
+        Transposer/errorHandling/classErrors/InvalidCtorName.h
+        Transposer/errorHandling/classErrors/StaticCtor.cpp
+        Transposer/errorHandling/classErrors/StaticCtor.h
+        Transposer/errorHandling/classErrors/VirtualCtor.cpp
+        Transposer/errorHandling/classErrors/VirtualCtor.h
+        Transposer/parser/FQN.h
+        Transposer/errorHandling/classErrors/CtorWithReturnValue.cpp
+        Transposer/errorHandling/classErrors/CtorWithReturnValue.h
+        Transposer/AST/statements/expression/CastCallExpr.cpp
+        Transposer/AST/statements/expression/CastCallExpr.h
+        Transposer/AST/statements/expression/IsExpr.cpp
+        Transposer/AST/statements/expression/IsExpr.h
+        Transposer/AST/statements/expression/LenExpr.cpp
+        Transposer/AST/statements/expression/LenExpr.h
+        Transposer/errorHandling/semanticErrors/IllegalLengthCall.cpp
+        Transposer/errorHandling/semanticErrors/IllegalLengthCall.h
+        Transposer/AST/statements/ObjCreationCastStmt.cpp
+        Transposer/AST/statements/ObjCreationCastStmt.h
+        Transposer/AST/abstract/ObjectCreationStmt.h
+        Transposer/errorHandling/syntaxErrors/CaseNotInsideIf.cpp
+        Transposer/errorHandling/syntaxErrors/CaseNotInsideIf.h
+        Transposer/errorHandling/classErrors/PureWithBody.cpp
+        Transposer/errorHandling/classErrors/PureWithBody.h
+        Transposer/AST/statements/ObjCreationAssigmentStmt.cpp
+        Transposer/AST/statements/ObjCreationAssigmentStmt.h
+
 )
 
 # In order to call the exe from the cmd

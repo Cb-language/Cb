@@ -5,44 +5,49 @@
 #include "errorHandling/Error.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
+#include "errorHandling/semanticErrors/IllegalVarName.h"
+#include "errorHandling/classErrors/IllegalFieldName.h"
+#include "other/SymbolTable.h"
+#include "other/Utils.h"
 
 void ArrayDeclStmt::analyzeSizes() const
 {
-    // Can't get here but always check
-    if (var.getType()->getArrLevel() != sizes.size())
+    if (symTable == nullptr) return;
+
+    const auto t = var.getType();
+    if (!t) return;
+
+    if (t->getArrLevel() != sizes.size())
     {
-        throw HowDidYouGetHere(token);
+        symTable->addError(std::make_unique<HowDidYouGetHere>(token));
     }
 
     for (const auto& size : sizes)
     {
+        size->setSymbolTable(symTable);
+        size->setScope(scope);
+        size->setClassNode(currClass);
         size->analyze();
-        if (!size->getType()->isNumberable())
+
+        const auto sizeType = size->getType();
+        if (!sizeType) continue; // error already reported in analyze()
+
+        if (!sizeType->isNumberable())
         {
-            throw IllegalTypeCast(token, Utils::wstrToStr(size->getType()->getType()), "degree");
+            symTable->addError(std::make_unique<IllegalTypeCast>(token, sizeType->toString(), "degree"));
         }
     }
 }
 
-std::string ArrayDeclStmt::createConstructor(IType* type, const size_t dim) const
+std::string ArrayDeclStmt::createConstructor(const IType* type, const size_t dim) const
 {
     std::ostringstream oss;
 
     if (type->getArrLevel() == 0)
     {
-        if (hasStartingValue && startingValue->getType()->getArrLevel() == 0)
+        if (hasStartingValue && startingValue && startingValue->getType() && startingValue->getType()->getArrLevel() == 0)
         {
             return startingValue->translateToCpp();
-        }
-
-        if (type->isPrimitive())
-        {
-            if (type->getType() == L"bar")
-            {
-                return "\"\"";
-            }
-
-            return "0";
         }
 
         return type->translateTypeToCpp() + "()";
@@ -58,60 +63,22 @@ std::string ArrayDeclStmt::createConstructor(IType* type, const size_t dim) cons
     return oss.str();
 }
 
-ArrayDeclStmt::ArrayDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const bool hasStartingValue,
-                             std::unique_ptr<Expr> startingValue, const Var& var, std::vector<std::unique_ptr<Expr>> sizes) :
-        VarDeclStmt(token, scope, funcDecl, currClass, hasStartingValue, std::move(startingValue), var), sizes(std::move(sizes))
+ArrayDeclStmt::ArrayDeclStmt(const Token& token, const bool hasStartingValue,
+    std::unique_ptr<Expr> startingValue, const Var& var, std::vector<std::unique_ptr<Expr>> sizes) :
+        VarDeclStmt(token, hasStartingValue, std::move(startingValue), var), sizes(std::move(sizes))
 {
 }
 
 void ArrayDeclStmt::analyze() const
 {
+    if (symTable == nullptr) return;
+
+    // Delegate basic registration and name checking to VarDeclStmt
+    VarDeclStmt::analyze();
+
     if (!sizes.empty())
     {
         analyzeSizes();
-    }
-
-    if (hasStartingValue)
-    {
-        const std::unique_ptr<IType> startType = startingValue->getType()->copy();
-        const std::unique_ptr<IType> varType = var.getType()->copy();
-        const unsigned int arrLevel = varType->getArrLevel();
-        const unsigned int startArrLevel = startType->getArrLevel();
-
-        // Can't get here but always check
-        if (arrLevel == 0)
-        {
-            throw HowDidYouGetHere(token);
-        }
-
-        if (arrLevel == startArrLevel) // Array<int> x = 3; Array<int> y = x;
-        {
-            if (*varType != *startType)
-            {
-                throw IllegalTypeCast(token, startType->toString(), varType->toString());
-            }
-        }
-        else if (arrLevel == startArrLevel + 1) // Array<int> x = 3; or Array<int> y; Array<Array<int>> x = y;
-        {
-            if (*(varType->getArrType()) != *startType)
-            {
-                throw IllegalTypeCast(token, startType->toString(), varType->getArrType()->toString());
-            }
-        }
-        else if (arrLevel > 1 && startArrLevel == 0) // Array<Array<int>> y = 3;
-        {
-            std::unique_ptr<IType> type = varType->getArrType()->copy();
-
-            while (type->getArrLevel() > 0)
-            {
-                type = type->getArrType()->copy();
-            }
-
-            if (*type != *startType)
-            {
-                throw IllegalTypeCast(token, startType->toString(), type->toString());
-            }
-        }
     }
 }
 
@@ -119,7 +86,7 @@ std::string ArrayDeclStmt::translateToCpp() const
 {
     std::ostringstream oss;
 
-    const std::string name = Utils::wstrToStr(var.getName());
+    const std::string name = translateFQNtoString(var.getName());
 
 
     oss << getTabs()
@@ -132,13 +99,22 @@ std::string ArrayDeclStmt::translateToCpp() const
 
     if (hasStartingValue && startingValue != nullptr)
     {
-        const unsigned int varArrLevel = var.getType()->getArrLevel();
-        const unsigned int startArrLevel = startingValue->getType()->getArrLevel();
-        if (startArrLevel != 0 && (varArrLevel == startArrLevel || varArrLevel == startArrLevel + 1))
+        const auto vt = var.getType();
+        if (const auto st = startingValue->getType(); vt && st)
         {
-            oss << std::endl << getTabs() << name << " = " << startingValue->translateToCpp() << ";";
+            const unsigned int varArrLevel = vt->getArrLevel();
+            if (const unsigned int startArrLevel = st->getArrLevel(); startArrLevel != 0 && (varArrLevel == startArrLevel || varArrLevel == startArrLevel + 1))
+            {
+                oss << std::endl << getTabs() << name << " = " << startingValue->translateToCpp() << ";";
+            }
         }
     }
 
     return oss.str();
+}
+
+void ArrayDeclStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    VarDeclStmt::setSymbolTable(symTable);
+    for (const auto& expr : sizes) expr->setSymbolTable(symTable);
 }

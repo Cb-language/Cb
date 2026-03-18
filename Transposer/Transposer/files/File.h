@@ -2,12 +2,14 @@
 #include <filesystem>
 
 #include "parser/Parser.h"
+#include "token/Tokenizer.h"
 
 class File
 {
 private:
     friend class FileNode;
     friend class FileGraph;
+    Tokenizer tokenizer;
 
     const std::filesystem::path inPath;
     const std::filesystem::path outPathH;
@@ -17,15 +19,17 @@ private:
     std::vector<std::pair<std::filesystem::path, Token>> includes;
     bool readIncludes = false;
     bool parsed = false;
-    bool analyzed = false;
+    bool analyzed1 = false;
+    bool analyzed2 = false;
+    bool analyzed3 = false;
     bool writen = false;
 
-    std::vector<Token> tokenize() const;
+    std::queue<Token> tokenize();
 
     static std::filesystem::path mainPath;
     static std::filesystem::path outDir;
 
-    File(const std::wstring& inFilename, const std::wstring& outFilename);
+    File(const std::string& inFilename, const std::string& outFilename);
     File(const std::filesystem::path& inPath, const std::filesystem::path& outPath);
     explicit File(const std::filesystem::path& path);
     const std::filesystem::path& getInPath() const;
@@ -33,14 +37,17 @@ private:
     const std::filesystem::path& getOutCppPath() const;
     const std::vector<std::pair<std::filesystem::path, Token>>& getIncludes();
     void parse();
-    void analyze();
+    void analyzePass1(SymbolTable& symTable);
+    void analyzePass2(SymbolTable& symTable);
+    void analyzePass3(SymbolTable& symTable);
     void write(const bool isMain = false);
     const std::vector<std::unique_ptr<Error>>& getErrors() const;
-
 public:
-    static void setMainPath(const std::filesystem::path& mainPath);
+    static void setMainPath(const std::filesystem::path& path);
     static const std::filesystem::path& getMainPath();
 
-    static void setOutDir(const std::filesystem::path& outDir);
+    static void setOutDir(const std::filesystem::path& path);
     static const std::filesystem::path& getOutDir();
+
+    Parser& getParser();
 };

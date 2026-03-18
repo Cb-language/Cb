@@ -1,13 +1,13 @@
-﻿#include <iostream>
+﻿// ReSharper disable CppDFAUnreachableCode
+// ReSharper disable CppDFAConstantConditions
+#include <iostream>
 #include <sstream>
 #include <filesystem>
 #include <vector>
-#include <map>
-#include <iomanip>
 
 #include "token/Tokenizer.h"
 #include "errorHandling/Error.h"
-#include "files/ArrayHelper.h"
+#include "files/LibHelper.h"
 #include "files/FileGraph.h"
 #include "parser/Parser.h"
 #include "multyOSSupport/CMDFactory.h"
@@ -25,8 +25,6 @@ int main(int argc, char* argv[])
     std::unique_ptr<CMD> cmd = CMDFactory::createCMD();
 
     cmd->setupConsole();
-
-    Tokenizer::init();
 
     if (argc != 4)
     {
@@ -72,6 +70,7 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    ClassTree::init();
     FileGraph& graph = FileGraph::Instance();
     graph.reset();
     if (mode != LSP) Utils::logMsg("Translating...");
@@ -83,7 +82,7 @@ int main(int argc, char* argv[])
     }
     catch (Error& e) // Catch known semantic/syntax errors (like NoReturn)
     {
-        std::vector<Error*> errors = FileGraph::getAllErrors();
+        std::vector<Error*> errors = graph.getAllErrors();
         errors.push_back(&e); // Add the fatal error to the list
 
         if (mode == LSP)
@@ -101,7 +100,6 @@ int main(int argc, char* argv[])
 
         graph.reset();
         SymbolTable::clearClasses();
-        LSPPacker::deleteErrors(errors);
         return -1;
     }
     catch (const std::exception& e) // Catch unexpected C++ errors
@@ -111,10 +109,8 @@ int main(int argc, char* argv[])
         SymbolTable::clearClasses();
         return -1;
     }
-    
-    std::vector<Error*> errors = FileGraph::getAllErrors();
 
-    if (!errors.empty())
+    if (std::vector<Error*> errors = graph.getAllErrors(); !errors.empty())
     {
         if (mode == LSP)
         {
@@ -129,16 +125,17 @@ int main(int argc, char* argv[])
         }
         graph.reset();
         SymbolTable::clearClasses();
-        LSPPacker::deleteErrors(errors);
         return -1;
     }
 
-    if (mode != LSP) graph.write();
-    ArrayHelper::write(File::getOutDir());
+    if (mode != LSP)
+    {
+        graph.write();
+        LibHelper::write(File::getOutDir());
+    }
 
     std::filesystem::path exePath = outPath;
-    std::string ext = cmd->getExeExtension();
-    if (!ext.empty())
+    if (std::string ext = cmd->getExeExtension(); !ext.empty())
     {
         exePath.replace_extension(ext);
     }
@@ -151,24 +148,29 @@ int main(int argc, char* argv[])
     {
         std::ostringstream cmdBuild;
         std::string filesStr;
-        const auto paths = FileGraph::getAllCppPaths();
 
-        for (const auto& path : paths)
+        for (const auto paths = FileGraph::getAllCppPaths(); const auto& path : paths)
         {
             filesStr += " \"" + path.string() + "\" ";
         }
 
-        cmdBuild << "g++ -pthread " << filesStr
-                 << "-Iincludes -o \"" << exePath.string() << "\""
+        for (const auto& path : Utils::getAllObjCppPaths())
+        {
+            filesStr += " \"" + path.string() + "\" ";
+        }
+
+        cmdBuild << "g++ -pthread -std=c++20" << filesStr
+                 << "-I" << File::getOutDir() <<" -o \"" << exePath.string() << "\""
                  << cmd->getCompileFlags();
 
         Utils::logMsg("Compiling...");
+        auto temp = cmdBuild.str();
 
         if (std::system(cmdBuild.str().c_str()) != 0)
         {
             std::cerr << "Error with g++ : command: " << cmdBuild.str() << std::endl;
             graph.reset();
-        SymbolTable::clearClasses();
+            SymbolTable::clearClasses();
             return -4;
         }
     }

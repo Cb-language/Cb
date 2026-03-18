@@ -4,5 +4,5 @@
 class ExpectedAnExpression : public Error
 {
 public:
-    ExpectedAnExpression(const Token& token);
+    explicit ExpectedAnExpression(const Token& token);
 };

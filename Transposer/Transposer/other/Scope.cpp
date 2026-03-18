@@ -3,6 +3,7 @@
 #include <ranges>
 
 #include "class/ClassNode.h"
+#include "SymbolTable.h"
 #include "../errorHandling/semanticErrors/IdentifierTaken.h"
 #include "../errorHandling/syntaxErrors/UnexpectedToken.h"
 
@@ -28,7 +29,7 @@ Scope::~Scope()
     children.clear();
 }
 
-std::optional<Var> Scope::getVar(const std::wstring& name, const ClassNode* c) const
+std::optional<Var> Scope::getVar(const FQN& name, const ClassNode* c) const
 {
     for (const auto& var : vars | std::views::keys)
     {
@@ -40,10 +41,8 @@ std::optional<Var> Scope::getVar(const std::wstring& name, const ClassNode* c) c
 
     if (c != nullptr)
     {
-        for (const auto& [isPublic, field] : c->getClass().getFields())
+        for (const auto& field : c->getClass().getFields() | std::views::values)
         {
-            if (!isPublic) continue;
-
             if (name == field.getName())
             {
                 return field.copy();
@@ -72,32 +71,35 @@ Scope* Scope::getParent() const
     return parent;
 }
 
-void Scope::addVar(std::unique_ptr<IType> type, const Token& token)
+void Scope::addVar(const SymbolTable* symTable, std::unique_ptr<IType> type, const Token& token)
 {
-    if (token.type != Token::IDENTIFIER)
+    if (token.type != CbTokenType::IDENTIFIER)
     {
-        throw UnexpectedToken(token);
+        if (symTable) symTable->addError(std::make_unique<UnexpectedToken>(token));
+        return;
     }
 
-    Var v = Var(std::move(type) , token.value);
+    const FQN name = {token.value.value()};
     for (const auto& var : vars | std::views::keys)
     {
-        if (v == var)
+        if (name == var.getName())
         {
-            throw IdentifierTaken(token);
+            if (symTable) symTable->addError(std::make_unique<IdentifierTaken>(token));
+            return;
         }
     }
 
-    vars.emplace_back(std::move(v), token);
+    vars.emplace_back(Var(std::move(type), name), token);
 }
 
-void Scope::addVar(const Var& var, const Token& token)
+void Scope::addVar(const SymbolTable* symTable, const Var& var, const Token& token)
 {
     for (const auto& v : vars| std::views::keys)
     {
-        if (var == v)
+        if (var.getName() == v.getName())
         {
-            throw IdentifierTaken(token);
+            if (symTable) symTable->addError(std::make_unique<IdentifierTaken>(token));
+            return;
         }
     }
 

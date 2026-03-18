@@ -1,55 +1,52 @@
 #include "AssignmentStmt.h"
 
-#include "errorHandling/semanticErrors/IllegalTypeCast.h"
+#include "errorHandling/how/HowDidYouGetHere.h"
+#include "errorHandling/semanticErrors/IllegalOpOnType.h"
+#include "other/SymbolTable.h"
 
-
-AssignmentStmt::AssignmentStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-    std::unique_ptr<Call> call, const std::wstring& assignmentOp, std::unique_ptr<Expr> expr)
-        : Stmt(token, scope, funcDecl, currClass), call(std::move(call)), assignmentOp(assignmentOp), expr(std::move(expr))
+AssignmentStmt::AssignmentStmt(const Token& token,
+                               std::unique_ptr<VarReference> ref, const std::string& assignmentOp, std::unique_ptr<Expr> expr)
+        : Expr(token), varRef(std::move(ref)), assignmentOp(assignmentOp), expr(std::move(expr))
 {
 }
 
 void AssignmentStmt::analyze() const
 {
-    if (assignmentOp == L"-=" || assignmentOp == L"*=" || assignmentOp == L"/=" || assignmentOp == L"//=" || assignmentOp == L"%=")
-    {
-        if (!call->getType()->copy()->isNumberable())
-        {
-            throw IllegalTypeCast(token, call->getType()->toString(), "degree");
-        }
+    if (symTable == nullptr) return;
 
-        if (!expr->getType()->copy()->isNumberable())
-        {
-            throw IllegalTypeCast(token, expr->getType()->toString(), "degree");
-        }
-    }
+    varRef->setSymbolTable(symTable);
+    varRef->setScope(scope);
+    varRef->setClassNode(currClass);
+    varRef->analyze();
 
-    if (*(call->getType()->copy()) != *(expr->getType()->copy()))
+    expr->setSymbolTable(symTable);
+    expr->setScope(scope);
+    expr->setClassNode(currClass);
+    expr->analyze();
+
+    const auto leftType = varRef->getType();
+    if (const auto rightType = expr->getType(); rightType == nullptr || *leftType != *rightType)
     {
-        throw IllegalTypeCast(token, expr->getType()->toString(), call->getType()->toString());
+        if (rightType != nullptr) symTable->addError(std::make_unique<IllegalOpOnType>(token, leftType->toString(), rightType->toString(), assignmentOp));
     }
 }
 
 std::string AssignmentStmt::translateToCpp() const
 {
-    const std::string varName = call->translateToCpp();
-    if (assignmentOp == L"+=" || assignmentOp == L"=")
-    {
-        const bool isVarStr = call->getType()->getType() == L"bar";
-        const bool isExprStr = expr->getType()->getType() == L"bar" || expr->getType()->getType() == L"note";
+    std::string res = needsSemicolon ? getTabs() : "";
+    res += varRef->translateToCpp() + " " + assignmentOp + " " + expr->translateToCpp();
+    if (needsSemicolon) res += ";";
+    return res;
+}
 
-        if (isVarStr && !isExprStr)
-        {
-            return getTabs() + varName + " " + Utils::wstrToStr(assignmentOp) + " std::to_string(" + expr->translateToCpp() + ");";
-        }
-    }
+std::unique_ptr<IType> AssignmentStmt::getType() const
+{
+    return varRef->getType()->copy();
+}
 
-    if (assignmentOp == L"//=")
-    {
-        return getTabs() + varName + " = " + "static_cast<double>(" + varName +") / static_cast<double>(" + expr->translateToCpp() + ");";
-    }
-
-
-    return getTabs() + varName + " "
-     + Utils::wstrToStr(assignmentOp) + " " + expr->translateToCpp() + ";";
+void AssignmentStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    varRef->setSymbolTable(symTable);
+    expr->setSymbolTable(symTable);
 }

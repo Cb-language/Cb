@@ -4,5 +4,5 @@
 class MissingBrace : public Error
 {
 public:
-    MissingBrace(const Token &token);
+    explicit MissingBrace(const Token &token);
 };

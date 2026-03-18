@@ -1,0 +1,8 @@
+? virtual on non-method
+motif song a() ∮ playBar("a")║ ☉
+
+song prelude() -> degree
+∮
+    a()║
+    B\ 0║
+☉

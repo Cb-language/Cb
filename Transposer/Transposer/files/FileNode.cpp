@@ -10,8 +10,8 @@ std::unordered_map<
         std::unique_ptr<FileNode>
     > FileNode::nodes;
 
-FileNode::FileNode(const std::filesystem::path& inPath, const std::filesystem::path& outFilename)
-    : file(File(inPath.c_str(),outFilename))
+FileNode::FileNode(const std::filesystem::path& inFilename, const std::filesystem::path& outFilename)
+    : file(File(inFilename.c_str(),outFilename))
 {
 }
 
@@ -22,25 +22,25 @@ FileNode::FileNode(const std::filesystem::path& filename)
 
 void FileNode::readAndAddChildren()
 {
-    const auto res = file.getIncludes();
-
-    for (const auto& p : res)
+    for (const auto res = file.getIncludes(); const auto& [first, second] : res)
     {
         const std::filesystem::path fullPath =
             std::filesystem::weakly_canonical(
-                File::getMainPath() / p.first
+                File::getMainPath() / first
             );
 
-        const Token& t = p.second;
+        const Token& t = second;
 
         if (!std::filesystem::exists(fullPath))
         {
-            throw IncludePathNotFound(t, fullPath);
+            file.parser.addError(std::make_unique<IncludePathNotFound>(t, fullPath));
+            continue;
         }
 
         if (!canAdd(fullPath))
         {
-            throw CircularDependency(t, file.getInPath(), fullPath);
+            file.parser.addError(std::make_unique<CircularDependency>(t, file.getInPath(), fullPath));
+            continue;
         }
 
         FileNode* f = getNode(fullPath);
@@ -72,8 +72,7 @@ FileNode* FileNode::getNode(const std::filesystem::path& path)
     const std::filesystem::path canonical =
         std::filesystem::weakly_canonical(path);
 
-    auto it = nodes.find(canonical);
-    if (it != nodes.end())
+    if (const auto it = nodes.find(canonical); it != nodes.end())
     {
         return it->second.get();
     }
@@ -92,8 +91,7 @@ FileNode* FileNode::getNode(const std::filesystem::path& inPath, const std::file
     const std::filesystem::path canonicalOut =
         std::filesystem::weakly_canonical(outPath);
 
-    auto it = nodes.find(canonicalIn);
-    if (it != nodes.end())
+    if (const auto it = nodes.find(canonicalIn); it != nodes.end())
     {
         return it->second.get();
     }
@@ -153,27 +151,37 @@ FileNode* FileNode::build(const std::filesystem::path& inPath, const std::filesy
     return node;
 }
 
-void FileNode::start()
+void FileNode::analyzePass1(SymbolTable& symTable)
 {
     for (auto& child : children)
     {
-        child->start();
-        file.parser.addToSymTable(child->file.parser.getSymTable());
+        child->analyzePass1(symTable);
     }
+    file.analyzePass1(symTable);
+}
 
-    file.parse();
-    file.analyze();
+void FileNode::analyzePass2(SymbolTable& symTable)
+{
+    for (auto& child : children)
+    {
+        child->analyzePass2(symTable);
+    }
+    file.analyzePass2(symTable);
+}
+
+void FileNode::analyzePass3(SymbolTable& symTable)
+{
+    for (auto& child : children)
+    {
+        child->analyzePass3(symTable);
+    }
+    file.analyzePass3(symTable);
 }
 
 void FileNode::write(const bool isMain)
 {
     for (auto& child : children) child->write();
     file.write(isMain);
-}
-
-bool FileNode::hasMain() const
-{
-    return file.parser.getHasMain();
 }
 
 void FileNode::clear(const FileNode* main)

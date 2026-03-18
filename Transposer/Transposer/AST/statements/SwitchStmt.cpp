@@ -1,29 +1,45 @@
 #include "SwitchStmt.h"
 
 #include "errorHandling/semanticErrors/IllegalSwitchVar.h"
+#include "other/SymbolTable.h"
 
-SwitchStmt::SwitchStmt(const Token& token, Scope *scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, Var var, std::vector<std::unique_ptr<CaseStmt>>& cases)
-    : Stmt(token, scope, funcDecl, currClass), var(std::move(var)), cases(std::move(cases))
+SwitchStmt::SwitchStmt(const Token& token, std::unique_ptr<Expr> expr, std::vector<std::unique_ptr<CaseStmt>>& cases)
+    : Stmt(token), expr(std::move(expr)), cases(std::move(cases))
 {
+}
+
+void SwitchStmt::setExpr(std::unique_ptr<Expr> expr)
+{
+    this->expr = std::move(expr);
 }
 
 void SwitchStmt::analyze() const
 {
-    for (const auto& c : cases)
+    if (symTable == nullptr) return;
+
+    expr->setSymbolTable(symTable);
+    expr->setScope(scope);
+    expr->setClassNode(currClass);
+    expr->analyze();
+
+    if (!expr->getType()->isNumberable())
     {
-        c->analyze();
+        symTable->addError(std::make_unique<IllegalSwitchVar>(token, expr->translateToCpp()));
     }
 
-    if (!var.isNumberable())
+    for (const auto& c : cases)
     {
-        throw IllegalSwitchVar(token, Utils::wstrToStr(var.getName()));
+        c->setSymbolTable(symTable);
+        c->setScope(scope);
+        c->setClassNode(currClass);
+        c->analyze();
     }
 }
 
 std::string SwitchStmt::translateToCpp() const
 {
     std::ostringstream os;
-    os << getTabs() << "switch (" << Utils::wstrToStr(var.getName()) << ")\n";
+    os << getTabs() << "switch (" << expr->translateToCpp() << ")\n";
     os << getTabs() << "{\n";
     for (const auto& c : cases)
     {
@@ -31,4 +47,11 @@ std::string SwitchStmt::translateToCpp() const
     }
     os << getTabs() << "}\n";
     return os.str();
+}
+
+void SwitchStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    expr->setSymbolTable(symTable);
+    for (const auto& c : cases) c->setSymbolTable(symTable);
 }

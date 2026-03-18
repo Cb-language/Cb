@@ -1,14 +1,21 @@
 #pragma once
 #include "BinaryOpExpr.h"
-#include "AST/abstract/Call.h"
+#include "AST/abstract/VarReference.h"
 
-class DotOpExpr : public BinaryOpExpr
+class DotOpExpr : public VarReference
 {
+private:
+    std::unique_ptr<VarReference> left;
+    std::unique_ptr<VarReference> right;
+
 public:
-    DotOpExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass,
-        const std::wstring& op, std::unique_ptr<Call> left, std::unique_ptr<Call> right, const bool hasParens = false);
+    DotOpExpr(const Token& token,
+        std::unique_ptr<VarReference> left, std::unique_ptr<VarReference> right);
 
     std::unique_ptr<IType> getType() const override;
+    void setNeedsSemicolon(const bool needsSemicolon) override;
     void analyze() const override;
     std::string translateToCpp() const override;
+    std::string toString() const override;
+    void setSymbolTable(SymbolTable* symTable) const override;
 };

@@ -5,27 +5,30 @@
 class Expr : public Stmt
 {
 protected:
-    bool hasParens;
-    explicit Expr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const bool hasParens) : Stmt(token, scope, funcDecl, currClass),
-                    hasParens(hasParens) {}
+    bool hasParens = false;
+    bool needsSemicolon;
+
+    explicit Expr(const Token& token);
+
 public:
-    Expr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass);
     ~Expr() override = default;
     virtual std::unique_ptr<IType> getType() const = 0;
-    void analyze() const override = 0;
-    std::string translateToCpp() const override = 0;
-
+    
     virtual void setHasParens(const bool hasParens);
-    virtual void setIsStmt(const bool isStmt);
+    virtual void setNeedsSemicolon(const bool needsSemicolon);
 };
 
-inline Expr::Expr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass) : Expr(token, scope, funcDecl, currClass, false)
+
+inline Expr::Expr(const Token& token) : Stmt(token), hasParens(false), needsSemicolon(false)
 {
 }
 
 inline void Expr::setHasParens(const bool hasParens)
-{this->hasParens = hasParens;}
-
-inline void Expr::setIsStmt(const bool isStmt)
 {
+    this->hasParens = hasParens;
+}
+
+inline void Expr::setNeedsSemicolon(const bool needsSemicolon)
+{
+    this->needsSemicolon = needsSemicolon;
 }

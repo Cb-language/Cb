@@ -3,10 +3,33 @@
 #include <algorithm>
 
 #include "errorHandling/how/HowDidYouGetHere.h"
+#include "other/SymbolTable.h"
 
 
-ConstValueExpr::ConstValueExpr(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::unique_ptr<IType> type, const std::wstring &value)
-    : Expr(token, scope, funcDecl, currClass), type(std::move(type)), value(value)
+std::string ConstValueExpr::getValueStr() const
+{
+    if (type->toString() == "freq" && value.starts_with("."))
+    {
+        return "0" + value;
+    }
+
+    if (type->toString() == "bar")
+    {
+        std::string content = value;
+        std::ranges::replace(content, '\n', ' ');
+        return content;
+    }
+
+    if (type->toString() == "mute")
+    {
+        return value == "cres" ? "true" : "false";
+    }
+
+    return value;
+}
+
+ConstValueExpr::ConstValueExpr(const Token& token, std::unique_ptr<IType> type, const std::string& value)
+    : Expr(token), type(std::move(type)), value(value)
 {
 }
 
@@ -14,30 +37,27 @@ void ConstValueExpr::analyze() const
 {
     if (value.empty())
     {
-        throw HowDidYouGetHere(token);
+        symTable->addError(std::make_unique<HowDidYouGetHere>(token));
     }
 }
 
 std::string ConstValueExpr::translateToCpp() const
 {
-    if (*type == L"freq" && value.starts_with(L"."))
-    {
-        return Utils::wstrToStr(L"0" + value);
-    }
+    std::ostringstream oss;
+    if (needsSemicolon) oss << getTabs();
+    oss << type->translateTypeToCpp() + "(";
 
-    if (*type == L"bar")
-    {
-        std::string content = Utils::wstrToStr(value);
-        std::ranges::replace(content, '\n', ' ');
-        return content;
-    }
+    if (type->toString() == "bar") oss << "\"";
+    if (type->toString() == "note") oss << "\'";
 
-    if (*type == L"mute")
-    {
-        return value == L"cres" ? "true" : "false";
-    }
+    oss << getValueStr();
 
-    return Utils::wstrToStr(value);
+    if (type->toString() == "bar") oss << "\"";
+    if (type->toString() == "note") oss << "\'";
+
+    oss << ")";
+    if (needsSemicolon) oss << ";";
+    return oss.str();
 }
 
 std::unique_ptr<IType> ConstValueExpr::getType() const
@@ -45,7 +65,7 @@ std::unique_ptr<IType> ConstValueExpr::getType() const
     return type->copy();
 }
 
-std::wstring ConstValueExpr::getValue() const
+std::string ConstValueExpr::getValue() const
 {
     return value;
 }

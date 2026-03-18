@@ -4,5 +4,5 @@
 class StmtNotBreakable : public Error
 {
 public:
-    StmtNotBreakable(const Token& token);
+    explicit StmtNotBreakable(const Token& token);
 };

@@ -1,6 +1,6 @@
 #include "Constractor.h"
 
-Constractor::Constractor(const std::vector<Var>& args, const std::wstring& className) : className(className )
+Constractor::Constractor(const std::vector<Var>& args, const FQN& className) : className(className )
 {
     for (const auto& arg : args) this->args.emplace_back(arg.copy());
 }
@@ -10,14 +10,14 @@ const std::vector<Var>& Constractor::getArgs() const
     return args;
 }
 
-const std::wstring& Constractor::getClassName() const
+const FQN& Constractor::getClassName() const
 {
     return className;
 }
 
 std::string Constractor::translateToCpp() const
 {
-    std::string res = Utils::wstrToStr(className) + "(";
+    std::string res = translateFQNtoString(className) + "(";
 
     bool first = true;
     for (const auto& arg : args)
@@ -26,7 +26,7 @@ std::string Constractor::translateToCpp() const
         {
             res += ", ";
         }
-        res += arg.getType()->translateTypeToCpp() + " " + Utils::wstrToStr(arg.getName());
+        res += arg.getType()->translateTypeToCpp() + " " + translateFQNtoString(arg.getName());
         first = false;
     }
 

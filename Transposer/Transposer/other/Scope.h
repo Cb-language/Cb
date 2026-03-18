@@ -8,6 +8,7 @@
 #include "token/Token.h"
 
 class ClassNode;
+class SymbolTable;
 
 class Scope
 {
@@ -24,12 +25,12 @@ public:
     ~Scope();
 
     // std::nullopt when not found
-    std::optional<Var> getVar(const std::wstring& name, const ClassNode* c) const;
+    std::optional<Var> getVar(const FQN& name, const ClassNode* c) const;
 
     Scope* makeNewScope(bool isBreakable, bool isContinueAble);
     Scope* getParent() const;
-    void addVar(std::unique_ptr<IType> type, const Token& token);
-    void addVar(const Var& var, const Token& token);
+    void addVar(const SymbolTable* symTable, std::unique_ptr<IType> type, const Token& token);
+    void addVar(const SymbolTable* symTable, const Var& var, const Token& token);
     int getLevel() const;
     bool getIsBreakable() const;
     bool getIsContinueAble() const;

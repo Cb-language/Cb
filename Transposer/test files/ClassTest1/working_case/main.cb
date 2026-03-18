@@ -1,0 +1,9 @@
+feat. "derived.cb"║
+
+song prelude() -> degree
+∮
+    Derived d = Derived_call()║
+    d\a()║
+    playBar(d\b())║
+    B\ 0║
+☉

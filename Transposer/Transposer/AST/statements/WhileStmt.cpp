@@ -1,19 +1,41 @@
 #include "WhileStmt.h"
 
-WhileStmt::WhileStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::unique_ptr<Expr>& condition, std::unique_ptr<Stmt>& body)
-    : Stmt(token, scope, funcDecl, currClass), condition(std::move(condition)), body(std::move(body))
+WhileStmt::WhileStmt(const Token& token, StmtWithBody stmt)
+    : Stmt(token), stmt(std::move(stmt))
 {
 }
 
 void WhileStmt::analyze() const
 {
-    body->analyze();
-    condition->analyze();
+    if (symTable == nullptr) return;
+
+    stmt.expr->setSymbolTable(symTable);
+    stmt.expr->setScope(scope);
+    stmt.expr->setClassNode(currClass);
+    stmt.expr->analyze();
+
+    if (auto* body = dynamic_cast<BodyStmt*>(stmt.body.get()))
+    {
+        body->setBreakable(true);
+        body->setContinueAble(true);
+    }
+
+    stmt.body->setSymbolTable(symTable);
+    stmt.body->setScope(scope);
+    stmt.body->setClassNode(currClass);
+    stmt.body->analyze();
 }
 
 std::string WhileStmt::translateToCpp() const
 {
     std::ostringstream oss;
-    oss << getTabs() << "while (" << condition->translateToCpp() << ")" << std::endl << body->translateToCpp();
+    oss << getTabs() << "while (" << stmt.expr->translateToCpp() << ")" << std::endl << stmt.body->translateToCpp();
     return oss.str();
+}
+
+void WhileStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    stmt.expr->setSymbolTable(symTable);
+    stmt.body->setSymbolTable(symTable);
 }

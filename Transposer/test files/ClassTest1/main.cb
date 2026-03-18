@@ -1,11 +1,152 @@
-feat "class.cb"║
+𝄢 ═══════════════════════════════════════════════════
+𝄢 Cb Class (Instrument) Test File
+𝄢 Exercises: fields, methods, constructors, static,
+𝄢            virtual/override, inheritance, objects
+𝄢 ═══════════════════════════════════════════════════
 
-song prelude() -> degree
-∮
-    Test t1 = Test_call(3)║
-    Test t2║
 
-    playBar(t1\g(5))║
-    playBar(t1\fa_n)║
-    B\0║
-☉
+𝄢 ─── Base class: Instrument with fields and methods ───
+
+instrument Animal 𝄋
+    conductor score degree legs = 4 𝄀
+    conductor score unison degree temp = 4 𝄀
+    conductor score bar name = "unknown" 𝄀
+
+    conductor score 𝆫 Animal 𝄕 degree l, bar n 𝄇
+    𝄞   legs = l  𝄀
+    𝄞   name = n 𝄂 𝄀
+
+    conductor score song speak𝄕𝄇
+    𝄞 play bar𝄕name𝄇 𝄀
+    𝄞 play bar𝄕" says nothing"𝄇 𝄀
+    𝄞 𝄽 𝄂 𝄀
+
+    conductor score motif song voice𝄕𝄇 𝅘𝅥=bar
+    𝄞 B𝄍"..." 𝄀
+    𝄞 𝄽 𝄂 𝄀
+
+    conductor score song getLegs𝄕𝄇 𝅘𝅥=degree
+    𝄞 B𝄍legs 𝄀
+    𝄞 𝄽 𝄂 𝄀
+
+    conductor score unison song kingdom𝄕𝄇 𝅘𝅥=bar
+    𝄞 B𝄍"Animalia" 𝄀
+    𝄞 𝄽 𝄂 𝄀
+𝄌 𝄀
+𝄢 ─── Derived class: Dog overrides voice ───
+
+instrument Dog : Animal 𝄋
+    conductor score bar breed = "mutt" 𝄀
+
+    conductor score 𝆫 Dog 𝄕 bar n, bar b 𝄇
+    𝄞   name = n 𝄀
+    𝄞   legs = 4 𝄀
+    𝄞   breed = b 𝄂 𝄀
+
+    conductor score variation song voice𝄕𝄇 𝅘𝅥=bar
+    𝄞 B𝄍"Woof!" 𝄀
+    𝄞 𝄽 𝄂 𝄀
+
+    conductor score song fetch𝄕bar item𝄇
+    𝄞 play bar𝄕name𝄇 𝄀
+    𝄞 play bar𝄕" fetches "𝄇 𝄀
+    𝄞 play bar𝄕item𝄇 𝄀
+    𝄞 𝄽 𝄂 𝄀
+𝄌 𝄀
+
+
+𝄢 ─── Derived class: Cat overrides voice ───
+
+instrument Cat : Animal 𝄋
+    conductor score mute isIndoor = 1 == 1 𝄀
+
+    conductor score 𝆫 Cat 𝄕 bar n, mute indoor 𝄇
+    𝄞    name = n 𝄀
+    𝄞    legs = 4 𝄀
+    𝄞    isIndoor = indoor 𝄂 𝄀
+
+    conductor score variation song voice𝄕𝄇 𝅘𝅥=bar
+    𝄞 B𝄍"Meow!" 𝄀
+    𝄞 𝄽 𝄂 𝄀
+𝄌 𝄀
+
+
+𝄢 ─── Derived class: Spider, different leg count ───
+
+instrument Spider : Animal 𝄋
+    conductor score 𝆫 Spider 𝄕 bar n 𝄇
+    𝄞   name = n 𝄀
+    𝄞   legs = 8 𝄂 𝄀
+
+    conductor score variation song voice𝄕𝄇 𝅘𝅥=bar
+    𝄞 B𝄍"*silence*" 𝄀
+    𝄞 𝄽 𝄂 𝄀
+𝄌 𝄀
+
+
+𝄢 ─── Counter class: tests static and unary ops ───
+
+instrument Counter 𝄋
+    conductor score degree count = 0 𝄀
+
+    conductor score 𝆫 Counter 𝄕 degree start 𝄇
+    𝄞    count = start 𝄂 𝄀
+
+    conductor score song increment𝄕𝄇
+    𝄞 count♯ 𝄀
+    𝄞 𝄽 𝄂 𝄀
+
+    conductor score song decrement𝄕𝄇
+    𝄞 count♭ 𝄀
+    𝄞 𝄽 𝄂 𝄀
+
+    conductor score song reset𝄕𝄇
+    𝄞 count♮ 𝄀
+    𝄞 𝄽 𝄂 𝄀
+
+    conductor score song getCount𝄕𝄇 𝅘𝅥=degree
+    𝄞 B𝄍count 𝄀
+    𝄞 𝄽 𝄂 𝄀
+𝄌 𝄀
+
+
+𝄢 ─── Main: create objects and exercise everything ───
+
+song prelude𝄕𝄇 𝅘𝅥=degree
+𝄞 𝄽 𝄀
+𝄞 𝄢 Create objects
+𝄞 Dog rex = 𝆫 Dog𝄕 "Rex", "Labrador" 𝄇 𝄀
+𝄞 𝆫 Cat whiskers 𝄕 "Whiskers", 1 == 1 𝄇 𝄀
+𝄞 𝆫 Spider charlotte 𝄕 "Charlotte" 𝄇 𝄀
+𝄞 𝆫 Counter c 𝄕 0 𝄇 𝄀
+𝄞 𝄽 𝄀
+𝄞 𝄢 Test methods
+𝄞 rex𝄍speak𝄕𝄇 𝄀
+𝄞 play bar𝄕rex𝄍voice𝄕𝄇𝄇 𝄀
+𝄞 rex𝄍fetch𝄕"ball"𝄇 𝄀
+𝄞 𝄽 𝄀
+𝄞 play bar𝄕whiskers𝄍voice𝄕𝄇𝄇 𝄀
+𝄞 𝄽 𝄀
+𝄞 play bar𝄕charlotte𝄍voice𝄕𝄇𝄇 𝄀
+𝄞 play𝄕charlotte𝄍getLegs𝄕𝄇𝄇 𝄀
+𝄞 𝄽 𝄀
+𝄞 𝄢 Test static method
+𝄞 play bar𝄕Animal𝄍kingdom𝄕𝄇𝄇 𝄀
+𝄞 𝄽 𝄀
+𝄞 𝄢 Test counter with unary ops
+𝄞 c𝄍increment𝄕𝄇 𝄀
+𝄞 c𝄍increment𝄕𝄇 𝄀
+𝄞 c𝄍increment𝄕𝄇 𝄀
+𝄞 play𝄕c𝄍getCount𝄕𝄇𝄇 𝄀
+𝄞 c𝄍decrement𝄕𝄇 𝄀
+𝄞 play𝄕c𝄍getCount𝄕𝄇𝄇 𝄀
+𝄞 c𝄍reset𝄕𝄇 𝄀
+𝄞 play𝄕c𝄍getCount𝄕𝄇𝄇 𝄀
+𝄞 𝄽 𝄀
+𝄞 𝄢 Loop over leg counts
+𝄞 play bar𝄕"Leg check:"𝄇 𝄀
+𝄞 play𝄕rex𝄍getLegs𝄕𝄇𝄇 𝄀
+𝄞 play𝄕whiskers𝄍getLegs𝄕𝄇𝄇 𝄀
+𝄞 play𝄕charlotte𝄍getLegs𝄕𝄇𝄇 𝄀
+𝄞 𝄽 𝄀
+𝄞 B𝄍0 𝄂

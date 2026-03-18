@@ -11,9 +11,9 @@ private:
     std::unique_ptr<Expr> rExpr;
 
 public:
-    ReturnStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::unique_ptr<Expr>& rExpr);
+    ReturnStmt(const Token& token, std::unique_ptr<Expr>& rExpr, std::unique_ptr<IType> rType);
 
     void analyze() const override;
     std::string translateToCpp() const override;
-
+    void setSymbolTable(SymbolTable* symTable) const override;
 };

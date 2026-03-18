@@ -1,46 +1,87 @@
 #include "VarDeclStmt.h"
 
 #include "errorHandling/semanticErrors/IllegalTypeCast.h"
+#include "errorHandling/classErrors/IllegalFieldName.h"
+#include "../../errorHandling/semanticErrors/IllegalVarName.h"
+#include "other/SymbolTable.h"
+#include "other/Utils.h"
 
-VarDeclStmt::VarDeclStmt(const Token& token, Scope* scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, const bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var& var) :
-    Stmt(token, scope, funcDecl, currClass), hasStartingValue(hasStartingValue), startingValue(std::move(startingValue)) , var(var.copy())
+VarDeclStmt::VarDeclStmt(const Token& token, const bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var& var) :
+    Expr(token), hasStartingValue(hasStartingValue), startingValue(std::move(startingValue)) , var(var.copy())
 {
 }
 
 void VarDeclStmt::analyze() const
 {
-    if (hasStartingValue && *(var.getType()) != *(startingValue->getType()))
+    if (symTable == nullptr) return;
+    const std::string varNameStr = translateFQNtoString(var.getName());
+    const bool startsWithNote = Utils::startsWithNote(varNameStr);
+
+    if (symTable->getCurrClass() == nullptr)
     {
-        throw IllegalTypeCast(token, var.getType()->toString(), startingValue->getType()->toString());
+        // local variable
+        if (startsWithNote) symTable->addError(std::make_unique<IllegalVarName>(token));
+        symTable->addVar(var, token);
+    }
+    else
+    {
+        // Field (should already be registered in Pass 2, but let's check name here)
+        if (!startsWithNote) symTable->addError(std::make_unique<IllegalFieldName>(token));
     }
 
-    if (startingValue != nullptr) startingValue->analyze();
+    if (hasStartingValue)
+    {
+        startingValue->setSymbolTable(symTable);
+        startingValue->setScope(symTable->getCurrScope());
+        startingValue->setClassNode(symTable->getCurrClass());
+        startingValue->analyze();
+        
+        if (*(var.getType()) != *(startingValue->getType()))
+        {
+            symTable->addError(std::make_unique<IllegalTypeCast>(token, var.getType()->toString(), startingValue->getType()->toString()));
+        }
+    }
 }
 
 std::string VarDeclStmt::translateToCpp() const
 {
-    if (var.getType()->getType() == L"bar" && hasStartingValue && startingValue->getType()->getType() != L"bar")
-    {
-        return getTabs() + var.getType()->translateTypeToCpp() + " " + Utils::wstrToStr(var.getName())
-        + " = std::to_string(" + startingValue->translateToCpp() + ");";
-    }
+    std::string prefix = "";
+    if (var.getStatic()) prefix = "static ";
+    std::string ret = getTabs() + prefix + var.getType()->translateTypeToCpp() + " " + translateFQNtoString(var.getName());
 
-    std::string ret = getTabs() + var.getType()->translateTypeToCpp() + " " + Utils::wstrToStr(var.getName());
-
-    if (hasStartingValue)
+    if (hasStartingValue && startingValue != nullptr && !var.getStatic())
     {
-        ret += " = " + startingValue->translateToCpp();
-    }
-    else if (var.isNumberable())
-    {
-        ret += " = 0";
+        ret += " = ";
+        if (var.getType()->toString() != startingValue->getType()->toString()) ret += var.getType()->translateTypeToCpp() + "(" + startingValue->translateToCpp() + ")";
+        else ret +=  startingValue->translateToCpp();
     }
 
     ret += ";";
     return ret;
 }
 
+void VarDeclStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    if (startingValue != nullptr) startingValue->setSymbolTable(symTable);
+}
+
 const Var& VarDeclStmt::getVar() const
 {
     return var;
+}
+
+const Expr* VarDeclStmt::getStartingValue() const
+{
+    return startingValue.get();
+}
+
+void VarDeclStmt::setIsStatic(const bool isStatic)
+{
+    this->var.setIsStatic(isStatic);
+}
+
+std::unique_ptr<IType> VarDeclStmt::getType() const
+{
+    return var.getType();
 }

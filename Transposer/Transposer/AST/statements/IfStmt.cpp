@@ -1,36 +1,79 @@
 #include "IfStmt.h"
 
-IfStmt::IfStmt(const Token& token, Scope *scope, IFuncDeclStmt* funcDecl, const ClassNode* currClass, std::unique_ptr<Expr> expr, std::unique_ptr<Stmt> body,
-               std::unique_ptr<Stmt> elseIfStmt, const bool isElseIf)
-               : Stmt(token, scope, funcDecl, currClass), expr(std::move(expr)), body(std::move(body)), elseIfStmt(std::move(elseIfStmt)), isElseIf(isElseIf)
+IfStmt::IfStmt(const Token& token, StmtWithBody ifStmt, std::vector<StmtWithBody>& elseStmts) : Stmt(token), ifStmt(std::move(ifStmt))
 {
+    for (auto& stmt : elseStmts)
+    {
+        this->elseStmts.push_back(std::move(stmt));
+    }
 }
 
 void IfStmt::analyze() const
 {
-    body->analyze();
-    expr->analyze();
+    if (symTable == nullptr) return;
+
+    ifStmt.expr->setSymbolTable(symTable);
+    ifStmt.expr->setScope(scope);
+    ifStmt.expr->setClassNode(currClass);
+    ifStmt.expr->analyze();
+
+    ifStmt.body->setSymbolTable(symTable);
+    ifStmt.body->setScope(scope);
+    ifStmt.body->setClassNode(currClass);
+    ifStmt.body->analyze();
+
+    for (const auto& stmt : elseStmts)
+    {
+        if (stmt.expr != nullptr)
+        {
+            stmt.expr->setSymbolTable(symTable);
+            stmt.expr->setScope(scope);
+            stmt.expr->setClassNode(currClass);
+            stmt.expr->analyze();
+        }
+
+        stmt.body->setSymbolTable(symTable);
+        stmt.body->setScope(scope);
+        stmt.body->setClassNode(currClass);
+        stmt.body->analyze();
+    }
 }
 
 std::string IfStmt::translateToCpp() const
 {
     std::ostringstream oss;
-    oss << getTabs() <<  "if (" << expr->translateToCpp() << ")" << std::endl;
-    oss << body->translateToCpp();
-    if (elseIfStmt != nullptr)
+    const std::string tabs = getTabs();
+    oss << tabs <<  "if (" << ifStmt.expr->translateToCpp() << ")" << std::endl;
+    oss << ifStmt.body->translateToCpp();
+
+    for (auto& stmt : elseStmts)
     {
-        std::string elseStr = elseIfStmt->translateToCpp();
-        oss << "\n" << getTabs();
-        if (isElseIf)
+        if (stmt.expr != nullptr)
         {
-            oss.clear();
-            oss << "else " << Utils::removeFirstTabs(elseStr);
+            oss << std::endl << tabs << "else if (" << stmt.expr->translateToCpp() << ")" << std::endl;
+            oss << stmt.body->translateToCpp();
         }
         else
         {
-            oss << "else\n" << elseStr;
+            oss << std::endl << tabs << "else " << std::endl;
+            oss << stmt.body->translateToCpp();
         }
     }
 
     return oss.str();
+}
+
+void IfStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    ifStmt.expr->setSymbolTable(symTable);
+    ifStmt.body->setSymbolTable(symTable);
+
+    for (auto& stmt : elseStmts)
+    {
+        stmt.body->setSymbolTable(symTable);
+
+        if (stmt.expr != nullptr) // if its an else stmt there's no else
+            stmt.expr->setSymbolTable(symTable);
+    }
 }

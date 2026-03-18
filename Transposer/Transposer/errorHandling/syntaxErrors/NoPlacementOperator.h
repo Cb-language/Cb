@@ -4,5 +4,5 @@
 class NoPlacementOperator : public Error
 {
 public:
-    NoPlacementOperator(const Token& token);
+    explicit NoPlacementOperator(const Token& token);
 };

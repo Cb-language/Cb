@@ -3,38 +3,42 @@
 
 #include "Constractor.h"
 #include "Func.h"
+#include "class/AccessType.h"
 
 class Class
 {
 private:
-    const std::wstring name;
-    std::vector<std::pair<bool, Func>> methods;
-    std::vector<std::pair<bool, Var>> fields;
-    std::vector<std::pair<bool, Constractor>> constractors;
+    FQN name;
+    std::vector<std::pair<AccessType, Func>> methods;
+    std::vector<std::pair<AccessType, Var>> fields;
+    std::vector<std::pair<AccessType, Constractor>> constractors;
+    bool _isAbstract;
 
 public:
-    Class(const std::wstring& name, const std::vector<std::pair<bool, Func>>& methods,
-        const std::vector<std::pair<bool, Var>>& fields, const std::vector<std::pair<bool, Constractor>>& constractors);
+    Class(const FQN& name, const std::vector<std::pair<AccessType, Func>>& methods,
+        const std::vector<std::pair<AccessType, Var>>& fields, const std::vector<std::pair<AccessType, Constractor>>& constractors, bool isAbstract = false);
 
     Class(const Class& other);
 
-    explicit Class(const std::wstring& name);
+    explicit Class(const FQN& name);
 
-    const std::wstring& getClassName() const;
-    const std::vector<std::pair<bool, Func>>& getMethods() const;
-    const std::vector<std::pair<bool, Var>>& getFields() const;
-    const std::vector<std::pair<bool, Constractor>>& getConstractors() const;
+    const FQN& getClassName() const;
+    const std::vector<std::pair<AccessType, Func>>& getMethods() const;
+    const std::vector<std::pair<AccessType, Var>>& getFields() const;
+    const std::vector<std::pair<AccessType, Constractor>>& getConstractors() const;
+    void setAbstract(const bool isAbstract);
+    bool isAbstract() const;
 
-    void addMethod(const bool isPublic, const Func& method);
-    void addField(const bool isPublic, const Var& field);
-    void addConstractor(const bool isPublic, const Constractor& constractor);
+    void addMethod(const AccessType accessType, const Func& method);
+    void addField(const AccessType accessType, const Var& field);
+    void addConstractor(const AccessType accessType, const Constractor& constractor);
 
     bool hasMethod(const Func& method) const;
     bool hasField(const Var& field) const;
     bool hasConstractor(const Constractor& constractor) const;
 
-    bool hasMethod(const std::wstring& name) const;
-    bool hasField(const std::wstring& name) const;
+    bool hasMethod(FQN& name) const;
+    bool hasField(const FQN& name) const;
 
     Class copy() const;
 };

@@ -4,5 +4,5 @@
 class WrongReturnType : public Error
 {
 public:
-    WrongReturnType(const Token &token);
+    explicit WrongReturnType(const Token &token);
 };
