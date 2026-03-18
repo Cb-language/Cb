@@ -23,7 +23,7 @@ void VarCallExpr::analyze() const
 
 std::string VarCallExpr::translateToCpp() const
 {
-    std::string res = needsSemicolon ? getTabs() : "";
+    std::string res = (needsSemicolon && !isClassItem) ? getTabs() : "";
     res += translateFQNtoString(var.getName());
     if (needsSemicolon) res += ";";
     return res;

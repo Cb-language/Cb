@@ -13,6 +13,7 @@
 #include "AST/statements/expression/ArrayIndexingExpr.h"
 #include "AST/statements/AssignmentStmt.h"
 #include "AST/statements/expression/ArraySlicingExpr.h"
+#include "AST/statements/expression/DotOpExpr.h"
 #include "errorHandling/classErrors/InvalidCtorName.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
@@ -37,7 +38,7 @@ std::unique_ptr<Expr> ExprParser::parseExprPrec(const int minPrec)
     {
         left = parseCastExpr();
     }
-    else if (c.matchConsume(CbTokenType::KEYWORD_DURATION) || c.matchNonConsume(CbTokenType::KEYWORD_SUB_DURATION))
+    else if (c.matchNonConsume(CbTokenType::KEYWORD_DURATION) || c.matchNonConsume(CbTokenType::KEYWORD_SUB_DURATION))
     {
         left = parseLenExpr();
     }
@@ -344,7 +345,27 @@ std::unique_ptr<VarReference> ExprParser::parseVarExpr()
         ref = std::make_unique<VarCallExpr>(startToken, Var(nullptr, name));
     }
 
-    return parseArrayAccess(std::move(ref));
+    ref = parseArrayAccess(std::move(ref));
+
+    while (c.matchConsume(CbTokenType::PUNCTUATION_BACKSLASH))
+    {
+        Token rightToken = c.copyCurrent();
+        const FQN rightName = parseFQN();
+        std::unique_ptr<VarReference> rightRef;
+        if (c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
+        {
+            rightRef = parseFuncCall(rightName);
+        }
+        else
+        {
+            rightRef = std::make_unique<VarCallExpr>(rightToken, Var(nullptr, rightName));
+        }
+
+        rightRef = parseArrayAccess(std::move(rightRef));
+        ref = std::make_unique<DotOpExpr>(rightToken, std::move(ref), std::move(rightRef));
+    }
+
+    return ref;
 }
 
 std::unique_ptr<VarReference> ExprParser::parseArrayAccess(std::unique_ptr<VarReference> ref)

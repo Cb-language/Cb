@@ -139,6 +139,11 @@ void FuncCallExpr::setTargetClass(const ClassNode* targetClass)
     this->targetClass = targetClass;
 }
 
+const ClassNode* FuncCallExpr::getTargetClass() const
+{
+    return targetClass;
+}
+
 bool FuncCallExpr::isLegalCall(const Func& func) const
 {
     if (name != func.getFuncName() || args.size() != func.getArgs().size())

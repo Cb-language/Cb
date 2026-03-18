@@ -19,7 +19,7 @@ std::unique_ptr<IType> ArrayIndexingExpr::getType() const
 
 std::string ArrayIndexingExpr::translateToCpp() const
 {
-    std::string res = needsSemicolon ? getTabs() : "";
+    std::string res = (needsSemicolon && !isClassItem) ? getTabs() : "";
     res += varRef->translateToCpp() + "[" + index->translateToCpp() + "]";
     if (needsSemicolon) res += ";";
     return res;

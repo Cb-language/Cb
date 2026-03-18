@@ -13,6 +13,7 @@ public:
         std::unique_ptr<VarReference> left, std::unique_ptr<VarReference> right);
 
     std::unique_ptr<IType> getType() const override;
+    void setNeedsSemicolon(const bool needsSemicolon) override;
     void analyze() const override;
     std::string translateToCpp() const override;
     std::string toString() const override;

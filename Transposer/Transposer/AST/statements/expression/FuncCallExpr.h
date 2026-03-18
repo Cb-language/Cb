@@ -31,6 +31,7 @@ public:
     void setType(std::unique_ptr<IType> type);
     void setClassDecl(IFuncDeclStmt& decl);
     void setTargetClass(const ClassNode* targetClass);
+    const ClassNode* getTargetClass() const;
     bool isLegalCall(const Func& func) const;
     bool argsMatch(const Func& func) const;
     bool argsMatch(const Constractor& ctor) const;

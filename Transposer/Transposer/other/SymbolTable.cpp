@@ -284,14 +284,14 @@ std::unique_ptr<IType> SymbolTable::getCallType(const FuncCallExpr* expr, const 
         }
     }
 
-    if (const FQN& fqn = expr->getName(); fqn.size() > 1)
+    const ClassNode* targetClassNode = expr->getTargetClass();
+
+    if (targetClassNode == nullptr && expr->getName().size() > 1)
     {
         // Member access: rex.speak() or Animal.kingdom()
-        FQN targetName = fqn;
+        FQN targetName = expr->getName();
         const std::string methodName = targetName.back();
         targetName.pop_back();
-
-        const ClassNode* targetClassNode = nullptr;
 
         // 1. Try to resolve targetName as a variable (e.g., 'rex')
         if (const auto var = getVar(targetName, callClass))
@@ -308,30 +308,31 @@ std::unique_ptr<IType> SymbolTable::getCallType(const FuncCallExpr* expr, const 
         {
             targetClassNode = classTree.find(targetName);
         }
+    }
 
-        if (targetClassNode != nullptr)
+    if (targetClassNode != nullptr)
+    {
+        const std::string methodName = expr->getName().back();
+        const ClassNode* current = targetClassNode;
+        while (current != nullptr)
         {
-            const ClassNode* current = targetClassNode;
-            while (current != nullptr)
+            for (const auto& [func, info] : funcs)
             {
-                for (const auto& [func, info] : funcs)
+                if (func.getOwner() == current && 
+                    func.getFuncName().size() == 1 &&
+                    func.getFuncName()[0] == methodName && 
+                    expr->argsMatch(func))
                 {
-                    if (func.getOwner() == current && 
-                        func.getFuncName().size() == 1 &&
-                        func.getFuncName()[0] == methodName && 
-                        expr->argsMatch(func))
+                    // Check access rights
+                    if (current->isLegal(func, callClass))
                     {
-                        // Check access rights
-                        if (current->isLegal(func, callClass))
-                        {
-                            if (info.second != nullptr) const_cast<FuncCallExpr*>(expr)->setClassDecl(*(info.second));
-                            const_cast<FuncCallExpr*>(expr)->setTargetClass(current);
-                            return func.getType();
-                        }
+                        if (info.second != nullptr) const_cast<FuncCallExpr*>(expr)->setClassDecl(*(info.second));
+                        const_cast<FuncCallExpr*>(expr)->setTargetClass(current);
+                        return func.getType();
                     }
                 }
-                current = current->getParent();
             }
+            current = current->getParent();
         }
     }
     else
@@ -482,7 +483,9 @@ void SymbolTable::clearClasses()
 
 bool SymbolTable::isLegalFieldOrMethod(const SymbolTable* symTable, const std::unique_ptr<IType>& type, const FQN& name, const Token& token, const ClassNode* currClass)
 {
-    const ClassNode* res = classTree.find(name);
+    if (type == nullptr) return false;
+
+    const ClassNode* res = classTree.find(type->getFQN());
 
     if (res == nullptr)
     {
@@ -510,7 +513,7 @@ bool SymbolTable::isLegalFieldOrMethod(const SymbolTable* symTable, const std::u
     {
         if (const auto parent = currClass->getParent(); parent != nullptr)
         {
-            return isLegalFieldOrMethod(symTable, std::make_unique<ClassType>(name), name, token, parent);
+            return isLegalFieldOrMethod(symTable, type, name, token, parent);
         }
     }
 
