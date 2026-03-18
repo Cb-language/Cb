@@ -1,8 +1,8 @@
 #pragma once
-#include "AST/abstract/Call.h"
+#include "AST/abstract/VarReference.h"
 #include "../../../symbols/Var.h"
 
-class VarCallExpr : public Call
+class VarCallExpr : public VarReference
 {
 protected:
     Var var;
@@ -12,6 +12,6 @@ public:
     void analyze() const override;
     std::string translateToCpp() const override;
     std::unique_ptr<IType> getType() const override;
-    std::string getName() const;
+    const FQN& getName() const;
     std::string toString() const override;
 };

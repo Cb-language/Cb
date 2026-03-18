@@ -41,3 +41,9 @@ std::string ReturnStmt::translateToCpp() const
     const std::string exprStr = rExpr == nullptr ? "" :  " " + rExpr->translateToCpp();
     return getTabs() + "return" + exprStr +  ";";
 }
+
+void ReturnStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    if (rExpr != nullptr) rExpr->setSymbolTable(symTable);
+}

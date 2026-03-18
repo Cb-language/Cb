@@ -1,16 +1,25 @@
 #include "ExprParser.h"
+
+#include <algorithm>
+
 #include "TypeParser.h"
+#include "StmtParser.h"
 #include "AST/statements/expression/BinaryOpExpr.h"
 #include "AST/statements/expression/UnaryOpExpr.h"
 #include "AST/statements/expression/ConstValueExpr.h"
 #include "AST/statements/expression/FuncCallExpr.h"
 #include "AST/statements/expression/VarCallExpr.h"
+#include "AST/statements/expression/CastCallExpr.h"
 #include "AST/statements/expression/ArrayIndexingExpr.h"
 #include "AST/statements/AssignmentStmt.h"
 #include "AST/statements/expression/ArraySlicingExpr.h"
+#include "AST/statements/expression/DotOpExpr.h"
+#include "errorHandling/classErrors/InvalidCtorName.h"
+#include "errorHandling/how/HowDidYouGetHere.h"
 #include "errorHandling/syntaxErrors/InvalidExpression.h"
 #include "errorHandling/syntaxErrors/UnexpectedToken.h"
 #include "errorHandling/syntaxErrors/MissingParenthesis.h"
+#include "symbols/Type/ClassType.h"
 #include "symbols/Type/PrimitiveType.h"
 
 std::unique_ptr<Expr> ExprParser::parseExprPrec(const int minPrec)
@@ -25,20 +34,63 @@ std::unique_ptr<Expr> ExprParser::parseExprPrec(const int minPrec)
     {
         left = parseConstValue();
     }
+    else if (c.matchConsume(CbTokenType::KEYWORD_TRANSCRIBE))
+    {
+        left = parsePostfix(parseCastExpr());
+    }
+    else if (c.matchNonConsume(CbTokenType::KEYWORD_DURATION) || c.matchNonConsume(CbTokenType::KEYWORD_SUB_DURATION))
+    {
+        left = parseLenExpr();
+    }
+    else if (c.matchConsume(CbTokenType::KEYWORD_CTOR_CALL))
+    {
+        Token ctorToken = c.getLastToken();
+        const auto type = typeParser.parseIType();
+        if (!type) return nullptr;
+
+        if (const auto* classType = dynamic_cast<ClassType*>(type.get()); !classType)
+        {
+            c.addError(std::make_unique<InvalidCtorName>(ctorToken, ctorToken.value.value_or("")));
+            return nullptr;
+        }
+
+        c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent()));
+        std::vector<std::unique_ptr<Expr>> args = getArgsWithoutTypes();
+
+        left = parsePostfix(std::make_unique<FuncCallExpr>(ctorToken, type->getFQN(), std::move(args), false));
+    }
+    else if (c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
+    {
+        left = parseExprPrec(0);
+        c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.copyCurrent()));
+        if (left)
+        {
+            left->setHasParens(true);
+            if (auto* varRef = dynamic_cast<VarReference*>(left.get()))
+            {
+                auto ref = std::unique_ptr<VarReference>(static_cast<VarReference*>(left.release()));
+                left = parsePostfix(std::move(ref));
+            }
+        }
+    }
     else
     {
-        std::unique_ptr<Call> call = parseCallExpr();
+        auto ref = parseVarExpr();
 
         if (c.isUnaryOp())
         {
             Token t = c.copyCurrent();
             const std::string opStr = tokenToOp(t.type);
             c.advance();
-            left = std::make_unique<UnaryOpExpr>(t, std::move(call), strToUnaryOp(opStr), false);
+            left = std::make_unique<UnaryOpExpr>(t, std::move(ref), strToUnaryOp(opStr), false);
+        }
+        else if (c.matchNonConsume(CbTokenType::KEYWORD_TIMBRE))
+        {
+            left = parseIsExpr(std::move(ref));
         }
         else
         {
-            left = std::move(call);
+            left = std::move(ref);
         }
     }
 
@@ -68,8 +120,8 @@ std::unique_ptr<Expr> ExprParser::parseExprPrec(const int minPrec)
             case CbTokenType::BINARY_OP_MULTIPLY_EQUAL:
             case CbTokenType::BINARY_OP_MODULUS_EQUAL:
             {
-                auto callLeft = std::unique_ptr<Call>(
-                    dynamic_cast<Call*>(left.release())
+                auto callLeft = std::unique_ptr<VarReference>(
+                    dynamic_cast<VarReference*>(left.release())
                 );
                 left = std::make_unique<AssignmentStmt>(
                     opToken, std::move(callLeft), op, std::move(right)
@@ -202,53 +254,7 @@ UnaryOp ExprParser::strToUnaryOp(const std::string& str)
 
 std::unique_ptr<Expr> ExprParser::parseExpr()
 {
-    std::unique_ptr<Expr> left;
-
-    if (c.matchNonConsume(CbTokenType::UNARY_OP_NOT)) // the only unary prefix to the identifier
-    {
-        left = parseUnaryOp();
-    }
-    else if (c.current().isConst())
-    {
-        left = parseConstValue();
-    }
-
-    else
-    {
-        std::unique_ptr<Call> call = parseCallExpr();
-
-        if (c.isUnaryOp())
-        {
-            Token t = c.copyCurrent();
-            const std::string opStr = tokenToOp(t.type);
-            c.advance();
-            left = std::make_unique<UnaryOpExpr>(t, std::move(call), strToUnaryOp(opStr), false);
-        }
-        else if (c.isBinaryOp())
-        {
-            left = parseBinaryOp(std::move(call));
-        }
-        else if (c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
-        {
-            left = parseExpr();
-            c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.copyCurrent()));
-        }
-        else
-        {
-            left = std::move(call);
-        }
-    }
-
-    while (c.isBinaryOp())
-    {
-        Token opToken = c.copyCurrent();
-        std::string op = tokenToOp(opToken.type);
-        c.advance();
-        auto right = parseExpr();
-        left = std::make_unique<BinaryOpExpr>(opToken, op, std::move(left), std::move(right));
-    }
-
-    return left;
+    return parseExprPrec(0);
 }
 
 std::unique_ptr<ConstValueExpr> ExprParser::parseConstValue() const
@@ -273,19 +279,11 @@ FQN ExprParser::parseFQN() const
     return c.parseFQN();
 }
 
-std::unique_ptr<Call> ExprParser::parseFuncCall(const FQN& name)
+std::unique_ptr<VarReference> ExprParser::parseFuncCall(const FQN& name)
 {
     Token t = c.copyCurrent();
     c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN);
-    std::vector<std::unique_ptr<Expr>> args;
-    while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
-    {
-        args.push_back(parseExpr());
-        if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
-        {
-            c.expect(CbTokenType::PUNCTUATION_COMMA);
-        }
-    }
+    std::vector<std::unique_ptr<Expr>> args = getArgsWithoutTypes();
     return std::make_unique<FuncCallExpr>(t, name, std::move(args), false);
 }
 
@@ -304,36 +302,97 @@ std::unique_ptr<Expr> ExprParser::parseUnaryOp()
     return nullptr;
 }
 
-std::unique_ptr<Expr> ExprParser::parseBinaryOp(std::unique_ptr<Call> left)
+std::unique_ptr<Expr> ExprParser::parseBinaryOp(std::unique_ptr<VarReference> left)
 {
     Token opToken = c.advance();
     std::string op = tokenToOp(opToken.type);
+
+    if (op == "=" && c.matchConsume(CbTokenType::KEYWORD_CTOR_CALL))
+    {
+        Token ctorToken = c.getLastToken();
+        const auto type = typeParser.parseIType();
+        if (!type)
+        {
+            return nullptr;
+        }
+
+        if (const auto* classType = dynamic_cast<ClassType*>(type.get()); !classType)
+        {
+            c.addError(std::make_unique<InvalidCtorName>(ctorToken, ctorToken.value.value_or("")));
+            return nullptr;
+        }
+
+        c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent()));
+        std::vector<std::unique_ptr<Expr>> args = getArgsWithoutTypes();
+
+        auto ctorCall = std::make_unique<FuncCallExpr>(ctorToken, type->getFQN(), std::move(args), false);
+        return std::make_unique<AssignmentStmt>(ctorToken, std::move(left), "=", std::move(ctorCall));
+    }
+
     auto right = parseExpr();
 
     if (op == "=" || op == "+=" || op == "-=" || op == "*=" || op == "/=" || op == "%=")
+    {
         return std::make_unique<AssignmentStmt>(opToken, std::move(left), op, std::move(right));
+    }
 
-    return std::make_unique<BinaryOpExpr>(opToken, op, std::move(left),  std::move(right));
+    return std::make_unique<BinaryOpExpr>(opToken, op, std::move(left), std::move(right));
 }
 
-std::unique_ptr<Call> ExprParser::parseCallExpr()
+std::unique_ptr<VarReference> ExprParser::parseVarExpr()
 {
     Token startToken = c.copyCurrent();
     const FQN name = parseFQN();
-    std::unique_ptr<Call> call;
+    std::unique_ptr<VarReference> ref;
     if (c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
     {
-        call = parseFuncCall(name);
+        ref = parseFuncCall(name);
     }
     else
     {
-        call = std::make_unique<VarCallExpr>(startToken, Var(nullptr, name));
+        ref = std::make_unique<VarCallExpr>(startToken, Var(nullptr, name));
     }
 
-    return parseArrayAccess(std::move(call));
+    return parsePostfix(std::move(ref));
 }
 
-std::unique_ptr<Call> ExprParser::parseArrayAccess(std::unique_ptr<Call> call)
+std::unique_ptr<VarReference> ExprParser::parsePostfix(std::unique_ptr<VarReference> ref)
+{
+    if (ref == nullptr) return nullptr;
+
+    while (true)
+    {
+        if (c.matchNonConsume(CbTokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
+        {
+            ref = parseArrayAccess(std::move(ref));
+        }
+        else if (c.matchConsume(CbTokenType::PUNCTUATION_BACKSLASH))
+        {
+            Token rightToken = c.copyCurrent();
+            const FQN rightName = parseFQN();
+            std::unique_ptr<VarReference> rightRef;
+            if (c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN))
+            {
+                rightRef = parseFuncCall(rightName);
+            }
+            else
+            {
+                rightRef = std::make_unique<VarCallExpr>(rightToken, Var(nullptr, rightName));
+            }
+
+            rightRef = parseArrayAccess(std::move(rightRef));
+            ref = std::make_unique<DotOpExpr>(rightToken, std::move(ref), std::move(rightRef));
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return ref;
+}
+
+std::unique_ptr<VarReference> ExprParser::parseArrayAccess(std::unique_ptr<VarReference> ref)
 {
     while (c.matchConsume(CbTokenType::PUNCTUATION_OPEN_SQUARE_BRACE))
     {
@@ -348,7 +407,7 @@ std::unique_ptr<Call> ExprParser::parseArrayAccess(std::unique_ptr<Call> call)
         {
             Token t = c.copyCurrent();
 
-            auto slicingExpr = std::make_unique<ArraySlicingExpr>(t, std::move(call));
+            auto slicingExpr = std::make_unique<ArraySlicingExpr>(t, std::move(ref));
             slicingExpr->setStart(std::move(firstExpr));
 
             auto stopExpr = parseExpr();
@@ -375,7 +434,7 @@ std::unique_ptr<Call> ExprParser::parseArrayAccess(std::unique_ptr<Call> call)
                     std::make_unique<MissingParenthesis>(c.copyCurrent())))
                 return nullptr;
 
-            call = std::move(slicingExpr);
+            ref = std::move(slicingExpr);
         }
         else
         {
@@ -383,10 +442,97 @@ std::unique_ptr<Call> ExprParser::parseArrayAccess(std::unique_ptr<Call> call)
                     std::make_unique<MissingParenthesis>(c.copyCurrent())))
                 return nullptr;
 
-            call = std::make_unique<ArrayIndexingExpr>(
-                c.copyCurrent(), std::move(call), std::move(firstExpr));
+            ref = std::make_unique<ArrayIndexingExpr>(
+                c.copyCurrent(), std::move(ref), std::move(firstExpr));
         }
     }
 
-    return call;
+    return ref;
 }
+
+std::unique_ptr<CastCallExpr> ExprParser::parseCastExpr()
+{
+    Token startToken = c.copyCurrent();
+    c.expect(CbTokenType::PUNCTUATION_OPEN_TRIANGLE_BRACE, std::make_unique<MissingParenthesis>(c.copyCurrent()));
+
+    auto type = typeParser.parseIType();
+
+    if (type == nullptr) return nullptr;
+
+    c.expect(CbTokenType::PUNCTUATION_CLOSE_TRIANGLE_BRACE, std::make_unique<MissingParenthesis>(c.copyCurrent()));
+
+    c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent()));
+
+    auto expr = parseExpr();
+
+    c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.copyCurrent()));
+
+    return std::make_unique<CastCallExpr>(startToken, std::move(expr), std::move(type));
+}
+
+std::unique_ptr<IsExpr> ExprParser::parseIsExpr(std::unique_ptr<VarReference> ref) const
+{
+    Token startToken = c.copyCurrent();
+
+    if (ref == nullptr) return nullptr;
+
+    c.expect(CbTokenType::KEYWORD_TIMBRE, std::make_unique<HowDidYouGetHere>(startToken));
+
+    auto type = typeParser.parseIType();
+
+    if (type == nullptr) return nullptr;
+
+    return std::make_unique<IsExpr>(startToken, std::move(ref), std::move(type));
+}
+
+std::unique_ptr<LenExpr> ExprParser::parseLenExpr()
+{
+    Token startToken = c.copyCurrent();
+
+    bool isNeg = false;
+    if (!c.matchConsume(CbTokenType::KEYWORD_DURATION))
+    {
+        c.expect(CbTokenType::KEYWORD_SUB_DURATION, std::make_unique<HowDidYouGetHere>(startToken));
+        isNeg = true;
+    }
+
+    c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, std::make_unique<MissingParenthesis>(c.copyCurrent()));
+    auto ref = parseVarExpr();
+    if (ref == nullptr) return nullptr;
+    c.expect(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, std::make_unique<MissingParenthesis>(c.copyCurrent()));
+
+    return make_unique<LenExpr>(startToken, std::move(ref), isNeg);
+}
+
+std::vector<Var> ExprParser::getArgsWithTypes() const
+{
+    std::vector<Var> args;
+    while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+    {
+        auto type = typeParser.parseIType();
+        if (!type)
+            return {};
+
+        const FQN argName = c.parseFQN();
+        args.emplace_back(std::move(type), argName);
+
+        if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+        {
+            if (!c.expect(CbTokenType::PUNCTUATION_COMMA, std::make_unique<UnexpectedToken>(c.getLastToken())))
+                return {};
+        }
+    }
+    return args;
+}
+
+std::vector<std::unique_ptr<Expr>> ExprParser::getArgsWithoutTypes()
+{
+    std::vector<std::unique_ptr<Expr>> args;
+    while (!c.matchConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE))
+    {
+        args.push_back(parseExpr());
+        if (!c.matchNonConsume(CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE)) c.expect(CbTokenType::PUNCTUATION_COMMA);
+    }
+    return args;
+}
+

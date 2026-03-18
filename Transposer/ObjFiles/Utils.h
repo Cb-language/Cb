@@ -1,14 +1,16 @@
 #pragma once
 #include "Object.h"
+#include "SafePtr.h"
 
 class Utils
 {
 public:
-    template <typename T>
-    static T& cast(Object& other);
+    inline static const std::string badCastMsg = "Illegal cast";
+    template <typename T, typename U>
+    static T cast(const U& other);
 
-    template <typename T>
-    static T& cast(SafePtr<Object>& other);
+    template <typename T, typename U>
+    static bool is(const U& other);
 };
 
 #include "Utils.tpp"

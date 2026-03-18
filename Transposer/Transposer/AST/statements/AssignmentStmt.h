@@ -9,14 +9,15 @@
 class AssignmentStmt : public Expr
 {
 private:
-    const std::unique_ptr<Call> call;
+    const std::unique_ptr<VarReference> varRef;
     const std::string assignmentOp;
     const std::unique_ptr<Expr> expr;
 
 public:
     AssignmentStmt(const Token& token,
-        std::unique_ptr<Call> call, const std::string& assignmentOp, std::unique_ptr<Expr> expr);
+        std::unique_ptr<VarReference> ref, const std::string& assignmentOp, std::unique_ptr<Expr> expr);
     void analyze() const override;
     std::string translateToCpp() const override;
     std::unique_ptr<IType> getType() const override;
+    void setSymbolTable(SymbolTable* symTable) const override;
 };

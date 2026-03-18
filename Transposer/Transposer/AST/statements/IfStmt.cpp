@@ -42,22 +42,38 @@ void IfStmt::analyze() const
 std::string IfStmt::translateToCpp() const
 {
     std::ostringstream oss;
-    oss << getTabs() <<  "if (" << ifStmt.expr->translateToCpp() << ")" << std::endl;
+    const std::string tabs = getTabs();
+    oss << tabs <<  "if (" << ifStmt.expr->translateToCpp() << ")" << std::endl;
     oss << ifStmt.body->translateToCpp();
 
     for (auto& stmt : elseStmts)
     {
         if (stmt.expr != nullptr)
         {
-            oss << "else if (" << stmt.expr->translateToCpp() << ")" << std::endl;
+            oss << std::endl << tabs << "else if (" << stmt.expr->translateToCpp() << ")" << std::endl;
             oss << stmt.body->translateToCpp();
         }
         else
         {
-            oss << "else " << std::endl;
+            oss << std::endl << tabs << "else " << std::endl;
             oss << stmt.body->translateToCpp();
         }
     }
 
     return oss.str();
+}
+
+void IfStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    ifStmt.expr->setSymbolTable(symTable);
+    ifStmt.body->setSymbolTable(symTable);
+
+    for (auto& stmt : elseStmts)
+    {
+        stmt.body->setSymbolTable(symTable);
+
+        if (stmt.expr != nullptr) // if its an else stmt there's no else
+            stmt.expr->setSymbolTable(symTable);
+    }
 }

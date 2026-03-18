@@ -2,6 +2,7 @@
 #include "IType.h"
 #include "class/ClassNode.h"
 #include "parser/FQN.h"
+#include "class/ClassTree.h"
 
 class ClassType : public IType
 {
@@ -9,6 +10,7 @@ private:
     const FQN name;
     const ClassNode* c;
 
+    static ClassTree& classTree;
 public:
     explicit ClassType(const FQN& name);
     ~ClassType() override;
@@ -21,7 +23,7 @@ public:
     bool isPrimitive() const override;
     const ClassNode* getClassNode() const;
     void setClassNode(const ClassNode& node);
-    std::string getName() const;
+    const FQN& getName() const;
 
     std::string translateTypeToCpp() const override;
     std::unique_ptr<IType> copy() const override;

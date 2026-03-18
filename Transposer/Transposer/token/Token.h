@@ -45,26 +45,32 @@ enum class CbTokenType : byte
 	KEYWORD_REST,           // pure virtual
 	KEYWORD_VARIATION,      // override
 	KEYWORD_CTOR_CALL,      // ctor call
-	KEYWORD_C_CLEF,        // 𝄡 (dosent compile)
+	KEYWORD_C_CLEF,         // 𝄡 (dosent compile)
+	KEYWORD_TRANSCRIBE,     // casting
+	KEYWORD_TIMBRE,         // is
+	KEYWORD_DURATION,       // len
+	KEYWORD_SUB_DURATION,   // negative len
 
 	// punctuation
-	PUNCTUATION_RET_TYPE_ARROW,      // 𝅘𝅥=
-	PUNCTUATION_COMMA,               // ,
-	PUNCTUATION_COPYRIGHT,           // ©
-	PUNCTUATION_OPEN_SQUARE_BRACE,   // [
-	PUNCTUATION_CLOSE_SQUARE_BRACE,  // ]
-	PUNCTUATION_OPEN_CURLY_BRACKET,  // 𝄋
-	PUNCTUATION_CLOSE_CURLY_BRACKET, // 𝄌
-	PUNCTUATION_PARENTHESIS_OPEN,    // 𝄕
-	PUNCTUATION_PARENTHESIS_CLOSE,   // 𝄇
-	PUNCTUATION_COLON,               // :
-	PUNCTUATION_BACKSLASH,           // 𝄍
-	PUNCTUATION_DOUBLE_BACKSLASH,    // 𝄓
-	PUNCTUATION_REST,                // 𝄽
-	PUNCTUATION_OPEN_LINE,           // 𝄞
-	PUNCTUATION_SEMICOLON,           // 𝄀
-	PUNCTUATION_CLOSE_FUNC,          // 𝄂
-	PUNCTUATION_NEW_LINE,            // \n
+	PUNCTUATION_RET_TYPE_ARROW,       // 𝅘𝅥=
+	PUNCTUATION_COMMA,                // ,
+	PUNCTUATION_COPYRIGHT,            // ©
+	PUNCTUATION_OPEN_SQUARE_BRACE,    // [
+	PUNCTUATION_CLOSE_SQUARE_BRACE,   // ]
+	PUNCTUATION_OPEN_CURLY_BRACKET,   // 𝄋
+	PUNCTUATION_CLOSE_CURLY_BRACKET,  // 𝄌
+	PUNCTUATION_PARENTHESIS_OPEN,     // 𝄕
+	PUNCTUATION_PARENTHESIS_CLOSE,    // 𝄇
+	PUNCTUATION_OPEN_TRIANGLE_BRACE,  // 𝆒
+	PUNCTUATION_CLOSE_TRIANGLE_BRACE, // 𝆓
+	PUNCTUATION_COLON,                // :
+	PUNCTUATION_BACKSLASH,            // 𝄍
+	PUNCTUATION_DOUBLE_BACKSLASH,     // 𝄓
+	PUNCTUATION_REST,                 // 𝄽
+	PUNCTUATION_OPEN_LINE,            // 𝄞
+	PUNCTUATION_SEMICOLON,            // 𝄀
+	PUNCTUATION_CLOSE_FUNC,           // 𝄂
+	PUNCTUATION_NEW_LINE,             // \n
 
 	// unary operations
 	UNARY_OP_SHARP,        // ♯    ++

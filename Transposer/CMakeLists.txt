@@ -37,7 +37,6 @@ add_executable(Transposer
         Transposer/errorHandling/syntaxErrors/InvalidExpression.h
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.cpp
         Transposer/errorHandling/syntaxErrors/MissingIdentifier.h
-        Transposer/parser/Parser_org.cpp
         Transposer/parser/Parser.h
         Transposer/symbols/Type/PrimitiveType.cpp
         Transposer/symbols/Type/PrimitiveType.h
@@ -111,7 +110,7 @@ add_executable(Transposer
         Transposer/AST/statements/expression/ArraySlicingExpr.h
         Transposer/AST/statements/expression/ArrayIndexingExpr.cpp
         Transposer/AST/statements/expression/ArrayIndexingExpr.h
-        Transposer/AST/abstract/Call.h
+        Transposer/AST/abstract/VarReference.h
         Transposer/AST/statements/SwitchStmt.cpp
         Transposer/AST/statements/SwitchStmt.h
         Transposer/AST/statements/CaseStmt.cpp
@@ -198,8 +197,8 @@ add_executable(Transposer
         Transposer/symbols/Constractor.cpp
         Transposer/symbols/Constractor.h
         Transposer/AST/abstract/IFuncDeclStmt.h
-        Transposer/AST/statements/ObjCreationStmt.cpp
-        Transposer/AST/statements/ObjCreationStmt.h
+        Transposer/AST/statements/ObjCreationPolyStmt.cpp
+        Transposer/AST/statements/ObjCreationPolyStmt.h
         Transposer/errorHandling/classErrors/NoCtor.cpp
         Transposer/errorHandling/classErrors/NoCtor.h
         Transposer/class/ClassNode.cpp
@@ -283,6 +282,23 @@ add_executable(Transposer
         Transposer/parser/FQN.h
         Transposer/errorHandling/classErrors/CtorWithReturnValue.cpp
         Transposer/errorHandling/classErrors/CtorWithReturnValue.h
+        Transposer/AST/statements/expression/CastCallExpr.cpp
+        Transposer/AST/statements/expression/CastCallExpr.h
+        Transposer/AST/statements/expression/IsExpr.cpp
+        Transposer/AST/statements/expression/IsExpr.h
+        Transposer/AST/statements/expression/LenExpr.cpp
+        Transposer/AST/statements/expression/LenExpr.h
+        Transposer/errorHandling/semanticErrors/IllegalLengthCall.cpp
+        Transposer/errorHandling/semanticErrors/IllegalLengthCall.h
+        Transposer/AST/statements/ObjCreationCastStmt.cpp
+        Transposer/AST/statements/ObjCreationCastStmt.h
+        Transposer/AST/abstract/ObjectCreationStmt.h
+        Transposer/errorHandling/syntaxErrors/CaseNotInsideIf.cpp
+        Transposer/errorHandling/syntaxErrors/CaseNotInsideIf.h
+        Transposer/errorHandling/classErrors/PureWithBody.cpp
+        Transposer/errorHandling/classErrors/PureWithBody.h
+        Transposer/AST/statements/ObjCreationAssigmentStmt.cpp
+        Transposer/AST/statements/ObjCreationAssigmentStmt.h
 
 )
 

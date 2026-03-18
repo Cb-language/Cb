@@ -4,11 +4,15 @@
 #include <vector>
 #include <string>
 
+#include "AST/statements/ObjCreationPolyStmt.h"
+#include "AST/statements/expression/CastCallExpr.h"
+#include "AST/statements/expression/IsExpr.h"
+#include "AST/statements/expression/LenExpr.h"
 #include "AST/statements/expression/UnaryOpExpr.h"
 
 class Expr;
 class ConstValueExpr;
-class Call;
+class VarReference;
 class TypeParser;
 
 using FQN = std::vector<std::string>;
@@ -30,9 +34,16 @@ public:
     std::unique_ptr<Expr> parseExpr();
     std::unique_ptr<ConstValueExpr> parseConstValue() const;
     FQN parseFQN() const;
-    std::unique_ptr<Call> parseFuncCall(const FQN& name);
+    std::unique_ptr<VarReference> parseFuncCall(const FQN& name);
     std::unique_ptr<Expr> parseUnaryOp();
-    std::unique_ptr<Expr> parseBinaryOp(std::unique_ptr<Call> left);
-    std::unique_ptr<Call> parseCallExpr();
-    std::unique_ptr<Call> parseArrayAccess(std::unique_ptr<Call> call);
+    std::unique_ptr<Expr> parseBinaryOp(std::unique_ptr<VarReference> left);
+    std::unique_ptr<VarReference> parseVarExpr();
+    std::unique_ptr<VarReference> parsePostfix(std::unique_ptr<VarReference> ref);
+    std::unique_ptr<VarReference> parseArrayAccess(std::unique_ptr<VarReference> ref);
+    std::unique_ptr<CastCallExpr> parseCastExpr();
+    std::unique_ptr<IsExpr> parseIsExpr(std::unique_ptr<VarReference> ref) const;
+    std::unique_ptr<LenExpr> parseLenExpr();
+
+    std::vector<Var> getArgsWithTypes() const;
+    std::vector<std::unique_ptr<Expr>> getArgsWithoutTypes();
 };

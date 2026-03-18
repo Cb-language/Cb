@@ -4,6 +4,7 @@
 
 #include "FuncDeclStmt.h"
 #include "errorHandling/classErrors/ClassDosentExisit.h"
+#include "errorHandling/classErrors/InvalidCtorName.h"
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "other/SymbolTable.h"
 #include "errorHandling/classErrors/InvalidOverrideSignature.h"
@@ -82,9 +83,52 @@ std::string ClassDeclStmt::generateEquals() const
     return oss.str();
 }
 
+std::string ClassDeclStmt::generateClone() const
+{
+    std::ostringstream oss;
+    const std::string strName = translateFQNtoString(name);
+    oss << "const " << strName << "* " << strName <<"::clone() const" << std::endl;
+    oss << "{" << std::endl;
+    oss << "\treturn new " << strName << "(this);" << std::endl;
+    oss << "}" << std::endl;
+
+    return oss.str();
+}
+
+std::string ClassDeclStmt::generateCopyConstructorCpp() const
+{
+    std::ostringstream oss;
+    const std::string strName = translateFQNtoString(name);
+
+    oss << strName << "::" << strName << "(const " << translateFQNtoString(name) << "* other)";
+
+    if (!parentName.empty())
+    {
+        oss << " : " << translateFQNtoString(parentName) << "(other)";
+    }
+
+    oss << std::endl << "{";
+
+    for (const auto& field : fields | std::views::values)
+    {
+        const std::string varName = translateFQNtoString(field->getVar().getName());
+        oss << std::endl << "\t" << varName << " = other->" << varName << ";";
+    }
+
+    oss << std::endl << "}" << std::endl;
+
+
+    return oss.str();
+}
+
+std::string ClassDeclStmt::generateCopyConstructorH() const
+{
+    return translateFQNtoString(name) + "(const " + translateFQNtoString(name) + "* other);";
+}
+
 ClassDeclStmt::ClassDeclStmt(const Token& token, const FQN& name, std::vector<Field>& fields,
-    std::vector<Method>& methods, std::vector<Ctor>& ctors,
-    const FQN& parentName)
+                             std::vector<Method>& methods, std::vector<Ctor>& ctors,
+                             const FQN& parentName)
     : Stmt(token), name(name), parentName(parentName)
 {
     for (auto& [isPublic, func] : fields) this->fields.emplace_back(isPublic, std::move(func));
@@ -140,14 +184,17 @@ void ClassDeclStmt::analyze() const
         ctor->analyze();
     }
 
-    bool isAbstract = false;
-
     for (const auto& method : methods | std::views::values)
     {
         method->setSymbolTable(symTable);
         method->setScope(scope);
         method->setClassNode(currClass);
         method->analyze();
+
+        if (translateFQNtoString(method->getName()) == translateFQNtoString(name))
+        {
+            symTable->addError(std::make_unique<InvalidCtorName>(token, translateFQNtoString(name)));
+        }
 
         switch (method->getVirtual())
         {
@@ -254,6 +301,11 @@ std::string ClassDeclStmt::translateToCpp() const
 
     oss << generateEquals() << std::endl;
     oss << generateToString() << std::endl;
+    oss << generateCopyConstructorCpp() << std::endl;
+    if (!isAbstract)
+    {
+        oss << generateClone() << std::endl;
+    }
 
     for (const auto& method : methods | std::views::values) oss << method->translateToCppClass(translateFQNtoString(name)) << std::endl;
     return oss.str();
@@ -300,7 +352,17 @@ std::string ClassDeclStmt::translateToH() const
         else privates << std::endl << tabs << Utils::removeAllFirstTabs(ctor->translateToH());
     }
 
-    publics << std::endl << tabs << "std::string toString(int indents = 0) const override;" << std::endl << tabs << "Primitive<bool> equals(const Object& other) const override;" << std::endl;
+    publics << std::endl << tabs << "std::string toString(int indents = 0) const override;" << std::endl
+    << tabs << "Primitive<bool> equals(const Object& other) const override;" << std::endl
+    << tabs << "~" << translateFQNtoString(name) << "() override = default;" << std::endl
+    << tabs << generateCopyConstructorH() << std::endl
+    << tabs << "const " << translateFQNtoString(name) << "* clone() const override";
+
+    if (isAbstract)
+    {
+        publics << " = 0";
+    }
+    publics << ";" << std::endl;
 
     if (!privates.str().empty())
     {
@@ -317,6 +379,14 @@ std::string ClassDeclStmt::translateToH() const
     oss << "};" << std::endl;
 
     return oss.str();
+}
+
+void ClassDeclStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    for (const auto& field : fields | std::views::values) field->setSymbolTable(symTable);
+    for (const auto& method : methods | std::views::values) method->setSymbolTable(symTable);
+    for (const auto& ctor : ctors | std::views::values) ctor->setSymbolTable(symTable);
 }
 
 bool ClassDeclStmt::getHasEmptyCtor() const

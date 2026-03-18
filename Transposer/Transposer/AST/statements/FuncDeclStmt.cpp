@@ -2,6 +2,7 @@
 
 #include "errorHandling/semanticErrors/NoReturn.h"
 #include "../../errorHandling/classErrors/VirtualNonMethod.h"
+#include "errorHandling/classErrors/PureWithBody.h"
 #include "other/SymbolTable.h"
 
 FuncDeclStmt::FuncDeclStmt(const Token& token,  const FQN& funcName, std::unique_ptr<IType> returnType, const std::vector<Var>& args,
@@ -113,6 +114,13 @@ void FuncDeclStmt::analyze() const
             symTable->addError(std::make_unique<NoReturn>(token));
         }
     }
+    else
+    {
+        if (body != nullptr)
+        {
+            symTable->addError(std::make_unique<PureWithBody>(token));
+        }
+    }
 }
 
 
@@ -122,12 +130,7 @@ std::string FuncDeclStmt::translateToCpp() const
     oss << func.translateToCpp();
 
     oss << std::endl << "{" << std::endl;
-
-    for (const auto& stmt : body->getStmts())
-    {
-        oss << stmt->translateToCpp() << std::endl;
-    }
-
+    for (const auto& s : body->getStmts()) oss << s->translateToCpp() << std::endl;
     oss << "}" << std::endl;
 
     return oss.str();
@@ -158,16 +161,21 @@ std::string FuncDeclStmt::translateToCppClass(const std::string& className) cons
         oss << func.translateToCpp(className);
 
         oss << std::endl << "{" << std::endl;
-
-        for (const auto& stmt : body->getStmts())
-        {
-            oss << stmt->translateToCpp() << std::endl;
-        }
-
+        for (const auto& s : body->getStmts()) oss << s->translateToCpp() << std::endl;
         oss << "}" << std::endl;
 
         return oss.str();
     }
 
     return "";
+}
+
+void FuncDeclStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+
+    if (virtualType != VirtualType::PURE)
+    {
+        body->setSymbolTable(symTable);
+    }
 }

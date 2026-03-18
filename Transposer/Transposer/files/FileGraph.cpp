@@ -3,6 +3,7 @@
 #include <ranges>
 
 #include "errorHandling/entryPointErrors/NoMain.h"
+#include "errorHandling/lexicalErrors/UnexpectedEOF.h"
 
 FileGraph& FileGraph::Instance()
 {
@@ -33,7 +34,14 @@ void FileGraph::build(const std::filesystem::path& main, const std::filesystem::
 
 void FileGraph::start()
 {
-    main->analyzePass1(symTable);
+    try
+    {
+        main->analyzePass1(symTable);
+    }
+    catch (UnexpectedEOF& e)
+    {
+        symTable.addError(std::make_unique<UnexpectedEOF>(e.getToken()));
+    }
     main->analyzePass2(symTable);
     main->analyzePass3(symTable);
 

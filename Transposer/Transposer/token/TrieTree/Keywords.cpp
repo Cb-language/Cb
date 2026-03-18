@@ -40,6 +40,10 @@ const std::vector<KeywordInfo> KEYWORDS =
 	{CbTokenType::KEYWORD_VARIATION, "variation", WordBoundary::BOTH},
 	{CbTokenType::KEYWORD_CTOR_CALL, "𝆫", WordBoundary::NONE},
 	{CbTokenType::KEYWORD_C_CLEF, "𝄡", WordBoundary::NONE},
+	{CbTokenType::KEYWORD_TRANSCRIBE, "transcribe", WordBoundary::BOTH},
+	{CbTokenType::KEYWORD_TIMBRE, "timbre", WordBoundary::BOTH},
+	{CbTokenType::KEYWORD_DURATION, "duration", WordBoundary::BOTH},
+	{CbTokenType::KEYWORD_SUB_DURATION, "sub duration", WordBoundary::BOTH},
 
 	// punctuation
 	{CbTokenType::PUNCTUATION_RET_TYPE_ARROW, "𝅘𝅥=", WordBoundary::NONE},
@@ -51,6 +55,8 @@ const std::vector<KeywordInfo> KEYWORDS =
 	{CbTokenType::PUNCTUATION_CLOSE_CURLY_BRACKET, "𝄌", WordBoundary::NONE},
 	{CbTokenType::PUNCTUATION_PARENTHESIS_OPEN, "𝄕", WordBoundary::NONE},
 	{CbTokenType::PUNCTUATION_PARENTHESIS_CLOSE, "𝄇", WordBoundary::NONE},
+	{CbTokenType::PUNCTUATION_OPEN_TRIANGLE_BRACE, "𝆒", WordBoundary::NONE},
+	{CbTokenType::PUNCTUATION_CLOSE_TRIANGLE_BRACE, "𝆓", WordBoundary::NONE},
 	{CbTokenType::PUNCTUATION_COLON, ":", WordBoundary::NONE},
 	{CbTokenType::PUNCTUATION_BACKSLASH, "𝄍", WordBoundary::NONE},
 	{CbTokenType::PUNCTUATION_DOUBLE_BACKSLASH, "𝄓", WordBoundary::NONE},

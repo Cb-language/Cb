@@ -86,6 +86,23 @@ std::string ForStmt::translateToCpp() const
     oss << getTabs() << "for (Primitive<int> " << nameStr << " = " << startStr << "; ";
     oss << nameStr << (isIncreasing ? " < " : " >= ") << stopStr << "; ";
     oss << stepFullStr << ")" << std::endl;
-    oss << body->translateToCpp();
+    oss << getTabs() << "{" << std::endl;
+
+    for (const auto& s : body->getStmts())
+    {
+        oss << s->translateToCpp() << std::endl;
+    }
+
+    oss << getTabs() << "}";
+
     return oss.str();
+}
+
+void ForStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    if (startExpr != nullptr) startExpr->setSymbolTable(symTable);
+    if (stepExpr != nullptr) stepExpr->setSymbolTable(symTable);
+    if (stopExpr != nullptr) stopExpr->setSymbolTable(symTable);
+    body->setSymbolTable(symTable);
 }

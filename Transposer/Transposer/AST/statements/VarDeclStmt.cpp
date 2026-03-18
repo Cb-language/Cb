@@ -7,7 +7,7 @@
 #include "other/Utils.h"
 
 VarDeclStmt::VarDeclStmt(const Token& token, const bool hasStartingValue, std::unique_ptr<Expr> startingValue, const Var& var) :
-    Stmt(token), hasStartingValue(hasStartingValue), startingValue(std::move(startingValue)) , var(var.copy())
+    Expr(token), hasStartingValue(hasStartingValue), startingValue(std::move(startingValue)) , var(var.copy())
 {
 }
 
@@ -36,7 +36,7 @@ void VarDeclStmt::analyze() const
         startingValue->setClassNode(symTable->getCurrClass());
         startingValue->analyze();
         
-        if (translateFQNtoString(var.getType()->getFQN()) != translateFQNtoString(startingValue->getType()->getFQN()))
+        if (*(var.getType()) != *(startingValue->getType()))
         {
             symTable->addError(std::make_unique<IllegalTypeCast>(token, var.getType()->toString(), startingValue->getType()->toString()));
         }
@@ -60,6 +60,12 @@ std::string VarDeclStmt::translateToCpp() const
     return ret;
 }
 
+void VarDeclStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    if (startingValue != nullptr) startingValue->setSymbolTable(symTable);
+}
+
 const Var& VarDeclStmt::getVar() const
 {
     return var;
@@ -73,4 +79,9 @@ const Expr* VarDeclStmt::getStartingValue() const
 void VarDeclStmt::setIsStatic(const bool isStatic)
 {
     this->var.setIsStatic(isStatic);
+}
+
+std::unique_ptr<IType> VarDeclStmt::getType() const
+{
+    return var.getType();
 }

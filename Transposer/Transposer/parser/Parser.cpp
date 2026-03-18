@@ -76,14 +76,7 @@ std::vector<std::pair<std::filesystem::path, Token>> Parser::readIncludes()
 
 void Parser::parse()
 {
-    try
-    {
-        stmtParser.parse();
-    }
-    catch (UnexpectedEOF& e)
-    {
-        c.addError(std::make_unique<UnexpectedEOF>(e.getToken()));
-    }
+    stmtParser.parse();
 }
 
 std::string Parser::translateToCpp(const std::filesystem::path& hPath, const bool isMain)
@@ -104,7 +97,8 @@ std::string Parser::translateToCpp(const std::filesystem::path& hPath, const boo
     {
         oss << "int main()" << std::endl <<
             "{" << std::endl <<
-            "\treturn prelude().getValue();" << std::endl <<
+            "\ttry{return prelude().getValue();}" << std::endl <<
+            "\tcatch(std::exception& e)\n\t{\n\t\tstd::cerr << e.what() << std::endl;\n\t\treturn -1;\n\t}" << std::endl <<
             "}" << std::endl;
     }
 
@@ -135,34 +129,3 @@ void Parser::addError(std::unique_ptr<Error> err)
 {
     c.addError(std::move(err));
 }
-
-// bool Parser::shouldProduceCpp(const bool isMain) const
-// {
-//     if (isMain || c.getHasMain()) return true;
-//
-//     for (const auto& stmt : c.getStmts())
-//     {
-//         if (dynamic_cast<IncludeStmt*>(stmt.get())) continue;
-//
-//         if (const auto classStmt = dynamic_cast<ClassDeclStmt*>(stmt.get()))
-//         {
-//             // if (classStmt->getCurrClass() && !classStmt->getCurrClass()->isAbstract())
-//             // {
-//             // return true; // Found a concrete class
-//             // }
-//             return true;
-//         }
-//         else if (dynamic_cast<FuncDeclStmt*>(stmt.get()))
-//         {
-//             return true; // Found a global function implementation
-//         }
-//         else
-//         {
-//             // Any other statement in global scope (e.g. VarDeclStmt) needs a .cpp
-//             return true;
-//         }
-//     }
-//
-//     // If it only has includes or abstract classes, don't produce a .cpp
-//     return false;
-// } TODO add to output stage

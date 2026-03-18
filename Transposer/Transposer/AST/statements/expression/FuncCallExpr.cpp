@@ -7,10 +7,11 @@
 #include "errorHandling/semanticErrors/CallWithoutCopyright.h"
 #include "other/SymbolTable.h"
 #include "errorHandling/semanticErrors/IllegalCall.h"
+#include "symbols/Constractor.h"
 
 FuncCallExpr::FuncCallExpr(const Token& token,
     const FQN& name, std::vector<std::unique_ptr<Expr>> args, const bool needsSemicolon)
-    : Call(token), name(name), type(std::make_unique<PrimitiveType>(Primitive::TYPE_FERMATA)),
+    : VarReference(token), name(name), type(std::make_unique<PrimitiveType>(Primitive::TYPE_FERMATA)),
       needsSemicolon(needsSemicolon), funcDecl(nullptr)
 {
     for (auto& arg : args)
@@ -47,7 +48,7 @@ void FuncCallExpr::analyze() const
 
     if (funcDecl == nullptr)
     {
-        symTable->addError(std::make_unique<HowDidYouGetHere>(token));
+        return;
     }
 
     if (funcDecl->getIsMethod())
@@ -85,7 +86,7 @@ std::string FuncCallExpr::translateToCpp() const
         oss << getTabs();
     }
 
-    if (targetClass != nullptr && !name.empty() && translateFQNtoString({name[0]}) == translateFQNtoString(targetClass->getClass().getClassName()))
+    if (targetClass != nullptr && name.size() > 1 && translateFQNtoString({name[0]}) == translateFQNtoString(targetClass->getClass().getClassName()))
     {
         // Static call: Animal::kingdom()
         oss << translateFQNtoString({name[0]}) << "::" << name.back() << "(";
@@ -117,6 +118,12 @@ std::string FuncCallExpr::translateToCpp() const
     return oss.str();
 }
 
+void FuncCallExpr::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    for (const auto& arg : args) arg->setSymbolTable(symTable);
+}
+
 void FuncCallExpr::setType(std::unique_ptr<IType> type)
 {
     this->type = std::move(type);
@@ -130,6 +137,11 @@ void FuncCallExpr::setClassDecl(IFuncDeclStmt& decl)
 void FuncCallExpr::setTargetClass(const ClassNode* targetClass)
 {
     this->targetClass = targetClass;
+}
+
+const ClassNode* FuncCallExpr::getTargetClass() const
+{
+    return targetClass;
 }
 
 bool FuncCallExpr::isLegalCall(const Func& func) const
@@ -152,6 +164,23 @@ bool FuncCallExpr::argsMatch(const Func& func) const
     for (size_t i = 0; i < args.size(); i++)
     {
         if (*(func.getArgs()[i].getType()) != *(args[i]->getType()))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool FuncCallExpr::argsMatch(const Constractor& ctor) const
+{
+    if (args.size() != ctor.getArgs().size())
+    {
+        return false;
+    }
+
+    for (size_t i = 0; i < args.size(); i++)
+    {
+        if (*(ctor.getArgs()[i].getType()) != *(args[i]->getType()))
         {
             return false;
         }

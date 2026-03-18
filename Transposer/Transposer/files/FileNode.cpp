@@ -153,32 +153,29 @@ FileNode* FileNode::build(const std::filesystem::path& inPath, const std::filesy
 
 void FileNode::analyzePass1(SymbolTable& symTable)
 {
-    file.analyzePass1(symTable);
-
     for (auto& child : children)
     {
         child->analyzePass1(symTable);
     }
+    file.analyzePass1(symTable);
 }
 
 void FileNode::analyzePass2(SymbolTable& symTable)
 {
-    file.analyzePass2(symTable);
-
     for (auto& child : children)
     {
         child->analyzePass2(symTable);
     }
+    file.analyzePass2(symTable);
 }
 
 void FileNode::analyzePass3(SymbolTable& symTable)
 {
-    file.analyzePass3(symTable);
-
     for (auto& child : children)
     {
         child->analyzePass3(symTable);
     }
+    file.analyzePass3(symTable);
 }
 
 void FileNode::write(const bool isMain)

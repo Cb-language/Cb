@@ -36,6 +36,8 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty] private bool _expanded = true;
     [ObservableProperty] private double _borderWidth = 250;
     
+    [ObservableProperty] private bool _shouldLspRun = true;
+    
     [ObservableProperty] private string _transpilerExePath = "Not Set";
 
     [ObservableProperty] 
@@ -452,6 +454,7 @@ public partial class MainViewModel : ViewModelBase
     
     private async Task RunLSP()
 {
+    if (!ShouldLspRun) return;
     if (_isLspRunning) return; 
     if (SelectedTab == null) return;
     if (!File.Exists(TranspilerExePath)) return;

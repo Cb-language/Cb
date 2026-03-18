@@ -47,7 +47,8 @@ public partial class CodeEditor : UserControl
         { "𝄞", "𝄀" },
         { "𝄋", "𝄌"},
         { "𝄕", "𝄇"},
-        { "𝄢𝄩", "𝄩𝄢"}
+        { "𝄢𝄩", "𝄩𝄢"},
+        {"𝆒", "𝆓"}
     };
 
     public CodeEditor()
@@ -119,7 +120,7 @@ public partial class CodeEditor : UserControl
         if (_bracketPairs.TryGetValue(text, out var closingChar))
         {
             Editor.Document.Insert(Editor.CaretOffset, closingChar);
-            Editor.CaretOffset--; 
+            Editor.CaretOffset -= closingChar.Length; 
         }
     }
 
@@ -248,6 +249,9 @@ public partial class CodeEditor : UserControl
                     case Key.OemPlus: replacement = "𝅘𝅥="; break; // ALT + Numpad +
                     case Key.D3: replacement = "𝄪"; break;  // ALT+ #
                     case Key.B: replacement = "♭"; break; // ALT + B
+                    case Key.OemPipe: replacement = "𝄓"; break;
+                    case Key.OemComma: replacement = "𝆒"; break;
+                    case Key.OemPeriod: replacement = "𝆓"; break;
 
                 }
             }
@@ -264,7 +268,7 @@ public partial class CodeEditor : UserControl
     private void ToggleComment()
     {
         var document = Editor.Document;
-        const string commentPrefix = "?";
+        const string commentPrefix = "𝄢 ";
 
         // 1. Single Line Logic (No Selection)
         if (Editor.SelectionLength == 0)

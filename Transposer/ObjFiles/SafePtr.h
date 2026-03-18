@@ -16,26 +16,26 @@ class SafePtr : public Object
 {
 private:
     std::unique_ptr<T> ptr;
+public:
     using InnerT = typename std::conditional_t<
         is_array_specialization<T>::value,
         is_array_specialization<T>,
         is_array_specialization<Array<T>> // Dummy fallback that won't trigger SafePtr<void>
     >::inner_type;
     using InnerSafePtr = SafePtr<InnerT>;
-public:
     SafePtr();
-    explicit SafePtr(const std::unique_ptr<T>& ptr);
-    explicit SafePtr(const T& t);
+    SafePtr(const std::unique_ptr<T>& ptr);
+    SafePtr(const T& t);
     SafePtr(const SafePtr& other);
 
     template <typename U> requires std::is_base_of_v<T, U>
-    explicit SafePtr(std::unique_ptr<U>& otherPtr);
+    SafePtr(std::unique_ptr<U>& otherPtr);
 
     template <typename U> requires std::is_base_of_v<T, U>
-    explicit SafePtr(const U& u);
+    SafePtr(const U& u);
 
     template <typename U>
-    explicit SafePtr(const SafePtr<U>& other);
+    SafePtr(const SafePtr<U>& other);
 
     template <typename U>
     SafePtr& operator=(const U& u);
@@ -43,11 +43,11 @@ public:
     template <typename U>
     SafePtr& operator=(const SafePtr<U>& u);
 
-    // Existing Template Constructors and Assignment Operators...
-    // (Omitted for brevity, keep your existing implementations)
+    template <typename U>
+    SafePtr& operator=(const Primitive<U>& other);
 
-    SafePtr& operator=(const T& t);
-    SafePtr& operator=(const SafePtr& t);
+    SafePtr& operator=(const T& other);
+    SafePtr& operator=(const SafePtr& other);
 
     // --- Math & Assignment Operators ---
 
@@ -66,10 +66,11 @@ public:
 
     // --- Existing Accessors ---
     SafePtr cloneSafePtr() const;
+    const SafePtr* clone() const override;
 
     T* operator->() const;
     T& operator*() const;
-    T* get() const;
+    const T* get() const override;
     std::unique_ptr<T> clonePtr() const;
 
     InnerSafePtr& operator[](int index)

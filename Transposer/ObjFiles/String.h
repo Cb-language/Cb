@@ -9,9 +9,9 @@ private:
 
 public:
     String();
-    explicit String(const std::string& basicString);
-    explicit String(const String& string);
-    explicit String(const char* basicCharPtr);
+    String(const std::string& basicString);
+    String(const String& string);
+    String(const char* basicCharPtr);
     std::string toString(int indents = 0) const override;
     String& operator=(const String& other);
     String& operator=(const Object& other);
@@ -21,6 +21,8 @@ public:
 
     String operator+(const Object& obj) const;
     String& operator+=(const Object& obj);
+
+    const String* clone() const override;
 
     template <typename T>
     String& operator=(const Primitive<T>& other)

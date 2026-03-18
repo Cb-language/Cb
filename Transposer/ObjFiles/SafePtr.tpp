@@ -8,7 +8,8 @@ template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 std::unique_ptr<T> SafePtr<T>::clonePtr() const
 {
-    return std::make_unique<T>(*ptr);
+    if (ptr == nullptr) return nullptr;
+    return std::unique_ptr<T>(const_cast<T*>(this->ptr->clone()));
 }
 
 template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
@@ -48,15 +49,17 @@ SafePtr<T>::SafePtr()
 {
     if constexpr (std::is_same_v<T, Object>)
         ptr = std::make_unique<String>();
+    else if constexpr(std::is_abstract_v<T>)
+        ptr = nullptr;
     else
         ptr = std::make_unique<T>();
 }
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-SafePtr<T>::SafePtr(const std::unique_ptr<T>& otherPtr)
+SafePtr<T>::SafePtr(const std::unique_ptr<T>& ptr)
 {
-    this->ptr = otherPtr->clone();
+    this->ptr = ptr->clonePtr();
 }
 
 template <typename T>
@@ -101,7 +104,7 @@ template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Obje
 template <typename U>
 SafePtr<T>& SafePtr<T>::operator=(const U& u)
 {
-    ptr = std::make_unique<T>(u);
+    ptr = std::make_unique<U>(u);
     return *this;
 }
 
@@ -113,22 +116,30 @@ SafePtr<T>& SafePtr<T>::operator=(const SafePtr<U>& u)
     return *this;
 }
 
-template <typename T>
-requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-SafePtr<T>& SafePtr<T>::operator=(const T& t)
+template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+template <typename U>
+SafePtr<T>& SafePtr<T>::operator=(const Primitive<U>& other)
 {
-    if constexpr (std::is_same_v<T, Object>)
-        ptr = t.clone();
-    else
-        ptr = std::make_unique<T>(t);
+    ptr = std::make_unique<T>(other);
     return *this;
 }
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-SafePtr<T>& SafePtr<T>::operator=(const SafePtr& t)
+SafePtr<T>& SafePtr<T>::operator=(const T& other)
 {
-    if (this != &t) ptr = t.clonePtr();
+    if constexpr (std::is_same_v<T, Object>)
+        ptr = other.clone();
+    else
+        ptr = std::make_unique<T>(other);
+    return *this;
+}
+
+template <typename T>
+requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+SafePtr<T>& SafePtr<T>::operator=(const SafePtr& other)
+{
+    if (this != &other) ptr = other.clonePtr();
     return *this;
 }
 
@@ -137,6 +148,12 @@ requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
 SafePtr<T> SafePtr<T>::cloneSafePtr() const
 {
     return SafePtr<T>(*this);
+}
+
+template <typename T> requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
+const SafePtr<T>* SafePtr<T>::clone() const
+{
+    return new SafePtr(*this);
 }
 
 template <typename T>
@@ -155,7 +172,7 @@ T& SafePtr<T>::operator*() const
 
 template <typename T>
 requires std::is_arithmetic_v<T> || std::is_base_of_v<Object, T>
-T* SafePtr<T>::get() const
+const T* SafePtr<T>::get() const
 {
-    return static_cast<T*>(ptr.get());
+    return ptr.get();
 }

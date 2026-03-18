@@ -32,3 +32,10 @@ std::string WhileStmt::translateToCpp() const
     oss << getTabs() << "while (" << stmt.expr->translateToCpp() << ")" << std::endl << stmt.body->translateToCpp();
     return oss.str();
 }
+
+void WhileStmt::setSymbolTable(SymbolTable* symTable) const
+{
+    Stmt::setSymbolTable(symTable);
+    stmt.expr->setSymbolTable(symTable);
+    stmt.body->setSymbolTable(symTable);
+}

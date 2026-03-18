@@ -1,11 +1,11 @@
 #pragma once
 #include "Expression.h"
 
-class Call : public Expr
+class VarReference : public Expr
 {
 protected:
     bool isClassItem = false;
-    explicit Call(const Token& token) : Expr(token) {}
+    explicit VarReference(const Token& token) : Expr(token) {}
 
 public:
 
@@ -15,12 +15,12 @@ public:
     void setIsClassItem(bool value);
 };
 
-inline bool Call::getIsClassItem() const
+inline bool VarReference::getIsClassItem() const
 {
     return isClassItem;
 }
 
-inline void Call::setIsClassItem(const bool value)
+inline void VarReference::setIsClassItem(const bool value)
 {
     isClassItem = value;
 }

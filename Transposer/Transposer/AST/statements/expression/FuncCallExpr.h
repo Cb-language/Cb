@@ -5,10 +5,11 @@
 #include <memory>
 
 #include "../../../symbols/Type/PrimitiveType.h"
-#include "AST/abstract/Call.h"
+#include "AST/abstract/VarReference.h"
+#include "symbols/Constractor.h"
 #include "symbols/Func.h"
 
-class FuncCallExpr : public Call
+class FuncCallExpr : public VarReference
 {
 private:
     const FQN name;
@@ -25,12 +26,15 @@ public:
     std::unique_ptr<IType> getType() const override;
     void analyze() const override;
     std::string translateToCpp() const override;
+    void setSymbolTable(SymbolTable* symTable) const override;
 
     void setType(std::unique_ptr<IType> type);
     void setClassDecl(IFuncDeclStmt& decl);
     void setTargetClass(const ClassNode* targetClass);
+    const ClassNode* getTargetClass() const;
     bool isLegalCall(const Func& func) const;
     bool argsMatch(const Func& func) const;
+    bool argsMatch(const Constractor& ctor) const;
 
     const Token& getToken() const override;
     const FQN& getName() const;

@@ -102,6 +102,12 @@ std::string Primitive<T>::toString(int indents) const {
     return getIndents(indents) + std::to_string(value);
 }
 
+template <typename T> requires std::is_arithmetic_v<T>
+const Primitive<T>* Primitive<T>::clone() const
+{
+    return new Primitive(*this);
+}
+
 template <typename T>
 requires std::is_arithmetic_v<T>
 T Primitive<T>::getValue() const { return value; }
@@ -167,6 +173,42 @@ Primitive<T>& Primitive<T>::operator%=(const Primitive& other)
 {
     value %= other.value;
     return *this;
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
+Primitive<bool> Primitive<T>::operator>(const Primitive& other) const
+{
+    return Primitive<bool>(value > other.value);
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
+Primitive<bool> Primitive<T>::operator>=(const Primitive& other) const
+{
+    return Primitive<bool>(value >= other.value);
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
+Primitive<bool> Primitive<T>::operator<(const Primitive& other) const
+{
+    return Primitive<bool>(value < other.value);
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
+Primitive<bool> Primitive<T>::operator<=(const Primitive& other) const
+{
+    return Primitive<bool>(value <= other.value);
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
+Primitive<bool> Primitive<T>::operator==(const Primitive& other) const
+{
+    return Primitive<bool>(value == other.value);
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
+Primitive<bool> Primitive<T>::operator!=(const Primitive& other) const
+{
+    return Primitive<bool>(value != other.value);
 }
 
 template <typename T> requires std::is_arithmetic_v<T>

@@ -164,6 +164,7 @@ int main(int argc, char* argv[])
                  << cmd->getCompileFlags();
 
         Utils::logMsg("Compiling...");
+        auto temp = cmdBuild.str();
 
         if (std::system(cmdBuild.str().c_str()) != 0)
         {

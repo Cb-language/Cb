@@ -4,13 +4,11 @@
 
 #include "AST/statements/ArrayDeclStmt.h"
 #include "AST/statements/AssignmentStmt.h"
-#include "AST/statements/BreakStmt.h"
 #include "AST/statements/CaseStmt.h"
-#include "AST/statements/ContinueStmt.h"
 #include "AST/statements/ForStmt.h"
 #include "AST/statements/HearStmt.h"
 #include "AST/statements/IfStmt.h"
-#include "AST/statements/ObjCreationStmt.h"
+#include "AST/statements/ObjCreationPolyStmt.h"
 #include "AST/statements/PlayStmt.h"
 #include "AST/statements/ReturnStmt.h"
 #include "AST/statements/SwitchStmt.h"
@@ -33,13 +31,13 @@ public:
     std::unique_ptr<Stmt> parseStmt();
 
     std::unique_ptr<VarDeclStmt> parseVarDecStmt() const;
-    std::unique_ptr<AssignmentStmt> parseAssignmentStmt(std::unique_ptr<Call> left) const;
+    std::unique_ptr<AssignmentStmt> parseAssignmentStmt(std::unique_ptr<VarReference> left) const;
 
     std::unique_ptr<HearStmt> parseHearStmt() const;
     std::unique_ptr<PlayStmt> parsePlayStmt() const;
 
     std::unique_ptr<BodyStmt> parseBodyStmt(bool isGlobal = false, bool hasBrace = true);
-    std::unique_ptr<FuncDeclStmt> parseFuncDeclStmt(const bool isMethod = false);
+    std::unique_ptr<FuncDeclStmt> parseFuncDeclStmt(const bool isMethod = false, VirtualType vType = VirtualType::NONE);
     std::unique_ptr<ReturnStmt> parseReturnStmt() const;
     std::unique_ptr<FuncCreditStmt> parseFuncCreditStmt() const;
 
@@ -54,7 +52,9 @@ public:
 
     std::unique_ptr<ClassDeclStmt> parseClassDeclStmt();
     std::unique_ptr<ConstructorDeclStmt> parseCtor(const FQN& className);
-    std::unique_ptr<ObjCreationStmt> parseObjCreationStmt() const;
+    std::unique_ptr<ObjectCreationStmt> parseObjCreationStmt() const;
+    std::unique_ptr<ObjectCreationStmt> parsePolyObjCreationStmt(std::unique_ptr<IType> type) const;
+    std::unique_ptr<ObjectCreationStmt> parsePolyObjCreationAssignmentStmt(std::unique_ptr<IType> type, const FQN& name) const;
 
     void parse();
 };

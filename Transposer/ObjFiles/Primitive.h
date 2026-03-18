@@ -51,6 +51,7 @@ public:
     Primitive<T>& operator=(const Object& other);
 
     std::string toString(int indents = 0) const override;
+    const Primitive* clone() const override;
     T getValue() const;
 
     friend std::istream& operator>>(std::istream& is, Primitive<T>& obj)
@@ -77,6 +78,14 @@ public:
     Primitive& operator*=(const Primitive& other);
     Primitive& operator/=(const Primitive& other);
     Primitive& operator%=(const Primitive& other);
+
+    // Comparison
+    Primitive<bool> operator>(const Primitive& other) const;
+    Primitive<bool> operator>=(const Primitive& other) const;
+    Primitive<bool> operator<(const Primitive& other) const;
+    Primitive<bool> operator<=(const Primitive& other) const;
+    Primitive<bool> operator==(const Primitive& other) const;
+    Primitive<bool> operator!=(const Primitive& other) const;
 
     // Template Math vs Raw Types
     template <typename U> Primitive operator+(const U& other) const;

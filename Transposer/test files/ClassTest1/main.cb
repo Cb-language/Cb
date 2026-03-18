@@ -8,28 +8,28 @@
 𝄢 ─── Base class: Instrument with fields and methods ───
 
 instrument Animal 𝄋
-    player score degree legs = 4 𝄀
-    player score unison degree temp = 4 𝄀
-    player score bar name = "unknown" 𝄀
+    conductor score degree legs = 4 𝄀
+    conductor score unison degree temp = 4 𝄀
+    conductor score bar name = "unknown" 𝄀
 
-    player score 𝆫 Animal 𝄕 degree l, bar n 𝄇
-    𝄞   legs = l 𝄀
+    conductor score 𝆫 Animal 𝄕 degree l, bar n 𝄇
+    𝄞   legs = l  𝄀
     𝄞   name = n 𝄂 𝄀
 
-    player score song speak𝄕𝄇
+    conductor score song speak𝄕𝄇
     𝄞 play bar𝄕name𝄇 𝄀
     𝄞 play bar𝄕" says nothing"𝄇 𝄀
     𝄞 𝄽 𝄂 𝄀
 
-    player score motif song voice𝄕𝄇 𝅘𝅥=bar
+    conductor score motif song voice𝄕𝄇 𝅘𝅥=bar
     𝄞 B𝄍"..." 𝄀
     𝄞 𝄽 𝄂 𝄀
 
-    player score song getLegs𝄕𝄇 𝅘𝅥=degree
+    conductor score song getLegs𝄕𝄇 𝅘𝅥=degree
     𝄞 B𝄍legs 𝄀
     𝄞 𝄽 𝄂 𝄀
 
-    player score unison song kingdom𝄕𝄇 𝅘𝅥=bar
+    conductor score unison song kingdom𝄕𝄇 𝅘𝅥=bar
     𝄞 B𝄍"Animalia" 𝄀
     𝄞 𝄽 𝄂 𝄀
 𝄌 𝄀
@@ -38,16 +38,16 @@ instrument Animal 𝄋
 instrument Dog : Animal 𝄋
     conductor score bar breed = "mutt" 𝄀
 
-    player score 𝆫 Dog 𝄕 bar n, bar b 𝄇
+    conductor score 𝆫 Dog 𝄕 bar n, bar b 𝄇
     𝄞   name = n 𝄀
     𝄞   legs = 4 𝄀
     𝄞   breed = b 𝄂 𝄀
 
-    player score variation song voice𝄕𝄇 𝅘𝅥=bar
+    conductor score variation song voice𝄕𝄇 𝅘𝅥=bar
     𝄞 B𝄍"Woof!" 𝄀
     𝄞 𝄽 𝄂 𝄀
 
-    player score song fetch𝄕bar item𝄇
+    conductor score song fetch𝄕bar item𝄇
     𝄞 play bar𝄕name𝄇 𝄀
     𝄞 play bar𝄕" fetches "𝄇 𝄀
     𝄞 play bar𝄕item𝄇 𝄀
@@ -60,12 +60,12 @@ instrument Dog : Animal 𝄋
 instrument Cat : Animal 𝄋
     conductor score mute isIndoor = 1 == 1 𝄀
 
-    player score 𝆫 Cat 𝄕 bar n, mute indoor 𝄇
+    conductor score 𝆫 Cat 𝄕 bar n, mute indoor 𝄇
     𝄞    name = n 𝄀
     𝄞    legs = 4 𝄀
     𝄞    isIndoor = indoor 𝄂 𝄀
 
-    player score variation song voice𝄕𝄇 𝅘𝅥=bar
+    conductor score variation song voice𝄕𝄇 𝅘𝅥=bar
     𝄞 B𝄍"Meow!" 𝄀
     𝄞 𝄽 𝄂 𝄀
 𝄌 𝄀
@@ -74,11 +74,11 @@ instrument Cat : Animal 𝄋
 𝄢 ─── Derived class: Spider, different leg count ───
 
 instrument Spider : Animal 𝄋
-    player score 𝆫 Spider 𝄕 bar n 𝄇
+    conductor score 𝆫 Spider 𝄕 bar n 𝄇
     𝄞   name = n 𝄀
     𝄞   legs = 8 𝄂 𝄀
 
-    player score variation song voice𝄕𝄇 𝅘𝅥=bar
+    conductor score variation song voice𝄕𝄇 𝅘𝅥=bar
     𝄞 B𝄍"*silence*" 𝄀
     𝄞 𝄽 𝄂 𝄀
 𝄌 𝄀
@@ -87,24 +87,24 @@ instrument Spider : Animal 𝄋
 𝄢 ─── Counter class: tests static and unary ops ───
 
 instrument Counter 𝄋
-    player score degree count = 0 𝄀
+    conductor score degree count = 0 𝄀
 
-    player score 𝆫 Counter 𝄕 degree start 𝄇
+    conductor score 𝆫 Counter 𝄕 degree start 𝄇
     𝄞    count = start 𝄂 𝄀
 
-    player score song increment𝄕𝄇
+    conductor score song increment𝄕𝄇
     𝄞 count♯ 𝄀
     𝄞 𝄽 𝄂 𝄀
 
-    player score song decrement𝄕𝄇
+    conductor score song decrement𝄕𝄇
     𝄞 count♭ 𝄀
     𝄞 𝄽 𝄂 𝄀
 
-    player score song reset𝄕𝄇
+    conductor score song reset𝄕𝄇
     𝄞 count♮ 𝄀
     𝄞 𝄽 𝄂 𝄀
 
-    player score song getCount𝄕𝄇 𝅘𝅥=degree
+    conductor score song getCount𝄕𝄇 𝅘𝅥=degree
     𝄞 B𝄍count 𝄀
     𝄞 𝄽 𝄂 𝄀
 𝄌 𝄀
@@ -115,7 +115,7 @@ instrument Counter 𝄋
 song prelude𝄕𝄇 𝅘𝅥=degree
 𝄞 𝄽 𝄀
 𝄞 𝄢 Create objects
-𝄞 𝆫 Dog rex 𝄕 "Rex", "Labrador" 𝄇 𝄀
+𝄞 Dog rex = 𝆫 Dog𝄕 "Rex", "Labrador" 𝄇 𝄀
 𝄞 𝆫 Cat whiskers 𝄕 "Whiskers", 1 == 1 𝄇 𝄀
 𝄞 𝆫 Spider charlotte 𝄕 "Charlotte" 𝄇 𝄀
 𝄞 𝆫 Counter c 𝄕 0 𝄇 𝄀

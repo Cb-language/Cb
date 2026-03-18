@@ -3,7 +3,7 @@
 #include "errorHandling/semanticErrors/UnrecognizedIdentifier.h"
 
 VarCallExpr::VarCallExpr(const Token& token, const Var& var)
-    : Call(token), var(var.copy())
+    : VarReference(token), var(var.copy())
 {
 }
 
@@ -23,7 +23,7 @@ void VarCallExpr::analyze() const
 
 std::string VarCallExpr::translateToCpp() const
 {
-    std::string res = needsSemicolon ? getTabs() : "";
+    std::string res = (needsSemicolon && !isClassItem) ? getTabs() : "";
     res += translateFQNtoString(var.getName());
     if (needsSemicolon) res += ";";
     return res;
@@ -35,9 +35,9 @@ std::unique_ptr<IType> VarCallExpr::getType() const
     return t ? t->copy() : nullptr;
 }
 
-std::string VarCallExpr::getName() const
+const FQN& VarCallExpr::getName() const
 {
-    return translateFQNtoString(var.getName());
+    return var.getName();
 }
 
 std::string VarCallExpr::toString() const

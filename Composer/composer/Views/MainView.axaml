@@ -149,6 +149,9 @@
                  <Rectangle Width="1" Height="20" Fill="#444444" Margin="5,0"/>
                  <StackPanel Orientation="Horizontal" Background="#22000000">
                     <TextBlock Text="{Binding TranspilerExePath}" Margin="10 0 0 0" VerticalAlignment="Center" Foreground="Gray" FontSize="10" MaxWidth="150" TextTrimming="CharacterEllipsis"/>
+                    <ToggleButton IsChecked="{Binding ShouldLspRun}" Background="Transparent" BorderThickness="0" ToolTip.Tip="Toggle LSP">
+                        <Label Content="📡" Padding="0"/>
+                    </ToggleButton>
                     <Button Command="{Binding SelectTranspilerCommand}" Background="Transparent" BorderThickness="0" ToolTip.Tip="Set Transpiler">
                         <StackPanel Orientation="Horizontal">
                                 <Label Content="⚙️" Padding="0"/>

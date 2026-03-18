@@ -3,6 +3,8 @@
 #include "errorHandling/how/HowDidYouGetHere.h"
 #include "other/SymbolTable.h"
 
+ClassTree& ClassType::classTree = ClassTree::instance();
+
 ClassType::ClassType(const FQN& name) : name(name), c(nullptr)
 {
 }
@@ -14,7 +16,15 @@ ClassType::~ClassType()
 
 bool ClassType::operator==(const IType& other) const
 {
-    if (const auto otherPtr = dynamic_cast<const ClassType*>(&other)) return c->isDescendantOf(otherPtr->c) || otherPtr->c->isDescendantOf(c);
+    if (translateFQNtoString(other.getFQN()) == translateFQNtoString(name)) return true;
+
+    if (const auto otherPtr = dynamic_cast<const ClassType*>(&other))
+    {
+        const auto self = classTree.find(name);
+        const auto otherNode = classTree.find(otherPtr->getFQN());
+
+        if (self != nullptr && otherNode != nullptr && (self->isDescendantOf(otherNode) || otherNode->isDescendantOf(self))) return true;
+    }
     return false;
 }
 
@@ -48,9 +58,9 @@ void ClassType::setClassNode(const ClassNode& node)
     c = &node;
 }
 
-std::string ClassType::getName() const
+const FQN& ClassType::getName() const
 {
-    return translateFQNtoString(name);
+    return name;
 }
 
 std::string ClassType::translateTypeToCpp() const

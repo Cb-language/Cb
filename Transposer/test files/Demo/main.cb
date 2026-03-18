@@ -1,0 +1,27 @@
+feat. "Animal.cb"𝄀
+feat. "Dog.cb"𝄀
+feat. "Cat.cb"𝄀
+feat. "Snake.cb"𝄀
+feat. "Zoo.cb"𝄀
+
+song prelude𝄕𝄇 𝅘𝅥=degree
+𝄞 𝆫 Zoo z𝄕𝄇𝄀
+𝄞 𝄽 𝄀
+𝄞 𝆫 Dog d𝄕"Zak", 3, "Golden retriever"𝄇𝄀
+𝄞 𝆫 Cat c𝄕"Molly", 10𝄇𝄀
+𝄞 𝆫 Snake s1𝄕"King Cobra", 5, cres𝄇𝄀
+𝄞 𝆫 Snake s2𝄕"Corn Snake", 3, demen𝄇𝄀
+𝄞 𝆫 Snake s3𝄕"Black Mamba", 8, cres𝄇𝄀
+𝄞 𝄽 𝄀
+𝄞 z𝄍add𝄕d𝄇𝄀
+𝄞 z𝄍add𝄕c𝄇𝄀
+𝄞 z𝄍add𝄕s1𝄇𝄀
+𝄞 z𝄍add𝄕s2𝄇𝄀
+𝄞 z𝄍add𝄕s3𝄇𝄀
+𝄞 𝄽 𝄀
+𝄞 play bar𝄕"------------"𝄇𝄀
+𝄞 z𝄍pet𝄕𝄇𝄀
+𝄞 play bar𝄕"------------"𝄇𝄀
+𝄞 z𝄍talk𝄕𝄇𝄀
+𝄞 play bar𝄕"------------"𝄇𝄀
+𝄞B𝄍0𝄂
