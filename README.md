@@ -2,7 +2,7 @@
 ## 🎼 Overview
 C♭ (or Cb / C flat) is Itay Herskovits and Elisha Schafman's Magshimim Final Project. It is transpiled into C++ via our Transposer.
 
-![C♭ Logo](Composer\composer\Assets\Images\logo.svg)
+![C♭ Logo](Composer/composer/Assets/Images/logo.svg)
 
 ---
 ## 📋 Table Of Contents
