@@ -16,13 +16,15 @@
   * [Functions](#functions)
     * [Signiture](#signiture)
     * [Return](#return)
+  * [Classes](#classes)
+    * [Class Signature](#class-signiture)
     * [Access Types](#access-types)
     * [Fields](#fields)
     * [Virtual Types](#virtual-types)
     * [Methodes](#methodes)
     * [Constructors](#constructors)
     * [Static](#static)
-  * [Usages of classes](#usages-of-classes)
+  * [Usages Of Classes](#usages-of-classes)
     * [Creating an instance](#creating-an-instance)
     * [Geting a **non static** field/methode](#geting-a-non-static-fieldmethode)
     * [Geting a **static** field/methode](#geting-a-static-fieldmethode)
@@ -133,12 +135,6 @@ For example:
 > arr[-1:-5:-1] is reversed array until 6th index from last
 >```
 
-***Note: you can't do*** `𝄍` ***operation directly from*** `arr[i]`***, do it with a temp variable like:***
-```
-Class temp = arr[i]𝄀
-temp𝄍f𝄕𝄇𝄀
-```
-
 ---
 ### Operations
 Each primitive type can do:
@@ -171,6 +167,7 @@ A string can do: `+`, `+=`
 
  ---
  ### Classes
+
  #### Class Signiture
  `instrument <name> [: <parent_name>]𝄋...𝄌 𝄀`
 
@@ -230,7 +227,7 @@ Using the `unison` keyword before a field's type or a methode's virtual type mak
 - A static methode cant use field/methodes from that class.
 
 ---
-### Usages of classes
+### Usages Of Classes
 #### Creating an instance
 There are two ways to create an instance
 
@@ -302,17 +299,18 @@ This will cast `expr` to `type`. For example `AA` inherits from `BB` and:
 - `transcribe𝆒<AA>𝆓𝄕b1𝄇` will compile and run.
 - `transcribe𝆒<AA>𝆓𝄕b2𝄇` will compile **but will crush while running**.
 
-***Note: you can't do*** `𝄍` ***operation directly from*** `transcribe𝆒<BB>𝆓𝄕a𝄇`***, do it with a temp variable like:***
-
-```
-BB temp = transcribe𝆒<BB>𝆓𝄕a𝄇𝄀
-temp𝄍f𝄕𝄇𝄀
-```
 ---
 #### Comments
 `𝄢 [comment]` for a single line comment.
 
 `𝄢𝄩 [comment] 𝄩𝄢` for multi line comments.
+
+---
+#### Feat. (Include)
+To include a file use: `feat. "<path>"𝄀`
+
+- `<path>` is to the desired `cb` file.
+- `<path>` is relative to the main `cb` file's directionary.
 
 ---
 ## Transposer
