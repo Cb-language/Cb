@@ -1,22 +1,22 @@
 # C♭
 ## Table of Contents
 
-* [Syntax](#syntax)
-  * [Types](#types)
-  * [Conditions](#conditions)
-  * [Variables](#variables)
-  * [Loops](#loops)
+* [🎹 Syntax](#syntax)
+  * [🔢 Types](#types)
+  * [⚖️ Conditions](#conditions)
+  * [📦 Variables](#variables)
+  * [🔄 Loops](#loops)
     * [*While*](#while)
     * [*For*](#for)
-  * [Arrays](#arrays)
+  * [📚 Arrays](#arrays)
     * [Declaration](#declaration)
     * [Access](#access)
     * [Slicing](#slicing)
-  * [Operations](#operations)
-  * [Functions](#functions)
+  * [➗ Operations](#operations)
+  * [🎤 Functions](#functions)
     * [Signiture](#signiture)
     * [Return](#return)
-  * [Classes](#classes)
+  * [🎸 Classes](#classes)
     * [Class Signature](#class-signiture)
     * [Access Types](#access-types)
     * [Fields](#fields)
@@ -24,30 +24,30 @@
     * [Methodes](#methodes)
     * [Constructors](#constructors)
     * [Static](#static)
-  * [Usages Of Classes](#usages-of-classes)
+  * [🏛️ Usages Of Classes](#usages-of-classes)
     * [Creating an instance](#creating-an-instance)
     * [Geting a **non static** field/methode](#geting-a-non-static-fieldmethode)
     * [Geting a **static** field/methode](#geting-a-static-fieldmethode)
-  * [Other](#other)
+  * [🧩 Other](#other)
     * [toString𝄕𝄇](#tostring)
     * [duration and sub duration (length)](#duration-and-sub-duration-length)
     * [Timbre (is)](#timbre-is)
     * [transcribe (cast)](#transcribe-cast)
     * [Comments](#comments)
-* [Transposer](#transposer)
+* [⚙️ Transposer](#transposer)
   * [Set up](#set-up)
   * [Usage](#usage)
-* [Composer](#composer)
+* [✍️ Composer](#composer)
   * [Set up](#set-up)
   * [GUI](#gui)
   * [Composer Shortcuts](#composer-shortcuts)
   * [Charectars Shortcuts](#charectars-shortcuts)
-* [Tranposer Set-Up Windows](#tranposer-set-up-windows)
-* [Tranposer Set-Up Linux](#tranposer-set-up-linux)
+* [🪟 Tranposer Set-Up Windows](#tranposer-set-up-windows)
+* [🐧 Tranposer Set-Up Linux](#tranposer-set-up-linux)
 
 ---
-## Syntax
-### Types
+## 🎹 Syntax
+### 🔢 Types
 |C♭| C++ |
 |--|--|
 | degree | int |
@@ -64,7 +64,7 @@
  - default values are `""` for bar, `demen` for mute and 0 for the other types.
 - Primitive are: `degree`, `freq`, `note` and `mute`
 ---
-### Conditions
+### ⚖️ Conditions
 |C♭| C++ |
 |--|--|
 | `D𝄕<condition>𝄇𝄋...𝄌` | `if(<condition>){...}` |
@@ -75,14 +75,14 @@
 | `div.` | `or` |
 | `non div.` | `and` |
 ---
-### Variables
+### 📦 Variables
 To create a variable:
 `<type> <name> [= value]`
 
 *If there isn't a value, it uses default values.*
 
 ---
-### Loops
+### 🔄 Loops
 #### *While*
 `G𝄕<condition>𝄇𝄋...𝄌`
 
@@ -102,7 +102,7 @@ There are **two** types of for
 	 - When **Fmin** `param_name >= stop_value`
 
 ---
-### Arrays
+### 📚 Arrays
 #### Declaration
 Array is a collection of the same types:
 `riff <type>[size=1]`
@@ -136,7 +136,7 @@ For example:
 >```
 
 ---
-### Operations
+### ➗ Operations
 Each primitive type can do:
 - `+`, `+=`
 - `-`, `-=`
@@ -147,7 +147,7 @@ Each primitive type can do:
 A string can do: `+`, `+=`
 
 ---
-### Functions
+### 🎤 Functions
 #### Signiture
 `song [©𝄕func_name1, func_name2,...𝄇] <func_name>𝄕[arg1_type arg1_name], ...𝄇 [𝅘𝅥=return_type]`
 
@@ -166,7 +166,7 @@ A string can do: `+`, `+=`
 `B[𝄍return_value]`, by default return value is fermata.
 
  ---
- ### Classes
+ ### 🎸 Classes
 
  #### Class Signiture
  `instrument <name> [: <parent_name>]𝄋...𝄌 𝄀`
@@ -227,7 +227,7 @@ Using the `unison` keyword before a field's type or a methode's virtual type mak
 - A static methode cant use field/methodes from that class.
 
 ---
-### Usages Of Classes
+### 🏛️ Usages Of Classes
 #### Creating an instance
 There are two ways to create an instance
 
@@ -249,7 +249,7 @@ There are two ways to create an instance
 - Methode: `<class_name>𝄍<methode>𝄕[base_arg1_name], ...𝄇`
 
 ---
-### Other
+### 🧩 Other
 #### toString𝄕𝄇
 Each variable can do this operation thats turns it into a string, its also automatically called when adding a var to a string type.
 
@@ -313,7 +313,7 @@ To include a file use: `feat. "<path>"𝄀`
 - `<path>` is relative to the main `cb` file's directionary.
 
 ---
-## Transposer
+## ⚙️ Transposer
 ### Set up
 Install g++ and make it a gloabal 
 - [Win11 tutorial](https://www.youtube.com/watch?v=GxFiUEO_3zM)
@@ -340,7 +340,7 @@ Write: `Transposer.exe <path_to_the_main_cb_file> <mode> <output_main_path.cpp>`
 **The output exe file is:* `output_main_path.exe`
 
 ---
-## Composer
+## ✍️ Composer
 ### Set up
 Download the vertion compatible to your OS in [Releases](https://gitlab.com/elisha.schafman/kiryatgat-1401-c/-/releases) 
 
@@ -421,7 +421,7 @@ On the top left there will be the tabs. Click the x button to close it. Click an
 
 
  ---
-## Tranposer Set-Up Windows
+## 🪟 Tranposer Set-Up Windows
 This step is for running the Transposer solution, if you're running the exe itselft its not neccessery.
 
 Clone this repository.
@@ -445,7 +445,7 @@ When done, install the following dependencies:
 ```
 
  ---
-## Tranposer Set-Up Linux
+## 🐧 Tranposer Set-Up Linux
 Boost regex and vcpkg usally are already in Linux, ~~if not then google it~~.
 
  ---
