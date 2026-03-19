@@ -167,7 +167,7 @@ A string can do: `+`, `+=`
 |`x♯` | `x++` |
 |`x𝄫` | `x -= 2`|
 |`x𝄪` | `x += 2`|
-|`x♮` | `x += 0`|
+|`x♮` | `x = 0`|
 |`!x` | `!x`|
 
 - `♭`, `♯`, `𝄫`, `𝄪` and `♮` can be done only after the variable.
