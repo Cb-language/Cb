@@ -42,6 +42,9 @@ C♭ (or Cb / C flat) is Itay Herskovits and Elisha Schafman's Magshimim Final P
     * [Timbre (is)](#timbre-is)
     * [transcribe (cast)](#transcribe-cast)
     * [Comments](#comments)
+    * [Feat. (Include)](#feat-include)
+    * [Break](#break)
+    * [Continue](#continue)
 * [⚙️ Transposer](#transposer)
   * [Set up](#set-up)
   * [Usage](#usage)
@@ -319,6 +322,14 @@ To include a file use: `feat. "<path>"𝄀`
 
 - `<path>` is to the desired `cb` file.
 - `<path>` is relative to the main `cb` file's directionary.
+
+---
+#### Break
+To break from a [Case](#️-conditions), [*While*](#while) or [*for*](#for) use `pause`
+
+---
+#### Continue
+To continue a [*While*](#while) or [*for*](#for) use `resume`
 
 ---
 ## ⚙️ Transposer
