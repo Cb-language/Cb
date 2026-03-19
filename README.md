@@ -325,11 +325,11 @@ To include a file use: `feat. "<path>"𝄀`
 
 ---
 #### Break
-To break from a [Case](#️-conditions), [*While*](#while) or [*for*](#for) use `pause`
+To break from a [Case](#️-conditions), [*While*](#while) or [*For*](#for) use `pause`
 
 ---
 #### Continue
-To continue a [*While*](#while) or [*for*](#for) use `resume`
+To continue a [*While*](#while) or [*For*](#for) use `resume`
 
 ---
 ## ⚙️ Transposer
