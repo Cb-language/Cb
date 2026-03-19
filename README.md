@@ -20,7 +20,9 @@ C♭ (or Cb / C flat) is Itay Herskovits and Elisha Schafman's Magshimim Final P
     * [Declaration](#declaration)
     * [Access](#access)
     * [Slicing](#slicing)
-  * [➗ Operations](#operations)
+  * [➗ Operations](#-operations)
+    * [Unary operations](#unary-operations)
+    * [Relation and Equation operators](#relation-and-equation-operators)
   * [🎤 Functions](#functions)
     * [Signiture](#signiture)
     * [Return](#return)
@@ -156,6 +158,26 @@ Each primitive type can do:
 - `%`, `%=`
 
 A string can do: `+`, `+=`
+
+---
+#### Unary operations
+|C♭| C++ |
+|--| -- |
+|`x♭` | `x--`|
+|`x♯` | `x++` |
+|`x𝄫` | `x -= 2`|
+|`x𝄪` | `x += 2`|
+|`x♮` | `x += 0`|
+|`!x` | `!x`|
+
+- `♭`, `♯`, `𝄫`, `𝄪` and `♮` can be done only after the variable.
+- `𝄫`, `𝄪` and `♮` cannot be inside an expression.
+- `!` can be done only before the variable.
+
+---
+#### Relation and Equation operators
+Each primitive can do: `>`, `>=`, `<`, `<=`.
+Every variable has `==` and `!=`.
 
 ---
 ### 🎤 Functions
