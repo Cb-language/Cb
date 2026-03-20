@@ -103,9 +103,10 @@ To create a variable:
 #### *For*
 There are **two** types of for
  - Increasing
-	 - `Fmaj<starting_value>[♯ inc_value][# stop_value (0 by default)][𝄓param_name]𝄋...𝄌`
- - Decreasing
-	 - `Fmin<starting_value>[♭ dec_value][# stop_value (0 by default)][𝄓param_name]𝄋...𝄌`
+	- `Fmaj<starting_value>[♯ inc_value][𝄪 stop_value (0 by default)][𝄓param_name]𝄋...𝄌`
+- Decreasing
+ 	- `Fmin<starting_value>[♭ dec_value][𝄫 stop_value (0 by default)][𝄓param_name]𝄋...𝄌`
+
  - param_name is the name of the for's variable, defaults to be named `i`.
  - starting_value is the value of param_name at the start.
  - inc_value is the value param_name is increasing each iteration **of Fmaj only**, defaults to 1.
