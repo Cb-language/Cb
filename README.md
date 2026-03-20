@@ -431,6 +431,11 @@ On the top left there will be the tabs. Click the x button to close it. Click an
 |`Ctrl + R  `               |Transpiles + Compiles + Runs      |
 |`Ctrl + Z  `               |Undo         |
 |`Ctrl + Y  `               |Redo         |
+|`Ctrl + N  `               |New Window         |
+|`Ctrl + W  `               |Close Window         |
+|`Ctrl + F  `               |Find         |
+|`Ctrl + H  `               |Replace         |
+|`Ctrl + Tab  `             |Switch Window         |
 
 ---
 #### Charectars Shortcuts
